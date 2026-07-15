@@ -75,6 +75,8 @@ def _run_migrations(app):
         import sqlalchemy as sa
         is_pg = db.engine.dialect.name == 'postgresql'
 
+        _bool = 'BOOLEAN DEFAULT FALSE' if is_pg else 'BOOLEAN DEFAULT 0'
+        _bool_true = 'BOOLEAN DEFAULT TRUE' if is_pg else 'BOOLEAN DEFAULT 1'
         migs = [
             ('delegations', 'theme_id', 'INTEGER REFERENCES themes(id)'),
             ('news', 'slug', 'VARCHAR(100)'),
@@ -83,21 +85,21 @@ def _run_migrations(app):
             ('news', 'updated_at', 'TIMESTAMP' if is_pg else 'DATETIME'),
             ('news', 'is_crisis', 'BOOLEAN'),
             ('news', 'committee', 'VARCHAR(30)'),
-            ('students', 'read_only', 'BOOLEAN DEFAULT 0'),
-            ('students', 'adapted_device', 'BOOLEAN DEFAULT 0'),
+            ('students', 'read_only', _bool),
+            ('students', 'adapted_device', _bool),
             ('students', 'certificate_hash', 'VARCHAR(128)'),
             ('students', 'certificate_url', 'VARCHAR(500)'),
-            ('students', 'certificate_released', 'BOOLEAN DEFAULT 0'),
-            ('students', 'convened', 'BOOLEAN DEFAULT 0'),
+            ('students', 'certificate_released', _bool),
+            ('students', 'convened', _bool),
             ('documents', 'category', "VARCHAR(50) DEFAULT 'guias'"),
             ('delegations', 'flag_url', 'VARCHAR(300)'),
             ('delegations', 'presence_status', "VARCHAR(20) DEFAULT 'ausente'"),
-            ('delegations', 'flag_animation', 'BOOLEAN DEFAULT 1'),
-            ('delegations', 'orador', 'BOOLEAN DEFAULT 0'),
-            ('event_config', 'inscricoes_abertas', 'BOOLEAN DEFAULT 0'),
+            ('delegations', 'flag_animation', _bool_true),
+            ('delegations', 'orador', _bool),
+            ('event_config', 'inscricoes_abertas', _bool),
             ('event_config', 'invoke_url', "VARCHAR(500) DEFAULT ''"),
             ('event_config', 'invoke_label', "VARCHAR(100) DEFAULT ''"),
-            ('event_config', 'invoke_active', 'BOOLEAN DEFAULT 0'),
+            ('event_config', 'invoke_active', _bool),
             ('event_config', 'invoke_at', 'TIMESTAMP' if is_pg else 'DATETIME'),
         ]
 
