@@ -261,11 +261,14 @@ def on_join_telao(data):
 def certificate_view(hash):
     """Página pública de visualização de certificado."""
     from models.student import Student
+    from models.certificate_template import CertificateTemplate
     student = Student.query.filter_by(certificate_hash=hash).first()
     if not student or not student.certificate_released:
         return render_template('public/certificate_invalid.html'), 404
-    return render_template('public/certificate_view.html',
-                           student=student)
+    template = CertificateTemplate.get_active()
+    if template and student.delegation:
+        return template.render(student)
+    return render_template('public/certificate_view.html', student=student)
 
 
 # ── API: checar votações abertas e status de voto ─────────────

@@ -375,6 +375,9 @@
     'admin.certificates_list', 'admin.certificates_compile', 'admin.certificate_release',
     'admin.certificates_release_all', 'admin.certificate_revoke',
     'admin.certificate_sign',     'admin.certificates_sign_all', 'admin.certificate_unsign',
+    'admin.certificate_templates', 'admin.certificate_template_create',
+    'admin.certificate_template_edit', 'admin.certificate_template_activate',
+    'admin.certificate_template_delete', 'admin.certificate_template_preview',
     'admin.notifications_config', 'admin.test_email_config'] -%}
   {%- set simulacao_endpoints = ['admin.chamada_panel', 'admin.set_presence',
     'admin.chamada_control_screen', 'admin.oradores_panel', 'admin.oradores_toggle',
@@ -522,8 +525,14 @@
       <ul class="sidebar-nav">
         <li>
           <a href="{{ url_for('admin.certificates_list') }}"
-             class="{{ 'active' if 'certificate' in (request.endpoint or '') }}">
-            <span class="nav-icon">🎓</span> Certificados
+             class="{{ 'active' if request.endpoint == 'admin.certificates_list' or 'certificate_release' in (request.endpoint or '') or 'certificate_sign' in (request.endpoint or '') or 'certificates_compile' in (request.endpoint or '') }}">
+            <span class="nav-icon">🎓</span> Gerenciar
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('admin.certificate_templates') }}"
+             class="{{ 'active' if 'certificate_template' in (request.endpoint or '') }}">
+            <span class="nav-icon">📄</span> Modelos
           </a>
         </li>
       </ul>

@@ -1706,6 +1706,96 @@ def certificate_unsign(id):
 
 
 # ══════════════════════════════════════════════════════════════
+#  MODELOS DE CERTIFICADO
+# ══════════════════════════════════════════════════════════════
+
+@admin_bp.route('/certificados/modelos')
+@login_required
+@admin_required
+def certificate_templates():
+    from models.certificate_template import CertificateTemplate
+    templates = CertificateTemplate.query.order_by(CertificateTemplate.created_at.desc()).all()
+    return render_template('admin/certificate_templates.html', templates=templates)
+
+
+@admin_bp.route('/certificados/modelos/novo', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def certificate_template_create():
+    from models.certificate_template import CertificateTemplate
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        html_content = request.form.get('html_content', '').strip()
+        if not name:
+            flash('Nome do modelo é obrigatório.', 'error')
+            return render_template('admin/certificate_template_form.html', template=None)
+        if not html_content:
+            html_content = CertificateTemplate.default_html()
+        tpl = CertificateTemplate(name=name, html_content=html_content)
+        db.session.add(tpl)
+        db.session.commit()
+        flash(f'✅ Modelo "{name}" criado!', 'success')
+        return redirect(url_for('admin.certificate_templates'))
+    return render_template('admin/certificate_template_form.html', template=None)
+
+
+@admin_bp.route('/certificados/modelos/<int:id>/editar', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def certificate_template_edit(id):
+    from models.certificate_template import CertificateTemplate
+    tpl = CertificateTemplate.query.get_or_404(id)
+    if request.method == 'POST':
+        tpl.name = request.form.get('name', '').strip()
+        html_content = request.form.get('html_content', '').strip()
+        if html_content:
+            tpl.html_content = html_content
+        db.session.commit()
+        flash(f'✅ Modelo "{tpl.name}" atualizado!', 'success')
+        return redirect(url_for('admin.certificate_templates'))
+    return render_template('admin/certificate_template_form.html', template=tpl)
+
+
+@admin_bp.route('/certificados/modelos/<int:id>/ativar', methods=['POST'])
+@login_required
+@admin_required
+def certificate_template_activate(id):
+    from models.certificate_template import CertificateTemplate
+    CertificateTemplate.query.update({CertificateTemplate.is_active: False})
+    tpl = CertificateTemplate.query.get_or_404(id)
+    tpl.is_active = True
+    db.session.commit()
+    flash(f'✅ Modelo "{tpl.name}" definido como ativo!', 'success')
+    return redirect(url_for('admin.certificate_templates'))
+
+
+@admin_bp.route('/certificados/modelos/<int:id>/deletar', methods=['POST'])
+@login_required
+@admin_required
+def certificate_template_delete(id):
+    from models.certificate_template import CertificateTemplate
+    tpl = CertificateTemplate.query.get_or_404(id)
+    db.session.delete(tpl)
+    db.session.commit()
+    flash(f'🗑️ Modelo "{tpl.name}" deletado.', 'info')
+    return redirect(url_for('admin.certificate_templates'))
+
+
+@admin_bp.route('/certificados/modelos/<int:id>/preview')
+@login_required
+@admin_required
+def certificate_template_preview(id):
+    from models.certificate_template import CertificateTemplate
+    tpl = CertificateTemplate.query.get_or_404(id)
+    student = Student.query.first()
+    if not student:
+        return '<p>Nenhum aluno cadastrado para preview.</p>'
+    if not student.delegation:
+        return '<p>Aluno sem delegação para preview.</p>'
+    return tpl.render(student)
+
+
+# ══════════════════════════════════════════════════════════════
 #  DASHBOARD DO DIRETOR (Mesa / Chair)
 # ══════════════════════════════════════════════════════════════
 

@@ -1,0 +1,74 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ 'Editar' if template else 'Novo' }} Modelo{% endblock %}
+{% block page_title %}{{ '✏️ Editar' if template else '📄 Novo' }} Modelo de Certificado{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.certificate_templates') }}" class="btn btn-ghost">← Modelos</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:900px">
+  <div class="card">
+    <div class="card-body">
+      <form method="POST">
+        <div class="form-group">
+          <label>Nome do Modelo *</label>
+          <input type="text" name="name" required
+                 value="{{ template.name if template else '' }}"
+                 placeholder="Ex: Modelo Padrão 2026">
+        </div>
+
+        <div class="form-group">
+          <label>HTML do Certificado</label>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px">
+            Use os placeholders: <code>{{'{{student_name}}'}}</code>, <code>{{'{{country}}'}}</code>, <code>{{'{{theme}}'}}</code>, <code>{{'{{date}}'}}</code>, etc.
+            Deixe em branco para usar o modelo padrão.
+          </div>
+          <textarea name="html_content" rows="25"
+                    style="width:100%;font-family:'DM Mono',monospace;font-size:12px;padding:14px;
+                           border:1px solid var(--border);border-radius:4px;background:var(--offwhite2);
+                           color:var(--navy);tab-size:2"
+                    placeholder="&lt;!DOCTYPE html&gt;...">{{ template.html_content if template else '' }}</textarea>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button type="submit" class="btn btn-primary">
+            {{ '💾 Salvar' if template else '✅ Criar' }}
+          </button>
+          <a href="{{ url_for('admin.certificate_templates') }}" class="btn btn-ghost">Cancelar</a>
+          {% if template %}
+          <a href="{{ url_for('admin.certificate_template_preview', id=template.id) }}" target="_blank" class="btn btn-ghost" style="margin-left:auto">
+            👁️ Preview
+          </a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if not template %}
+  <div class="card" style="margin-top:20px">
+    <div class="card-header">
+      <span class="card-title">📄 Modelo Padrão</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">
+        Se o HTML estiver vazio, o modelo padrão será usado. Clique abaixo para pré-carregar o modelo padrão no editor.
+      </p>
+      <button onclick="loadDefault()" class="btn btn-ghost">📥 Carregar Modelo Padrão</button>
+    </div>
+  </div>
+
+  <script>
+    async function loadDefault() {
+      const res = await fetch('{{ url_for("admin.certificate_template_create") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ name: 'Modelo Padrão', html_content: 'placeholder' })
+      });
+      window.location.reload();
+    }
+  </script>
+  {% endif %}
+</div>
+{% endblock %}

@@ -95,14 +95,28 @@ def _auto_compile_certificates():
         return 0
     if datetime.now(timezone.utc) <= last_dt:
         return 0
+    from models.certificate_template import CertificateTemplate
+    template = CertificateTemplate.get_active()
     students = Student.query.all()
     generated = 0
+    cert_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'static', 'uploads', 'certificates')
+    os.makedirs(cert_dir, exist_ok=True)
     for student in students:
         deleg = Delegation.query.get(student.delegation_id) if student.delegation_id else None
         if deleg and deleg.presence_status in ('presente', 'votante'):
             if not student.certificate_hash:
                 student.certificate_hash = str(__import__('uuid').uuid4())
-            if not student.certificate_url:
+            html = template.render(student) if template else ''
+            if html:
+                cert_path = os.path.join(cert_dir, f'{student.certificate_hash}.html')
+                with open(cert_path, 'w', encoding='utf-8') as f:
+                    f.write(html)
+                student.certificate_url = __import__('flask').url_for(
+                    'static',
+                    filename=f'uploads/certificates/{student.certificate_hash}.html',
+                    _external=True
+                )
+            else:
                 student.certificate_url = __import__('flask').url_for(
                     'certificate_view',
                     hash=student.certificate_hash,

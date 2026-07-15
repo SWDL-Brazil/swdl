@@ -13,3 +13,4 @@ from models.audit_log     import AuditLog
 from models.category      import Category
 from models.urgent_alert  import UrgentAlert
 from models.system_config import SystemConfig
+from models.certificate_template import CertificateTemplate
