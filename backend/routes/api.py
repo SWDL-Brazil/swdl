@@ -49,6 +49,32 @@ def api_news():
     } for n in news])
 
 
+# ── DIAGNÓSTICO ───────────────────────────────────────────────
+@api_bp.route('/diag')
+def api_diag():
+    import sqlalchemy as sa
+    result = {}
+    for table in ['event_config', 'students', 'delegations', 'users']:
+        try:
+            cols = [c['name'] for c in sa.inspect(db.engine).get_columns(table)]
+            result[table] = cols
+        except Exception as e:
+            result[table] = str(e)
+    try:
+        from models.event_config import EventConfig
+        invoke = EventConfig.get_invoke()
+        result['invoke'] = str(invoke)
+    except Exception as e:
+        result['invoke_error'] = str(e)
+    try:
+        from models.student import Student
+        result['students'] = Student.query.count()
+        result['read_only_count'] = Student.query.filter(Student.read_only == True).count()
+    except Exception as e:
+        result['student_error'] = str(e)
+    return jsonify(result)
+
+
 # ── CATEGORIAS ─────────────────────────────────────────────────
 @api_bp.route('/categorias')
 def api_categories():
