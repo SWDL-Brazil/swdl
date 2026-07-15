@@ -47,6 +47,10 @@
 
 <!-- TICKER DE ALERTAS -->
 <div class="ticker-bar" id="tickerBar">
+  <div class="ticker-label" id="tickerLabel">
+    <span class="ticker-label-dot"></span>
+    <span id="tickerLabelText">ALERTAS</span>
+  </div>
   <div class="ticker-track" id="tickerTrack">
     <span class="ticker-item">Carregando alertas...</span>
   </div>
@@ -162,11 +166,18 @@
     const data = await SWDL_API.get('/ticker');
     if (!data || !data.length) return;
     const track = document.getElementById('tickerTrack');
+    const bar   = document.getElementById('tickerBar');
+    const label = document.getElementById('tickerLabel');
+    const labelText = document.getElementById('tickerLabelText');
     // Separar urgentes do resto
     const urgentes = data.filter(i => i.type === 'urgent');
     const normais  = data.filter(i => i.type !== 'urgent');
-    // Se há urgentes, duplicar eles para ficarem em loop visível
-    const items = (urgentes.length ? urgentes : normais).map(i =>
+    const temUrgente = urgentes.length > 0;
+    bar.classList.toggle('has-urgent', temUrgente);
+    if (label) label.style.display = temUrgente ? 'flex' : 'none';
+    if (labelText) labelText.textContent = temUrgente ? `🚨 ${urgentes.length} ALERTA${urgentes.length > 1 ? 'S' : ''}` : 'ALERTAS';
+    const source = temUrgente ? urgentes : normais;
+    const items = source.map(i =>
       `<span class="ticker-item ${i.type === 'urgent' ? 'ticker-urgent' : ''}">${i.html}</span>`
     ).join('<span class="ticker-dot">•</span>');
     track.innerHTML = items + items;
