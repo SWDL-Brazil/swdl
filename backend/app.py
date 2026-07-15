@@ -104,11 +104,12 @@ def _run_migrations(app):
         from models.event_config import EventConfig
         from models.theme import Theme
         from models.category import Category
-        from models.agenda import Agenda
+        from models.agenda import AgendaItem
         from models.audit_log import AuditLog
         from models.participation import ParticipationHistory
         from models.urgent_alert import UrgentAlert
         from models.vote import VoteSession, Vote
+        from models.system_config import SystemConfig
 
         tables = {
             User.__tablename__: User,
@@ -120,12 +121,13 @@ def _run_migrations(app):
             EventConfig.__tablename__: EventConfig,
             Theme.__tablename__: Theme,
             Category.__tablename__: Category,
-            Agenda.__tablename__: Agenda,
+            AgendaItem.__tablename__: AgendaItem,
             AuditLog.__tablename__: AuditLog,
             ParticipationHistory.__tablename__: ParticipationHistory,
             UrgentAlert.__tablename__: UrgentAlert,
             VoteSession.__tablename__: VoteSession,
             Vote.__tablename__: Vote,
+            SystemConfig.__tablename__: SystemConfig,
         }
 
         for table_name, model in tables.items():
