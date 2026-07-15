@@ -101,6 +101,8 @@ def _run_migrations(app):
             ('event_config', 'invoke_label', "VARCHAR(100) DEFAULT ''"),
             ('event_config', 'invoke_active', _bool),
             ('event_config', 'invoke_at', 'TIMESTAMP' if is_pg else 'DATETIME'),
+            ('news', 'category_id', 'INTEGER REFERENCES categories(id)'),
+            ('students', 'digital_signature', 'TEXT'),
         ]
 
         for table, col, col_type in migs:
