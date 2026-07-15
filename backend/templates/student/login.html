@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Aluno — SWDL</title>
+  <link rel="icon" href="data:,">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:#101E4C; --navy-dark:#0A1230; --navy-mid:#1d3461;
+      --gold:#B79441; --gold-l:#D4B060;
+      --slate:#B1B5CB; --offwhite:#F7F5F0;
+      --white:#fff; --border:rgba(16,30,76,.12);
+      --muted:#6B6F85; --red:#C0392B;
+    }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+    body {
+      font-family:'DM Sans',sans-serif;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .login-visual {
+      background: var(--navy);
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: flex-start;
+      padding: 64px;
+      position: relative; overflow: hidden;
+    }
+
+    .login-visual::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 20% 80%, rgba(183,148,65,.12) 0%, transparent 55%);
+    }
+
+    .vis-ring {
+      position: absolute; border-radius: 50%;
+      border: 1px solid rgba(183,148,65,.1);
+    }
+    .vis-ring:nth-child(1) { width:480px; height:480px; top:-120px; right:-160px; }
+    .vis-ring:nth-child(2) { width:280px; height:280px; bottom:-60px; right:60px; border-color:rgba(255,255,255,.04); }
+
+    .vis-content { position: relative; z-index: 1; }
+
+    .vis-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family:'DM Mono',monospace; font-size:10px; font-weight:700;
+      letter-spacing:.14em; text-transform:uppercase;
+      color:var(--gold); border:1px solid rgba(183,148,65,.3);
+      padding:6px 14px; border-radius:2px; margin-bottom:28px;
+    }
+    .vis-badge::before { content:'◆'; font-size:7px; }
+
+    .vis-title {
+      font-family:'Playfair Display',serif;
+      font-size: clamp(36px, 4vw, 52px); font-weight:900; line-height:1.0;
+      color:var(--white); margin-bottom:16px;
+    }
+    .vis-title em { font-style:normal; color:var(--gold); display:block; }
+
+    .vis-sub {
+      font-size:15px; font-weight:300; line-height:1.7;
+      color:var(--slate); max-width:360px; margin-bottom:40px;
+    }
+
+    .vis-features { display:flex; flex-direction:column; gap:14px; }
+    .vis-feature {
+      display:flex; align-items:center; gap:12px;
+      font-size:13px; color:rgba(255,255,255,.6);
+    }
+    .vis-feature-dot {
+      width:6px; height:6px; border-radius:50%;
+      background:var(--gold); flex-shrink:0;
+    }
+
+    .login-form-panel {
+      background: var(--offwhite);
+      display: flex; align-items: center; justify-content: center;
+      padding: 48px 64px;
+    }
+
+    .login-card {
+      width: 100%; max-width: 400px;
+    }
+
+    .login-logo {
+      display:flex; align-items:center; gap:12px; margin-bottom:36px;
+    }
+    .login-badge-sm {
+      width:38px; height:38px; background:var(--navy); border-radius:6px;
+      display:flex; align-items:center; justify-content:center;
+      font-family:'Playfair Display',serif; font-weight:900; font-size:14px;
+      color:var(--gold);
+    }
+    .login-logo-text {
+      font-family:'Playfair Display',serif; font-size:13px; font-weight:700;
+      color:var(--navy); line-height:1.2;
+    }
+    .login-logo-sub { font-size:11px; color:var(--muted); font-family:'DM Sans',sans-serif; font-weight:400; }
+
+    h1 {
+      font-family:'Playfair Display',serif;
+      font-size:30px; font-weight:700; color:var(--navy); margin-bottom:6px;
+    }
+    .login-sub-text { font-size:13px; color:var(--muted); margin-bottom:32px; }
+
+    .form-group { margin-bottom:16px; }
+    .form-group label {
+      display:block; font-size:10px; font-weight:700;
+      letter-spacing:.09em; text-transform:uppercase;
+      color:var(--navy); margin-bottom:5px;
+    }
+    .form-group input {
+      width:100%; padding:12px 14px;
+      border:1px solid var(--border); border-radius:3px;
+      font-family:'DM Sans',sans-serif; font-size:14px;
+      color:var(--navy); background:var(--white); outline:none;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .form-group input:focus {
+      border-color:var(--gold);
+      box-shadow:0 0 0 3px rgba(183,148,65,.12);
+    }
+
+    .remember {
+      display:flex; align-items:center; gap:8px;
+      font-size:13px; color:var(--muted); cursor:pointer; margin-bottom:24px;
+    }
+    .remember input { width:15px; height:15px; accent-color:var(--navy); }
+
+    .btn-login {
+      width:100%; background:var(--navy); color:var(--white);
+      border:none; border-radius:3px; padding:13px;
+      font-family:'DM Sans',sans-serif; font-weight:700;
+      font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+      cursor:pointer; transition:background .2s, transform .15s;
+    }
+    .btn-login:hover { background:var(--navy-mid); transform:translateY(-1px); }
+
+    .error-msg {
+      background:#fdf0ef; border:1px solid #f5c6cb;
+      color:var(--red); font-size:13px; padding:11px 14px;
+      border-radius:3px; margin-bottom:20px;
+      display:flex; align-items:center; gap:8px;
+    }
+
+    .login-footer {
+      margin-top:24px; text-align:center;
+      font-size:12px; color:var(--muted);
+    }
+    .login-footer a { color:var(--navy); font-weight:600; }
+
+    @media(max-width:768px) {
+      body { grid-template-columns:1fr; }
+      .login-visual { display:none; }
+      .login-form-panel { padding:40px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-visual">
+    <div class="vis-ring"></div>
+    <div class="vis-ring"></div>
+    <div class="vis-content">
+      <div class="vis-badge">Área do Aluno</div>
+      <h1 class="vis-title">
+        Bem-vindo,
+        <em>Participante.</em>
+      </h1>
+      <p class="vis-sub">
+        Acesse sua área exclusiva para consultar seu histórico, registrar presença, participar das votações e muito mais.
+      </p>
+      <div class="vis-features">
+        <div class="vis-feature">
+          <div class="vis-feature-dot"></div>
+          Identidade Global única entre edições
+        </div>
+        <div class="vis-feature">
+          <div class="vis-feature-dot"></div>
+          Histórico completo de participações
+        </div>
+        <div class="vis-feature">
+          <div class="vis-feature-dot"></div>
+          Presença, votação e documentos em tempo real
+        </div>
+        <div class="vis-feature">
+          <div class="vis-feature-dot"></div>
+          Certificados digitais verificáveis
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-form-panel">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-badge-sm">SW</div>
+        <div>
+          <div class="login-logo-text">SESI World Diplomacy League</div>
+          <div class="login-logo-sub">Portal do Aluno</div>
+        </div>
+      </div>
+
+      <h1>Entrar</h1>
+      <p class="login-sub-text">Use suas credenciais de acesso.</p>
+
+      {% if error %}
+        <div class="error-msg">⚠ {{ error }}</div>
+      {% endif %}
+
+      <form method="POST">
+        <div class="form-group">
+          <label>E-mail</label>
+          <input type="email" name="email" placeholder="seu@email.com"
+                 autocomplete="email" required autofocus>
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" name="password" placeholder="••••••••"
+                 autocomplete="current-password" required>
+        </div>
+        <label class="remember">
+          <input type="checkbox" name="remember"> Manter conectado
+        </label>
+        <button type="submit" class="btn-login">Entrar →</button>
+      </form>
+
+      <div class="login-footer">
+        Não recebeu suas credenciais?
+        <a href="mailto:pedro.pereira63@portalsesisp.org.br">Entre em contato</a>
+        <br><br>
+        <a href="/">← Voltar ao site</a>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

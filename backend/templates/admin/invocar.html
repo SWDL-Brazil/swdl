@@ -1,0 +1,165 @@
+{% extends "admin/base.html" %}
+{% block title %}Invocar Alunos{% endblock %}
+{% block page_title %}📡 Invocar Alunos{% endblock %}
+
+{% block content %}
+
+<style>
+  .invoke-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px; margin-bottom: 32px;
+  }
+  .invoke-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    padding: 28px 20px; border-radius: 8px;
+    background: var(--white); border: 1px solid var(--border);
+    cursor: pointer; transition: all .2s; text-decoration: none;
+    font-family: 'DM Sans', sans-serif;
+    border-top: 3px solid var(--navy);
+  }
+  .invoke-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(16,30,76,.10);
+  }
+  .invoke-btn:active { transform: translateY(-1px); }
+  .invoke-btn-icon { font-size: 36px; }
+  .invoke-btn-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px; font-weight: 700; color: var(--navy);
+  }
+  .invoke-btn-desc {
+    font-size: 11px; color: var(--muted); text-align: center;
+  }
+
+  .invoke-btn.vote    { border-top-color: var(--gold); }
+  .invoke-btn.attend  { border-top-color: var(--green); }
+  .invoke-btn.speaker { border-top-color: var(--orange); }
+  .invoke-btn.timer   { border-top-color: var(--red); }
+  .invoke-btn.custom  { border-top-color: var(--slate); }
+
+  .invoke-custom-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 8px; padding: 24px 28px;
+  }
+  .invoke-custom-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px; font-weight: 700; color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .invoke-custom-sub {
+    font-size: 12px; color: var(--muted); margin-bottom: 14px;
+  }
+  .invoke-custom-form {
+    display: flex; gap: 8px;
+  }
+  .invoke-custom-form input {
+    flex: 1; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 4px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; outline: none; transition: border-color .2s;
+  }
+  .invoke-custom-form input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(183,148,65,.10);
+  }
+  .invoke-custom-form button {
+    padding: 10px 22px; border: none; border-radius: 4px;
+    font-family: 'DM Sans', sans-serif; font-weight: 700;
+    font-size: 11px; letter-spacing: .07em; text-transform: uppercase;
+    background: var(--gold); color: var(--navy); cursor: pointer;
+    transition: background .2s; white-space: nowrap;
+  }
+  .invoke-custom-form button:hover { background: var(--gold-l); }
+
+  .invoke-active-banner {
+    display:flex; align-items:center; gap:12px;
+    padding:14px 20px; border-radius:6px; margin-bottom:20px;
+    background:#fde8e8; border:1px solid #f5c6cb; color:#721c24;
+  }
+  .invoke-active-icon { font-size:24px; flex-shrink:0; }
+  .invoke-active-info { flex:1; }
+  .invoke-active-label { font-weight:700; font-size:14px; }
+  .invoke-active-url { font-size:11px; opacity:.7; word-break:break-all; }
+  .invoke-active-time { font-size:10px; opacity:.6; margin-top:2px; }
+
+  @media(max-width:600px) {
+    .invoke-grid { grid-template-columns: 1fr 1fr; }
+    .invoke-custom-form { flex-direction: column; }
+  }
+</style>
+
+{% if active_invoke %}
+<div class="invoke-active-banner">
+  <div class="invoke-active-icon">🔴</div>
+  <div class="invoke-active-info">
+    <div class="invoke-active-label">Invocação Ativa</div>
+    <div class="invoke-active-url">{{ active_invoke.label }}</div>
+    <div class="invoke-active-time">
+      Iniciada {{ active_invoke.at.strftime('%H:%M') if active_invoke.at else '' }}
+      · URL: {{ active_invoke.url }}
+    </div>
+  </div>
+  <form method="POST" action="{{ url_for('admin.invocar_parar') }}">
+    <button class="btn btn-danger" type="submit">🔕 Parar</button>
+  </form>
+</div>
+{% endif %}
+
+<p style="font-size:13px;color:var(--muted);margin-bottom:20px">
+  Envie todos os alunos conectados para uma tela específica instantaneamente.
+</p>
+
+<div class="invoke-grid">
+  <form method="POST" action="{{ url_for('admin.invocar_sessao') }}">
+    <input type="hidden" name="target_url" value="{{ url_for('student.voting', _external=True) }}">
+    <input type="hidden" name="label" value="Votação">
+    <button type="submit" class="invoke-btn vote" style="width:100%;border:none">
+      <span class="invoke-btn-icon">🗳️</span>
+      <div class="invoke-btn-title">Votação</div>
+      <div class="invoke-btn-desc">Página de votação do aluno</div>
+    </button>
+  </form>
+
+  <form method="POST" action="{{ url_for('admin.invocar_sessao') }}">
+    <input type="hidden" name="target_url" value="{{ url_for('student.attendance', _external=True) }}">
+    <input type="hidden" name="label" value="Presença">
+    <button type="submit" class="invoke-btn attend" style="width:100%;border:none">
+      <span class="invoke-btn-icon">📋</span>
+      <div class="invoke-btn-title">Presença</div>
+      <div class="invoke-btn-desc">Registro de presença em sessão</div>
+    </button>
+  </form>
+
+  <form method="POST" action="{{ url_for('admin.invocar_sessao') }}">
+    <input type="hidden" name="target_url" value="{{ url_for('student.dashboard', _external=True) }}">
+    <input type="hidden" name="label" value="Oradores">
+    <button type="submit" class="invoke-btn speaker" style="width:100%;border:none">
+      <span class="invoke-btn-icon">🎤</span>
+      <div class="invoke-btn-title">Oradores</div>
+      <div class="invoke-btn-desc">Inscrever-se para discursar</div>
+    </button>
+  </form>
+
+  <form method="POST" action="{{ url_for('admin.invocar_sessao') }}">
+    <input type="hidden" name="target_url" value="{{ url_for('student.dashboard', _external=True) }}">
+    <input type="hidden" name="label" value="Dashboard">
+    <button type="submit" class="invoke-btn timer" style="width:100%;border:none">
+      <span class="invoke-btn-icon">🏠</span>
+      <div class="invoke-btn-title">Dashboard</div>
+      <div class="invoke-btn-desc">Painel principal do aluno</div>
+    </button>
+  </form>
+</div>
+
+<div class="invoke-custom-card">
+  <div class="invoke-custom-title">🔗 URL Personalizada</div>
+  <div class="invoke-custom-sub">
+    Digite qualquer URL para redirecionar os alunos (sala de simulação, Meet, Zoom, etc.)
+  </div>
+  <form class="invoke-custom-form" method="POST" action="{{ url_for('admin.invocar_sessao') }}">
+    <input type="hidden" name="label" value="Sessão Personalizada">
+    <input type="url" name="target_url" placeholder="https://meet.google.com/xxx-yyyy-zzz" required>
+    <button type="submit">🚀 Invocar</button>
+  </form>
+</div>
+
+{% endblock %}

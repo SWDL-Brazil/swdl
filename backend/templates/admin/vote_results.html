@@ -1,0 +1,248 @@
+{% extends "admin/base.html" %}
+{% block title %}Resultados — {{ session.title }}{% endblock %}
+{% block page_title %}📊 Resultados ao Vivo{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('vote.vote_list') }}" class="btn btn-ghost">← Votações</a>
+  {% if session.status == 'open' %}
+  <form method="POST" action="{{ url_for('vote.vote_close', id=session.id) }}">
+    <button class="btn btn-navy" type="submit">🔒 Fechar Votação</button>
+  </form>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+
+{% set c = session.count() %}
+{% set total = c.total if c.total > 0 else 1 %}
+
+<style>
+  .result-hero {
+    background: var(--navy); border-radius: 8px;
+    padding: 32px 36px; margin-bottom: 28px;
+    position: relative; overflow: hidden;
+  }
+  .result-hero::before {
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background: radial-gradient(circle at 80% 50%, rgba(183,148,65,.10) 0%, transparent 55%);
+  }
+  .result-hero-title {
+    font-family:'Playfair Display',serif;
+    font-size:22px; font-weight:700; color:var(--white);
+    margin-bottom:6px; position:relative; z-index:1;
+  }
+  .result-hero-meta {
+    font-size:13px; color:var(--slate); position:relative; z-index:1;
+  }
+  .result-status-open  { color:var(--gold); font-weight:700; }
+  .result-status-closed{ color:var(--slate);}
+
+  /* Vote bars */
+  .vote-bars { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:28px; }
+  .vote-bar-card {
+    background:var(--white); border:1px solid var(--border);
+    border-radius:6px; padding:22px; text-align:center;
+    transition: transform .2s;
+  }
+  .vote-bar-card:hover { transform: translateY(-2px); }
+  .vote-bar-num {
+    font-family:'Playfair Display',serif;
+    font-size:52px; font-weight:700; line-height:1; display:block;
+    transition: all .4s;
+  }
+  .vote-bar-label {
+    font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+    margin-top:6px; display:block;
+  }
+  .vote-bar-pct {
+    font-family:'DM Mono',monospace; font-size:13px; color:var(--muted);
+    margin-top:4px; display:block;
+  }
+  .bar-track {
+    height:6px; background:var(--border); border-radius:3px;
+    margin-top:12px; overflow:hidden;
+  }
+  .bar-fill {
+    height:100%; border-radius:3px;
+    transition: width .6s cubic-bezier(.22,1,.36,1);
+  }
+
+  .favor-color   { color:var(--green); }
+  .contra-color  { color:var(--red); }
+  .abstain-color { color:var(--muted); }
+
+  /* Vote table */
+  .flag-mini { height:18px; border-radius:2px; vertical-align:middle; margin-right:6px; }
+</style>
+
+<script>
+  // Aplica larguras iniciais das barras via data-pct
+  document.querySelectorAll('.bar-fill[data-pct]').forEach(el => {
+    el.style.width = el.dataset.pct + '%';
+  });
+</script>
+
+<!-- HERO -->
+<div class="result-hero">
+  <div class="result-hero-title">{{ session.title }}</div>
+  <div class="result-hero-meta">
+    Comitê: {{ session.committee.upper() }} &nbsp;·&nbsp;
+    {% if session.status == 'open' %}
+      <span class="result-status-open">🟢 Votação Aberta</span>
+    {% else %}
+      <span class="result-status-closed">🔒 Encerrada em {{ session.closed_at.strftime('%d/%m %H:%M') if session.closed_at else '—' }}</span>
+    {% endif %}
+    &nbsp;·&nbsp; {{ c.total }} votos computados
+  </div>
+</div>
+
+<!-- BARRAS -->
+<div class="vote-bars">
+  <div class="vote-bar-card" id="card-favor">
+    <span class="vote-bar-num favor-color" id="num-favor">{{ c.favor }}</span>
+    <span class="vote-bar-label favor-color">✅ A Favor</span>
+    <span class="vote-bar-pct" id="pct-favor">
+      {{ "%.0f"|format(c.favor / total * 100) }}%
+    </span>
+    <div class="bar-track">
+      <div class="bar-fill" id="bar-favor"
+           style="background:var(--green)"
+           data-pct="{{ (c.favor / total * 100)|round }}"></div>
+    </div>
+  </div>
+
+  <div class="vote-bar-card" id="card-contra">
+    <span class="vote-bar-num contra-color" id="num-contra">{{ c.contra }}</span>
+    <span class="vote-bar-label contra-color">❌ Contra</span>
+    <span class="vote-bar-pct" id="pct-contra">
+      {{ "%.0f"|format(c.contra / total * 100) }}%
+    </span>
+    <div class="bar-track">
+      <div class="bar-fill" id="bar-contra"
+           style="background:var(--red)" data-pct="{{ (c.contra / total * 100)|round }}"></div>
+    </div>
+  </div>
+
+  <div class="vote-bar-card" id="card-abstencao">
+    <span class="vote-bar-num abstain-color" id="num-abstencao">{{ c.abstencao }}</span>
+    <span class="vote-bar-label abstain-color">🤝 Abstenção</span>
+    <span class="vote-bar-pct" id="pct-abstencao">
+      {{ "%.0f"|format(c.abstencao / total * 100) }}%
+    </span>
+    <div class="bar-track">
+      <div class="bar-fill" id="bar-abstencao"
+           style="background:var(--slate)" data-pct="{{ (c.abstencao / total * 100)|round }}"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TABELA DE VOTOS -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Votos por Delegação</span>
+    <span id="live-badge"
+          {% if session.status == 'open' %}
+          style="background:rgba(183,148,65,.12);color:var(--gold);
+                 font-family:'DM Mono',monospace;font-size:9px;font-weight:700;
+                 letter-spacing:.1em;text-transform:uppercase;
+                 padding:4px 10px;border-radius:2px"
+          {% endif %}>
+      {% if session.status == 'open' %}🔴 AO VIVO{% endif %}
+    </span>
+  </div>
+  <div class="card-body" style="padding:0">
+    <table class="admin-table" id="voteTable">
+      <thead>
+        <tr>
+          <th>País</th>
+          <th>Voto</th>
+          <th>Horário</th>
+        </tr>
+      </thead>
+      <tbody id="voteTableBody">
+        {% for v in vote_details %}
+        <tr>
+          <td style="font-weight:600">
+            {% if v.flag_url %}
+              <img src="{{ v.flag_url }}" class="flag-mini" alt="">
+            {% else %}
+              {{ v.flag }}
+            {% endif %}
+            {{ v.country }}
+          </td>
+          <td>
+            {% if v.choice == 'favor' %}
+              <span class="badge" style="background:var(--green)">✅ A Favor</span>
+            {% elif v.choice == 'contra' %}
+              <span class="badge badge-crisis">❌ Contra</span>
+            {% else %}
+              <span class="badge" style="background:var(--slate);color:var(--navy)">🤝 Abstenção</span>
+            {% endif %}
+          </td>
+          <td class="text-muted">{{ v.voted_at.strftime('%H:%M:%S') }}</td>
+        </tr>
+        {% else %}
+        <tr id="empty-row">
+          <td colspan="3" style="text-align:center;color:var(--muted);padding:24px">
+            Aguardando votos...
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="voteConfig"
+     data-session-id="{{ session.id }}"
+     data-status="{{ session.status }}"
+     style="display:none"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+  const cfg       = document.getElementById('voteConfig').dataset;
+  const sessionId = parseInt(cfg.sessionId);
+  const isOpen    = cfg.status === 'open';
+
+  if (isOpen) {
+    const socket = io();
+    socket.emit('join_admin', {});
+    socket.emit('join_session', { session_id: sessionId });
+
+    socket.on('vote_update', (data) => {
+      if (data.id !== sessionId) return;
+      const c     = data.counts;
+      const total = c.total || 1;
+
+      animateNum('num-favor',     c.favor);
+      animateNum('num-contra',    c.contra);
+      animateNum('num-abstencao', c.abstencao);
+
+      updateBar('favor',     c.favor,     total);
+      updateBar('contra',    c.contra,    total);
+      updateBar('abstencao', c.abstencao, total);
+    });
+
+    socket.on('vote_closed', (data) => {
+      if (data.id === sessionId) {
+        document.getElementById('live-badge').textContent = '🔒 Encerrada';
+        document.getElementById('live-badge').style.color = 'var(--muted)';
+      }
+    });
+  }
+
+  function animateNum(id, target) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.transform = 'scale(1.2)';
+    el.textContent = target;
+    setTimeout(() => el.style.transform = 'scale(1)', 200);
+  }
+
+  function updateBar(key, value, total) {
+    const pct = Math.round(value / total * 100);
+    document.getElementById('pct-' + key).textContent = pct + '%';
+    document.getElementById('bar-' + key).style.width  = pct + '%';
+  }
+</script>
+{% endblock %}

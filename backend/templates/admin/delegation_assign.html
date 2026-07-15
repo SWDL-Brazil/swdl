@@ -1,0 +1,74 @@
+{% extends "admin/base.html" %}
+{% block title %}Designar País{% endblock %}
+{% block page_title %}Designar País — Delegação #{{ deleg.id }}{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.delegations_list') }}" class="btn btn-ghost">← Voltar</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:540px">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">
+        {% if deleg.inscription %}
+          {{ deleg.inscription.name }}
+        {% else %}
+          Delegação #{{ deleg.id }}
+        {% endif %}
+      </span>
+    </div>
+    <div class="card-body">
+      <form method="POST">
+        <div class="form-row">
+          <div class="form-group">
+            <label>País *</label>
+            <input type="text" name="country" required
+                   value="{{ deleg.country or '' }}"
+                   placeholder="Ex: Brasil">
+          </div>
+          <div class="form-group">
+            <label>Bandeira (emoji)</label>
+            <input type="text" name="flag"
+                   value="{{ deleg.country_flag or '' }}"
+                   placeholder="🇧🇷">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Tema / Debate *</label>
+          <select name="committee" required>
+            <option value="">Selecione...</option>
+            {% for t in available_themes %}
+            <option value="{{ t.name }}" {{ 'selected' if deleg.committee == t.name }}>{{ t.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Nome do Parceiro de Dupla</label>
+          <input type="text" name="pair_name"
+                 value="{{ deleg.pair_name or '' }}"
+                 placeholder="Nome do colega que representa o mesmo país">
+        </div>
+
+        <div class="form-group" style="margin-top:4px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" name="flag_animation" value="1"
+                   {{ 'checked' if deleg.flag_animation else '' }}>
+            <span>🎬 Animação da bandeira no telão</span>
+          </label>
+          <div style="font-size:11px;color:var(--muted);margin-left:24px">
+            Quando ativado, a bandeira do país terá uma animação de destaque no telão durante votações.
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button type="submit" class="btn btn-primary">🌍 Confirmar Designação</button>
+          <a href="{{ url_for('admin.delegations_list') }}" class="btn btn-ghost">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

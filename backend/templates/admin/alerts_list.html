@@ -1,0 +1,80 @@
+{% extends "admin/base.html" %}
+{% block title %}Alertas Urgentes{% endblock %}
+{% block page_title %}🚨 Alertas Urgentes (Ticker){% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-primary" onclick="openCreate()">➕ Novo Alerta</button>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body" style="padding:0">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Mensagem</th>
+          <th>Criado em</th>
+          <th style="width:140px">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in alerts %}
+        <tr>
+          <td>
+            {% if a.active %}
+            <span style="background:var(--gold);color:var(--navy);padding:2px 10px;border-radius:2px;font-family:'DM Mono',monospace;font-size:9px;font-weight:700">ATIVO</span>
+            {% else %}
+            <span style="background:var(--border);color:var(--muted);padding:2px 10px;border-radius:2px;font-family:'DM Mono',monospace;font-size:9px">INATIVO</span>
+            {% endif %}
+          </td>
+          <td style="font-weight:600">{{ a.message }}</td>
+          <td class="text-muted">{{ a.created_at.strftime('%d/%m %H:%M') }}</td>
+          <td>
+            <form method="POST" action="{{ url_for('admin.alert_toggle', id=a.id) }}" style="display:inline">
+              <button class="btn btn-ghost btn-sm">{{ '🔴 Desativar' if a.active else '🟢 Ativar' }}</button>
+            </form>
+            <form method="POST" action="{{ url_for('admin.alert_delete', id=a.id) }}" style="display:inline" onsubmit="return confirm('Remover alerta?')">
+              <button class="btn btn-danger btn-sm">🗑️</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="4" style="text-align:center;padding:40px;color:var(--muted)">
+            Nenhum alerta ainda. Crie um alerta urgente que aparecerá em destaque no ticker do site.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal criar -->
+<div class="modal-overlay" id="createModal" style="display:none">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <span class="modal-title">🚨 Novo Alerta Urgente</span>
+      <button class="modal-close" onclick="closeCreate()">✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('admin.alert_create') }}">
+      <div class="modal-body">
+        <div class="form-group" style="margin-bottom:0">
+          <label>Mensagem <span style="font-weight:400;color:var(--muted)">(aparece em destaque no ticker)</span></label>
+          <textarea name="message" rows="3" required placeholder="URGENTE: Delegação X apresenta emenda ao tratado..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeCreate()">Cancelar</button>
+        <button class="btn btn-primary">🚨 Ativar Alerta</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openCreate() { document.getElementById('createModal').style.display = 'flex'; }
+function closeCreate() { document.getElementById('createModal').style.display = 'none'; }
+</script>
+{% endblock %}

@@ -1,0 +1,213 @@
+{% extends "student/base.html" %}
+{% block title %}Registrar Presença{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">📋 Registrar Presença</h1>
+    <p class="page-sub">Registre sua presença na simulação.</p>
+  </div>
+</div>
+
+{% if read_only %}
+<div class="read-only-banner">
+  <span>🔒</span> Evento encerrado. A presença não pode mais ser registrada.
+</div>
+{% endif %}
+
+<!-- ── TRIAGEM DE INFRAESTRUTURA (device detection) ── -->
+<div id="deviceTriagem" style="display:none;margin-bottom:16px;padding:10px 16px;border-radius:4px;font-size:12px"></div>
+
+{% if delegation %}
+<div class="card" style="margin-bottom:20px" id="presenceCard">
+  <div class="card-body" style="text-align:center;padding:40px">
+    <div style="font-size:48px;margin-bottom:16px">
+      {% if delegation.presence_status == 'presente' or delegation.presence_status == 'votante' %}
+        ✅
+      {% else %}
+        📋
+      {% endif %}
+    </div>
+    <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--navy);margin-bottom:6px">
+      {% if delegation.presence_status == 'presente' or delegation.presence_status == 'votante' %}
+        Presença Registrada
+      {% else %}
+        Registrar Presença
+      {% endif %}
+    </div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:24px">
+      {% if delegation.presence_status == 'presente' or delegation.presence_status == 'votante' %}
+        Você já registrou sua presença. Status: <strong>{{ delegation.presence_status }}</strong>
+      {% else %}
+        Sua presença ainda não foi registrada. Escolha uma das opções abaixo.
+      {% endif %}
+    </div>
+
+    {% if not read_only and delegation.presence_status == 'ausente' %}
+    <div id="presenceActions">
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">
+        <form method="POST" id="normalPresenceForm" style="display:inline">
+          <input type="hidden" name="action" value="registrar">
+          <button type="submit" class="btn btn-green" style="padding:14px 32px;font-size:13px">
+            ✅ Registrar Presença
+          </button>
+        </form>
+        <form method="POST" style="display:inline">
+          <input type="hidden" name="action" value="modo_adaptado">
+          <button type="submit" class="btn btn-navy" style="padding:14px 24px;font-size:13px">
+            📱 Modo Adaptado
+          </button>
+        </form>
+        <button onclick="toggleQuickMode()" class="btn btn-ghost" style="padding:14px 24px;font-size:13px;border-color:var(--gold);color:var(--gold)">
+          ⚡ Modo Rápido
+        </button>
+      </div>
+
+      <!-- ── INTERFACE DE CONTINGÊNCIA (Modo Rápido / Compartilhado) ── -->
+      <div id="quickModePanel" style="display:none;margin-top:20px;padding:20px;background:rgba(16,30,76,.03);border-radius:8px;border:1px dashed var(--border)">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <span style="font-size:24px">⚡</span>
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--navy)">Modo Rápido — Dispositivo Compartilhado</div>
+            <div style="font-size:11px;color:var(--muted)">Registra presença e desconecta em um clique para o próximo aluno usar.</div>
+          </div>
+        </div>
+        <form method="POST" id="quickPresenceForm">
+          <input type="hidden" name="action" value="registrar">
+          <input type="hidden" name="quick_mode" value="1">
+          <button type="submit" class="btn btn-green" style="width:100%;padding:18px;font-size:15px;justify-content:center">
+            ✅ Registrar e Sair
+          </button>
+        </form>
+        <div style="font-size:10px;color:var(--muted);margin-top:8px">
+          Após registrar, você será desconectado automaticamente.
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">ℹ️ Informações da Delegação</span>
+  </div>
+  <div class="card-body" style="padding:20px 22px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">País</div>
+        <div style="font-size:14px;font-weight:600;color:var(--navy)">{{ delegation.country or '—' }}</div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Comitê</div>
+        <div style="font-size:14px;font-weight:600;color:var(--navy)">{{ delegation.committee or '—' }}</div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Status</div>
+        <div style="font-size:14px;font-weight:600;color:var(--navy)">{{ delegation.presence_status }}</div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Modo Adaptado</div>
+        <div style="font-size:14px;font-weight:600;color:var(--navy)">{{ 'Ativado' if student and student.adapted_device else 'Não' }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<div class="card">
+  <div class="card-body" style="text-align:center;padding:48px">
+    <div style="font-size:48px;margin-bottom:16px">⏳</div>
+    <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px">
+      Aguardando designação
+    </div>
+    <p style="font-size:14px;color:var(--muted)">
+      Você ainda não foi vinculado a uma delegação. Assim que a organização designar seu país, você poderá registrar presença.
+    </p>
+  </div>
+</div>
+{% endif %}
+
+<script>
+  // ── TRIAGEM DE INFRAESTRUTURA ─────────────────────────
+  (function() {
+    var triagem = document.getElementById('deviceTriagem');
+    if (!triagem) return;
+    var warnings = [];
+
+    // Detecta mobile
+    if (window.innerWidth < 768 || ('ontouchstart' in window)) {
+      warnings.push('📱 Dispositivo móvel detectado');
+    }
+
+    // Detecta rede
+    if (!navigator.onLine) {
+      warnings.push('🔴 Sem conexão com a internet');
+    }
+
+    // Detecta tela pequena
+    if (window.innerWidth < 480) {
+      warnings.push('📏 Tela muito pequena — use o Modo Rápido para facilitar');
+    }
+
+    if (warnings.length) {
+      triagem.style.display = 'flex';
+      triagem.style.alignItems = 'center';
+      triagem.style.gap = '8px';
+      triagem.style.background = 'rgba(212,131,15,.08)';
+      triagem.style.border = '1px solid rgba(212,131,15,.2)';
+      triagem.style.color = '#856404';
+      triagem.innerHTML = '🔍 ' + warnings.join(' · ');
+    }
+
+    // Se for mobile + touch, sugere modo rápido automaticamente
+    if (window.innerWidth < 768 && ('ontouchstart' in window)) {
+      var quickPanel = document.getElementById('quickModePanel');
+      var actions = document.getElementById('presenceActions');
+      if (quickPanel && actions) {
+        // Mostra hint sutil
+        var hint = document.createElement('div');
+        hint.style.cssText = 'font-size:11px;color:var(--muted);margin-top:8px';
+        hint.textContent = '💡 Dispositivo touch detectado — use o Modo Rápido abaixo';
+        document.getElementById('presenceCard').querySelector('.card-body').appendChild(hint);
+      }
+    }
+  })();
+
+  // ── MODO RÁPIDO (Contingência) ────────────────────────
+  function toggleQuickMode() {
+    var panel = document.getElementById('quickModePanel');
+    var btn = event.target;
+    if (panel.style.display === 'none' || panel.style.display === '') {
+      panel.style.display = 'block';
+      panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      panel.style.display = 'none';
+    }
+  }
+
+  // Se veio do modo rápido (quick_mode), submete o form
+  document.addEventListener('DOMContentLoaded', function() {
+    var quickForm = document.getElementById('quickPresenceForm');
+    if (quickForm) {
+      quickForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var form = e.target;
+        fetch(form.action || window.location.href, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(new FormData(form))
+        }).then(function(resp) {
+          if (resp.redirected) {
+            window.location.href = resp.url;
+          } else {
+            window.location.href = '{{ url_for("auth.student_logout") }}';
+          }
+        }).catch(function() {
+          window.location.href = '{{ url_for("auth.student_logout") }}';
+        });
+      });
+    }
+  });
+</script>
+{% endblock %}

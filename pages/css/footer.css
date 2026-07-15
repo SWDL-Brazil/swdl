@@ -1,0 +1,93 @@
+/* ============================================================
+   SWDL — Footer
+   ============================================================ */
+
+.swdl-footer {
+  background: var(--navy-dark);
+  padding: 64px 0 28px;
+  position: relative;
+}
+
+/* ── MAIN GRID ─────────────────────────────────────────────── */
+.footer-main {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 48px;
+  padding-bottom: 48px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+/* Brand col */
+.footer-brand-desc {
+  font-size: 13px;
+  color: #5A627A;
+  line-height: 1.7;
+  margin-top: 16px;
+  max-width: 280px;
+}
+
+/* Nav cols */
+.footer-col h5 {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 18px;
+}
+
+.footer-col ul { list-style: none; }
+
+.footer-col ul li { margin-bottom: 10px; }
+
+.footer-col ul a {
+  text-decoration: none;
+  font-size: 13px;
+  color: #555F7A;
+  transition: color 0.2s;
+}
+.footer-col ul a:hover { color: var(--white); }
+
+/* ── BOTTOM BAR ────────────────────────────────────────────── */
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-copy {
+  font-size: 12px;
+  color: #3D4560;
+}
+.footer-copy strong { color: #555F7A; }
+
+.footer-admin-link {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #2E3652;
+  text-decoration: none;
+  padding: 6px 14px;
+  border: 1px solid #1F2A45;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.footer-admin-link:hover {
+  color: var(--gold);
+  border-color: rgba(183,148,65,0.3);
+}
+
+/* ── RESPONSIVE ────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .footer-main {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+}
+
+@media (max-width: 540px) {
+  .footer-main { grid-template-columns: 1fr; }
+}

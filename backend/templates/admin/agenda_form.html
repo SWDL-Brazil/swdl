@@ -1,0 +1,95 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ 'Editar' if item else 'Nova' }} Atividade{% endblock %}
+{% block page_title %}{{ 'Editar' if item else 'Nova' }} Atividade{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.agenda_list') }}" class="btn btn-ghost">← Agenda</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:600px">
+  <div class="card">
+    <div class="card-body">
+      <form method="POST">
+
+        <div class="form-group">
+          <label>Título *</label>
+          <input type="text" name="title" required
+                 value="{{ item.title if item else '' }}"
+                 placeholder="Ex: Sessão 1 — Moderated Caucus">
+        </div>
+
+        <div class="form-group">
+          <label>Descrição</label>
+          <textarea name="description" rows="3"
+            placeholder="Descrição da atividade...">{{ item.description if item else '' }}</textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Data do Evento *</label>
+            <input type="date" name="event_date" required
+                   value="{{ item.event_date if item else '' }}">
+          </div>
+          <div class="form-group">
+            <label>Local</label>
+            <input type="text" name="location"
+                   value="{{ item.location if item else '' }}"
+                   placeholder="Ex: Auditório Central">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Início *</label>
+            <input type="time" name="start_time" required
+                   value="{{ item.start_time if item else '' }}">
+          </div>
+          <div class="form-group">
+            <label>Término</label>
+            <input type="time" name="end_time"
+                   value="{{ item.end_time if item else '' }}">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Comitê</label>
+            <select name="committee">
+              <option value="">Todos os comitês</option>
+              {% for c in [('CS','CS — Conselho de Segurança'),('MMA','MMA — Meio Ambiente'),
+                           ('DHR','DHR — Direitos Humanos'),('ECOSOC','ECOSOC'),
+                           ('DISEC','DISEC — Desarmamento'),('OMS','OMS — Saúde Global')] %}
+              <option value="{{ c[0] }}" {{ 'selected' if item and item.committee == c[0] }}>{{ c[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select name="status">
+              <option value="auto"   {{ 'selected' if not item or item.status == 'auto' }}>🤖 Automático</option>
+              <option value="break"  {{ 'selected' if item and item.status == 'break'  }}>☕ Intervalo</option>
+              <option value="vote"   {{ 'selected' if item and item.status == 'vote'   }}>🗳️ Votação</option>
+              <option value="crisis" {{ 'selected' if item and item.status == 'crisis' }}>🚨 Crise</option>
+              <option value="award"  {{ 'selected' if item and item.status == 'award'  }}>🏆 Premiação</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="background:rgba(183,148,65,.07);border:1px solid rgba(183,148,65,.2);
+                    border-radius:4px;padding:12px 14px;margin-bottom:20px;font-size:12px;color:var(--muted)">
+          💡 O status <strong>Automático</strong> detecta Agora / Próximo / Concluído pelo horário no dia do evento.
+          Após o evento todos os itens ficam em modo arquivo.
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button type="submit" class="btn btn-primary">
+            {{ '💾 Salvar' if item else '✅ Criar' }}
+          </button>
+          <a href="{{ url_for('admin.agenda_list') }}" class="btn btn-ghost">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

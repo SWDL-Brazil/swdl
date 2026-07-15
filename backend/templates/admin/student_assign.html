@@ -1,0 +1,154 @@
+{% extends "admin/base.html" %}
+{% block title %}Designar{% endblock %}
+{% block page_title %}Designar — {{ student.name }}{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.students_list') }}" class="btn btn-ghost">← Alunos</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:540px">
+
+  <div style="background:rgba(16,30,76,.04);border:1px solid var(--border);
+              border-radius:4px;padding:14px 18px;margin-bottom:24px;
+              font-size:13px;color:var(--muted);display:flex;gap:10px;align-items:flex-start">
+    <span style="font-size:16px;flex-shrink:0">🌍</span>
+    <div>
+      <strong>Etapa 2 de 2:</strong> atribua país, tema e dupla para
+      <strong style="color:var(--navy)">{{ student.name }}</strong>.
+      <br>
+      ID Global: <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--navy)">{{ student.global_id[:16] }}...</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">🌍 Designação de Delegação</span>
+    </div>
+    <div class="card-body">
+
+      <form method="POST">
+
+        <div class="form-group">
+          <label>País *</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" name="country" id="countryInput" required
+                   value="{{ student.delegation.country if student.delegation else '' }}"
+                   placeholder="Ex: Brazil" style="flex:1">
+            <button type="button" id="searchFlag"
+                    style="background:var(--navy);color:var(--white);border:none;
+                           border-radius:3px;padding:0 14px;cursor:pointer;
+                           font-size:13px;white-space:nowrap;flex-shrink:0">
+              🔍 Buscar
+            </button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">
+            Digite em inglês para melhor resultado (ex: "Brazil", "Germany")
+          </div>
+        </div>
+
+        <div id="flagPreview" style="display:none;text-align:center;margin-bottom:18px">
+          <img id="flagImg" src="" alt="Bandeira"
+               style="height:48px;border-radius:3px;
+                      box-shadow:0 2px 8px rgba(0,0,0,.15)">
+          <div id="flagName" style="font-size:11px;color:var(--muted);margin-top:4px"></div>
+        </div>
+
+        <input type="hidden" name="flag_url" id="flagUrl"
+               value="{{ student.delegation.flag_url if student.delegation else '' }}">
+        <input type="hidden" name="flag" id="flagEmoji"
+               value="{{ student.delegation.country_flag if student.delegation else '' }}">
+
+        <div id="flagError"
+             style="display:none;font-size:12px;color:var(--red);margin-bottom:12px">
+          País não encontrado. Tente em inglês.
+        </div>
+
+        <div class="form-group">
+          <label>Tema / Debate *</label>
+          <select name="committee" required>
+            <option value="">Selecione...</option>
+            {% for t in available_themes %}
+            <option value="{{ t.name }}"
+              {{ 'selected' if student.delegation and student.delegation.committee == t.name }}>
+              {{ t.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Nome do Parceiro de Dupla</label>
+          <input type="text" name="pair_name"
+                 value="{{ student.delegation.pair_name if student.delegation else '' }}"
+                 placeholder="Ex: Bruno Costa">
+        </div>
+
+        <div class="form-group" style="margin-top:4px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" name="flag_animation" value="1"
+                   {{ 'checked' if student.delegation and student.delegation.flag_animation else '' }}>
+            <span>🎬 Animação da bandeira no telão</span>
+          </label>
+          <div style="font-size:11px;color:var(--muted);margin-left:24px">
+            Quando ativado, a bandeira do país terá uma animação de destaque no telão durante votações.
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button type="submit" class="btn btn-primary">🌍 Confirmar Designação</button>
+          <a href="{{ url_for('admin.students_list') }}" class="btn btn-ghost">Cancelar</a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const searchBtn   = document.getElementById('searchFlag');
+  const countryInput = document.getElementById('countryInput');
+  const flagPreview = document.getElementById('flagPreview');
+  const flagImg     = document.getElementById('flagImg');
+  const flagName    = document.getElementById('flagName');
+  const flagUrl     = document.getElementById('flagUrl');
+  const flagEmoji   = document.getElementById('flagEmoji');
+  const flagError   = document.getElementById('flagError');
+
+  async function searchFlag() {
+    const country = countryInput.value.trim();
+    if (!country) return;
+
+    searchBtn.textContent = '⏳';
+    searchBtn.disabled    = true;
+    flagError.style.display = 'none';
+    flagPreview.style.display = 'none';
+
+    try {
+      const res  = await fetch(`/api/bandeira?country=${encodeURIComponent(country)}`);
+      const data = await res.json();
+
+      if (data.ok) {
+        flagImg.src            = data.flag_url;
+        flagName.textContent   = data.name;
+        flagUrl.value          = data.flag_url;
+        flagPreview.style.display = 'block';
+        countryInput.value = data.name;
+      } else {
+        flagError.style.display = 'block';
+      }
+    } catch(e) {
+      flagError.style.display = 'block';
+    }
+
+    searchBtn.textContent = '🔍 Buscar';
+    searchBtn.disabled    = false;
+  }
+
+  searchBtn.addEventListener('click', searchFlag);
+  countryInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); searchFlag(); }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faça Parte — SWDL</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="css/footer.css">
+  <link rel="icon" type="image/png" href="assent/img/image__1_-removebg-preview.png">
+  <style>
+    /* ── BLUR OVERLAY ──────────────────────────────────────── */
+    .form-blur-wrap { position: relative; }
+    .form-blur-overlay {
+      position: absolute; inset: 0; z-index: 10;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.55); backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border-radius: 4px; text-align: center; padding: 40px 24px;
+      opacity: 0; pointer-events: none; transition: opacity .4s;
+    }
+    .form-blur-overlay.active { opacity: 1; pointer-events: all; }
+    .form-blur-overlay .blur-icon { font-size: 48px; margin-bottom: 12px; }
+    .form-blur-overlay .blur-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; font-weight: 700; color: var(--navy); margin-bottom: 6px;
+    }
+    .form-blur-overlay .blur-desc {
+      font-size: 13px; color: var(--muted); max-width: 320px; line-height: 1.6;
+    }
+    .fp-form-card { position: relative; }
+
+    /* ── TABS ─────────────────────────────────────────────── */
+    .fp-tabs {
+      display: flex; gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 56px;
+      max-width: 480px;
+    }
+    .fp-tab {
+      flex: 1; padding: 14px 24px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 600;
+      letter-spacing: .04em; text-transform: uppercase;
+      background: var(--white); color: var(--muted);
+      border: none; cursor: pointer;
+      transition: background .2s, color .2s;
+      border-right: 1px solid var(--border);
+    }
+    .fp-tab:last-child { border-right: none; }
+    .fp-tab.active { background: var(--navy); color: var(--white); }
+    .fp-tab:not(.active):hover { background: var(--offwhite2); color: var(--navy); }
+
+    /* ── SECTION PANELS ───────────────────────────────────── */
+    .fp-panel { display: none; }
+    .fp-panel.active { display: block; }
+
+    /* ── LAYOUT ───────────────────────────────────────────── */
+    .fp-grid {
+      display: grid; grid-template-columns: 1fr 1.1fr;
+      gap: 72px; align-items: start;
+    }
+
+    /* ── LEFT INFO SIDE ───────────────────────────────────── */
+    .fp-info-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; font-weight: 700;
+      color: var(--navy); margin-bottom: 10px;
+    }
+
+    .fp-info-sub { font-size: 14px; color: var(--muted); line-height: 1.65; margin-bottom: 32px; }
+
+    /* Why list */
+    .why-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px; }
+    .why-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: 13px; color: var(--text); line-height: 1.5;
+    }
+    .why-dot {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(183,148,65,.15); border: 1px solid rgba(183,148,65,.4);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+      font-size: 10px; color: var(--gold); font-weight: 700;
+    }
+
+    /* Requisitos grid */
+    .req-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    }
+    .req-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 3px; padding: 18px 16px;
+      border-left: 3px solid var(--gold);
+    }
+    .req-icon { font-size: 18px; margin-bottom: 6px; display: block; }
+    .req-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+    .req-desc  { font-size: 12px; color: var(--muted); line-height: 1.45; }
+
+    /* Volunteer roles */
+    .vol-roles { display: flex; flex-direction: column; gap: 14px; margin-bottom: 36px; }
+    .vol-role-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 3px; padding: 20px 18px;
+      display: flex; align-items: flex-start; gap: 14px;
+      transition: border-color .2s;
+    }
+    .vol-role-card:hover { border-color: var(--gold); }
+    .vol-role-icon {
+      font-size: 22px; flex-shrink: 0;
+      width: 44px; height: 44px; border-radius: 8px;
+      background: rgba(16,30,76,.05);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .vol-role-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+    .vol-role-desc  { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ── FORM CARD ─────────────────────────────────────────── */
+    .fp-form-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 4px; padding: 40px;
+      box-shadow: 0 8px 36px rgba(16,30,76,.07);
+      position: sticky; top: 88px;
+    }
+
+    .fp-form-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 4px;
+    }
+    .fp-form-sub { font-size: 13px; color: var(--muted); margin-bottom: 26px; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block; font-size: 10px; font-weight: 600;
+      letter-spacing: .09em; text-transform: uppercase;
+      color: var(--navy); margin-bottom: 5px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%; padding: 11px 14px;
+      border: 1px solid rgba(16,30,76,.18); border-radius: 3px;
+      font-family: 'DM Sans', sans-serif; font-size: 14px;
+      color: var(--text); background: var(--white);
+      outline: none; appearance: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(183,148,65,.10);
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* Checkbox group */
+    .checkbox-group { display: flex; flex-direction: column; gap: 8px; }
+    .checkbox-item {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; color: var(--text); cursor: pointer;
+    }
+    .checkbox-item input[type="checkbox"] {
+      width: 16px; height: 16px; padding: 0; border-radius: 3px;
+      accent-color: var(--navy); cursor: pointer; flex-shrink: 0;
+    }
+
+    .btn-form-fp {
+      width: 100%; background: var(--gold); color: var(--navy);
+      font-family: 'DM Sans', sans-serif; font-weight: 700;
+      font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+      padding: 14px; border: none; border-radius: 3px;
+      cursor: pointer; margin-top: 8px;
+      transition: background .2s, transform .2s;
+    }
+    .btn-form-fp:hover { background: var(--gold-light); transform: translateY(-1px); }
+
+    .form-note { text-align: center; font-size: 11px; color: var(--muted); margin-top: 10px; }
+
+    /* ── SUCCESS STATE ─────────────────────────────────────── */
+    .form-success-fp {
+      display: none; text-align: center; padding: 32px 16px;
+    }
+    .form-success-fp .suc-emoji { font-size: 44px; margin-bottom: 14px; }
+    .form-success-fp h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; color: var(--navy); margin-bottom: 8px;
+    }
+    .form-success-fp p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+    /* ── NEXT STEPS STRIP ──────────────────────────────────── */
+    .steps-strip {
+      background: var(--navy); border-radius: 4px;
+      padding: 56px 48px; margin-top: 80px;
+    }
+    .steps-strip .section-label { color: var(--gold); }
+    .steps-strip h2 { color: var(--white); margin-bottom: 40px; }
+
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 24px;
+    }
+    .step-card {
+      display: flex; flex-direction: column; align-items: flex-start;
+      gap: 12px;
+    }
+    .step-num {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--gold); color: var(--navy);
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-title { font-size: 15px; font-weight: 700; color: var(--white); }
+    .step-desc  { font-size: 13px; color: var(--slate); line-height: 1.55; }
+
+    @media(max-width:900px){
+      .fp-grid { grid-template-columns:1fr; }
+      .fp-form-card { position:static; }
+      .steps-grid { grid-template-columns: 1fr 1fr; }
+      .steps-strip { padding:40px 24px; }
+    }
+    @media(max-width:540px){
+      .req-grid { grid-template-columns:1fr; }
+      .form-row { grid-template-columns:1fr; }
+      .steps-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="crisis-banner">
+  <div class="crisis-pulse"></div>
+  <span class="crisis-text">🚨 <strong>CRISE — CS:</strong> Sessão de emergência às 14h30.</span>
+  <button class="crisis-close">✕</button>
+</div>
+
+<nav class="swdl-nav">
+  <a href="index.html" class="nav-logo">
+    <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="noticias.html">Notícias</a></li>
+    <li><a href="comites.html">Temas</a></li>
+    <li><a href="agenda.html">Agenda</a></li>
+    <li><a href="sobre.html">Sobre</a></li>
+    <li><a href="#formDelegado" class="nav-cta">Inscreva-se</a></li>
+  </ul>
+
+  <button class="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-bg-text">FAÇA PARTE</div>
+  <div class="page-hero-content">
+    <div class="breadcrumb"><a href="index.html">Home</a> › <span>Faça Parte</span></div>
+    <div class="section-label">Junte-se à Liga</div>
+    <h1>Faça Parte da SWDL</h1>
+    <p>Junte-se a nós e desenvolva suas habilidades diplomáticas</p>
+  </div>
+</div>
+
+<main class="page-main alt">
+  <div class="container">
+
+    <!-- TABS -->
+    <div class="fp-tabs reveal">
+      <button class="fp-tab active" data-panel="delegado">🌍 Torne-se Delegado</button>
+      <button class="fp-tab" data-panel="voluntario">🤝 Seja Voluntário / Staff</button>
+    </div>
+
+    <!-- ══ DELEGADO PANEL ══════════════════════════════════ -->
+    <div class="fp-panel active" id="panel-delegado">
+      <div class="fp-grid">
+
+        <!-- LEFT: info -->
+        <div class="reveal">
+          <div class="fp-info-title">Torne-se um Delegado</div>
+          <p class="fp-info-sub">Represente um país e participe dos debates mais importantes do mundo. Desenvolva oratória, diplomacia e visão global em uma experiência única.</p>
+
+          <div class="section-label" style="margin-bottom:14px">Por que ser um Delegado SWDL?</div>
+          <div class="why-list">
+            <div class="why-item"><div class="why-dot">✓</div>Desenvolva habilidades de oratória e argumentação</div>
+            <div class="why-item"><div class="why-dot">✓</div>Aprenda sobre questões globais contemporâneas</div>
+            <div class="why-item"><div class="why-dot">✓</div>Pratique negociação e diplomacia em situações reais</div>
+            <div class="why-item"><div class="why-dot">✓</div>Trabalhe em equipe com estudantes de diferentes turmas</div>
+            <div class="why-item"><div class="why-dot">✓</div>Ganhe experiência em pesquisa e análise crítica</div>
+            <div class="why-item"><div class="why-dot">✓</div>Construa um currículo diferenciado</div>
+            <div class="why-item"><div class="why-dot">✓</div>Faça networking com jovens interessados em política internacional</div>
+          </div>
+
+          <div class="section-label" style="margin-bottom:14px">Requisitos para Participar</div>
+          <div class="req-grid">
+            <div class="req-card">
+              <span class="req-icon">🏫</span>
+              <div class="req-title">Série Escolar</div>
+              <div class="req-desc">Estudantes a partir do 6° ano do SESI CE-437</div>
+            </div>
+            <div class="req-card">
+              <span class="req-icon">📅</span>
+              <div class="req-title">Disponibilidade</div>
+              <div class="req-desc">Participação nos dias de debate e preparação prévia</div>
+            </div>
+            <div class="req-card">
+              <span class="req-icon">📚</span>
+              <div class="req-title">Comprometimento</div>
+              <div class="req-desc">Estudo do país representado e dos temas em debate</div>
+            </div>
+            <div class="req-card">
+              <span class="req-icon">🤝</span>
+              <div class="req-title">Trabalho em Equipe</div>
+              <div class="req-desc">Colaboração com outros delegados e respeito às regras</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: form -->
+        <div class="reveal" style="transition-delay:.1s">
+          <div class="fp-form-card form-blur-wrap">
+            <div class="form-blur-overlay" id="inscricoesOverlay">
+              <div class="blur-icon">🔒</div>
+              <div class="blur-title">Inscrições Fechadas</div>
+              <div class="blur-desc">As inscrições para delegados estão encerradas no momento.<br>Fique atento aos próximos eventos!</div>
+            </div>
+            <div class="fp-form-title">Formulário de Inscrição</div>
+            <div class="fp-form-sub">Formulário de Inscrição — Delegado</div>
+
+            <form id="formDelegado">
+              <div class="form-group">
+                <label>Nome Completo *</label>
+                <input type="text" name="name" placeholder="Seu nome completo" required>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>E-mail educacional *</label>
+                  <input type="email" name="email" placeholder="seunome@portalsesisp.org.br" required
+                         pattern=".+@portalsesisp\.org\.br$"
+                         oninput="validateEmail(this)">
+                  <span class="email-hint" style="font-size:11px;color:var(--muted)">Use seu e-mail @portalsesisp.org.br</span>
+                  <span class="email-error" style="display:none;font-size:11px;color:#C0392B;margin-top:2px">✕ Apenas e-mail @portalsesisp.org.br é permitido</span>
+                </div>
+                <div class="form-group">
+                  <label>Telefone</label>
+                  <input type="tel" name="phone" placeholder="(00) 00000-0000">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Série / Ano *</label>
+                <select name="grade" required>
+                  <option value="">Selecione sua série</option>
+                  <option>6° Ano</option>
+                  <option>7° Ano</option>
+                  <option>8° Ano</option>
+                  <option>9° Ano</option>
+                  <option>1° Ano EM</option>
+                  <option>2° Ano EM</option>
+                  <option>3° Ano EM</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Experiência Anterior</label>
+                <input type="text" name="experience" placeholder="Ex: participei de um MUN na escola X...">
+              </div>
+              <div class="form-group">
+                <label>Por que deseja participar? *</label>
+                <textarea name="motivation" placeholder="Conte brevemente sua motivação..." required></textarea>
+              </div>
+              <div class="form-group">
+                <label>Temas de Interesse</label>
+                <input type="text" name="interests" placeholder="Ex: Segurança Internacional, Direitos Humanos, Meio Ambiente...">
+              </div>
+              <button type="submit" class="btn-form-fp" id="btnDelegado">Inscrições fechadas🔒</button>
+              <p class="form-note">🔒 Dados usados apenas para o processo de seleção</p>
+            </form>
+
+            <div class="form-success-fp" id="successDelegado">
+              <div class="suc-emoji">🎉</div>
+              <h3>Inscrição Enviada!</h3>
+              <p>Nossa equipe entrará em contato em até 3 dias úteis.<br>Fique atento ao seu e-mail!</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ VOLUNTÁRIO PANEL ══════════════════════════════════ -->
+    <div class="fp-panel" id="panel-voluntario">
+      <div class="fp-grid">
+
+        <!-- LEFT: info -->
+        <div class="reveal">
+          <div class="fp-info-title">Seja Voluntário / Staff</div>
+          <p class="fp-info-sub">Ajude a organizar e conduzir as simulações da SWDL. Faça parte dos bastidores que tornam o evento possível.</p>
+
+          <div class="section-label" style="margin-bottom:16px">Oportunidades de Voluntariado</div>
+          <div class="vol-roles">
+            <div class="vol-role-card">
+              <div class="vol-role-icon">🎙️</div>
+              <div>
+                <div class="vol-role-title">Moderador de Debate</div>
+                <div class="vol-role-desc">Conduza as sessões de debate e mantenha a ordem durante as discussões dos temas.</div>
+              </div>
+            </div>
+            <div class="vol-role-card">
+              <div class="vol-role-icon">📸</div>
+              <div>
+                <div class="vol-role-title">Equipe de Mídia</div>
+                <div class="vol-role-desc">Documente os eventos através de fotos, vídeos e cobertura nas redes sociais da SWDL.</div>
+              </div>
+            </div>
+            <div class="vol-role-card">
+              <div class="vol-role-icon">📋</div>
+              <div>
+                <div class="vol-role-title">Organização</div>
+                <div class="vol-role-desc">Auxilie na logística, preparação de materiais e coordenação geral dos eventos.</div>
+              </div>
+            </div>
+            <div class="vol-role-card">
+              <div class="vol-role-icon">🌟</div>
+              <div>
+                <div class="vol-role-title">Mentor</div>
+                <div class="vol-role-desc">Oriente novos delegados e compartilhe conhecimentos sobre diplomacia e procedimentos da ONU.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: form -->
+        <div class="reveal" style="transition-delay:.1s">
+          <div class="fp-form-card">
+            <div class="fp-form-title">Formulário de Interesse</div>
+            <div class="fp-form-sub">Formulário de Interesse — Voluntário / Staff</div>
+
+            <form id="formVoluntario">
+              <div class="form-group">
+                <label>Nome Completo *</label>
+                <input type="text" name="name" placeholder="Seu nome completo" required>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>E-mail educacional *</label>
+                  <input type="email" name="email" placeholder="seunome@portalsesisp.org.br" required
+                         pattern=".+@portalsesisp\.org\.br$"
+                         oninput="validateEmail(this)">
+                  <span class="email-hint" style="font-size:11px;color:var(--muted)">Use seu e-mail @portalsesisp.org.br</span>
+                  <span class="email-error" style="display:none;font-size:11px;color:#C0392B;margin-top:2px">✕ Apenas e-mail @portalsesisp.org.br é permitido</span>
+                </div>
+                <div class="form-group">
+                  <label>Telefone</label>
+                  <input type="tel" name="phone" placeholder="(00) 00000-0000">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Série / Ano *</label>
+                <select name="grade" required>
+                  <option value="">Selecione sua série</option>
+                  <option>6° Ano</option>
+                  <option>7° Ano</option>
+                  <option>8° Ano</option>
+                  <option>9° Ano</option>
+                  <option>1° Ano EM</option>
+                  <option>2° Ano EM</option>
+                  <option>3° Ano EM</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Áreas de Interesse *</label>
+                <div class="checkbox-group">
+                  <label class="checkbox-item"><input type="checkbox" name="interests" value="Moderação de Debates"> Moderação de Debates</label>
+                  <label class="checkbox-item"><input type="checkbox" name="interests" value="Equipe de Mídia"> Equipe de Mídia</label>
+                  <label class="checkbox-item"><input type="checkbox" name="interests" value="Organização e Logística"> Organização e Logística</label>
+                  <label class="checkbox-item"><input type="checkbox" name="interests" value="Mentoria de Novos Delegados"> Mentoria de Novos Delegados</label>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Habilidades e Experiências</label>
+                <textarea name="experience" placeholder="Descreva habilidades relevantes ou experiências anteriores..."></textarea>
+              </div>
+              <div class="form-group">
+                <label>Disponibilidade *</label>
+                <textarea name="availability" placeholder="Ex: disponível nas tardes de quarta e sábados..." required></textarea>
+              </div>
+              <button type="submit" class="btn-form-fp">Quero Ser Voluntário →</button>
+              <p class="form-note">🔒 Dados usados apenas para o processo de seleção</p>
+            </form>
+
+            <div class="form-success-fp" id="successVoluntario">
+              <div class="suc-emoji">🙌</div>
+              <h3>Interesse Registrado!</h3>
+              <p>Nossa equipe entrará em contato em até 3 dias úteis.<br>Obrigado por querer fazer parte da SWDL!</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PRÓXIMOS PASSOS -->
+    <div class="steps-strip reveal">
+      <div class="section-label">O que vem a seguir</div>
+      <h2 class="section-title light">Próximos Passos</h2>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-title">Envie sua Inscrição</div>
+          <div class="step-desc">Preencha o formulário acima com suas informações e motivações</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-title">Aguarde o Contato</div>
+          <div class="step-desc">Nossa equipe entrará em contato em até 3 dias úteis</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-title">Participe da Preparação</div>
+          <div class="step-desc">Compareça aos workshops e sessões de preparação</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <div class="step-title">Debate e Aprenda</div>
+          <div class="step-desc">Participe dos debates e desenvolva suas habilidades diplomáticas</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="swdl-footer">
+  <div class="container">
+    <div class="footer-main">
+      <div>
+        <div class="nav-logo" style="display:inline-flex">
+          <a href="index.html" class="nav-logo">
+            <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
+          </a>
+        </div>
+        <p class="footer-brand-desc">A liga que transforma alunos em diplomatas.<br>SESI CE-437, Hortolândia.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Links Rápidos</h5>
+        <ul>
+          <li><a href="sobre.html">Sobre</a></li>
+          <li><a href="noticias.html">Notícias</a></li>
+          <li><a href="agenda.html">Agenda</a></li>
+          <li><a href="comites.html">Recursos</a></li>
+          <li><a href="faca-parte.html">Faça Parte</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contato</h5>
+        <ul>
+          <li><a href="mailto:pedro.pereira63@portalsesisp.org.br">pedro.pereira63@portalsesisp.org.br</a></li>
+          <li><a href="#">SESI CE-437, Hortolândia</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2025 SESI World Diplomacy League — Desenvolvido por <strong>Pedro Bonazzi</strong></p>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
+          <a href="privacidade.html" style="font-size:12px;color:rgba(255,255,255,.35)">Política de Privacidade</a>
+          <a href="termos.html" style="font-size:12px;color:rgba(255,255,255,.35)">Termos de Uso</a>
+        </div>
+    </div>
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script>
+  // ── VALIDAR E-MAIL EDUCACIONAL ─────────────────────────────
+  function validateEmail(input) {
+    const error = input.closest('.form-group').querySelector('.email-error');
+    const hint  = input.closest('.form-group').querySelector('.email-hint');
+    if (input.value && !input.validity.valid) {
+      error.style.display = 'block';
+      hint.style.display  = 'none';
+    } else {
+      error.style.display = 'none';
+      hint.style.display  = 'block';
+    }
+  }
+
+  // ── VERIFICAR STATUS DAS INSCRIÇÕES ────────────────────────
+  (async function checkInscricoes() {
+    const cfg = await SWDL_API.config();
+    const overlay = document.getElementById('inscricoesOverlay');
+    const btnDel  = document.getElementById('btnDelegado');
+      if (!cfg) return;
+      if (cfg.inscricoes_abertas) {
+      overlay.classList.remove('active');
+      if (btnDel) {
+        btnDel.textContent = 'Enviar Inscrição →';
+        btnDel.disabled = false;
+      }
+    } else {
+      overlay.classList.add('active');
+      if (btnDel) {
+        btnDel.textContent = '🔒 Inscrições Fechadas';
+        btnDel.disabled = true;
+      }
+    }
+  })();
+
+  // ── TAB SWITCHING ─────────────────────────────────────────
+  document.querySelectorAll('.fp-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.fp-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.fp-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+      document.querySelectorAll('#panel-' + tab.dataset.panel + ' .reveal').forEach(el => {
+        el.classList.add('visible');
+      });
+    });
+  });
+
+  // ── MOSTRAR SUCESSO ────────────────────────────────────────
+  function showSuccess(form, successId) {
+    form.style.transition = 'opacity .3s, transform .3s';
+    form.style.opacity    = '0';
+    form.style.transform  = 'translateY(-8px)';
+    setTimeout(() => {
+      form.style.display = 'none';
+      const s = document.getElementById(successId);
+      s.style.display = 'block';
+      s.style.opacity = '0';
+      setTimeout(() => { s.style.transition = 'opacity .4s'; s.style.opacity = '1'; }, 20);
+    }, 300);
+  }
+
+  // ── FORM DELEGADO ──────────────────────────────────────────
+  const formDelegado = document.getElementById('formDelegado');
+  if (formDelegado) {
+    formDelegado.addEventListener('submit', async (e) => {
+      const emailInput = formDelegado.querySelector('input[name="email"]');
+      if (emailInput && !emailInput.validity.valid) {
+        e.preventDefault();
+        validateEmail(emailInput);
+        emailInput.focus();
+        return;
+      }
+      e.preventDefault();
+      const btn = document.getElementById('btnDelegado');
+      btn.textContent = 'Enviando...';
+      btn.disabled    = true;
+
+      const fd = new FormData(formDelegado);
+      const payload = {
+        name:       fd.get('name'),
+        email:      fd.get('email'),
+        phone:      fd.get('phone') || '',
+        grade:      fd.get('grade') || '',
+        motivation: fd.get('motivation') || '',
+        interests:  fd.get('interests') || '',
+        type:       'delegate',
+      };
+
+      try {
+        const res  = await SWDL_API.post('/inscricao', payload);
+        if (res && res.ok) {
+          showSuccess(formDelegado, 'successDelegado');
+        } else {
+          btn.textContent = 'Enviar Inscrição →';
+          btn.disabled    = false;
+          alert(res?.error || 'Erro ao enviar. Tente novamente.');
+        }
+      } catch(err) {
+        btn.textContent = 'Enviar Inscrição →';
+        btn.disabled    = false;
+        alert('Erro de conexão. Verifique sua internet e tente novamente.');
+      }
+    });
+  }
+
+  // ── FORM VOLUNTÁRIO ────────────────────────────────────────
+  const formVoluntario = document.getElementById('formVoluntario');
+  if (formVoluntario) {
+    formVoluntario.addEventListener('submit', async (e) => {
+      const emailInput = formVoluntario.querySelector('input[name="email"]');
+      if (emailInput && !emailInput.validity.valid) {
+        e.preventDefault();
+        validateEmail(emailInput);
+        emailInput.focus();
+        return;
+      }
+      e.preventDefault();
+      const btn = formVoluntario.querySelector('button[type="submit"]');
+      btn.textContent = 'Enviando...';
+      btn.disabled    = true;
+
+      const fd = new FormData(formVoluntario);
+      const interests = [...formVoluntario.querySelectorAll('input[name="interests"]:checked')]
+                          .map(cb => cb.value).join(', ');
+      const payload = {
+        name:        fd.get('name')       || '',
+        email:       fd.get('email')      || '',
+        phone:       fd.get('phone')      || '',
+        grade:       fd.get('grade')      || '',
+        motivation:  fd.get('availability') || '',
+        interests:   interests,
+        type:        'volunteer',
+      };
+
+      try {
+        const res = await SWDL_API.post('/inscricao', payload);
+        if (res && res.ok) {
+          showSuccess(formVoluntario, 'successVoluntario');
+        } else {
+          btn.textContent = 'Quero Ser Voluntário →';
+          btn.disabled    = false;
+          alert(res?.error || 'Erro ao enviar. Tente novamente.');
+        }
+      } catch(err) {
+        btn.textContent = 'Quero Ser Voluntário →';
+        btn.disabled    = false;
+        alert('Erro de conexão. Verifique sua internet e tente novamente.');
+      }
+    });
+  }
+</script>
+</body>
+</html>

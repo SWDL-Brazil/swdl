@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Página não encontrada — SWDL</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/footer.css">
+  <link rel="icon" type="image/png" href="assent/img/image__1_-removebg-preview.png">
+  <style>
+    body { background: var(--navy-dark); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── NAV sobre fundo escuro ── */
+    .swdl-nav { border-bottom-color: rgba(183,148,65,.15); }
+
+    /* ── HERO ── */
+    .error-hero {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 80px 40px;
+      position: relative; overflow: hidden;
+    }
+
+    /* Anéis decorativos (reutiliza a linguagem visual do hero da home) */
+    .error-rings {
+      position: absolute;
+      width: 600px; height: 600px;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .error-ring {
+      position: absolute; border-radius: 50%;
+      border: 1px solid rgba(183,148,65,.08);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .error-ring:nth-child(1) { width: 300px; height: 300px; animation: ring-pulse 4s ease-in-out infinite; }
+    .error-ring:nth-child(2) { width: 460px; height: 460px; animation: ring-pulse 4s ease-in-out infinite .8s; }
+    .error-ring:nth-child(3) { width: 600px; height: 600px; animation: ring-pulse 4s ease-in-out infinite 1.6s; }
+
+    @keyframes ring-pulse {
+      0%, 100% { opacity: .4; transform: translate(-50%,-50%) scale(1); }
+      50%       { opacity: .1; transform: translate(-50%,-50%) scale(1.04); }
+    }
+
+    /* Conteúdo central */
+    .error-content {
+      position: relative; z-index: 1;
+      text-align: center; max-width: 560px;
+    }
+
+    .error-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700;
+      letter-spacing: .16em; text-transform: uppercase; color: var(--gold);
+      margin-bottom: 24px;
+    }
+    .error-tag-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--gold);
+      animation: pulse-gold 1.4s ease-in-out infinite;
+    }
+
+    .error-code {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(100px, 20vw, 160px);
+      font-weight: 900;
+      line-height: 1;
+      background: linear-gradient(135deg, rgba(255,255,255,.9) 0%, rgba(183,148,65,.7) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+      animation: float-code 6s ease-in-out infinite;
+    }
+
+    @keyframes float-code {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-10px); }
+    }
+
+    .error-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(20px, 3.5vw, 28px);
+      font-weight: 700; color: var(--white);
+      margin-bottom: 14px;
+    }
+
+    .error-sub {
+      font-size: 15px; line-height: 1.7;
+      color: rgba(177,181,203,.7);
+      margin-bottom: 40px;
+    }
+
+    .error-actions {
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px; flex-wrap: wrap;
+    }
+
+    /* Links rápidos */
+    .error-links {
+      margin-top: 56px;
+      display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
+    }
+    .error-link-item {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      text-decoration: none; transition: transform .2s;
+    }
+    .error-link-item:hover { transform: translateY(-3px); }
+    .error-link-icon {
+      width: 48px; height: 48px; border-radius: 8px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      transition: background .2s, border-color .2s;
+    }
+    .error-link-item:hover .error-link-icon {
+      background: rgba(183,148,65,.15);
+      border-color: rgba(183,148,65,.3);
+    }
+    .error-link-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: rgba(177,181,203,.5);
+    }
+
+    /* Divider line */
+    .error-divider {
+      width: 40px; height: 1px;
+      background: rgba(183,148,65,.3);
+      margin: 48px auto 0;
+    }
+
+    /* Footer sobre dark */
+    .swdl-footer {
+      background: rgba(0,0,0,.3);
+      border-top: 1px solid rgba(183,148,65,.1);
+    }
+    .footer-copy, .footer-brand-desc, .footer-col h5,
+    .footer-col a { color: rgba(255,255,255,.35) !important; }
+    .footer-col a:hover { color: rgba(255,255,255,.7) !important; }
+    .nav-logo-text { color: var(--white) !important; }
+
+    @keyframes pulse-gold {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .3; }
+    }
+
+    @media(max-width: 540px) {
+      .error-hero { padding: 60px 20px; }
+      .error-links { gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="swdl-nav">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-badge">SW</div>
+    <div class="nav-logo-text">SESI World<br><span>Diplomacy League</span></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="noticias.html">Notícias</a></li>
+    <li><a href="comites.html">Temas</a></li>
+    <li><a href="agenda.html">Agenda</a></li>
+    <li><a href="sobre.html">Sobre</a></li>
+    <li><a href="faca-parte.html" class="nav-cta">Faça Parte</a></li>
+  </ul>
+  <button class="nav-hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="error-hero">
+  <!-- Anéis de fundo -->
+  <div class="error-rings">
+    <div class="error-ring"></div>
+    <div class="error-ring"></div>
+    <div class="error-ring"></div>
+  </div>
+
+  <div class="error-content">
+    <div class="error-tag">
+      <span class="error-tag-dot"></span>
+      Erro de Navegação
+    </div>
+
+    <div class="error-code">404</div>
+
+    <h1 class="error-title">Resolução não encontrada</h1>
+
+    <p class="error-sub">
+      A página que você procura foi movida, não existe ou ainda está em deliberação
+      nos comitês. Tente voltar ao plenário principal.
+    </p>
+
+    <div class="error-actions">
+      <a href="index.html" class="btn btn-primary">← Voltar ao Início</a>
+      <a href="agenda.html" class="btn btn-ghost-white">Ver Agenda</a>
+    </div>
+
+    <!-- Links rápidos -->
+    <div class="error-divider"></div>
+    <div class="error-links">
+      <a href="noticias.html" class="error-link-item">
+        <div class="error-link-icon">📰</div>
+        <span class="error-link-label">Notícias</span>
+      </a>
+      <a href="comites.html" class="error-link-item">
+        <div class="error-link-icon">🏛️</div>
+        <span class="error-link-label">Comitês</span>
+      </a>
+      <a href="agenda.html" class="error-link-item">
+        <div class="error-link-icon">📅</div>
+        <span class="error-link-label">Agenda</span>
+      </a>
+      <a href="sobre.html" class="error-link-item">
+        <div class="error-link-icon">👥</div>
+        <span class="error-link-label">Sobre</span>
+      </a>
+      <a href="faca-parte.html" class="error-link-item">
+        <div class="error-link-icon">✍️</div>
+        <span class="error-link-label">Inscrição</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<footer class="swdl-footer">
+  <div class="container">
+    <div class="footer-main">
+      <div>
+        <div class="nav-logo" style="display:inline-flex">
+          <a href="index.html" class="nav-logo">
+            <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
+          </a>
+        </div>
+        <p class="footer-brand-desc">A liga que transforma alunos em diplomatas.<br>SESI CE-437, Hortolândia.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Links Rápidos</h5>
+        <ul>
+          <li><a href="sobre.html">Sobre</a></li>
+          <li><a href="agenda.html">Agenda</a></li>
+          <li><a href="comites.html">Recursos</a></li>
+          <li><a href="faca-parte.html">Faça Parte</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contato</h5>
+        <ul>
+          <li><a href="mailto:pedro.pereira63@portalsesisp.org.br">pedro.pereira63@portalsesisp.org.br</a></li>
+          <li><a href="#">SESI CE-437, Hortolândia</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="privacidade.html">Política de Privacidade</a></li>
+          <li><a href="termos.html">Termos de Uso</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2025 SESI World Diplomacy League — Desenvolvido por <strong>Pedro Bonazzi</strong></p>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

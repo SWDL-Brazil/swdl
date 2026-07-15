@@ -1,0 +1,132 @@
+{% extends "admin/base.html" %}
+{% block title %}Inscrição #{{ ins.id }}{% endblock %}
+{% block page_title %}Inscrição — {{ ins.name }}{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.inscriptions_list') }}" class="btn btn-ghost">← Voltar</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid-2" style="align-items:start">
+
+  <!-- Dados -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Dados do Candidato</span>
+      <span class="badge badge-{{ ins.status }}">{{ ins.status }}</span>
+    </div>
+    <div class="card-body">
+      <table style="width:100%;border-collapse:collapse;font-size:14px">
+        {% for label, value in [
+          ('Nome',     ins.name),
+          ('E-mail',   ins.email),
+          ('Telefone', ins.phone or '—'),
+          ('Escola',   ins.school or '—'),
+          ('Série',    ins.grade or '—'),
+          ('Tipo',     ins.type),
+          ('Parceiro', ins.partner_name or '—'),
+          ('Interesses', ins.interests or '—'),
+          ('Enviado em', ins.submitted_at.strftime('%d/%m/%Y às %H:%M')),
+        ] %}
+        <tr>
+          <td style="padding:10px 0;border-bottom:1px solid var(--border);
+                     font-size:10px;font-weight:700;letter-spacing:.08em;
+                     text-transform:uppercase;color:var(--muted);width:130px">
+            {{ label }}
+          </td>
+          <td style="padding:10px 0;border-bottom:1px solid var(--border);
+                     font-weight:400">
+            {{ value }}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+
+      <div style="margin-top:20px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.08em;
+                    text-transform:uppercase;color:var(--muted);margin-bottom:8px">
+          Motivação
+        </div>
+        <div style="font-size:14px;line-height:1.7;color:var(--text);
+                    background:var(--offwhite);padding:14px;border-radius:4px">
+          {{ ins.motivation or '(não informada)' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ações -->
+  <div>
+    {% if ins.status == 'pending' %}
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header"><span class="card-title">Decisão</span></div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+        <form method="POST" action="{{ url_for('admin.inscription_approve', id=ins.id) }}">
+          <button class="btn btn-primary" type="submit" style="width:100%">
+            ✓ Aprovar Inscrição
+          </button>
+        </form>
+        <form method="POST" action="{{ url_for('admin.inscription_reject', id=ins.id) }}">
+          <button class="btn btn-danger" type="submit" style="width:100%">
+            ✕ Rejeitar Inscrição
+          </button>
+        </form>
+      </div>
+    </div>
+    {% elif ins.status == 'approved' %}
+    <div class="card" style="border-left:4px solid var(--green)">
+      <div class="card-body">
+        <div style="color:var(--green);font-weight:700;margin-bottom:4px">✓ Aprovado</div>
+        <div class="text-muted">
+          Revisado em {{ ins.reviewed_at.strftime('%d/%m/%Y às %H:%M') if ins.reviewed_at else '—' }}
+        </div>
+        {% set approved_user = ins.delegation.user if ins.delegation else None %}
+        {% if approved_user %}
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;
+                      text-transform:uppercase;color:var(--muted);margin-bottom:8px">
+            Credenciais de Acesso
+          </div>
+          <div style="font-size:13px">
+            <div><strong>Login:</strong> {{ approved_user.email }}</div>
+            <div style="margin-top:4px">
+              <strong>Senha:</strong>
+              <span style="font-family:'DM Mono',monospace;background:var(--offwhite2);padding:2px 8px;border-radius:2px">
+                {{ approved_user.email.split('@')[0][:4]|lower }}2025
+              </span>
+              <span style="font-size:10px;color:var(--muted)"> (padrão — primeiras 4 letras do nome + 2025)</span>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        {% if ins.delegation %}
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;
+                      text-transform:uppercase;color:var(--muted);margin-bottom:8px">
+            Delegação
+          </div>
+          {% if ins.delegation.country %}
+            <div style="font-size:16px;font-weight:700">
+              {{ ins.delegation.country_flag }} {{ ins.delegation.country }}
+            </div>
+            <div class="text-muted">Comitê: {{ ins.delegation.committee.upper() if ins.delegation.committee else '—' }}</div>
+          {% else %}
+            <div class="text-muted">País ainda não designado.</div>
+            <a href="{{ url_for('admin.delegation_assign', id=ins.delegation.id) }}"
+               class="btn btn-primary btn-sm" style="margin-top:8px">Designar País →</a>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+    <div class="card" style="border-left:4px solid var(--red)">
+      <div class="card-body">
+        <div style="color:var(--red);font-weight:700">✕ Rejeitado</div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,224 @@
+{% extends "admin/base.html" %}
+{% block title %}Certificados{% endblock %}
+{% block page_title %}🎓 Gestão de Certificados{% endblock %}
+
+{% block topbar_actions %}
+  <form method="POST" action="{{ url_for('admin.certificates_compile') }}" style="display:inline">
+    <button class="btn btn-navy btn-sm">⚙️ Compilar</button>
+  </form>
+  <form method="POST" action="{{ url_for('admin.certificates_sign_all') }}" style="display:inline"
+        onsubmit="return confirm('Assinar digitalmente todos os certificados compilados?')">
+    <button class="btn btn-gold btn-sm">🖊️ Assinar Todos</button>
+  </form>
+  <form method="POST" action="{{ url_for('admin.certificates_release_all') }}" style="display:inline">
+    <button class="btn btn-primary btn-sm">📤 Liberar Todos</button>
+  </form>
+{% endblock %}
+
+{% block content %}
+
+<style>
+  .cert-summary {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px;
+  }
+  .cert-stat {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 5px; padding: 16px; text-align: center;
+  }
+  .cert-stat-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px; font-weight: 700; color: var(--navy); display: block;
+  }
+  .cert-stat-label {
+    font-size: 9px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--muted); margin-top: 4px;
+  }
+  .cert-stat.highlight { border-left: 3px solid var(--gold); }
+
+  .badge-signed {
+    background: rgba(46,204,113,.12); color: #2ECC71;
+    border: 1px solid rgba(46,204,113,.25);
+    padding: 2px 10px; border-radius: 10px;
+    font-family:'DM Mono',monospace; font-size: 8px; font-weight: 700;
+    letter-spacing: .06em; text-transform: uppercase;
+  }
+  .badge-unsigned {
+    background: rgba(255,255,255,.06); color: var(--muted);
+    border: 1px solid rgba(255,255,255,.1);
+    padding: 2px 10px; border-radius: 10px;
+    font-family:'DM Mono',monospace; font-size: 8px; font-weight: 500;
+  }
+</style>
+
+{% set signed_count = namespace(n=0) %}
+{% for s in students %}{% if s.digital_signature %}{% set signed_count.n = signed_count.n + 1 %}{% endif %}{% endfor %}
+
+<div class="cert-summary">
+  <div class="cert-stat highlight">
+    <span class="cert-stat-num">{{ total }}</span>
+    <span class="cert-stat-label">🎓 Total Alunos</span>
+  </div>
+  <div class="cert-stat highlight">
+    <span class="cert-stat-num">{{ eligible }}</span>
+    <span class="cert-stat-label">✅ Elegíveis</span>
+  </div>
+  <div class="cert-stat highlight">
+    <span class="cert-stat-num">{{ has_hash }}</span>
+    <span class="cert-stat-label">🔑 Com Hash</span>
+  </div>
+  <div class="cert-stat highlight">
+    <span class="cert-stat-num">{{ signed_count.n }}</span>
+    <span class="cert-stat-label">🖊️ Assinados</span>
+  </div>
+  <div class="cert-stat highlight">
+    <span class="cert-stat-num">{{ released }}</span>
+    <span class="cert-stat-label">📤 Liberados</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body" style="padding:0">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nome</th>
+          <th>País / Tema</th>
+          <th>Presença</th>
+          <th>Hash</th>
+          <th>Liberado</th>
+          <th>Assinatura</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        {% set deleg = s.delegation %}
+        <tr>
+          <td class="text-muted">{{ s.id }}</td>
+          <td style="font-weight:600">{{ s.name }}</td>
+          <td>
+            {% if deleg and deleg.country %}
+              {{ deleg.country_flag }} {{ deleg.country }}
+            {% else %}—{% endif %}
+            {% if deleg and deleg.committee %}
+              <span class="badge badge-next">{{ deleg.committee.upper() }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if deleg and deleg.presence_status in ('presente', 'votante') %}
+              <span class="badge badge-approved">✅ Presente</span>
+            {% elif deleg %}
+              <span class="badge badge-pending">❌ Ausente</span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td style="font-family:'DM Mono',monospace;font-size:10px;max-width:100px;overflow:hidden;text-overflow:ellipsis">
+            {{ s.certificate_hash[:16] ~ '...' if s.certificate_hash else '—' }}
+          </td>
+          <td>
+            {% if s.certificate_released %}
+              <span class="badge badge-approved">✅</span>
+            {% elif s.certificate_hash %}
+              <span class="badge badge-pending">⏳</span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if s.digital_signature %}
+              <div class="badge-signed">🖊️ Assinado</div>
+              <div style="font-size:8px;color:var(--muted);margin-top:2px">
+                {{ s.signed_at.strftime('%d/%m %H:%M') if s.signed_at else '' }}
+              </div>
+            {% else %}
+              <span class="badge-unsigned">Pendente</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              {% if s.certificate_hash and not s.digital_signature %}
+              <form method="POST" action="{{ url_for('admin.certificate_sign', id=s.id) }}">
+                <button class="btn btn-gold btn-sm">🖊️ Assinar</button>
+              </form>
+              {% endif %}
+              {% if s.digital_signature %}
+              <form method="POST" action="{{ url_for('admin.certificate_unsign', id=s.id) }}"
+                    onsubmit="return confirm('Remover assinatura de {{ s.name }}?')">
+                <button class="btn btn-ghost btn-sm">🔓 Remover</button>
+              </form>
+              {% endif %}
+              {% if not s.certificate_released and s.certificate_hash %}
+              <form method="POST" action="{{ url_for('admin.certificate_release', id=s.id) }}">
+                <button class="btn btn-primary btn-sm">📤 Liberar</button>
+              </form>
+              {% endif %}
+              {% if s.certificate_released %}
+              <form method="POST" action="{{ url_for('admin.certificate_revoke', id=s.id) }}"
+                    onsubmit="return confirm('Reverter liberação de {{ s.name }}?')">
+                <button class="btn btn-ghost btn-sm">🔒 Reverter</button>
+              </form>
+              {% endif %}
+              {% if s.certificate_hash %}
+              <a href="{{ url_for('vote.certificate_view', hash=s.certificate_hash) }}"
+                 target="_blank" class="btn btn-ghost btn-sm">👁️ Ver</a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" style="text-align:center;color:var(--muted);padding:32px">
+            Nenhum aluno cadastrado ainda.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:24px">
+  <div class="card-header">
+    <span class="card-title">📋 Auditoria — Últimas Ações</span>
+  </div>
+  <div class="card-body" style="padding:0">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Ação</th>
+          <th>Alvo</th>
+          <th>Responsável</th>
+          <th>Detalhes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in audit_logs %}
+        <tr>
+          <td style="font-family:'DM Mono',monospace;font-size:10px;white-space:nowrap">
+            {{ log.created_at.strftime('%d/%m %H:%M') }}
+          </td>
+          <td>
+            <span class="badge {{ 'badge-approved' if 'release' in log.action or 'sign' in log.action else 'badge-pending' }}">
+              {{ log.action.replace('_', ' ')|title }}
+            </span>
+          </td>
+          <td style="font-size:12px">{{ log.target_name or log.target_type ~ '#' ~ log.target_id }}</td>
+          <td style="font-size:12px">{{ log.user_name }}</td>
+          <td style="font-size:11px;color:var(--muted)">{{ log.details or '—' }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" style="text-align:center;color:var(--muted);padding:20px">
+            Nenhuma ação registrada ainda.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

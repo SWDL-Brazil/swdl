@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — SWDL Admin</title>
+  <link rel="icon" href="data:,">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:#101E4C; --navy-dark:#0A1230; --gold:#B79441;
+      --offwhite:#F7F5F0; --white:#fff; --border:rgba(16,30,76,.12);
+      --muted:#6B6F85; --red:#C0392B;
+    }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      font-family:'DM Sans',sans-serif;
+      background:var(--navy-dark);
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+      position:relative; overflow:hidden;
+    }
+    /* background decoration */
+    body::before {
+      content:'SWDL';
+      position:absolute; font-family:'Playfair Display',serif;
+      font-size:320px; font-weight:900;
+      color:rgba(255,255,255,.015); pointer-events:none;
+      top:50%; left:50%; transform:translate(-50%,-50%);
+      white-space:nowrap;
+    }
+
+    .login-card {
+      background:var(--white); border-radius:8px;
+      width:420px; padding:48px 44px;
+      box-shadow:0 32px 80px rgba(0,0,0,.35);
+      position:relative; z-index:1;
+    }
+
+    .login-logo {
+      display:flex; align-items:center; gap:12px;
+      margin-bottom:32px;
+    }
+    .login-badge {
+      width:44px; height:44px; background:var(--gold); border-radius:7px;
+      display:flex; align-items:center; justify-content:center;
+      font-family:'Playfair Display',serif; font-weight:900; font-size:17px;
+      color:var(--navy);
+    }
+    .login-logo-text {
+      font-family:'Playfair Display',serif; font-size:15px; font-weight:700;
+      color:var(--navy); line-height:1.2;
+    }
+    .login-logo-text span { color:var(--gold); font-size:11px; display:block; }
+
+    h1 {
+      font-family:'Playfair Display',serif;
+      font-size:28px; font-weight:700; color:var(--navy);
+      margin-bottom:6px;
+    }
+    .login-sub { font-size:13px; color:var(--muted); margin-bottom:28px; }
+
+    .form-group { margin-bottom:16px; }
+    .form-group label {
+      display:block; font-size:10px; font-weight:700;
+      letter-spacing:.09em; text-transform:uppercase;
+      color:var(--navy); margin-bottom:5px;
+    }
+    .form-group input {
+      width:100%; padding:11px 14px;
+      border:1px solid var(--border); border-radius:3px;
+      font-family:'DM Sans',sans-serif; font-size:14px;
+      color:var(--navy); outline:none;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .form-group input:focus {
+      border-color:var(--gold);
+      box-shadow:0 0 0 3px rgba(183,148,65,.12);
+    }
+
+    .remember {
+      display:flex; align-items:center; gap:8px;
+      font-size:13px; color:var(--muted); cursor:pointer;
+      margin-bottom:22px;
+    }
+    .remember input { width:15px; height:15px; accent-color:var(--navy); }
+
+    .btn-login {
+      width:100%; background:var(--navy); color:var(--white);
+      border:none; border-radius:3px; padding:13px;
+      font-family:'DM Sans',sans-serif; font-weight:700;
+      font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+      cursor:pointer; transition:background .2s, transform .15s;
+    }
+    .btn-login:hover { background:#1d3461; transform:translateY(-1px); }
+
+    .error-msg {
+      background:#fdf0ef; border:1px solid #f5c6cb;
+      color:var(--red); font-size:13px; padding:10px 14px;
+      border-radius:3px; margin-bottom:18px;
+    }
+
+    .login-footer {
+      margin-top:24px; text-align:center;
+      font-size:11px; color:var(--muted);
+    }
+    .login-footer a { color:var(--navy); font-weight:600; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-badge">SW</div>
+      <div class="login-logo-text">
+        SWDL Admin
+        <span>Área Administrativa</span>
+      </div>
+    </div>
+
+    <h1>Bem-vindo de volta</h1>
+    <p class="login-sub">Faça login para acessar o painel de controle.</p>
+
+    {% if error %}
+      <div class="error-msg">⚠ {{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" name="email" placeholder="admin@swdl.com"
+               autocomplete="email" required autofocus>
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" name="password" placeholder="••••••••"
+               autocomplete="current-password" required>
+      </div>
+      <label class="remember">
+        <input type="checkbox" name="remember"> Manter conectado
+      </label>
+      <button type="submit" class="btn-login">Entrar →</button>
+    </form>
+
+    <div class="login-footer">
+      <a href="/">← Voltar ao site</a>
+    </div>
+  </div>
+</body>
+</html>

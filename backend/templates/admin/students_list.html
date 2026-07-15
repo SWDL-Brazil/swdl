@@ -1,0 +1,81 @@
+{% extends "admin/base.html" %}
+{% block title %}Alunos{% endblock %}
+{% block page_title %}Alunos{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.delegate_create') }}" class="btn btn-primary">+ Novo Aluno</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <div class="card-body" style="padding:0">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nome</th>
+          <th>E-mail</th>
+          <th>ID Global</th>
+          <th>País</th>
+          <th>Tema</th>
+          <th>Dupla</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td class="text-muted">{{ s.id }}</td>
+          <td style="font-weight:600">{{ s.name }}</td>
+          <td class="text-muted" style="font-size:12px">{{ s.email }}</td>
+          <td class="text-muted" style="font-family:'DM Mono',monospace;font-size:11px">{{ s.global_id[:12] }}...</td>
+          <td>
+            {% if s.delegation and s.delegation.country %}
+              {{ s.delegation.country_flag }} {{ s.delegation.country }}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if s.delegation and s.delegation.committee %}
+              <span class="badge badge-next">{{ s.delegation.committee.upper() }}</span>
+            {% else %}—{% endif %}
+          </td>
+          <td class="text-muted">{{ s.delegation.pair_name if s.delegation and s.delegation.pair_name else '—' }}</td>
+          <td>
+            {% if s.delegation %}
+              <span style="color:var(--green);font-weight:600;font-size:12px">✅ Designado</span>
+            {% else %}
+              <span style="color:var(--orange);font-weight:600;font-size:12px">⏳ Pendente</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+              {% if s.delegation %}
+                <a href="{{ url_for('admin.student_assign', id=s.id) }}"
+                   class="btn btn-navy btn-sm">Reatribuir</a>
+              {% else %}
+                <a href="{{ url_for('admin.student_assign', id=s.id) }}"
+                   class="btn btn-primary btn-sm">🌍 Designar</a>
+              {% endif %}
+              <a href="{{ url_for('admin.student_assign', id=s.id) }}"
+                 class="btn btn-ghost btn-sm">👤 Ver</a>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="9" style="text-align:center;color:var(--muted);padding:32px">
+            Nenhum aluno cadastrado ainda.
+            <a href="{{ url_for('admin.delegate_create') }}" style="color:var(--navy);font-weight:600">Criar primeiro aluno →</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

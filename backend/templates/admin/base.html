@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin{% endblock %} — SWDL</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ── TOKENS ─────────────────────────────────────────────── */
+    :root {
+      --navy:      #101E4C;
+      --navy-dark: #0A1230;
+      --gold:      #B79441;
+      --gold-l:    #D4B060;
+      --slate:     #B1B5CB;
+      --offwhite:  #F7F5F0;
+      --white:     #FFFFFF;
+      --text:      #1a1a2e;
+      --muted:     #6B6F85;
+      --border:    rgba(16,30,76,.10);
+      --sidebar-w: 260px;
+      --red:    #C0392B;
+      --green:  #1E7B45;
+      --orange: #CA6F1E;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+    html { font-size:16px; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--offwhite);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color:inherit; text-decoration:none; }
+
+    /* ── LAYOUT ──────────────────────────────────────────────── */
+    .admin-wrap { min-height:100vh; }
+
+    /* ── SIDEBAR (fixed, collapsible) ────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--navy-dark);
+      display: flex; flex-direction: column;
+      position: fixed; top:0; left:0; bottom:0;
+      z-index: 100; overflow-y:auto;
+      transform: translateX(0);
+      transition: transform .25s cubic-bezier(.4,0,.2,1);
+      box-shadow: 4px 0 24px rgba(0,0,0,.2);
+    }
+    .sidebar.collapsed { transform: translateX(-100%); }
+
+    /* Sidebar overlay (sidebar is always visible) */
+    .sidebar-overlay { display: none; }
+
+    .sidebar-logo {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      display: flex; align-items: center; gap:10px;
+    }
+    .sidebar-logo-badge {
+      width:30px; height:30px; background:var(--gold); border-radius:4px;
+      display:flex; align-items:center; justify-content:center;
+      font-family:'Playfair Display',serif; font-weight:900; font-size:11px;
+      color:var(--navy); flex-shrink:0; cursor:pointer;
+    }
+    .sidebar-logo-badge:hover { background:var(--gold-l); }
+    .sidebar-logo-text {
+      font-family:'Playfair Display',serif; font-size:11px; font-weight:700;
+      color:var(--white); line-height:1.15;
+    }
+    .sidebar-logo-text span { color:var(--gold); font-size:9px; }
+
+    /* ── App Switcher ──────────────────────────────────────── */
+    .app-switcher {
+      padding: 10px 10px 6px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .app-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 6px;
+      font-size: 12px; font-weight: 600;
+      color: rgba(255,255,255,.4);
+      background: transparent;
+      transition: all .2s; cursor: pointer; text-decoration: none;
+      border: 1px solid transparent;
+    }
+    .app-btn:hover { background: rgba(255,255,255,.05); color: var(--white); }
+    .app-btn.active {
+      background: rgba(183,148,65,.12);
+      border-color: rgba(183,148,65,.25);
+      color: var(--gold);
+    }
+    .app-btn-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
+
+    /* ── Sidebar nav items (collapsible groups) ────────────── */
+    .sidebar-group {
+      overflow: hidden; transition: max-height .3s ease;
+    }
+    .sidebar-group.collapsed { max-height: 0 !important; }
+
+    .sidebar-section {
+      padding: 14px 14px 3px;
+      font-family:'DM Mono',monospace; font-size:8px; font-weight:700;
+      letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.15);
+    }
+
+    .sidebar-nav { list-style:none; padding:2px 8px; margin-bottom:4px; }
+    .sidebar-nav li { margin-bottom:1px; }
+    .sidebar-nav a {
+      display:flex; align-items:center; gap:10px;
+      padding:7px 10px; border-radius:4px;
+      font-size:12px; font-weight:500; color:rgba(255,255,255,.45);
+      transition:background .2s, color .2s;
+    }
+    .sidebar-nav a:hover { background:rgba(255,255,255,.06); color:var(--white); }
+    .sidebar-nav a.active { background:rgba(183,148,65,.15); color:var(--gold); }
+    .sidebar-nav .nav-icon { font-size:14px; width:18px; text-align:center; flex-shrink:0; }
+
+    .sidebar-divider {
+      height: 1px; background: rgba(255,255,255,.06); margin: 4px 12px;
+    }
+
+    .sidebar-footer {
+      margin-top:auto; padding:12px;
+      border-top:1px solid rgba(255,255,255,.07);
+    }
+    .sidebar-user {
+      display:flex; align-items:center; gap:10px;
+      padding:8px; border-radius:6px;
+      background:rgba(255,255,255,.04);
+    }
+    .sidebar-avatar {
+      width:28px; height:28px; border-radius:50%;
+      background:var(--gold); display:flex; align-items:center; justify-content:center;
+      font-family:'Playfair Display',serif; font-size:12px; font-weight:700;
+      color:var(--navy); flex-shrink:0;
+    }
+    .sidebar-user-name { font-size:11px; font-weight:600; color:var(--white); line-height:1.2; }
+    .sidebar-user-role { font-size:9px; color:var(--slate); }
+    .sidebar-logout {
+      display:block; margin-top:8px; text-align:center;
+      font-size:10px; color:rgba(255,255,255,.25);
+      padding:5px; border-radius:4px;
+      transition:color .2s, background .2s;
+    }
+    .sidebar-logout:hover { color:var(--white); background:rgba(192,57,43,.25); }
+
+    /* ── MAIN CONTENT ────────────────────────────────────────── */
+    .admin-main {
+      flex:1; display:flex; flex-direction:column; min-height:100vh;
+      margin-left: var(--sidebar-w);
+      transition: margin-left .25s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* Top bar */
+    .admin-topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px 0 16px;
+      height: 56px;
+      display: flex; align-items: center; gap: 12px;
+      position: sticky; top:0; z-index:40;
+    }
+    .admin-topbar-title {
+      font-family:'Playfair Display',serif;
+      font-size:18px; font-weight:700; color:var(--navy);
+      flex:1;
+    }
+    .topbar-actions { display:flex; gap:8px; }
+
+    /* Hamburger */
+    .hamburger {
+      width: 36px; height: 36px; flex-shrink:0;
+      background: transparent; border: none; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; border-radius: 4px;
+      transition: background .15s;
+    }
+    .hamburger:hover { background: rgba(16,30,76,.05); }
+    .hamburger span {
+      display: block; width: 18px; height: 2px;
+      background: var(--navy); border-radius: 1px;
+      transition: transform .2s, opacity .2s;
+    }
+    .hamburger.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .hamburger.active span:nth-child(2) { opacity: 0; }
+    .hamburger.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    /* Page body */
+    .admin-body { padding:32px; flex:1; }
+
+    /* ── FLASH MESSAGES ──────────────────────────────────────── */
+    .flash-list { margin-bottom:20px; }
+    .flash {
+      padding:12px 16px; border-radius:4px; font-size:13px; font-weight:500;
+      margin-bottom:8px; display:flex; align-items:center; gap:10px;
+    }
+    .flash.success { background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+    .flash.info    { background:#d1ecf1; color:#0c5460; border:1px solid #bee5eb; }
+    .flash.warning { background:#fff3cd; color:#856404; border:1px solid #ffeeba; }
+    .flash.error   { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+
+    /* ── CARDS ───────────────────────────────────────────────── */
+    .card {
+      background: var(--white); border:1px solid var(--border);
+      border-radius:6px; overflow:hidden;
+    }
+    .card-header {
+      padding:16px 20px; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .card-title {
+      font-family:'Playfair Display',serif;
+      font-size:16px; font-weight:700; color:var(--navy);
+    }
+    .card-body { padding:20px; }
+
+    /* ── STATS GRID ──────────────────────────────────────────── */
+    .stats-grid {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:16px;
+      margin-bottom:28px;
+    }
+    .stat-tile {
+      background:var(--white); border:1px solid var(--border);
+      border-radius:6px; padding:20px 22px;
+      border-left:4px solid var(--navy);
+      transition:transform .2s, box-shadow .2s;
+    }
+    .stat-tile:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(16,30,76,.08); }
+    .stat-tile:nth-child(2) { border-left-color:var(--gold); }
+    .stat-tile:nth-child(3) { border-left-color:var(--green); }
+    .stat-tile:nth-child(4) { border-left-color:var(--orange); }
+    .stat-tile-num {
+      font-family:'Playfair Display',serif; font-size:38px; font-weight:700;
+      color:var(--navy); line-height:1; display:block;
+    }
+    .stat-tile-label {
+      font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+      color:var(--muted); margin-top:4px; display:block;
+    }
+
+    /* ── TABLE ───────────────────────────────────────────────── */
+    .admin-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .admin-table th {
+      text-align:left; padding:10px 14px;
+      font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--muted); border-bottom:2px solid var(--border);
+      background:rgba(16,30,76,.02);
+    }
+    .admin-table td {
+      padding:12px 14px; border-bottom:1px solid var(--border);
+      vertical-align:middle;
+    }
+    .admin-table tr:last-child td { border-bottom:none; }
+    .admin-table tr:hover td { background:rgba(183,148,65,.03); }
+
+    /* ── BADGES ──────────────────────────────────────────────── */
+    .badge {
+      display:inline-flex; align-items:center;
+      font-family:'DM Mono',monospace; font-size:9px; font-weight:700;
+      letter-spacing:.08em; text-transform:uppercase;
+      padding:3px 9px; border-radius:2px; color:var(--white);
+    }
+    .badge-pending  { background:#856404; }
+    .badge-approved { background:var(--green); }
+    .badge-rejected { background:var(--red); }
+    .badge-now      { background:var(--gold); color:var(--navy); }
+    .badge-done     { background:var(--slate); color:var(--navy); }
+    .badge-next     { background:var(--navy); }
+    .badge-crisis   { background:var(--red); }
+    .badge-break    { background:#4A5568; }
+    .badge-crise    { background:var(--red); }
+    .badge-oficial  { background:#1A5276; }
+    .badge-imprensa { background:var(--green); }
+    .badge-votacao  { background:var(--navy); }
+
+    /* ── BUTTONS ─────────────────────────────────────────────── */
+    .btn {
+      display:inline-flex; align-items:center; gap:6px;
+      font-family:'DM Sans',sans-serif; font-weight:700;
+      font-size:11px; letter-spacing:.07em; text-transform:uppercase;
+      padding:9px 18px; border-radius:3px; border:none;
+      cursor:pointer; text-decoration:none;
+      transition:transform .15s, box-shadow .15s, background .15s;
+    }
+    .btn:hover { transform:translateY(-1px); }
+    .btn-primary  { background:var(--gold); color:var(--navy); }
+    .btn-primary:hover { background:var(--gold-l); box-shadow:0 4px 14px rgba(183,148,65,.3); }
+    .btn-navy    { background:var(--navy); color:var(--white); }
+    .btn-navy:hover { background:#1d3461; }
+    .btn-ghost   { background:transparent; color:var(--navy); border:1.5px solid var(--border); }
+    .btn-ghost:hover { border-color:var(--navy); }
+    .btn-danger  { background:var(--red); color:var(--white); }
+    .btn-danger:hover { background:#a93226; }
+    .btn-sm { padding:6px 12px; font-size:10px; }
+
+    /* ── FORMS ───────────────────────────────────────────────── */
+    .form-group { margin-bottom:18px; }
+    .form-group label {
+      display:block; font-size:10px; font-weight:700;
+      letter-spacing:.09em; text-transform:uppercase;
+      color:var(--navy); margin-bottom:5px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width:100%; padding:10px 13px;
+      border:1px solid rgba(16,30,76,.18); border-radius:3px;
+      font-family:'DM Sans',sans-serif; font-size:14px;
+      color:var(--text); background:var(--white);
+      outline:none; appearance:none;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color:var(--gold);
+      box-shadow:0 0 0 3px rgba(183,148,65,.10);
+    }
+    .form-group textarea { resize:vertical; min-height:100px; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .form-check {
+      display:flex; align-items:center; gap:8px;
+      font-size:13px; color:var(--text); cursor:pointer;
+    }
+    .form-check input { width:16px; height:16px; accent-color:var(--navy); cursor:pointer; }
+
+    /* ── SECTION DIVIDER ─────────────────────────────────────── */
+    .page-header {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:24px; flex-wrap:wrap; gap:12px;
+    }
+    .page-title {
+      font-family:'Playfair Display',serif;
+      font-size:26px; font-weight:700; color:var(--navy);
+    }
+
+    /* Grid layout helpers */
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; }
+    .mt-4  { margin-top:16px; }
+    .mt-8  { margin-top:32px; }
+    .text-muted { color:var(--muted); font-size:12px; }
+
+    /* ── SIDEBAR COLLAPSED ──────────────────────────────────── */
+    .sidebar.collapsed ~ .admin-main { margin-left: 0; }
+
+    /* ── MINI-APP BAR ───────────────────────────────────────── */
+    .mini-app-bar {
+      padding: 10px 32px 0;
+      display: flex; gap: 6px; flex-wrap: wrap;
+    }
+    .mini-app-tile {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 4px;
+      font-size: 12px; font-weight: 600; color: var(--muted);
+      background: var(--white); border: 1px solid var(--border);
+      transition: all .15s; text-decoration: none; cursor: pointer;
+    }
+    .mini-app-tile:hover {
+      color: var(--navy); border-color: var(--navy);
+      transform: translateY(-1px);
+    }
+    .mini-app-tile.active {
+      background: var(--navy); color: var(--white); border-color: var(--navy);
+    }
+    .mini-app-tile .mat-icon { font-size: 14px; }
+  </style>
+</head>
+<body>
+<div class="admin-wrap">
+
+  <!-- ── SIDEBAR ──────────────────────────────────────────── -->
+  {%- set gestao_endpoints = ['admin.dashboard', 'admin.students_list', 'admin.student_assign',
+    'admin.delegate_create', 'admin.delegations_list', 'admin.delegation_assign',
+    'admin.delegation_create_credentials', 'admin.delegation_delete',
+    'admin.inscriptions_list', 'admin.inscription_detail', 'admin.inscription_approve',
+    'admin.inscription_reject', 'admin.news_list', 'admin.news_create', 'admin.news_edit',
+    'admin.news_delete', 'admin.agenda_list', 'admin.agenda_create', 'admin.agenda_edit',
+    'admin.agenda_delete', 'admin.agenda_set_status', 'admin.documentos_list',
+    'admin.documento_enviar', 'admin.documento_download', 'admin.documento_deletar',
+    'admin.themes_list', 'admin.theme_create', 'admin.theme_delete',
+    'admin.dpos_list', 'admin.dpo_download', 'admin.set_phase',
+    'admin.convocar_page', 'admin.convocar_toggle', 'admin.convocar_set_theme',
+    'admin.convocar_all', 'admin.convocar_uncall_all', 'admin.convocar_by_theme',
+    'admin.certificates_list', 'admin.certificates_compile', 'admin.certificate_release',
+    'admin.certificates_release_all', 'admin.certificate_revoke',
+    'admin.certificate_sign',     'admin.certificates_sign_all', 'admin.certificate_unsign',
+    'admin.notifications_config', 'admin.test_email_config'] -%}
+  {%- set simulacao_endpoints = ['admin.chamada_panel', 'admin.set_presence',
+    'admin.chamada_control_screen', 'admin.oradores_panel', 'admin.oradores_toggle',
+    'admin.oradores_control_screen', 'admin.cronometro_panel',
+    'admin.crisis_activate', 'admin.crisis_deactivate', 'admin.invocar_sessao',
+    'vote.vote_list', 'vote.vote_create', 'vote.vote_detail', 'vote.vote_toggle',
+    'vote.vote_delete', 'vote.vote_telao', 'vote.vote_results',
+    'vote.vote_toggle_status', 'admin.invocar_page',
+    'admin.director_dashboard'] -%}
+  {%- set is_gestao = request.endpoint in gestao_endpoints -%}
+  {%- set is_simulacao = request.endpoint in simulacao_endpoints -%}
+  {%- if is_gestao and is_admin -%}
+    {%- set active_app = 'gestao' -%}
+  {%- elif is_simulacao -%}
+    {%- set active_app = 'simulacao' -%}
+  {%- elif event_phase == 'during' -%}
+    {%- set active_app = 'simulacao' -%}
+  {%- else -%}
+    {%- set active_app = 'gestao' if is_admin else 'simulacao' -%}
+  {%- endif -%}
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-badge" id="sidebarLogo" onclick="document.getElementById('sidebar').scrollTo({top:0,behavior:'smooth'})">SW</div>
+      <div class="sidebar-logo-text">
+        SWDL Admin<br><span>Painel de Controle</span>
+      </div>
+    </div>
+
+    <!-- ── APP SWITCHER ─────────────────────────────────── -->
+    <div class="app-switcher">
+      {% if is_admin %}
+      <a href="{{ url_for('admin.dashboard') }}"
+         class="app-btn {{ 'active' if active_app == 'gestao' }}">
+        <span class="app-btn-icon">📋</span>
+        <div>
+          <div style="font-weight:700;font-size:13px">Gestão</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.3);font-weight:400">Pré e Pós-Evento</div>
+        </div>
+      </a>
+      {% endif %}
+      <a href="{{ url_for('admin.director_dashboard') if not is_admin else url_for('admin.chamada_panel') }}"
+         class="app-btn {{ 'active' if active_app == 'simulacao' }}">
+        <span class="app-btn-icon">🔴</span>
+        <div>
+          <div style="font-weight:700;font-size:13px">Simulação</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.3);font-weight:400">Durante o Evento</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <!-- ── APP: GESTÃO (só admin) ───────────────────────── -->
+    {% if is_admin %}
+    <div class="sidebar-group {{ 'collapsed' if active_app == 'simulacao' }}" id="app-gestao">
+      <div class="sidebar-section">Dashboard</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('admin.dashboard') }}"
+             class="{{ 'active' if request.endpoint == 'admin.dashboard' }}">
+            <span class="nav-icon">🏠</span> Visão Geral
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-section">Alunos</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('admin.students_list') }}"
+             class="{{ 'active' if request.endpoint in ('admin.students_list', 'admin.student_assign') }}">
+            <span class="nav-icon">🎓</span> Alunos
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('admin.delegate_create') }}"
+             class="{{ 'active' if request.endpoint == 'admin.delegate_create' }}">
+            <span class="nav-icon">➕</span> Novo Aluno
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('admin.delegations_list') }}"
+             class="{{ 'active' if 'delegation' in (request.endpoint or '') }}">
+            <span class="nav-icon">🌍</span> Delegações
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('admin.inscriptions_list') }}"
+             class="{{ 'active' if 'inscription' in (request.endpoint or '') }}">
+            <span class="nav-icon">📋</span> Inscrições
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-section">Conteúdo</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('admin.news_list') }}"
+             class="{{ 'active' if request.endpoint and 'news_' in request.endpoint }}">
+            <span class="nav-icon">📰</span> Notícias
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('admin.categories_list') }}"
+             class="{{ 'active' if request.endpoint and 'categor' in request.endpoint }}">
+            <span class="nav-icon">🏷️</span> Categorias
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('admin.agenda_list') }}"
+             class="{{ 'active' if 'agenda' in (request.endpoint or '') }}">
+            <span class="nav-icon">📅</span> Agenda
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('admin.documentos_list') }}"
+             class="{{ 'active' if 'documento' in (request.endpoint or '') }}">
+            <span class="nav-icon">📁</span> Documentos
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('admin.categories_list') }}"
+             class="{{ 'active' if request.endpoint and 'categor' in request.endpoint }}">
+            <span class="nav-icon">🏷️</span> Categorias
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('admin.alerts_list') }}"
+             class="{{ 'active' if request.endpoint and 'alert' in request.endpoint }}">
+            <span class="nav-icon">🚨</span> Alertas Ticker
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-section">Simulação</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('admin.convocar_page') }}"
+             class="{{ 'active' if 'convocar' in (request.endpoint or '') }}">
+            <span class="nav-icon">📢</span> Convocar Alunos
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-section">Certificados</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('admin.certificates_list') }}"
+             class="{{ 'active' if 'certificate' in (request.endpoint or '') }}">
+            <span class="nav-icon">🎓</span> Certificados
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-section">Relatórios</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('admin.dpos_list') }}"
+             class="{{ 'active' if 'dpo' in (request.endpoint or '') }}">
+            <span class="nav-icon">📄</span> DPOs Recebidos
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-section">Sistema</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('admin.notifications_config') }}"
+             class="{{ 'active' if 'notific' in (request.endpoint or '') }}">
+            <span class="nav-icon">🔔</span> Notificações
+          </a>
+        </li>
+      </ul>
+    </div>
+    {% endif %}
+
+    <!-- ── APP: SIMULAÇÃO ───────────────────────────────── -->
+    <div class="sidebar-group {{ 'collapsed' if active_app == 'gestao' }}" id="app-simulacao">
+      <div class="sidebar-section">Sessão</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('admin.chamada_panel') }}"
+             class="{{ 'active' if 'chamada' in (request.endpoint or '') }}">
+            <span class="nav-icon">📋</span> Chamada
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('vote.vote_list') }}"
+             class="{{ 'active' if 'vote' in (request.endpoint or '') }}">
+            <span class="nav-icon">🗳️</span> Votações
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('admin.oradores_panel') }}"
+             class="{{ 'active' if 'oradores' in (request.endpoint or '') }}">
+            <span class="nav-icon">🎤</span> Oradores
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('admin.cronometro_panel') }}"
+             class="{{ 'active' if 'cronometro' in (request.endpoint or '') }}">
+            <span class="nav-icon">⏱️</span> Cronômetro
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-section">Controle</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('admin.invocar_page') }}"
+             class="{{ 'active' if request.endpoint in ('admin.invocar_page', 'admin.invocar_sessao') }}">
+            <span class="nav-icon">📡</span> Invocar Alunos
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <ul class="sidebar-nav">
+      <li>
+        <a href="/" target="_blank">
+          <span class="nav-icon">🔗</span> Ver Site
+        </a>
+      </li>
+    </ul>
+
+    {% if active_invoke %}
+    <div style="margin:0 12px 8px;padding:10px 12px;border-radius:4px;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.25)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px">🔴</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:10px;font-weight:700;color:#E74C3C;text-transform:uppercase;letter-spacing:.05em">Invocação Ativa</div>
+          <div style="font-size:9px;color:rgba(231,76,60,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ active_invoke.label }}</div>
+        </div>
+        <a href="{{ url_for('admin.invocar_page') }}" style="font-size:8px;padding:3px 8px;border-radius:2px;background:rgba(192,57,43,.2);color:#E74C3C;text-decoration:none;white-space:nowrap">Ver</a>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">
+          {{ current_user.name[0].upper() }}
+        </div>
+        <div>
+          <div class="sidebar-user-name">{{ current_user.name }}</div>
+          <div class="sidebar-user-role">{{ current_user.role }}</div>
+        </div>
+      </div>
+      <a href="{{ url_for('auth.logout') }}" class="sidebar-logout">
+        ← Sair
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── SIDEBAR OVERLAY ─────────────────────────────────── -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- ── MAIN ─────────────────────────────────────────────── -->
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="admin-topbar-title">{% block page_title %}{% endblock %}</div>
+      <div class="topbar-actions">{% block topbar_actions %}{% endblock %}</div>
+    </div>
+
+    <!-- ── MINI-APP BAR ──────────────────────────────────── -->
+    <div class="mini-app-bar" id="miniAppBar">
+      {% if is_admin and active_app == 'gestao' %}
+      <a href="{{ url_for('admin.dashboard') }}"
+         class="mini-app-tile {{ 'active' if request.endpoint == 'admin.dashboard' }}">
+        <span class="mat-icon">🏠</span> Visão Geral
+      </a>
+      <a href="{{ url_for('admin.students_list') }}"
+         class="mini-app-tile {{ 'active' if request.endpoint in ('admin.students_list', 'admin.student_assign') }}">
+        <span class="mat-icon">🎓</span> Alunos
+      </a>
+      <a href="{{ url_for('admin.delegations_list') }}"
+         class="mini-app-tile {{ 'active' if 'delegation' in (request.endpoint or '') }}">
+        <span class="mat-icon">🌍</span> Delegações
+      </a>
+      <a href="{{ url_for('admin.inscriptions_list') }}"
+         class="mini-app-tile {{ 'active' if 'inscription' in (request.endpoint or '') }}">
+        <span class="mat-icon">📋</span> Inscrições
+      </a>
+      <a href="{{ url_for('admin.news_list') }}"
+          class="mini-app-tile {{ 'active' if request.endpoint and 'news_' in request.endpoint }}">
+        <span class="mat-icon">📰</span> Notícias
+      </a>
+      <a href="{{ url_for('admin.categories_list') }}"
+          class="mini-app-tile {{ 'active' if request.endpoint and 'categor' in request.endpoint }}">
+        <span class="mat-icon">🏷️</span> Categorias
+      </a>
+      <a href="{{ url_for('admin.alerts_list') }}"
+          class="mini-app-tile {{ 'active' if request.endpoint and 'alert' in request.endpoint }}">
+        <span class="mat-icon">🚨</span> Alertas
+      </a>
+      <a href="{{ url_for('admin.agenda_list') }}"
+         class="mini-app-tile {{ 'active' if 'agenda' in (request.endpoint or '') }}">
+        <span class="mat-icon">📅</span> Agenda
+      </a>
+      <a href="{{ url_for('admin.documentos_list') }}"
+         class="mini-app-tile {{ 'active' if 'documento' in (request.endpoint or '') }}">
+        <span class="mat-icon">📁</span> Documentos
+      </a>
+      <a href="{{ url_for('admin.themes_list') }}"
+         class="mini-app-tile {{ 'active' if 'theme' in (request.endpoint or '') }}">
+        <span class="mat-icon">🏷️</span> Temas
+      </a>
+      <a href="{{ url_for('admin.convocar_page') }}"
+         class="mini-app-tile {{ 'active' if 'convocar' in (request.endpoint or '') }}">
+        <span class="mat-icon">📢</span> Convocar
+      </a>
+      <a href="{{ url_for('admin.certificates_list') }}"
+         class="mini-app-tile {{ 'active' if 'certificate' in (request.endpoint or '') }}">
+        <span class="mat-icon">🎓</span> Certificados
+      </a>
+      <a href="{{ url_for('admin.dpos_list') }}"
+         class="mini-app-tile {{ 'active' if 'dpo' in (request.endpoint or '') }}">
+        <span class="mat-icon">📄</span> DPOs
+      </a>
+      <a href="{{ url_for('admin.notifications_config') }}"
+         class="mini-app-tile {{ 'active' if 'notific' in (request.endpoint or '') }}">
+        <span class="mat-icon">🔔</span> Notificações
+      </a>
+      {% elif active_app == 'simulacao' %}
+      <a href="{{ url_for('admin.chamada_panel') }}"
+         class="mini-app-tile {{ 'active' if 'chamada' in (request.endpoint or '') }}">
+        <span class="mat-icon">📋</span> Chamada
+      </a>
+      <a href="{{ url_for('vote.vote_list') }}"
+         class="mini-app-tile {{ 'active' if 'vote' in (request.endpoint or '') }}">
+        <span class="mat-icon">🗳️</span> Votações
+      </a>
+      <a href="{{ url_for('admin.oradores_panel') }}"
+         class="mini-app-tile {{ 'active' if 'oradores' in (request.endpoint or '') }}">
+        <span class="mat-icon">🎤</span> Oradores
+      </a>
+      <a href="{{ url_for('admin.cronometro_panel') }}"
+         class="mini-app-tile {{ 'active' if 'cronometro' in (request.endpoint or '') }}">
+        <span class="mat-icon">⏱️</span> Cronômetro
+      </a>
+      <a href="{{ url_for('admin.dpos_list') }}"
+         class="mini-app-tile {{ 'active' if 'dpo' in (request.endpoint or '') }}">
+        <span class="mat-icon">📄</span> DPOs
+      </a>
+      <a href="{{ url_for('admin.invocar_page') }}"
+         class="mini-app-tile {{ 'active' if request.endpoint in ('admin.invocar_page', 'admin.invocar_sessao') }}">
+        <span class="mat-icon">📡</span> Invocar
+      </a>
+      {% endif %}
+    </div>
+
+    <div class="admin-body">
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-list">
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+</div>
+<script>
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+  document.getElementById('hamburgerBtn').classList.toggle('active');
+}
+</script>
+</body>
+</html>

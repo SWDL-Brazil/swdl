@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+.venv/
+
+# Banco de dados (não sobe para o repositório)
+*.db
+*.sqlite
+
+# Uploads de usuários
+static/uploads/
+
+# IDE
+.vscode/
+.idea/
+
+# Sistema
+.DS_Store
+Thumbs.db

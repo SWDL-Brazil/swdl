@@ -1,0 +1,114 @@
+<!--
+  ============================================================
+  SWDL — _partials.html
+  Copie os blocos abaixo para cada página
+  ============================================================
+
+  ── COMO USAR ───────────────────────────────────────────────
+  1. Copie o bloco <nav> para o topo do <body> de cada página
+  2. Copie o bloco <footer> para o final do <body>
+  3. Ajuste o href do link ativo (class="active") conforme a página
+  4. Inclua no <head> de cada página:
+       <link rel="stylesheet" href="css/variables.css">
+       <link rel="stylesheet" href="css/navbar.css">
+       <link rel="stylesheet" href="css/footer.css">
+       ... (css específico da página)
+  5. Antes do </body>:
+       <script src="js/main.js"></script>
+       ... (js específico da página)
+  ============================================================
+-->
+
+
+<!-- ── CRISIS BANNER (fixo, oculto por padrão) ───────────── -->
+<div id="crisis-banner">
+  <div class="crisis-pulse"></div>
+  <span class="crisis-text">
+    🚨 <strong>CRISE DIPLOMÁTICA — COMITÊ DE SEGURANÇA:</strong>
+    Sessão de emergência convocada para as 14h30. Todos os delegados devem retornar imediatamente às salas.
+  </span>
+  <button class="crisis-close" aria-label="Fechar alerta">✕</button>
+</div>
+
+
+<!-- ── NAVBAR ──────────────────────────────────────────────── -->
+<nav class="swdl-nav">
+  <a href="index.html" class="nav-logo">
+    <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="noticias.html">Notícias</a></li>
+    <li><a href="comites.html">Comitês</a></li>
+    <li><a href="agenda.html">Agenda</a></li>
+    <li><a href="sobre.html">Sobre</a></li>
+    <li><a href="faca-parte.html" class="nav-cta">Faça Parte</a></li>
+  </ul>
+
+  <button class="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+
+<!-- ── FOOTER ──────────────────────────────────────────────── -->
+<footer class="swdl-footer">
+  <div class="container">
+    <div class="footer-main">
+
+      <!-- Brand -->
+      <div>
+        <a href="index.html" class="nav-logo" style="pointer-events:none; display:inline-flex;">
+          <div class="nav-logo-badge">SW</div>
+          <div class="nav-logo-text">SESI World<br><span>Diplomacy League</span></div>
+        </a>
+        <p class="footer-brand-desc">
+          A liga que transforma alunos em diplomatas. Aprendizado, debate e representação internacional dentro da sala de aula.
+        </p>
+      </div>
+
+      <!-- Evento -->
+      <div class="footer-col">
+        <h5>Evento</h5>
+        <ul>
+    <li><a href="comites.html">Temas</a></li>
+          <li><a href="agenda.html">Agenda</a></li>
+          <li><a href="noticias.html">Notícias</a></li>
+          <li><a href="#">Regulamento (PDF)</a></li>
+        </ul>
+      </div>
+
+      <!-- Delegados -->
+      <div class="footer-col">
+        <h5>Delegados</h5>
+        <ul>
+          <li><a href="#">Guias de Estudo</a></li>
+          <li><a href="#">Manual de Conduta</a></li>
+          <li><a href="#">Regras de Debate</a></li>
+          <li><a href="#">Meu Dashboard</a></li>
+        </ul>
+      </div>
+
+      <!-- Org -->
+      <div class="footer-col">
+        <h5>Organização</h5>
+        <ul>
+          <li><a href="sobre.html">Sobre o SWDL</a></li>
+          <li><a href="sobre.html#equipe">Equipe</a></li>
+          <li><a href="#">Contato</a></li>
+          <li><a href="#">SESI</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-copy">
+        © 2025 SESI World Diplomacy League —
+        Desenvolvido por <strong>Pedro Bonazzi</strong>
+      </p>
+      <a href="admin/login.html" class="footer-admin-link">⚙ Área Administrativa</a>
+    </div>
+  </div>
+</footer>

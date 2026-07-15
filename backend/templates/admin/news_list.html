@@ -1,0 +1,88 @@
+{% extends "admin/base.html" %}
+{% block title %}Notícias{% endblock %}
+{% block page_title %}Notícias{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.news_create') }}" class="btn btn-primary">+ Nova Notícia</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body" style="padding:0">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Título</th>
+          <th>Categoria</th>
+          <th>Comitê</th>
+          <th>Status</th>
+          <th>Crise</th>
+          <th>Criada em</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for n in news %}
+        <tr>
+          <td class="text-muted">{{ n.id }}</td>
+          <td style="font-weight:600;max-width:280px">
+            {{ n.title }}
+            {% if n.slug %}
+            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px">
+              /noticia/{{ n.slug }}
+            </div>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge
+              {% if n.category == 'crise' %}badge-crisis
+              {% elif n.category == 'votacao' %}badge-vote
+              {% else %}badge-next{% endif %}">
+              {{ n.category }}
+            </span>
+          </td>
+          <td>{{ n.committee.upper() if n.committee else '—' }}</td>
+          <td>
+            {% if n.published %}
+              <span class="badge badge-approved">✅ Publicada</span>
+            {% else %}
+              <span class="badge" style="background:var(--border);color:var(--muted)">📝 Rascunho</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if n.is_crisis %}
+              <span style="color:var(--red);font-size:16px">⚡</span>
+            {% else %}
+              <span style="color:var(--muted)">—</span>
+            {% endif %}
+          </td>
+          <td class="text-muted">{{ n.created_at.strftime('%d/%m %H:%M') }}</td>
+          <td>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              <a href="{{ url_for('admin.news_edit', id=n.id) }}"
+                 class="btn btn-ghost btn-sm">✏️ Editar</a>
+              {% if n.published and n.slug %}
+              <a href="{{ url_for('api.public_news_page', slug=n.slug) }}"
+                 target="_blank" class="btn btn-ghost btn-sm">🔗 Ver</a>
+              {% endif %}
+              <form method="POST" action="{{ url_for('admin.news_delete', id=n.id) }}"
+                    onsubmit="return confirm('Deletar esta notícia?')">
+                <button class="btn btn-danger btn-sm" type="submit">Del</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" style="text-align:center;color:var(--muted);padding:32px">
+            Nenhuma notícia criada ainda.
+            <a href="{{ url_for('admin.news_create') }}">Criar primeira notícia →</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

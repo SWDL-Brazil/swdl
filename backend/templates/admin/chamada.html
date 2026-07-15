@@ -1,0 +1,205 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Chamada & Quórum{% endblock %}
+
+{% block page_title %}⏱️ Painel de Chamada & Quórum{% endblock %}
+
+{% block topbar_actions %}
+  <button class="btn btn-navy btn-sm" onclick="controlScreen('show')">📺 Exibir no Telão</button>
+  <button class="btn btn-danger btn-sm" onclick="controlScreen('hide')">✖ Ocultar Telão</button>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom: 16px;">
+  <!-- Filtros por Comitê -->
+  <div class="form-group" style="margin-bottom: 0; min-width: 250px;">
+    <label for="committee-filter">Filtrar por Comitê</label>
+    <select id="committee-filter" onchange="filterCommittee(this.value)">
+      <option value="all" {% if committee_filter == 'all' %}selected{% endif %}>Todos os Comitês</option>
+      {% for c in available_committees %}
+      <option value="{{ c }}" {% if committee_filter == c %}selected{% endif %}>{{ c.upper() }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+<!-- Grid de Quórum Dinâmico -->
+<div class="stats-grid">
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-total">0</span>
+    <span class="stat-tile-label">Total Inscrito</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-presente" style="color: var(--green);">0</span>
+    <span class="stat-tile-label">Presentes</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-votante" style="color: var(--navy);">0</span>
+    <span class="stat-tile-label">Presentes & Votantes</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-ausente" style="color: var(--red);">0</span>
+    <span class="stat-tile-label">Ausentes</span>
+  </div>
+</div>
+
+<!-- Tabela de Chamada -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Lista de Delegações ({% if committee_filter == 'all' %}Geral{% else %}{{ committee_filter.upper() }}{% endif %})</h3>
+  </div>
+  <div class="card-body" style="padding: 0;">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Bandeira</th>
+          <th>País / Delegação</th>
+          <th>Delegado(s)</th>
+          <th>Comitê</th>
+          <th>Status de Presença</th>
+          <th style="text-align: right;">Ações de Chamada</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in delegations %}
+        <tr id="row-{{ d.id }}" data-status="{{ d.presence_status or 'ausente' }}">
+          <td>
+            {% if d.flag_url %}
+              <img src="{{ d.flag_url }}" alt="Bandeira de {{ d.country }}" style="width: 30px; height: auto; border-radius: 2px; border: 1px solid var(--border);">
+            {% else %}
+              <span style="font-size: 20px;">{{ d.country_flag or '🇺🇳' }}</span>
+            {% endif %}
+          </td>
+          <td><strong>{{ d.country }}</strong></td>
+          <td><span class="text-muted">{{ d.pair_name or 'Não alocado' }}</span></td>
+          <td><span class="badge badge-oficial">{{ d.committee.upper() }}</span></td>
+          <td class="status-badge-cell">
+            {% if d.presence_status == 'presente' %}
+              <span class="badge badge-approved">Presente</span>
+            {% elif d.presence_status == 'votante' %}
+              <span class="badge badge-votacao">Votante</span>
+            {% else %}
+              <span class="badge badge-rejected">Ausente</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <div style="display: inline-flex; gap: 4px;">
+              <button class="btn btn-sm {% if d.presence_status == 'ausente' or not d.presence_status %}btn-danger{% else %}btn-ghost{% endif %}" 
+                      onclick="setPresence('{{ d.id }}', 'ausente')" data-btn-status="ausente">
+                Ausente
+              </button>
+              <button class="btn btn-sm {% if d.presence_status == 'presente' %}btn-primary{% else %}btn-ghost{% endif %}" 
+                      onclick="setPresence('{{ d.id }}', 'presente')" data-btn-status="presente">
+                Presente
+              </button>
+              <button class="btn btn-sm {% if d.presence_status == 'votante' %}btn-navy{% else %}btn-ghost{% endif %}" 
+                      onclick="setPresence('{{ d.id }}', 'votante')" data-btn-status="votante">
+                Votante
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 32px; color: var(--muted);">
+            Nenhuma delegação encontrada para este filtro.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  // Recarrega a página aplicando o filtro de comitê via query string
+  function filterCommittee(val) {
+    window.location.href = "{{ url_for('admin.chamada_panel') }}?committee=" + val;
+  }
+
+  // Atualiza as caixas de contagem de quórum na parte superior
+  function updateQuorumCounters() {
+    const rows = document.querySelectorAll('tbody tr[id]');
+    let total = rows.length;
+    let ausentes = 0;
+    let presentes = 0;
+    let votantes = 0;
+
+    rows.forEach(row => {
+      const status = row.getAttribute('data-status');
+      if (status === 'presente') presentes++;
+      else if (status === 'votante') votantes++;
+      else ausentes++;
+    });
+
+    document.getElementById('count-total').innerText = total;
+    document.getElementById('count-ausente').innerText = ausentes;
+    document.getElementById('count-presente').innerText = presentes;
+    document.getElementById('count-votante').innerText = votantes;
+  }
+
+  // Faz a requisição AJAX para mudar o estado de presença do delegado
+  function setPresence(id, status) {
+    const url = `/admin/delegacoes/${id}/presenca/${status}`;
+    
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        const row = document.getElementById(`row-${id}`);
+        row.setAttribute('data-status', status);
+
+        // 1. Atualiza a coluna de Badge textual
+        const badgeCell = row.querySelector('.status-badge-cell');
+        if (status === 'presente') {
+          badgeCell.innerHTML = '<span class="badge badge-approved">Presente</span>';
+        } else if (status === 'votante') {
+          badgeCell.innerHTML = '<span class="badge badge-votacao">Votante</span>';
+        } else {
+          badgeCell.innerHTML = '<span class="badge badge-rejected">Ausente</span>';
+        }
+
+        // 2. Altera o estilo visual dos botões da linha correspondente
+        const buttons = row.querySelectorAll('[data-btn-status]');
+        buttons.forEach(btn => {
+          const btnStatus = btn.getAttribute('data-btn-status');
+          btn.className = 'btn btn-sm btn-ghost'; // reseta todos para ghost
+          
+          if (btnStatus === status) {
+            if (status === 'ausente') btn.classList.add('btn-danger');
+            if (status === 'presente') btn.classList.add('btn-primary');
+            if (status === 'votante') btn.classList.add('btn-navy');
+          }
+        });
+
+        // 3. Recalcula o quórum geral no topo
+        updateQuorumCounters();
+      }
+    })
+    .catch(err => console.error("Erro ao atualizar presença:", err));
+  }
+
+  // Controla a exibição remota do telão público
+  function controlScreen(action) {
+    const committee = document.getElementById('committee-filter').value;
+    fetch("{{ url_for('admin.chamada_control_screen') }}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: action, committee: committee })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        alert(action === 'show' ? '🔔 Chamada enviada para o Telão Público!' : '🔕 Chamada ocultada do Telão.');
+      }
+    })
+    .catch(err => console.error("Erro ao controlar o telão:", err));
+  }
+
+  // Executa a contagem assim que a página carrega
+  document.addEventListener("DOMContentLoaded", updateQuorumCounters);
+</script>
+{% endblock %}

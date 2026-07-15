@@ -1,0 +1,108 @@
+{% extends "student/base.html" %}
+{% block title %}Meu Perfil{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">👤 Meu Perfil</h1>
+    <p class="page-sub">Suas informações de acesso, identidade global e documentos.</p>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Informações Pessoais</span>
+    </div>
+    <div class="card-body">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Nome</div>
+          <div style="font-size:16px;font-weight:600;color:var(--navy)">{{ current_user.name }}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">E-mail</div>
+          <div style="font-size:16px;font-weight:600;color:var(--navy)">{{ current_user.email }}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Tipo de Acesso</div>
+          <div style="font-size:16px;font-weight:600;color:var(--navy)">Aluno</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Identidade Global</span>
+    </div>
+    <div class="card-body">
+      {% if student %}
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">ID Global</div>
+          <div style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--navy);word-break:break-all">
+            {{ student.global_id }}
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">
+            Identificador único e permanente. Vincula todo o seu histórico entre edições.
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Membro desde</div>
+          <div style="font-size:16px;font-weight:600;color:var(--navy)">{{ student.created_at.strftime('%d/%m/%Y') if student.created_at else '—' }}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Participações</div>
+          <div style="font-size:16px;font-weight:600;color:var(--navy)">{{ student.participations|length }} edição(ões)</div>
+        </div>
+      </div>
+      {% else %}
+      <div style="text-align:center;padding:20px;color:var(--muted)">
+        Perfil de aluno não encontrado. Entre em contato com a organização.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% if delegation %}
+<div class="card" style="margin-top:20px">
+  <div class="card-header">
+    <span class="card-title">📄 Documento de Posição Oficial (DPO)</span>
+  </div>
+  <div class="card-body">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+      <div>
+        <div style="font-size:13px;color:var(--navy);margin-bottom:4px">
+          <strong>Status:</strong>
+          {% if delegation.dpo_uploaded %}
+            <span style="color:#2ECC71">✅ DPO recebido</span>
+          {% else %}
+            <span style="color:var(--muted)">⏳ Nenhum DPO enviado ainda</span>
+          {% endif %}
+        </div>
+        {% if delegation.dpo_uploaded %}
+        <div style="font-size:11px;color:var(--muted)">
+          Arquivo: {{ delegation.dpo_path.split('/')[-1].split('\\')[-1] if delegation.dpo_path else '—' }}
+        </div>
+        {% endif %}
+      </div>
+      <form method="POST" action="{{ url_for('student.dpo_upload') }}" enctype="multipart/form-data"
+            style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <input type="file" name="dpo_file" accept=".pdf" required
+               style="font-size:12px;padding:6px;border:1px solid var(--border);border-radius:4px;background:var(--white)">
+        <button type="submit" class="btn btn-gold btn-sm">
+          {{ '📤 Substituir DPO' if delegation.dpo_uploaded else '📤 Enviar DPO' }}
+        </button>
+      </form>
+    </div>
+    <div style="margin-top:12px;padding:12px;background:var(--offwhite2);border-radius:4px;font-size:11px;color:var(--muted)">
+      <strong>📌 Instruções:</strong> Envie seu Documento de Posição Oficial em formato PDF.
+      O DPO é obrigatório para participação na simulação. Apenas arquivos PDF são aceitos.
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends "admin/base.html" %}
+{% block title %}Notificações{% endblock %}
+{% block page_title %}Configuração de Notificações{% endblock %}
+
+{% block content %}
+
+<div class="card" style="max-width:720px">
+  <div class="card-header">
+    <div class="card-title">📧 Servidor de E-mail (SMTP)</div>
+  </div>
+  <div class="card-body">
+    <div style="background:rgba(16,30,76,.04);border:1px solid rgba(16,30,76,.12);
+                border-left:3px solid var(--navy);border-radius:0 4px 4px 0;
+                padding:14px 18px;margin-bottom:20px;font-size:13px;color:var(--text);line-height:1.6">
+      <strong>⚠️ Atenção:</strong> E-mails educacionais (<code>@portalsesisp.org.br</code>)
+      geralmente <strong>não aceitam</strong> mensagens de SMTPs externos (Gmail, Outlook.com, etc.).
+      Você precisa usar o <strong>SMTP do próprio SESI</strong> ou do provedor educacional
+      (Office 365 / Microsoft 365, se a escola usar).
+      <br><br>
+      <button type="button" class="btn btn-sm btn-navy"
+              onclick="presetOffice365()">🇧🇷 Usar Office 365 (Educacional)</button>
+    </div>
+
+    <form method="POST">
+      <input type="hidden" name="section" value="email">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Servidor SMTP</label>
+          <input type="text" name="smtp_server" id="smtp_server"
+                 value="{{ configs.get('smtp_server', '') }}"
+                 placeholder="smtp.office365.com">
+        </div>
+        <div class="form-group">
+          <label>Porta SMTP</label>
+          <input type="number" name="smtp_port" id="smtp_port"
+                 value="{{ configs.get('smtp_port', '587') }}"
+                 placeholder="587">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Usuário SMTP</label>
+          <input type="text" name="smtp_user" id="smtp_user"
+                 value="{{ configs.get('smtp_user', '') }}"
+                 placeholder="admin@sesi437.edu.br">
+        </div>
+        <div class="form-group">
+          <label>Senha SMTP</label>
+          <input type="password" name="smtp_pass" id="smtp_pass"
+                 value="{{ configs.get('smtp_pass', '') }}"
+                 placeholder="senha do e-mail institucional">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>E-mail de origem (From)</label>
+        <input type="email" name="from_email" id="from_email"
+               value="{{ configs.get('from_email', '') }}"
+               placeholder="pedro.pereira63@portalsesisp.org.br">
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">
+          Deve ser um e-mail do <strong>próprio domínio educacional</strong> para evitar bloqueio.
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button type="submit" class="btn btn-primary">💾 Salvar E-mail</button>
+        <button type="submit" name="test_email" value="1" class="btn btn-navy"
+                formaction="{{ url_for('admin.test_email_config') }}">📧 Testar Envio</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card" style="max-width:720px;margin-top:24px">
+  <div class="card-header">
+    <div class="card-title">💬 WhatsApp</div>
+  </div>
+  <div class="card-body">
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px">
+      Configure a API do WhatsApp para enviar as credenciais por mensagem.
+      Compatível com Evolution API, Twilio WhatsApp ou qualquer serviço que aceite
+      POST JSON com campos <code>number</code>, <code>message</code> e <code>api_key</code>.
+    </p>
+    <form method="POST">
+      <input type="hidden" name="section" value="whatsapp">
+
+      <div class="form-group">
+        <label>URL da API</label>
+        <input type="url" name="whatsapp_api_url" value="{{ configs.get('whatsapp_api_url', '') }}"
+               placeholder="https://api.evolution.com/message/send">
+      </div>
+
+      <div class="form-group">
+        <label>Chave da API (api_key)</label>
+        <input type="password" name="whatsapp_api_key" value="{{ configs.get('whatsapp_api_key', '') }}"
+               placeholder="sua-api-key">
+      </div>
+
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;margin-bottom:12px">
+        💡 Se não tiver uma API, o aluno ainda receberá as credenciais por e-mail
+        (se configurado) e o admin pode ver a senha na tela de aprovação.
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button type="submit" class="btn btn-primary">💾 Salvar WhatsApp</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card" style="max-width:720px;margin-top:24px">
+  <div class="card-header">
+    <div class="card-title">⚙️ Disparo Automático</div>
+  </div>
+  <div class="card-body">
+    <form method="POST">
+      <input type="hidden" name="section" value="general">
+
+      <div class="form-check" style="margin-bottom:16px">
+        <input type="checkbox" name="auto_email" value="1" id="auto_email"
+          {{ 'checked' if configs.get('auto_email', '1') == '1' else '' }}>
+        <label for="auto_email">Enviar e-mail automaticamente ao aprovar inscrição</label>
+      </div>
+
+      <div class="form-check" style="margin-bottom:16px">
+        <input type="checkbox" name="auto_whatsapp" value="1" id="auto_whatsapp"
+          {{ 'checked' if configs.get('auto_whatsapp', '0') == '1' else '' }}>
+        <label for="auto_whatsapp">Enviar WhatsApp automaticamente ao aprovar inscrição</label>
+      </div>
+
+      <button type="submit" class="btn btn-primary">💾 Salvar Preferências</button>
+    </form>
+  </div>
+</div>
+
+<script>
+function presetOffice365() {
+  document.getElementById('smtp_server').value = 'smtp.office365.com';
+  document.getElementById('smtp_port').value   = '587';
+  document.getElementById('smtp_user').focus();
+}
+</script>
+
+{% endblock %}

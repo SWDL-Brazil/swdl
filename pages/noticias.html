@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notícias — SWDL</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="css/footer.css">
+  <link rel="icon" type="image/png" href="assent/img/image__1_-removebg-preview.png">
+</head>
+<body>
+
+<div id="crisis-banner">
+  <div class="crisis-pulse"></div>
+  <span class="crisis-text">🚨 <strong>CRISE — CS:</strong> Sessão de emergência às 14h30.</span>
+  <button class="crisis-close">✕</button>
+</div>
+
+<nav class="swdl-nav">
+  <button class="news-nav-toggle" id="newsNavToggle" aria-label="Categorias">
+    <span></span><span></span><span></span>
+  </button>
+  <a href="index.html" class="nav-logo">
+    <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="noticias.html">Notícias</a></li>
+    <li><a href="comites.html">Temas</a></li>
+    <li><a href="agenda.html">Agenda</a></li>
+    <li><a href="sobre.html">Sobre</a></li>
+    <li><a href="faca-parte.html" class="nav-cta">Faça Parte</a></li>
+  </ul>
+  <button class="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- PAINEL DE CATEGORIAS -->
+<div class="news-cat-panel" id="newsCatPanel">
+  <div class="cat-panel-header">Categorias</div>
+  <div class="cat-panel-body" id="catPanelBody"></div>
+</div>
+<div class="cat-panel-overlay" id="catPanelOverlay"></div>
+
+<!-- TICKER DE ALERTAS -->
+<div class="ticker-bar" id="tickerBar">
+  <div class="ticker-track" id="tickerTrack">
+    <span class="ticker-item">Carregando alertas...</span>
+  </div>
+</div>
+
+<!-- HERO CARROSSEL -->
+<header class="news-hero" id="heroCarousel">
+  <div class="hero-slide" id="heroSlide">
+    <div class="hero-slide-bg" id="heroSlideBg"></div>
+    <div class="hero-slide-overlay"></div>
+    <div class="hero-slide-content" id="heroSlideContent">
+      <div class="hero-badge" id="heroBadge">Destaque</div>
+      <h1 class="hero-title" id="heroTitle">Carregando...</h1>
+      <p class="hero-excerpt" id="heroExcerpt"></p>
+      <div class="hero-meta" id="heroMeta"></div>
+    </div>
+  </div>
+  <div class="hero-dots" id="heroDots"></div>
+</header>
+
+<!-- CARROSSEL DE TEMAS -->
+<section class="comites-carousel-section">
+  <div class="carousel-header">
+    <h2>🏛️ Temas</h2>
+  </div>
+  <div class="carousel-track" id="comitesCarousel">
+    <div style="padding:32px;text-align:center;color:var(--muted);width:100%">Carregando...</div>
+  </div>
+</section>
+
+<!-- MAIN LAYOUT: GRID + SIDEBAR -->
+<main class="news-main">
+  <div class="news-grid-container">
+
+    <!-- GRID DE NOTÍCIAS -->
+    <div class="news-grid-dense" id="newsGrid">
+      <div style="padding:48px;text-align:center;color:var(--muted);grid-column:1/-1">Carregando notícias...</div>
+    </div>
+
+    <!-- SIDEBAR ÚLTIMAS -->
+    <aside class="news-utilities">
+      <div class="sidebar-updates" id="sidebarUpdates">
+        <div class="sidebar-updates-header">📡 Últimas</div>
+        <div class="sidebar-updates-body">
+          <div style="padding:12px;text-align:center;color:var(--muted);font-size:12px">Carregando...</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="swdl-footer">
+  <div class="container">
+    <div class="footer-main">
+      <div>
+        <div class="nav-logo" style="display:inline-flex">
+          <a href="index.html" class="nav-logo">
+            <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
+          </a>
+        </div>
+        <p class="footer-brand-desc">A liga que transforma alunos em diplomatas.<br>SESI CE-437, Hortolândia.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Links Rápidos</h5>
+        <ul>
+          <li><a href="sobre.html">Sobre</a></li>
+          <li><a href="noticias.html">Notícias</a></li>
+          <li><a href="agenda.html">Agenda</a></li>
+          <li><a href="comites.html">Recursos</a></li>
+          <li><a href="faca-parte.html">Faça Parte</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contato</h5>
+        <ul>
+          <li><a href="mailto:pedro.pereira63@portalsesisp.org.br">pedro.pereira63@portalsesisp.org.br</a></li>
+          <li><a href="#">SESI CE-437, Hortolândia</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2025 SESI World Diplomacy League — Desenvolvido por <strong>Pedro Bonazzi</strong></p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
+        <a href="privacidade.html" style="font-size:12px;color:rgba(255,255,255,.35)">Política de Privacidade</a>
+        <a href="termos.html" style="font-size:12px;color:rgba(255,255,255,.35)">Termos de Uso</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script>
+  const committeeColors = {
+    cs:'#C0392B', mma:'#1E7B45', dhr:'#8E44AD',
+    ecosoc:'#D4AC0D', disec:'#E67E22', oms:'#2E86C1',
+  };
+
+  let allNews = [];
+  let categories = [];
+  let currentCat = 'all';
+
+  function hashColor(str) {
+    if (committeeColors[str]) return committeeColors[str];
+    let h = 0;
+    for (let i = 0; i < str.length; i++) { h = str.charCodeAt(i) + ((h << 5) - h); h |= 0; }
+    return `hsl(${Math.abs(h) % 360}, 45%, 32%)`;
+  }
+
+  // ── TICKER ────────────────────────────────────────────────
+  async function loadTicker() {
+    const data = await SWDL_API.get('/ticker');
+    if (!data || !data.length) return;
+    const track = document.getElementById('tickerTrack');
+    // Separar urgentes do resto
+    const urgentes = data.filter(i => i.type === 'urgent');
+    const normais  = data.filter(i => i.type !== 'urgent');
+    // Se há urgentes, duplicar eles para ficarem em loop visível
+    const items = (urgentes.length ? urgentes : normais).map(i =>
+      `<span class="ticker-item ${i.type === 'urgent' ? 'ticker-urgent' : ''}">${i.html}</span>`
+    ).join('<span class="ticker-dot">•</span>');
+    track.innerHTML = items + items;
+  }
+
+  // ── CARROSSEL DE COMITÊS ───────────────────────────────────
+  async function loadComites() {
+    const comites = await SWDL_API.get('/comites');
+    const el = document.getElementById('comitesCarousel');
+    if (!comites || !comites.length) {
+      el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);width:100%">Nenhum comitê ativo</div>';
+      return;
+    }
+    el.innerHTML = comites.map(c => {
+      const statusClass = c.status_type;
+      const color = hashColor(c.name);
+      const imgHtml = c.image
+        ? `<div class="comite-card-img"><img src="${c.image}" alt="${c.name}"></div>`
+        : '';
+      return `
+        <div class="comite-card">
+          ${imgHtml}
+          <div class="comite-card-top" style="border-left-color:${color}">
+            <div class="comite-card-name">${c.name}</div>
+            <div class="comite-card-status ${statusClass}">${c.status_label}</div>
+          </div>
+          <div class="comite-card-body">
+            <div class="comite-card-time">
+              <span class="comite-time-label">Próxima:</span>
+              <span class="comite-time-value">${c.next_time}</span>
+            </div>
+            ${c.next_title ? `<div class="comite-card-subtitle">${c.next_title}</div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── CATEGORIAS ─────────────────────────────────────────────
+  async function loadCategorias() {
+    const cats = await SWDL_API.get('/categorias');
+    if (!cats) return;
+    categories = cats;
+  }
+
+  // ── NOTÍCIAS ───────────────────────────────────────────────
+  async function loadNoticias() {
+    const news = await SWDL_API.noticias({ limit: 30 });
+    if (!news) return;
+    allNews = news;
+    if (news.length) renderHeroCarousel(news.slice(0, 5));
+    renderGrid(news);
+    renderSidebar(news.slice(0, 6));
+  }
+
+  let heroInterval;
+
+  function renderHeroCarousel(slides) {
+    if (!slides.length) return;
+    let current = 0;
+
+    function showSlide(i) {
+      const n = slides[i];
+      const link = n.slug ? `${API_BASE}/noticia/${n.slug}` : '#';
+      const bg = document.getElementById('heroSlideBg');
+      const title = document.getElementById('heroTitle');
+      const excerpt = document.getElementById('heroExcerpt');
+      const badge = document.getElementById('heroBadge');
+      const meta = document.getElementById('heroMeta');
+      const wrapper = document.getElementById('heroSlide');
+
+      badge.innerHTML = `<span style="background:${hashColor(n.category_slug || 'geral')};padding:4px 12px;border-radius:2px">${n.category_icon || '📰'} ${n.category}</span>`;
+      title.innerHTML = `<a href="${link}" style="text-decoration:none;color:inherit">${n.title}</a>`;
+      excerpt.textContent = n.excerpt || (n.body || '').replace(/<[^>]*>/g,'').slice(0,150);
+      meta.innerHTML = `
+        <span class="hero-time">${n.time_ago}</span>
+        <span class="hero-committee" style="background:${hashColor(n.committee)}">${n.committee.toUpperCase()}</span>`;
+
+      if (n.image_url) {
+        bg.style.backgroundImage = `url(${n.image_url})`;
+        bg.style.backgroundSize = 'cover';
+        bg.style.backgroundPosition = 'center';
+      } else {
+        bg.style.backgroundImage = `linear-gradient(135deg, ${hashColor(n.category_slug || 'geral')}, var(--navy))`;
+      }
+    }
+
+    // Dots
+    const dotsEl = document.getElementById('heroDots');
+    dotsEl.innerHTML = slides.map((_, i) =>
+      `<span class="hero-dot ${i === 0 ? 'active' : ''}" data-idx="${i}"></span>`
+    ).join('');
+
+    showSlide(0);
+
+    dotsEl.addEventListener('click', (e) => {
+      const dot = e.target.closest('.hero-dot');
+      if (!dot) return;
+      clearInterval(heroInterval);
+      current = parseInt(dot.dataset.idx);
+      showSlide(current);
+      document.querySelectorAll('.hero-dot').forEach(d => d.classList.remove('active'));
+      dot.classList.add('active');
+      heroInterval = setInterval(next, 6000);
+    });
+
+    function next() {
+      current = (current + 1) % slides.length;
+      showSlide(current);
+      document.querySelectorAll('.hero-dot').forEach((d, i) => d.classList.toggle('active', i === current));
+    }
+    clearInterval(heroInterval);
+    heroInterval = setInterval(next, 6000);
+  }
+
+  function renderGrid(news) {
+    const el = document.getElementById('newsGrid');
+    if (!news.length) {
+      el.innerHTML = '<div style="padding:48px;text-align:center;color:var(--muted);grid-column:1/-1">Nenhuma notícia publicada ainda.</div>';
+      return;
+    }
+    el.innerHTML = news.map((n, i) => {
+      const color = hashColor(n.committee);
+      const link  = n.slug ? `${API_BASE}/noticia/${n.slug}` : '#';
+      const catBg = hashColor(n.category_slug || 'geral');
+
+      if (i === 0) return ''; // hero já mostra a primeira
+
+      // Destaque visual para a 2ª notícia
+      const isFeatured = i === 1;
+      if (isFeatured) {
+        return `
+          <article class="grid-card grid-card-featured">
+            <a href="${link}" style="text-decoration:none;color:inherit">
+              ${n.image_url ? `<div class="grid-card-img"><img src="${n.image_url}" alt="${n.title}"></div>` : `<div class="grid-card-img" style="background:linear-gradient(135deg,${color},var(--navy));display:flex;align-items:center;justify-content:center;font-size:32px">${n.category_icon || '📰'}</div>`}
+              <div class="grid-card-body">
+                <div class="grid-card-tags">
+                  <span class="grid-tag" style="background:${catBg}">${n.category_icon || ''} ${n.category}</span>
+                  <span class="grid-tag" style="background:${color}">${n.committee.toUpperCase()}</span>
+                </div>
+                <h3 class="grid-card-title">${n.title}</h3>
+                ${n.excerpt ? `<p class="grid-card-excerpt">${n.excerpt}</p>` : ''}
+                <div class="grid-card-meta">
+                  <span>${n.time_ago}</span>
+                </div>
+              </div>
+            </a>
+          </article>`;
+      }
+
+      return `
+        <article class="grid-card">
+          <a href="${link}" style="text-decoration:none;color:inherit">
+            ${n.image_url ? `<div class="grid-card-img"><img src="${n.image_url}" alt="${n.title}"></div>` : ''}
+            <div class="grid-card-body">
+              <div class="grid-card-tags">
+                <span class="grid-tag" style="background:${catBg}">${n.category_icon || ''} ${n.category}</span>
+                <span class="grid-tag" style="background:${color};opacity:.85">${n.committee.toUpperCase()}</span>
+              </div>
+              <h3 class="grid-card-title">${n.title}</h3>
+              <div class="grid-card-meta">
+                <span>${n.time_ago}</span>
+              </div>
+            </div>
+          </a>
+        </article>`;
+    }).filter(Boolean).join('');
+  }
+
+  function renderSidebar(news) {
+    const el = document.querySelector('.sidebar-updates-body');
+    if (!el || !news.length) return;
+    el.innerHTML = news.map(n => {
+      const color = hashColor(n.committee);
+      const link  = n.slug ? `${API_BASE}/noticia/${n.slug}` : '#';
+      return `
+        <a href="${link}" class="sidebar-item" style="text-decoration:none;color:inherit">
+          <span class="sidebar-item-dot" style="background:${color}"></span>
+          <div>
+            <div class="sidebar-item-title">${n.title}</div>
+            <div class="sidebar-item-meta">${n.time_ago} · ${n.category}</div>
+          </div>
+        </a>`;
+    }).join('');
+  }
+
+  // ── PAINEL DE CATEGORIAS ──────────────────────────────────
+  function setupCatPanel() {
+    const toggle = document.getElementById('newsNavToggle');
+    const panel = document.getElementById('newsCatPanel');
+    const overlay = document.getElementById('catPanelOverlay');
+    const body = document.getElementById('catPanelBody');
+
+    function openPanel() {
+      panel.classList.add('open');
+      overlay.classList.add('open');
+      body.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted)">Carregando...</div>';
+      loadCategorias().then(() => {
+        body.innerHTML = categories.map(c => `
+          <button class="cat-panel-item" data-cat="${c.slug}">
+            <span class="cat-panel-icon">${c.icon || '🏷️'}</span>
+            <span class="cat-panel-name">${c.name}</span>
+          </button>
+        `).join('') + `
+          <button class="cat-panel-item" data-cat="all">
+            <span class="cat-panel-icon">📰</span>
+            <span class="cat-panel-name">Todas</span>
+          </button>`;
+
+        body.querySelectorAll('.cat-panel-item').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const slug = btn.dataset.cat;
+            currentCat = slug;
+            body.querySelectorAll('.cat-panel-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const filtered = currentCat === 'all'
+              ? allNews
+              : allNews.filter(n => n.category_slug === currentCat);
+            renderGrid(filtered);
+            panel.classList.remove('open');
+            overlay.classList.remove('open');
+          });
+        });
+
+        // Marcar active
+        body.querySelector(`[data-cat="${currentCat}"]`)?.classList.add('active');
+      });
+    }
+
+    toggle.addEventListener('click', () => {
+      if (panel.classList.contains('open')) {
+        panel.classList.remove('open');
+        overlay.classList.remove('open');
+      } else {
+        openPanel();
+      }
+    });
+
+    overlay.addEventListener('click', () => {
+      panel.classList.remove('open');
+      overlay.classList.remove('open');
+    });
+  }
+
+  // ── INIT ───────────────────────────────────────────────────
+  (async function init() {
+    setupCatPanel();
+    await loadCategorias();
+    await Promise.all([loadTicker(), loadComites(), loadNoticias()]);
+
+    // Recarregar a cada 60s
+    setInterval(() => {
+      loadTicker();
+      loadComites();
+      loadNoticias();
+    }, 60000);
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: swdl
+    env: python
+    buildCommand: pip install -r requirements.txt && python init_db.py
+    startCommand: gunicorn --worker-class geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 "app:create_app()" --bind 0.0.0.0:$PORT
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FLASK_ENV
+        value: production

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SWDL — SESI World Diplomacy League</title>
+  <meta name="description" content="O maior simulado de relações internacionais do SESI. Represente nações, debata resoluções e construa acordos diplomáticos.">
+  <link rel="icon" type="image/png" href="assent/img/image__1_-removebg-preview.png">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/home.css">
+  <link rel="stylesheet" href="css/footer.css">
+</head>
+<body>
+
+<!-- ── CRISIS BANNER ───────────────────────────────────────── -->
+<div id="crisis-banner">
+  <div class="crisis-pulse"></div>
+  <span class="crisis-text">
+    🚨 <strong>CRISE — CS:</strong> Sessão de emergência convocada para as 14h30. Delegados retornem às salas imediatamente.
+  </span>
+  <button class="crisis-close">✕</button>
+</div>
+
+<!-- ── NAVBAR ──────────────────────────────────────────────── -->
+<nav class="swdl-nav">
+  <a href="index.html" class="nav-logo">
+    <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="noticias.html">Notícias</a></li>
+    <li><a href="comites.html">Temas</a></li>
+    <li><a href="agenda.html">Agenda</a></li>
+    <li><a href="sobre.html">Sobre</a></li>
+    <li><a href="faca-parte.html" class="nav-cta">Faça parte</a></li>
+  </ul>
+  <button class="nav-hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-left">
+    <div class="hero-circles">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="hero-content">
+      <div class="hero-tag">Edição 2026 — Em Andamento</div>
+      <h1 class="hero-title">
+        Diplomacia.
+        <em>Estratégia.</em>
+        Liderança.
+      </h1>
+      <p class="hero-sub">
+        Fundação de Simulações da ONU do SESI CE-437 Hortolândia. Represente nações, estabeleça novas alianças, debata resoluções e construa acordos que moldam o mundo contemporâneo.
+      </p>
+      <div class="hero-btns">
+        <a href="#inscricao-strip" class="btn btn-primary">Faça Parte →</a>
+        <a href="comites.html" class="btn btn-ghost-white">Ver Temas</a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <span class="hero-stat-num" data-count="8">8</span>
+          <span class="hero-stat-label">Temas</span>
+        </div>
+        <div>
+          <span class="hero-stat-num" data-count="216">216</span>
+          <span class="hero-stat-label">Delegados</span>
+        </div>
+        <div>
+          <span class="hero-stat-num" data-count="193">193</span>
+          <span class="hero-stat-label">Países</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-globe">
+      <div class="globe-ring"></div>
+      <div class="globe-ring"></div>
+      <div class="globe-ring"></div>
+      <div class="globe-center">
+        <div class="globe-letters">SW<span>DL</span></div>
+      </div>
+      <div class="country-badge"><span class="flag">🇧🇷</span> Brasil</div>
+      <div class="country-badge"><span class="flag">🇩🇪</span> Alemanha</div>
+      <div class="country-badge"><span class="flag">🇯🇵</span> Japão</div>
+      <div class="country-badge"><span class="flag">🇺🇸</span> Estados Unidos</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TICKER ───────────────────────────────────────────────── -->
+<div class="ticker-bar">
+  <div class="ticker-label">📡 Ao Vivo</div>
+  <div class="ticker-track">
+    <div class="ticker-inner" id="tickerInner">
+      <span class="ticker-item"><span class="sep">◆</span> SWDL 2025 — Aguardando notícias...</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     STATS STRIP
+═══════════════════════════════════════════════════════════ -->
+<div id="stats-strip">
+  <div class="stats-grid">
+    <div class="stat-card reveal">
+      <span class="stat-icon">🌍</span>
+      <span class="stat-num" data-count="193">193</span>
+      <span class="stat-label">Países Representados</span>
+    </div>
+    <div class="stat-card reveal" style="transition-delay:.1s">
+      <span class="stat-icon">🎓</span>
+      <span class="stat-num" data-count="216">216</span>
+      <span class="stat-label">Delegados Inscritos</span>
+    </div>
+    <div class="stat-card reveal" style="transition-delay:.2s">
+      <span class="stat-icon">📜</span>
+      <span class="stat-num" data-count="8">8</span>
+      <span class="stat-label">Temas</span>
+    </div>
+    <div class="stat-card reveal" style="transition-delay:.3s">
+      <span class="stat-icon">🏆</span>
+      <span class="stat-num" data-count="8">8</span>
+      <span class="stat-label">Edições Realizadas</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CENTRAL DE NOTÍCIAS
+═══════════════════════════════════════════════════════════ -->
+<section id="noticias">
+  <div class="container">
+    <div class="news-header">
+      <div>
+        <div class="section-label">Cobertura ao Vivo</div>
+        <h2 class="section-title">Central de Notícias</h2>
+      </div>
+    </div>
+
+    <div class="news-grid reveal" id="newsGrid">
+      <article class="news-card featured" data-cat="crise">
+        <div class="news-img"><div class="news-img-icon">⚡</div></div>
+        <div class="news-card-body">
+          <span class="news-tag crise">🚨 Crise — CS</span>
+          <h3>Tensão no Conselho de Segurança: França e Rússia debatem intervenção humanitária em zona de conflito</h3>
+          <p>A sessão que começou com discussões sobre a Resolução 07 transformou-se em debate acalorado após a delegação francesa apresentar evidências de violações ao direito internacional.</p>
+          <div class="news-meta">
+            <div class="news-meta-left"><span class="dot dot-cs"></span> Conselho de Segurança</div>
+            <span class="news-time">há 12 min</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="news-card" data-cat="oficial">
+        <div class="news-img" style="background:linear-gradient(135deg,#1A5276,#21618C)"><div class="news-img-icon">📋</div></div>
+        <div class="news-card-body">
+          <span class="news-tag oficial">📋 Oficial — MMA</span>
+          <h3>Resolução 03 aprovada: metas climáticas ampliadas para 2030</h3>
+          <div class="news-meta">
+            <div class="news-meta-left"><span class="dot dot-mma"></span> Meio Ambiente</div>
+            <span class="news-time">há 34 min</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="news-card" data-cat="imprensa">
+        <div class="news-img" style="background:linear-gradient(135deg,#1E7B45,#229954)"><div class="news-img-icon">📰</div></div>
+        <div class="news-card-body">
+          <span class="news-tag imprensa">📰 Imprensa — DISEC</span>
+          <h3>Bastidores: como a dupla Brasil chegou à proposta que mudou o debate sobre desarmamento</h3>
+          <div class="news-meta">
+            <div class="news-meta-left"><span class="dot dot-disec"></span> Desarmamento</div>
+            <span class="news-time">há 1h</span>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div style="text-align:center; margin-top:36px">
+      <a href="noticias.html" class="btn btn-ghost">Ver todas as notícias →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TEMAS (preview)
+═══════════════════════════════════════════════════════════ -->
+<section id="comites-preview">
+  <div class="container">
+    <div class="comites-intro">
+      <div class="reveal">
+        <div class="section-label">Estrutura do Evento</div>
+        <h2 class="section-title"><br>Temas</h2>
+        <p class="section-body">Cada comitê simula um órgão real das Nações Unidas. Os delegados debatem temas contemporâneos, propõem resoluções e votam em tempo real.</p>
+        <a href="comites.html" class="btn btn-navy" style="margin-top:28px">Ver todos os Temas →</a>
+      </div>
+      <div></div>
+    </div>
+
+    <div class="comites-grid reveal">
+      <div class="comite-card" style="--card-color:#C0392B">
+        <span class="comite-num">⭐</span>
+        <span class="comite-icon">📘</span>
+        <h4>Guia do Delegado</h4>
+        <p>Guia geral obrigatorio</p>
+        <span class="comite-tag">SWDL — SESI</span>
+      </div>
+      <div class="comite-card" style="--card-color:#1E7B45">
+        <span class="comite-num">01</span>
+        <span class="comite-icon">🌿</span>
+        <h4>Meio Ambiente</h4>
+        <p>Mudanças climáticas, biodiversidade e desenvolvimento sustentável</p>
+        <span class="comite-tag">MMA — UNEP</span>
+      </div>
+      <div class="comite-card" style="--card-color:#8E44AD">
+        <span class="comite-num">02</span>
+        <span class="comite-icon">⚖️</span>
+        <h4>Direitos Humanos</h4>
+        <p>Proteção de minorias, refugiados e liberdades fundamentais</p>
+        <span class="comite-tag">DHR — UNHCR</span>
+      </div>
+      <div class="comite-card" style="--card-color:#D4AC0D">
+        <span class="comite-num">03</span>
+        <span class="comite-icon">💰</span>
+        <h4>Desenvolvimento Econômico</h4>
+        <p>Comércio internacional, combate à pobreza e finanças globais</p>
+        <span class="comite-tag">ECOSOC</span>
+      </div>
+      <div class="comite-card" style="--card-color:#E67E22">
+        <span class="comite-num">04</span>
+        <span class="comite-icon">☢️</span>
+        <h4>Desarmamento</h4>
+        <p>Não-proliferação nuclear, controle de armas e segurança cibernética</p>
+        <span class="comite-tag">DISEC — ONU</span>
+      </div>
+      <div class="comite-card" style="--card-color:#2E86C1">
+        <span class="comite-num">05</span>
+        <span class="comite-icon">🏥</span>
+        <h4>Saúde Global</h4>
+        <p>Pandemias, acesso universal à saúde e resposta a emergências</p>
+        <span class="comite-tag">OMS — WHO</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     AGENDA (strip)
+═══════════════════════════════════════════════════════════ -->
+<section id="agenda-strip">
+  <div class="container">
+    <div class="agenda-grid">
+      <div class="reveal">
+        <div class="section-label" style="color:var(--gold)">Cronograma</div>
+        <h2 class="section-title light">Agenda<br>do Evento</h2>
+        <p class="section-body" style="color:var(--slate)">O cronograma é atualizado em tempo real pelo painel administrativo, destacando sempre a atividade em curso.</p>
+        <a href="agenda.html" class="btn btn-primary" style="margin-top:28px">Ver cronograma completo</a>
+      </div>
+
+      <div class="timeline reveal" id="timelineStrip" style="transition-delay:.15s">
+        <div style="padding:24px 0;color:rgba(255,255,255,.4);font-size:13px">
+          Carregando agenda...
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     GALERIA
+═══════════════════════════════════════════════════════════ -->
+<section id="galeria-strip">
+  <div class="galeria-header">
+    <div>
+      <div class="section-label">Arquivo</div>
+      <h2 class="section-title">Edições Anteriores</h2>
+    </div>
+    <a href="#" class="btn btn-ghost">Ver galeria completa →</a>
+  </div>
+  <div class="galeria-accordion">
+    <div class="galeria-item">
+      <div class="galeria-item-bg">🏛️</div>
+      <div class="galeria-item-overlay"><span>Sessão Plenária</span><small>SWDL 2025</small></div>
+    </div>
+    <div class="galeria-item">
+      <div class="galeria-item-bg">🌍</div>
+      <div class="galeria-item-overlay"><span>Conselho de Segurança</span><small>SWDL 2025</small></div>
+    </div>
+    <div class="galeria-item">
+      <div class="galeria-item-bg">🤝</div>
+      <div class="galeria-item-overlay"><span>Negociações Bilaterais</span><small>SWDL 2025</small></div>
+    </div>
+    <div class="galeria-item">
+      <div class="galeria-item-bg">🏆</div>
+      <div class="galeria-item-overlay"><span>Premiação Final</span><small>SWDL 2025</small></div>
+    </div>
+    <div class="galeria-item">
+      <div class="galeria-item-bg">🎤</div>
+      <div class="galeria-item-overlay"><span>Oratória em Destaque</span><small>SWDL 2025</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ───────────────────────────────────────────────── -->
+<footer class="swdl-footer">
+  <div class="container">
+    <div class="footer-main">
+      <div>
+        <div class="nav-logo" style="display:inline-flex">
+          <a href="index.html" class="nav-logo">
+            <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
+          </a>
+        </div>
+        <p class="footer-brand-desc">A liga que transforma alunos em diplomatas.<br>SESI CE-437, Hortolândia.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Links Rápidos</h5>
+        <ul>
+          <li><a href="sobre.html">Sobre</a></li>
+          <li><a href="noticias.html">Notícias</a></li>
+          <li><a href="agenda.html">Agenda</a></li>
+          <li><a href="comites.html">Recursos</a></li>
+          <li><a href="faca-parte.html">Faça Parte</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contato</h5>
+        <ul>
+          <li><a href="mailto:pedro.pereira63@portalsesisp.org.br">pedro.pereira63@portalsesisp.org.br</a></li>
+          <li><a href="#">SESI CE-437, Hortolândia</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2025 SESI World Diplomacy League — Desenvolvido por <strong>Pedro Bonazzi</strong></p>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
+          <a href="privacidade.html" style="font-size:12px;color:rgba(255,255,255,.35)">Política de Privacidade</a>
+          <a href="termos.html" style="font-size:12px;color:rgba(255,255,255,.35)">Termos de Uso</a>
+        </div>
+    </div>
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script src="js/home.js"></script>
+</body>
+</html>

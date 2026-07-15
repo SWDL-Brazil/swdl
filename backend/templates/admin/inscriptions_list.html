@@ -1,0 +1,69 @@
+{% extends "admin/base.html" %}
+{% block title %}Inscrições{% endblock %}
+{% block page_title %}Inscrições{% endblock %}
+
+{% block content %}
+
+<!-- Filter tabs -->
+<div style="display:flex;gap:6px;margin-bottom:20px">
+  {% for s, label in [('all','Todas'),('pending','Pendentes'),('approved','Aprovadas'),('rejected','Rejeitadas')] %}
+  <a href="{{ url_for('admin.inscriptions_list', status=s) }}"
+     class="btn {{ 'btn-navy' if status_filter == s else 'btn-ghost' }} btn-sm">
+    {{ label }}
+  </a>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <div class="card-body" style="padding:0">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nome</th>
+          <th>E-mail</th>
+          <th>Série</th>
+          <th>Tipo</th>
+          <th>Status</th>
+          <th>Enviado</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ins in inscriptions %}
+        <tr>
+          <td class="text-muted">{{ ins.id }}</td>
+          <td style="font-weight:600">{{ ins.name }}</td>
+          <td class="text-muted">{{ ins.email }}</td>
+          <td class="text-muted">{{ ins.grade or '—' }}</td>
+          <td><span class="badge badge-next">{{ ins.type }}</span></td>
+          <td><span class="badge badge-{{ ins.status }}">{{ ins.status }}</span></td>
+          <td class="text-muted">{{ ins.submitted_at.strftime('%d/%m %H:%M') }}</td>
+          <td>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              <a href="{{ url_for('admin.inscription_detail', id=ins.id) }}"
+                 class="btn btn-ghost btn-sm">Ver</a>
+              {% if ins.status == 'pending' %}
+              <form method="POST" action="{{ url_for('admin.inscription_approve', id=ins.id) }}">
+                <button class="btn btn-primary btn-sm" type="submit">✓ Aprovar</button>
+              </form>
+              <form method="POST" action="{{ url_for('admin.inscription_reject', id=ins.id) }}">
+                <button class="btn btn-danger btn-sm" type="submit">✕ Rejeitar</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" style="text-align:center;color:var(--muted);padding:32px">
+            Nenhuma inscrição encontrada.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

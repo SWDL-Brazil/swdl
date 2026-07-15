@@ -1,0 +1,311 @@
+/* ============================================================
+   SWDL — Design Tokens & CSS Variables
+   Importar este arquivo PRIMEIRO em todos os outros CSS
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap');
+
+/* ── CORES ─────────────────────────────────────────────────── */
+:root {
+  --navy:        #101E4C;   /* Primária — headers, nav, botões */
+  --navy-dark:   #0A1230;   /* Navy mais escuro — footer, backgrounds dark */
+  --navy-mid:    #1d3461;   /* Navy médio — gradientes */
+  --gold:        #B79441;   /* Destaque — CTAs, bordas, medalhas */
+  --gold-light:  #D4B060;   /* Gold mais claro — hovers */
+  --slate:       #B1B5CB;   /* Secundária — ícones, estados inativos */
+  --offwhite:    #F7F5F0;   /* Background principal */
+  --offwhite2:   #F0EDE6;   /* Background alternado de seções */
+  --white:       #FFFFFF;
+  --text:        #1a1a2e;   /* Texto principal */
+  --muted:       #6B6F85;   /* Texto secundário */
+  --border:      rgba(16, 30, 76, 0.10);
+
+  /* Status */
+  --red:         #C0392B;
+  --green:       #1E7B45;
+  --blue:        #1A5276;
+  --purple:      #6C3483;
+  --orange:      #CA6F1E;
+}
+
+/* ── RESET ─────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--offwhite);
+  color: var(--text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+}
+
+/* ── TIPOGRAFIA GLOBAL ─────────────────────────────────────── */
+h1, h2, h3, h4, h5 {
+  font-family: 'Playfair Display', serif;
+  line-height: 1.1;
+  color: var(--navy);
+}
+
+/* ── LAYOUT HELPERS ────────────────────────────────────────── */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+@media (max-width: 768px) {
+  .container { padding: 0 24px; }
+}
+
+/* ── SCROLL REVEAL ─────────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── BOTÕES ────────────────────────────────────────────────── */
+.btn {
+  display: inline-block;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 13px 28px;
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--navy);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(183, 148, 65, 0.35);
+  background: var(--gold-light);
+}
+
+.btn-navy {
+  background: var(--navy);
+  color: var(--white);
+}
+.btn-navy:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(16, 30, 76, 0.25);
+  background: var(--navy-mid);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--navy);
+  border: 1.5px solid var(--border);
+}
+.btn-ghost:hover {
+  border-color: var(--navy);
+  background: rgba(16, 30, 76, 0.04);
+}
+
+.btn-ghost-white {
+  background: transparent;
+  color: var(--white);
+  border: 1.5px solid rgba(255,255,255,0.25);
+}
+.btn-ghost-white:hover {
+  border-color: var(--white);
+}
+
+/* ── SECTION LABELS ────────────────────────────────────────── */
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.section-label::before {
+  content: '';
+  width: 28px;
+  height: 1px;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 900;
+  line-height: 1.08;
+  color: var(--navy);
+  margin-bottom: 16px;
+}
+
+.section-title.light { color: var(--white); }
+
+.section-body {
+  font-size: 15px;
+  line-height: 1.72;
+  color: var(--muted);
+  max-width: 520px;
+}
+
+/* ── NEWS TAGS ─────────────────────────────────────────────── */
+.news-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 2px;
+  color: var(--white);
+}
+.news-tag.crise    { background: var(--red); }
+.news-tag.oficial  { background: var(--blue); }
+.news-tag.imprensa { background: var(--green); }
+.news-tag.votacao  { background: var(--navy); }
+
+/* ── TICKER ────────────────────────────────────────────────── */
+.ticker-bar {
+  background: var(--navy);
+  height: 40px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+.ticker-label {
+  background: var(--gold);
+  color: var(--navy);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0 18px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.ticker-track {
+  overflow: hidden;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
+}
+.ticker-inner {
+  display: flex;
+  animation: ticker-scroll 45s linear infinite;
+  white-space: nowrap;
+}
+.ticker-item {
+  font-size: 12px;
+  color: var(--slate);
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ticker-item .sep { color: var(--gold); font-size: 9px; }
+.ticker-item strong { color: var(--white); }
+
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── COMITE DOTS (cores por comitê) ────────────────────────── */
+.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot-cs      { background: var(--red); }
+.dot-mma     { background: var(--green); }
+.dot-dhr     { background: var(--purple); }
+.dot-ecosoc  { background: var(--orange); }
+.dot-disec   { background: #E67E22; }
+.dot-oms     { background: var(--blue); }
+
+/* ── CRISIS BANNER ─────────────────────────────────────────── */
+#crisis-banner {
+  position: fixed;
+  top: 68px;
+  left: 0; right: 0;
+  z-index: 90;
+  background: var(--red);
+  padding: 10px 48px;
+  display: none;
+  align-items: center;
+  gap: 14px;
+  animation: slide-down 0.4s ease;
+}
+#crisis-banner.active { display: flex; }
+
+.crisis-pulse {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--white);
+  animation: pulse 1s ease-in-out infinite;
+  flex-shrink: 0;
+}
+.crisis-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--white);
+}
+.crisis-text strong { color: #FFCCCC; }
+.crisis-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+.crisis-close:hover { color: var(--white); }
+
+@keyframes slide-down {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.75); }
+}

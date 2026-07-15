@@ -1,0 +1,100 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Cronômetro de Oratória{% endblock %}
+
+{% block page_title %}⏱️ Cronômetro de Oratória{% endblock %}
+
+{% block topbar_actions %}
+  <button class="btn btn-danger btn-sm" onclick="resetTimer()">↺ Reset</button>
+{% endblock %}
+
+{% block content %}
+
+<div class="stats-grid" style="grid-template-columns: repeat(5, 1fr);">
+  <div class="stat-tile" style="cursor:pointer;border-left-color:var(--gold);text-align:center" onclick="startTimer(60)">
+    <span class="stat-tile-num">1</span>
+    <span class="stat-tile-label">Minuto</span>
+  </div>
+  <div class="stat-tile" style="cursor:pointer;border-left-color:var(--gold);text-align:center" onclick="startTimer(90)">
+    <span class="stat-tile-num">1:30</span>
+    <span class="stat-tile-label">Minuto</span>
+  </div>
+  <div class="stat-tile" style="cursor:pointer;border-left-color:var(--gold);text-align:center" onclick="startTimer(300)">
+    <span class="stat-tile-num">5</span>
+    <span class="stat-tile-label">Minutos</span>
+  </div>
+  <div class="stat-tile" style="cursor:pointer;border-left-color:var(--gold);text-align:center" onclick="startTimer(600)">
+    <span class="stat-tile-num">10</span>
+    <span class="stat-tile-label">Minutos</span>
+  </div>
+  <div class="stat-tile" style="cursor:pointer;border-left-color:var(--gold);text-align:center" onclick="startTimer(900)">
+    <span class="stat-tile-num">15</span>
+    <span class="stat-tile-label">Minutos</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Tempo Livre</h3>
+    <div style="display:flex;align-items:center;gap:12px">
+      <input type="number" id="customSeconds" min="1" max="3600" value="120"
+             style="width:100px;padding:8px 12px;border:1px solid var(--border);border-radius:3px;font-family:'DM Sans',sans-serif;font-size:14px;text-align:center">
+      <span class="text-muted">segundos</span>
+      <button class="btn btn-primary btn-sm" onclick="startTimer(parseInt(document.getElementById('customSeconds').value)||120)">▶ Iniciar</button>
+    </div>
+  </div>
+  <div class="card-body" style="text-align:center;padding:48px">
+    <div style="font-family:'Playfair Display',serif;font-size:120px;font-weight:900;color:var(--navy);line-height:1;letter-spacing:-2px" id="adminTimerDisplay">--:--</div>
+    <div style="margin-top:16px;font-size:13px;color:var(--muted)" id="adminTimerStatus">⏸ Aguardando</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+  const socket = io({ transports: ['websocket', 'polling'] });
+
+  let adminTimerInterval = null;
+  let adminTimerRem = 0;
+  let adminTimerTotal = 0;
+
+  function startTimer(seconds) {
+    socket.emit('admin_timer_start', { duration: seconds });
+    adminTimerTotal = seconds;
+    adminTimerRem = seconds;
+    clearInterval(adminTimerInterval);
+    renderAdminTimer();
+    adminTimerInterval = setInterval(() => {
+      adminTimerRem--;
+      renderAdminTimer();
+      if (adminTimerRem <= 0) {
+        clearInterval(adminTimerInterval);
+        document.getElementById('adminTimerStatus').textContent = '⏹ Tempo esgotado!';
+      }
+    }, 1000);
+    document.getElementById('adminTimerStatus').textContent = '▶ Rodando...';
+  }
+
+  function resetTimer() {
+    socket.emit('admin_timer_reset', {});
+    clearInterval(adminTimerInterval);
+    adminTimerRem = 0;
+    adminTimerTotal = 0;
+    document.getElementById('adminTimerDisplay').textContent = '--:--';
+    document.getElementById('adminTimerStatus').textContent = '⏸ Aguardando';
+  }
+
+  function renderAdminTimer() {
+    const el = document.getElementById('adminTimerDisplay');
+    const m = String(Math.floor(Math.max(0, adminTimerRem) / 60)).padStart(2, '0');
+    const s = String(Math.max(0, adminTimerRem) % 60).padStart(2, '0');
+    el.textContent = `${m}:${s}`;
+    if (adminTimerRem <= 10) {
+      el.style.color = 'var(--red)';
+    } else if (adminTimerRem <= adminTimerTotal * 0.3) {
+      el.style.color = 'var(--gold)';
+    } else {
+      el.style.color = 'var(--navy)';
+    }
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends "admin/base.html" %}
+{% block title %}Votações<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+  const socket = io();
+  socket.emit('join_vote_list', {});
+
+  // Recebe sincronização completa da tabela
+  socket.on('sessions_sync', (sessions) => {
+    updateTable(sessions);
+  });
+
+  // Quando uma votação é aberta ou fechada, atualiza a tabela
+  socket.on('vote_update', (data) => {
+    updateRow(data);
+  });
+  socket.on('vote_closed', (data) => {
+    updateRow(data);
+  });
+
+  function updateTable(sessions) {
+    const tbody = document.querySelector('#voteTable tbody');
+    if (!tbody) return;
+    tbody.innerHTML = sessions.length ? '' : `
+      <tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px">
+        Nenhuma votação criada ainda.
+        <a href="/admin/votacoes/nova">Criar primeira votação →</a>
+      </td></tr>`;
+    sessions.forEach(s => tbody.insertAdjacentHTML('beforeend', rowHtml(s)));
+  }
+
+  function updateRow(data) {
+    const row = document.getElementById('row-' + data.id);
+    if (!row) {
+      // Recarrega a página se for uma sessão nova não conhecida
+      location.reload(); return;
+    }
+    const c = data.counts;
+    row.querySelector('.td-favor').textContent     = c.favor;
+    row.querySelector('.td-contra').textContent    = c.contra;
+    row.querySelector('.td-abstencao').textContent = c.abstencao;
+    row.querySelector('.td-total').textContent     = c.total;
+    if (data.status === 'closed') {
+      row.querySelector('.td-status').innerHTML =
+        '<span class="badge badge-done">🔒 Encerrada</span>';
+      const closeBtn = row.querySelector('.btn-close');
+      if (closeBtn) closeBtn.remove();
+    }
+  }
+
+  function rowHtml(s) {
+    const c = s.counts;
+    const statusBadge = s.status === 'open'
+      ? '<span class="badge badge-now" style="animation:none">🟢 Aberta</span>'
+      : '<span class="badge badge-done">🔒 Encerrada</span>';
+    const closeBtn = s.status === 'open'
+      ? `<form method="POST" action="/admin/votacoes/${s.id}/fechar">
+           <button class="btn btn-navy btn-sm btn-close" type="submit">🔒 Fechar</button>
+         </form>`
+      : '';
+    return `
+      <tr id="row-${s.id}">
+        <td class="text-muted">${s.id}</td>
+        <td style="font-weight:600;max-width:240px">${s.title}</td>
+        <td><span class="badge badge-next">${s.committee.toUpperCase()}</span></td>
+        <td class="td-status">${statusBadge}</td>
+        <td class="td-favor" style="color:var(--green);font-weight:700">${c.favor}</td>
+        <td class="td-contra" style="color:var(--red);font-weight:700">${c.contra}</td>
+        <td class="td-abstencao" style="color:var(--muted);font-weight:700">${c.abstencao}</td>
+        <td class="td-total" style="font-weight:700">${c.total}</td>
+        <td>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <a href="/admin/votacoes/${s.id}/resultados" class="btn btn-ghost btn-sm">📊 Ver</a>
+            ${closeBtn}
+            <form method="POST" action="/admin/votacoes/${s.id}/deletar"
+                  onsubmit="return confirm('Deletar esta votação?')">
+              <button class="btn btn-danger btn-sm" type="submit">Del</button>
+            </form>
+          </div>
+        </td>
+      </tr>`;
+  }
+</script>
+{% endblock %}
+{% block page_title %}Sistema de Votação{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('vote.vote_create') }}" class="btn btn-primary">+ Nova Votação</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <div class="card-body" style="padding:0">
+    <table class="admin-table" id="voteTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Resolução / Título</th>
+          <th>Comitê</th>
+          <th>Status</th>
+          <th>A Favor</th>
+          <th>Contra</th>
+          <th>Abstenção</th>
+          <th>Total</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sessions %}
+        {% set c = s.count() %}
+        <tr id="row-{{ s.id }}">
+          <td class="text-muted">{{ s.id }}</td>
+          <td style="font-weight:600;max-width:240px">{{ s.title }}</td>
+          <td><span class="badge badge-next">{{ s.committee.upper() }}</span></td>
+          <td class="td-status">
+            {% if s.status == 'open' %}
+              <span class="badge badge-now" style="animation:none">🟢 Aberta</span>
+            {% else %}
+              <span class="badge badge-done">🔒 Encerrada</span>
+            {% endif %}
+          </td>
+          <td class="td-favor" style="color:var(--green);font-weight:700">{{ c.favor }}</td>
+          <td class="td-contra" style="color:var(--red);font-weight:700">{{ c.contra }}</td>
+          <td class="td-abstencao" style="color:var(--muted);font-weight:700">{{ c.abstencao }}</td>
+          <td class="td-total" style="font-weight:700">{{ c.total }}</td>
+          <td>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              <a href="{{ url_for('vote.vote_results', id=s.id) }}"
+                 class="btn btn-ghost btn-sm">📊 Ver</a>
+              {% if s.status == 'open' %}
+              <form method="POST" action="{{ url_for('vote.vote_close', id=s.id) }}">
+                <button class="btn btn-navy btn-sm btn-close" type="submit">🔒 Fechar</button>
+              </form>
+              {% endif %}
+              <form method="POST" action="{{ url_for('vote.vote_delete', id=s.id) }}"
+                    onsubmit="return confirm('Deletar esta votação e todos os votos?')">
+                <button class="btn btn-danger btn-sm" type="submit">Del</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="9" style="text-align:center;color:var(--muted);padding:32px">
+            Nenhuma votação criada ainda.
+            <a href="{{ url_for('vote.vote_create') }}">Criar primeira votação →</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

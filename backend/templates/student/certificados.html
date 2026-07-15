@@ -1,0 +1,87 @@
+{% extends "student/base.html" %}
+{% block title %}Certificados{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">🎓 Certificados</h1>
+    <p class="page-sub">Visualize e valide seus certificados de participação.</p>
+  </div>
+</div>
+
+{% if student and student.certificate_released and student.certificate_url %}
+<div class="card">
+  <div class="card-body" style="text-align:center;padding:40px">
+    <div style="font-size:64px;margin-bottom:16px">🎓</div>
+    <div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--navy);margin-bottom:8px">
+      Certificado Disponível
+    </div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:24px;max-width:400px;margin-left:auto;margin-right:auto">
+      Seu certificado de participação foi liberado pela organização. Clique abaixo para visualizar ou baixar.
+    </p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="{{ student.certificate_url }}" target="_blank" class="btn btn-gold">
+        🎓 Visualizar Certificado
+      </a>
+    </div>
+    {% if student.certificate_hash %}
+    <div style="margin-top:20px;padding:16px;background:var(--offwhite2);border-radius:4px;text-align:left">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">
+        Verificação Pública
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--navy);word-break:break-all">
+        Hash: {{ student.certificate_hash }}
+      </div>
+      {% if student.digital_signature %}
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+        <span style="background:rgba(46,204,113,.12);color:#2ECC71;border:1px solid rgba(46,204,113,.25);padding:2px 10px;border-radius:10px;font-family:'DM Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">
+          🖊️ Assinado Digitalmente
+        </span>
+        {% if student.signed_at %}
+        <span style="font-size:10px;color:var(--muted)">
+          {{ student.signed_at.strftime('%d/%m/%Y %H:%M') }}
+        </span>
+        {% endif %}
+      </div>
+      {% set sig = student.digital_signature or '' %}
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);word-break:break-all;margin-top:4px">
+        Assinatura: {{ sig[:64] ~ '...' if sig|length > 64 else sig }}
+      </div>
+      {% endif %}
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">
+        Qualquer pessoa pode validar este certificado através do endpoint público:
+        <code style="background:var(--border);padding:2px 6px;border-radius:2px;font-size:10px;word-break:break-all">
+          {{ request.host_url }}api/certificado/validar?hash={{ student.certificate_hash }}
+        </code>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% elif student and not student.certificate_released %}
+<div class="card">
+  <div class="card-body" style="text-align:center;padding:48px">
+    <div style="font-size:48px;margin-bottom:16px">🔒</div>
+    <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px">
+      Certificado não liberado
+    </div>
+    <p style="font-size:14px;color:var(--muted);max-width:400px;margin:0 auto">
+      Seu certificado será disponibilizado assim que a organização liberar. 
+      Fique atento aos comunicados oficiais.
+    </p>
+  </div>
+</div>
+{% else %}
+<div class="card">
+  <div class="card-body" style="text-align:center;padding:48px">
+    <div style="font-size:48px;margin-bottom:16px">🎓</div>
+    <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px">
+      Certificados
+    </div>
+    <p style="font-size:14px;color:var(--muted)">
+      Complete sua participação para receber seu certificado.
+    </p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

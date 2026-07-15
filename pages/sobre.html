@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sobre — SWDL</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="css/footer.css">
+  <link rel="icon" type="image/png" href="assent/img/image__1_-removebg-preview.png">
+  <style>
+    /* Missão / Visão */
+    .mv-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 24px; margin-bottom: 64px;
+    }
+    .mv-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 4px; padding: 36px 32px;
+      border-top: 4px solid var(--navy);
+      transition: transform .25s, box-shadow .25s;
+    }
+    .mv-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(16,30,76,.09); }
+    .mv-card:nth-child(2) { border-top-color: var(--gold); }
+    .mv-icon { font-size: 30px; margin-bottom: 14px; display: block; }
+    .mv-card h3 { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--navy); margin-bottom:12px; }
+    .mv-card p  { font-size:14px; line-height:1.72; color:var(--muted); }
+
+    /* Valores */
+    .valores-section {
+      background: var(--navy); border-radius: 4px;
+      padding: 48px; margin-bottom: 64px;
+    }
+    .valores-section .section-label { color: var(--gold); }
+    .valores-section h2 { color: var(--white); margin-bottom: 28px; }
+    .valores-list {
+      display: grid; grid-template-columns: repeat(5,1fr); gap: 16px;
+    }
+    .valor-chip {
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 3px; padding: 18px 14px; text-align: center;
+      transition: background .2s;
+    }
+    .valor-chip:hover { background: rgba(183,148,65,.15); border-color: rgba(183,148,65,.3); }
+    .valor-chip-icon { font-size: 22px; margin-bottom: 8px; display: block; }
+    .valor-chip-text { font-size: 12px; font-weight: 600; color: var(--white); line-height: 1.3; }
+
+    /* História */
+    .historia-grid {
+      display: grid; grid-template-columns: 1fr 1.1fr;
+      gap: 72px; align-items: center; margin-bottom: 80px;
+    }
+    .historia-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 4px; padding: 36px; position: relative;
+    }
+    .historia-card::before {
+      content: '"'; font-family:'Playfair Display',serif;
+      font-size: 120px; line-height:.8;
+      color: rgba(16,30,76,.06);
+      position: absolute; top: 12px; left: 22px; pointer-events:none;
+    }
+    .historia-year {
+      font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.12em;
+      text-transform:uppercase; color:var(--gold); margin-bottom:16px; display:block;
+    }
+    .historia-card p {
+      font-size:14px; line-height:1.75; color:var(--muted);
+      margin-bottom:14px; position:relative; z-index:1;
+    }
+    .historia-card p:last-of-type { margin-bottom:0; }
+    .historia-stats {
+      display:flex; gap:32px; margin-top:24px;
+      padding-top:20px; border-top:1px solid var(--border);
+    }
+    .historia-stat-num {
+      font-family:'Playfair Display',serif; font-size:32px; font-weight:700;
+      color:var(--navy); line-height:1; display:block;
+    }
+    .historia-stat-label {
+      font-size:11px; text-transform:uppercase; letter-spacing:.07em;
+      color:var(--muted); display:block; margin-top:3px;
+    }
+
+    /* Simulação ONU */
+    .simulacao-section {
+      background: var(--offwhite2); border-radius: 4px;
+      padding: 64px 48px; margin-bottom: 80px;
+    }
+    .simulacao-section h2 { margin-bottom: 36px; }
+    .simulacao-grid {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 20px;
+    }
+    .sim-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 3px; padding: 28px 22px; position: relative; overflow:hidden;
+      transition: transform .25s, box-shadow .25s;
+    }
+    .sim-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(16,30,76,.09); }
+    .sim-card::after {
+      content:''; position:absolute; bottom:0; left:0; right:0; height:3px;
+      background:var(--gold); transform:scaleX(0); transform-origin:left; transition:transform .3s;
+    }
+    .sim-card:hover::after { transform:scaleX(1); }
+    .sim-card-icon { font-size:28px; margin-bottom:14px; display:block; }
+    .sim-card h4 { font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:var(--navy); margin-bottom:10px; }
+    .sim-card p  { font-size:13px; line-height:1.6; color:var(--muted); }
+
+    /* Equipe */
+    .equipe-grid-real {
+      display: grid; grid-template-columns: repeat(5,1fr);
+      gap: 20px; margin-top: 36px;
+    }
+    .team-card-real {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 4px; overflow: hidden; text-align: center;
+      transition: transform .25s, box-shadow .25s;
+    }
+    .team-card-real:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(16,30,76,.09); }
+    .team-avatar-real {
+      width:100%; aspect-ratio:1; background:var(--navy);
+      display:flex; align-items:center; justify-content:center;
+      position:relative; overflow:hidden;
+    }
+    .team-avatar-real::after {
+      content:''; position:absolute; inset:0;
+      background: radial-gradient(circle at 40% 35%, rgba(183,148,65,.18) 0%, transparent 65%);
+    }
+    .team-avatar-letter {
+      position:relative; z-index:1; font-size:38px; font-weight:900;
+      color:rgba(183,148,65,.65); font-family:'Playfair Display',serif;
+    }
+    .team-card-body-real { padding: 16px 14px 18px; }
+    .team-card-body-real h4 {
+      font-family:'Playfair Display',serif; font-size:14px; font-weight:700;
+      color:var(--navy); margin-bottom:4px; line-height:1.2;
+    }
+    .team-role-real {
+      font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.08em;
+      text-transform:uppercase; color:var(--gold); line-height:1.3;
+    }
+
+    /* Featured teacher card */
+    .team-card-real.featured-teacher {
+      grid-column: span 2;
+      display: grid; grid-template-columns: 160px 1fr; text-align:left;
+    }
+    .team-card-real.featured-teacher .team-avatar-real { aspect-ratio:auto; min-height:140px; }
+    .team-card-real.featured-teacher .team-card-body-real {
+      padding:20px 22px; display:flex; flex-direction:column; justify-content:center;
+    }
+    .team-card-real.featured-teacher h4 { font-size:18px; }
+    .team-card-real.featured-teacher .team-role-real { margin-bottom:6px; }
+    .teacher-desc { font-size:12px; color:var(--muted); line-height:1.55; margin-top:8px; }
+
+    /* responsive */
+    @media(max-width:1100px){
+      .equipe-grid-real { grid-template-columns:repeat(4,1fr); }
+      .team-card-real.featured-teacher { grid-column:span 2; }
+      .valores-list { grid-template-columns:repeat(3,1fr); }
+      .simulacao-grid { grid-template-columns:repeat(2,1fr); }
+    }
+    @media(max-width:768px){
+      .mv-grid { grid-template-columns:1fr; }
+      .historia-grid { grid-template-columns:1fr; gap:36px; }
+      .equipe-grid-real { grid-template-columns:repeat(2,1fr); }
+      .team-card-real.featured-teacher { grid-column:span 2; grid-template-columns:120px 1fr; }
+      .valores-list { grid-template-columns:repeat(2,1fr); }
+      .simulacao-grid { grid-template-columns:1fr 1fr; }
+      .valores-section, .simulacao-section { padding:36px 24px; }
+    }
+    @media(max-width:520px){
+      .equipe-grid-real { grid-template-columns:1fr 1fr; }
+      .team-card-real.featured-teacher { grid-column:1/-1; grid-template-columns:1fr; }
+      .team-card-real.featured-teacher .team-card-body-real { text-align:center; }
+      .simulacao-grid { grid-template-columns:1fr; }
+      .valores-list { grid-template-columns:1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="crisis-banner">
+  <div class="crisis-pulse"></div>
+  <span class="crisis-text">🚨 <strong>CRISE — CS:</strong> Sessão de emergência às 14h30.</span>
+  <button class="crisis-close">✕</button>
+</div>
+
+<nav class="swdl-nav">
+  <a href="index.html" class="nav-logo">
+    <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="noticias.html">Notícias</a></li>
+    <li><a href="comites.html">Temas</a></li>
+    <li><a href="agenda.html">Agenda</a></li>
+    <li><a href="sobre.html">Sobre</a></li>
+    <li><a href="faca-parte.html" class="nav-cta">Faça Parte</a></li>
+  </ul>
+
+  <button class="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-bg-text">SOBRE</div>
+  <div class="page-hero-content">
+    <div class="breadcrumb"><a href="index.html">Home</a> › <span>Sobre</span></div>
+    <div class="section-label">A Liga</div>
+    <h1>Sobre a SWDL</h1>
+    <p>Conheça nossa história, missão e valores</p>
+  </div>
+</div>
+
+<main class="page-main">
+  <div class="container">
+
+    <!-- MISSÃO & VISÃO -->
+    <div class="mv-grid reveal">
+      <div class="mv-card">
+        <span class="mv-icon">🎯</span>
+        <h3>Missão</h3>
+        <p>Formar jovens líderes capacitados para enfrentar os desafios globais contemporâneos através de simulações realísticas da ONU, desenvolvendo habilidades diplomáticas, de negociação e pensamento crítico.</p>
+      </div>
+      <div class="mv-card">
+        <span class="mv-icon">🔭</span>
+        <h3>Visão</h3>
+        <p>Formar futuros membros que posteriormente ingressarão no comitê. Além disso, estabelecer parcerias com órgãos externos com a finalidade de criar um ambiente para ambos participantes internos e externos. Adicionalmente, inspirar novas gerações de líderes comprometidos com a paz, justiça e cooperação internacional.</p>
+      </div>
+    </div>
+
+    <!-- VALORES -->
+    <div class="valores-section reveal">
+      <div class="section-label">Nossos Pilares</div>
+      <h2 class="section-title light">Valores</h2>
+      <div class="valores-list">
+        <div class="valor-chip"><span class="valor-chip-icon">🕊️</span><div class="valor-chip-text">Diplomacia e Diálogo</div></div>
+        <div class="valor-chip"><span class="valor-chip-icon">🌍</span><div class="valor-chip-text">Respeito à Diversidade</div></div>
+        <div class="valor-chip"><span class="valor-chip-icon">📚</span><div class="valor-chip-text">Excelência Acadêmica</div></div>
+        <div class="valor-chip"><span class="valor-chip-icon">🤝</span><div class="valor-chip-text">Cooperação Internacional</div></div>
+        <div class="valor-chip"><span class="valor-chip-icon">🌱</span><div class="valor-chip-text">Desenvolvimento Sustentável</div></div>
+      </div>
+    </div>
+
+    <!-- HISTÓRIA -->
+    <div class="historia-grid">
+      <div class="historia-card reveal">
+        <span class="historia-year">Fundação — 2024 · SESI CE-437</span>
+        <p>A SESI World Diplomacy League (SWDL) nasceu em 2024 da visão de estudantes do 1º ano do Ensino Médio do SESI CE-437, apaixonados por relações internacionais e diplomacia.</p>
+        <p>O projeto começou como uma iniciativa para promover simulações realísticas da ONU, capacitando jovens a partir do 6º ano. Desde o primeiro debate, a SWDL tem crescido, impactando dezenas de estudantes com discussões sobre temas globais desde educação e igualdade de gênero, até disputas politicas e militares</p>
+        <p>Hoje, a SWDL é reconhecida pela qualidade de suas simulações e pelo comprometimento em formar jovens líderes preparados para os desafios do século XXI.</p>
+        <div class="historia-stats">
+          <div>
+            <span class="historia-stat-num">2024</span>
+            <span class="historia-stat-label">Ano de fundação</span>
+          </div>
+          <div>
+            <span class="historia-stat-num">CE-437</span>
+            <span class="historia-stat-label">Unidade SESI</span>
+          </div>
+          <div>
+            <span class="historia-stat-num">6º+</span>
+            <span class="historia-stat-label">A partir do ano</span>
+          </div>
+        </div>
+      </div>
+      <div class="reveal" style="transition-delay:.12s">
+        <div class="section-label">Nossa História</div>
+        <h2 class="section-title">Uma liga criada<br>por estudantes</h2>
+        <p class="section-body" style="margin-bottom:24px">Do sonho de alunos do 1º EM à realidade: a SWDL prova que jovens têm o poder de criar experiências educacionais transformadoras para toda a comunidade escolar.</p>
+        <a href="faca-parte.html" class="btn btn-navy">Junte-se a nós →</a>
+      </div>
+    </div>
+
+    <!-- O QUE É UMA SIMULAÇÃO DA ONU -->
+    <div class="simulacao-section reveal">
+      <div class="section-label">Como Funciona</div>
+      <h2 class="section-title">O que é uma Simulação da ONU?</h2>
+      <div class="simulacao-grid">
+        <div class="sim-card">
+          <span class="sim-card-icon">🗺️</span>
+          <h4>Representação de Países</h4>
+          <p>Os participantes representam diferentes países em temas da ONU, defendendo suas posições e interesses nacionais.</p>
+        </div>
+        <div class="sim-card">
+          <span class="sim-card-icon">🎤</span>
+          <h4>Debates Realísticos</h4>
+          <p>Discussões sobre temas globais atuais seguindo os procedimentos oficiais das Nações Unidas.</p>
+        </div>
+        <div class="sim-card">
+          <span class="sim-card-icon">🤝</span>
+          <h4>Negociação e Diplomacia</h4>
+          <p>Desenvolvimento de habilidades diplomáticas através de negociações e busca por consenso entre delegações.</p>
+        </div>
+        <div class="sim-card">
+          <span class="sim-card-icon">📜</span>
+          <h4>Produção de Resoluções</h4>
+          <p>Elaboração de documentos oficiais que propõem soluções concretas para os problemas discutidos.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- EQUIPE -->
+    <div id="equipe" class="reveal">
+      <div class="section-label">Quem faz acontecer</div>
+      <h2 class="section-title">Nossa Equipe</h2>
+      <p class="section-body">A SWDL é conduzida por uma equipe dedicada de estudantes do Ensino Médio do SESI CE-437, apaixonados por relações internacionais e educação diplomática.</p>
+
+      <!-- Filtros para selecionar o ano -->
+      <div class="team-tabs">
+        <button class="tab-btn active" onclick="mudarAno(this, 'atual')">Equipe Atual</button>
+        <button class="tab-btn" onclick="mudarAno(this, '2025')">Gestão 2025</button>
+      </div>
+
+      <!-- CONTAINER: EQUIPE ATUAL -->
+      <div id="equipe-atual" class="team-year-section active-section">
+        <div class="equipe-grid-real">
+
+          <!-- Professora Orientadora -->
+          <div class="team-card-real featured-teacher">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">A</span>
+              <img src="img/equipe/angela.jpg" alt="Angela Jasper" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Professora Orientadora</div>
+              <h4>Angela Jasper</h4>
+              <p class="teacher-desc">Responsável por orientar e acompanhar todas as atividades da SWDL, garantindo a qualidade pedagógica e o desenvolvimento dos alunos.</p>
+            </div>
+          </div>
+
+          <!-- Guilherme Santiago -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">G</span>
+              <img src="assent/img/equipe/santiago.jpg"Guilherme Santiago" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Secretário-Geral</div>
+              <h4>Guilherme Santiago</h4>
+            </div>
+          </div>
+
+          <!-- Eloisa Monteiro -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">E</span>
+              <img src="assent/img/equipe/Eloisa.jpg" alt="Eloisa Monteiro" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Diretora de Eventos e Logística</div>
+              <h4>Eloisa Monteiro</h4>
+            </div>
+          </div>
+
+          <!-- Giovana Rodrigues -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">G</span>
+              <img src="assent/img/equipe/Gi.jpg" alt="Giovana Rodrigues" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Diretora de Relações Públicas</div>
+              <h4>Giovana Rodrigues</h4>
+            </div>
+          </div>
+
+          <!-- Talita Marcelino -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">T</span>
+              <img src="assent/img/equipe/Talita.jpg" alt="Talita Marcelino" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Diretora de Recursos Humanos</div>
+              <h4>Talita Marcelino</h4>
+            </div>
+          </div>
+
+          <!-- Julia Marson -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">J</span>
+              <img src="assent/img/equipe/Julia_3.png"Julia Marson" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Coordenadora Administrativa</div>
+              <h4>Julia Marson</h4>
+            </div>
+          </div>
+
+          <!-- Pedro Bonazzi -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">P</span>
+              <img src="img/equipe/pedro.jpg" alt="Pedro Bonazzi" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Coord. da Staff & Desenvolvimento Web</div>
+              <h4>Pedro Bonazzi</h4>
+            </div>
+          </div>
+
+          <!-- Mariana Cerqueira -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">M</span>
+              <img src="img/equipe/mariana.jpg" alt="Mariana Cerqueira" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Novo membro ✨</div>
+              <h4>Mariana Cerqueira</h4>
+            </div>
+          </div>
+
+          <!-- Kauã Santos -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">K</span>
+              <img src="img/equipe/kaua.jpg" alt="Kauã Santos" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Novo membro ✨</div>
+              <h4>Kauã Santos</h4>
+            </div>
+          </div>
+
+          <!-- Maria Macaúba -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">M</span>
+              <img src="img/equipe/maria-macauba.jpg" alt="Maria Macaúba" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Novo membro ✨</div>
+              <h4>Maria Macaúba</h4>
+            </div>
+          </div>
+
+          <!-- Aline Cristina -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">A</span>
+              <img src="img/equipe/aline.jpg" alt="Aline Cristina" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Novo membro ✨</div>
+              <h4>Aline Cristina</h4>
+            </div>
+          </div>
+
+          <!-- Júlia Morales -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">J</span>
+              <img src="img/equipe/julia-morales.jpg" alt="Júlia Morales" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Novo membro ✨</div>
+              <h4>Júlia Morales</h4>
+            </div>
+          </div>
+
+          <!-- Luccas Montezini -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">L</span>
+              <img src="img/equipe/luccas.jpg" alt="Luccas Montezini" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Novo membro ✨</div>
+              <h4>Luccas Montezini</h4>
+            </div>
+          </div>
+
+          <!-- Laura Valk -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">L</span>
+              <img src="img/equipe/laura.jpg" alt="Laura Valk" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Novo membro ✨</div>
+              <h4>Laura Valk</h4>
+            </div>
+          </div>
+
+          <!-- Gabrielly Viana -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">G</span>
+              <img src="img/equipe/gabrielly.jpg" alt="Gabrielly Viana" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Novo membro ✨</div>
+              <h4>Gabrielly Viana</h4>
+            </div>
+          </div>
+
+          <!-- Maria Eduarda Cirico -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">M</span>
+              <img src="img/equipe/maria-eduarda.jpg" alt="Maria Eduarda Cirico" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Novo membro ✨</div>
+              <h4>Maria Eduarda Cirico</h4>
+            </div>
+          </div>
+
+          <!-- Maria Gabi -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">M</span>
+              <!-- Lembre-se de conferir se o nome do arquivo da imagem está correto -->
+              <img src="img/equipe/maria-gabi.jpg" alt="Maria Gabi" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Novo membro ✨</div>
+              <h4>Maria Gabi</h4>
+            </div>
+          </div>
+
+          <!-- Rafael Fernando -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">R</span>
+              <!-- Lembre-se de conferir se o nome do arquivo da imagem está correto -->
+              <img src="img/equipe/rafael.jpg" alt="Rafael Fernando" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Novo membro ✨</div>
+              <h4>Rafael Fernando</h4>
+            </div>
+          </div>
+
+          <!-- Bianca Mafra -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">B</span>
+              <!-- Mantive o caminho 'assent' que você enviou no primeiro código -->
+              <img src="assent/img/equipe/MAFRA.png" alt="Bianca Mafra" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Novo membro ✨</div>
+              <h4>Bianca Mafra</h4>
+            </div>
+          </div>
+
+
+
+        </div>
+      </div>
+
+        <!-- CONTAINER: GESTÃO PASSADA (2025) -->
+      <div id="equipe-2025" class="team-year-section">
+        <div class="equipe-grid-real">
+
+          <!-- Professora — featured -->
+          <div class="team-card-real featured-teacher">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">A</span>
+              <img src="img/equipe/angela.jpg" alt="Angela Jasper" class="team-avatar-img" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Professora Orientadora</div>
+              <h4>Angela Jasper</h4>
+              <p class="teacher-desc">Responsável por orientar e acompanhar todas as atividades da SWDL, garantindo a qualidade pedagógica e o desenvolvimento dos alunos.</p>
+            </div>
+          </div>
+
+          <!-- Secretário-Geral -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">G</span>
+              <img src="img/equipe/guilherme.jpg" alt="Guilherme Santiago" class="team-avatar-img" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Secretário-Geral</div>
+              <h4>Guilherme Santiago</h4>
+            </div>
+          </div>
+
+          <!-- Diretora Acadêmica -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">E</span>
+              <img src="img/equipe/emilly.jpg" alt="Emilly" class="team-avatar-img" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Diretora Acadêmica</div>
+              <h4>Emilly</h4>
+            </div>
+          </div>
+
+          <!-- Diretora de Eventos e Logística -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">E</span>
+              <img src="img/equipe/eloisa.jpg" alt="Eloisa Monteiro" class="team-avatar-img" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Diretora de Eventos e Logística</div>
+              <h4>Eloisa Monteiro</h4>
+            </div>
+          </div>
+
+          <!-- Diretora de Comunicação e Marketing -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">M</span>
+              <img src="img/equipe/manuella.jpg" alt="Manuella Barros" class="team-avatar-img" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Diretora de Comunicação e Marketing</div>
+              <h4>Manuella Barros</h4>
+            </div>
+          </div>
+
+          <!-- Diretora de Relações Públicas -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">G</span>
+              <img src="img/equipe/giovana.jpg" alt="Giovana Rodrigues" class="team-avatar-img" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Diretora de Relações Públicas</div>
+              <h4>Giovana Rodrigues</h4>
+            </div>
+          </div>
+
+          <!-- Diretora de Recursos Humanos -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">T</span>
+              <img src="img/equipe/talita.jpg" alt="Talita Marcelino" class="team-avatar-img" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Diretora de Recursos Humanos</div>
+              <h4>Talita Marcelino</h4>
+            </div>
+          </div>
+
+          <!-- Coordenadora Administrativa -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">J</span>
+              <img src="img/equipe/julia.jpg" alt="Julia Marson" class="team-avatar-img" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Coordenadora Administrativa</div>
+              <h4>Julia Marson</h4>
+            </div>
+          </div>
+
+          <!-- Coordenação da Staff -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">E</span>
+              <img src="img/equipe/emanuelle.jpg" alt="Emanuelle" class="team-avatar-img" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Coordenação da Staff</div>
+              <h4>Emanuelle</h4>
+            </div>
+          </div>
+
+          <!-- Coord. da Staff & Desenvolvimento Web -->
+          <div class="team-card-real">
+            <div class="team-avatar-real">
+              <span class="team-avatar-letter">P</span>
+              <img src="img/equipe/pedro.jpg" alt="Pedro Bonazzi" class="team-avatar-img" onerror="this.style.display='none'">
+            </div>
+            <div class="team-card-body-real">
+              <div class="team-role-real">Coord. da Staff & Desenvolvimento Web</div>
+              <h4>Pedro Bonazzi</h4>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- SCRIPT DE ALTERNÂNCIA DE ABAS -->
+    <script>
+    function mudarAno(botaoClicado, ano) {
+      document.getElementById('equipe-atual').classList.remove('active-section');
+      document.getElementById('equipe-2025').classList.remove('active-section');
+      
+      const botoes = document.querySelectorAll('.team-tabs .tab-btn');
+      botoes.forEach(function(btn) {
+        btn.classList.remove('active');
+      });
+      
+      if (ano === 'atual') {
+        document.getElementById('equipe-atual').classList.add('active-section');
+      } else if (ano === '2025') {
+        document.getElementById('equipe-2025').classList.add('active-section');
+      }
+      
+      botaoClicado.classList.add('active');
+    }
+    </script>
+
+
+  </div>
+</main>
+
+<footer class="swdl-footer">
+  <div class="container">
+    <div class="footer-main">
+      <div>
+        <div class="nav-logo" style="display:inline-flex">
+          <a href="index.html" class="nav-logo">
+            <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
+          </a>
+        </div>
+        <p class="footer-brand-desc">A liga que transforma alunos em diplomatas.<br>SESI CE-437, Hortolândia.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Links Rápidos</h5>
+        <ul>
+          <li><a href="sobre.html">Sobre</a></li>
+          <li><a href="noticias.html">Notícias</a></li>
+          <li><a href="agenda.html">Agenda</a></li>
+          <li><a href="comites.html">Temas</a></li>
+          <li><a href="faca-parte.html">Faça Parte</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contato</h5>
+        <ul>
+          <li><a href="mailto:pedro.pereira63@portalsesisp.org.br">pedro.pereira63@portalsesisp.org.br</a></li>
+          <li><a href="#">SESI CE-437, Hortolândia</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2025 SESI World Diplomacy League — Desenvolvido por <strong>Pedro Bonazzi</strong></p>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
+          <a href="privacidade.html" style="font-size:12px;color:rgba(255,255,255,.35)">Política de Privacidade</a>
+          <a href="termos.html" style="font-size:12px;color:rgba(255,255,255,.35)">Termos de Uso</a>
+        </div>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

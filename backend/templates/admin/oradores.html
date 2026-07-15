@@ -1,0 +1,143 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Lista de Oradores{% endblock %}
+
+{% block page_title %}🎤 Lista de Oradores{% endblock %}
+
+{% block topbar_actions %}
+  <button class="btn btn-navy btn-sm" onclick="controlScreen('show')">📺 Exibir no Telão</button>
+  <button class="btn btn-danger btn-sm" onclick="controlScreen('hide')">✖ Ocultar Telão</button>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom: 16px;">
+  <div class="form-group" style="margin-bottom: 0; min-width: 250px;">
+    <label for="committee-filter">Filtrar por Comitê</label>
+    <select id="committee-filter" onchange="filterCommittee(this.value)">
+      <option value="all" {% if committee_filter == 'all' %}selected{% endif %}>Todos os Comitês</option>
+      {% for c in available_committees %}
+      <option value="{{ c }}" {% if committee_filter == c %}selected{% endif %}>{{ c.upper() }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-total">0</span>
+    <span class="stat-tile-label">Total de Delegações</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-orador" style="color: var(--gold);">0</span>
+    <span class="stat-tile-label">Na Lista de Oradores</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Selecione os países que vão debater</h3>
+  </div>
+  <div class="card-body" style="padding: 0;">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Bandeira</th>
+          <th>País</th>
+          <th>Delegado(s)</th>
+          <th>Comitê</th>
+          <th style="text-align: right;">Orador</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in delegations %}
+        <tr id="row-{{ d.id }}" data-orador="{{ 'true' if d.orador else 'false' }}">
+          <td>
+            {% if d.flag_url %}
+              <img src="{{ d.flag_url }}" alt="Bandeira de {{ d.country }}" style="width: 30px; height: auto; border-radius: 2px; border: 1px solid var(--border);">
+            {% else %}
+              <span style="font-size: 20px;">{{ d.country_flag or '🇺🇳' }}</span>
+            {% endif %}
+          </td>
+          <td><strong>{{ d.country }}</strong></td>
+          <td><span class="text-muted">{{ d.pair_name or '—' }}</span></td>
+          <td><span class="badge badge-oficial">{{ d.committee.upper() }}</span></td>
+          <td style="text-align: right;">
+            <button class="btn btn-sm {% if d.orador %}btn-primary{% else %}btn-ghost{% endif %}"
+                    onclick="toggleOrador('{{ d.id }}')"
+                    data-btn-orador="{{ 'true' if d.orador else 'false' }}">
+              {{ '✅ Na Lista' if d.orador else '➕ Adicionar' }}
+            </button>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 32px; color: var(--muted);">
+            Nenhuma delegação encontrada para este filtro.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  function filterCommittee(val) {
+    window.location.href = "{{ url_for('admin.oradores_panel') }}?committee=" + val;
+  }
+
+  function updateCounters() {
+    const rows = document.querySelectorAll('tbody tr[id]');
+    document.getElementById('count-total').textContent = rows.length;
+    let oradores = 0;
+    rows.forEach(row => {
+      if (row.getAttribute('data-orador') === 'true') oradores++;
+    });
+    document.getElementById('count-orador').textContent = oradores;
+  }
+
+  function toggleOrador(id) {
+    fetch("{{ url_for('admin.oradores_toggle') }}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        const row = document.getElementById(`row-${id}`);
+        row.setAttribute('data-orador', data.orador ? 'true' : 'false');
+        const btn = row.querySelector('[data-btn-orador]');
+        btn.setAttribute('data-btn-orador', data.orador ? 'true' : 'false');
+        if (data.orador) {
+          btn.className = 'btn btn-sm btn-primary';
+          btn.textContent = '✅ Na Lista';
+        } else {
+          btn.className = 'btn btn-sm btn-ghost';
+          btn.textContent = '➕ Adicionar';
+        }
+        updateCounters();
+      }
+    })
+    .catch(err => console.error("Erro ao toggle orador:", err));
+  }
+
+  function controlScreen(action) {
+    const committee = document.getElementById('committee-filter').value;
+    fetch("{{ url_for('admin.oradores_control_screen') }}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: action, committee: committee })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        alert(action === 'show' ? '🔔 Lista de oradores enviada para o Telão!' : '🔕 Lista ocultada do Telão.');
+      }
+    })
+    .catch(err => console.error("Erro ao controlar telão:", err));
+  }
+
+  document.addEventListener("DOMContentLoaded", updateCounters);
+</script>
+{% endblock %}

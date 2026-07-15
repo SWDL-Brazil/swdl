@@ -1,0 +1,52 @@
+{% extends "student/base.html" %}
+{% block title %}Documentos{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">📁 Documentos</h1>
+    <p class="page-sub">Materiais de estudo, guias e documentos oficiais.</p>
+  </div>
+</div>
+
+<div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+  {% for val, label in available_cats %}
+  <a href="{{ url_for('student.documentos', categoria=val) if val else url_for('student.documentos') }}"
+     class="btn btn-sm {{ 'btn-primary' if current_cat == val else 'btn-ghost' }}">
+    {{ label }}
+  </a>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <div class="card-body" style="padding:0">
+    {% for doc in documentos %}
+    <div style="display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:1px solid var(--border)">
+      <span style="font-size:24px">📄</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:600;color:var(--navy)">{{ doc.title }}</div>
+        {% if doc.description %}
+        <div style="font-size:13px;color:var(--muted);margin-top:3px">{{ doc.description }}</div>
+        {% endif %}
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;display:flex;gap:12px;flex-wrap:wrap">
+          {% set cat_colors = {'guias': 'badge-oficial', 'comunicados': 'badge-warning', 'resolucoes': 'badge-success', 'mesa': 'badge-crise'} %}
+          {% set cat_labels = {'guias': 'Guia', 'comunicados': 'Comunicado', 'resolucoes': 'Resolução', 'mesa': 'Mesa'} %}
+          <span class="badge {{ cat_colors.get(doc.category, 'badge-votacao') }}">{{ cat_labels.get(doc.category, 'Doc') }}</span>
+          {% if doc.theme %}
+          <span class="badge badge-votacao">{{ doc.theme.name }}</span>
+          {% endif %}
+          <span>📅 {{ doc.created_at.strftime('%d/%m/%Y') }}</span>
+        </div>
+      </div>
+      <a href="{{ url_for('student.documento_download', id=doc.id) }}" class="btn btn-navy btn-sm" style="white-space:nowrap">📥 Baixar</a>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">📂</div>
+      <div class="empty-state-title">Nenhum documento disponível</div>
+      <div style="font-size:13px;color:var(--muted)">A organização disponibilizará documentos aqui.</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

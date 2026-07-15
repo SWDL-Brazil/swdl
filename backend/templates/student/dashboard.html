@@ -1,0 +1,392 @@
+{% extends "student/base.html" %}
+{% block title %}Meu Dashboard{% endblock %}
+
+{% block content %}
+
+<style>
+  .welcome-card {
+    background: var(--navy); border-radius: 8px;
+    padding: 28px 36px; margin-bottom: 28px;
+    position: relative; overflow: hidden;
+  }
+  .welcome-card::before {
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background: radial-gradient(circle at 85% 50%, rgba(183,148,65,.12) 0%, transparent 55%);
+  }
+  .welcome-inner { position:relative; z-index:1; }
+  .welcome-label {
+    font-family:'DM Mono',monospace; font-size:10px;
+    letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(255,255,255,.4); margin-bottom:8px;
+  }
+  .welcome-name {
+    font-family:'Playfair Display',serif;
+    font-size:28px; font-weight:700; color:var(--white); line-height:1.1;
+  }
+  .welcome-name span { color:var(--gold); }
+  .welcome-global-id {
+    font-family:'DM Mono',monospace; font-size:11px;
+    color:rgba(255,255,255,.35); margin-top:6px;
+  }
+  .welcome-stats {
+    display:flex; gap:24px; margin-top:16px;
+  }
+  .welcome-stat {
+    font-size:12px; color:var(--slate);
+  }
+  .welcome-stat strong {
+    font-family:'DM Mono',monospace; font-size:16px; color:var(--gold);
+    display:block;
+  }
+
+  .phase-section {
+    margin-bottom: 32px;
+  }
+  .phase-header {
+    display:flex; align-items:center; gap:10px;
+    margin-bottom: 14px; padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+  }
+  .phase-icon { font-size: 20px; }
+  .phase-title {
+    font-family:'Playfair Display',serif;
+    font-size: 18px; font-weight: 700; color: var(--navy);
+  }
+  .phase-tag {
+    font-family:'DM Mono',monospace; font-size: 9px; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 2px; color: white;
+    margin-left: auto;
+  }
+  .phase-tag-active { background: var(--green); }
+  .phase-tag-inactive { background: var(--muted); }
+  .phase-tag-future { background: var(--slate); color: var(--navy); }
+
+  .quick-grid {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:12px;
+  }
+  .quick-card {
+    background:var(--white); border:1px solid var(--border);
+    border-radius:6px; padding:20px; text-align:center;
+    transition:transform .15s, box-shadow .15s;
+    cursor:pointer; text-decoration:none; display:block;
+  }
+  .quick-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(16,30,76,.08); }
+  .quick-card.disabled { opacity: .5; cursor: default; pointer-events: none; }
+  .quick-card.disabled:hover { transform: none; box-shadow: none; }
+  .quick-icon { font-size:28px; margin-bottom:8px; }
+  .quick-label { font-size:11px; font-weight:600; color:var(--navy); }
+  .quick-count {
+    font-family:'DM Mono',monospace; font-size:13px;
+    color:var(--gold); margin-top:3px;
+  }
+  .quick-msg {
+    font-family:'DM Mono',monospace; font-size:9px;
+    color:var(--muted); margin-top:4px;
+  }
+
+  .agenda-now {
+    background:rgba(183,148,65,.07); border:1px solid rgba(183,148,65,.2);
+    border-radius:4px; padding:14px 16px; margin-bottom:14px;
+  }
+  .agenda-now-label {
+    font-family:'DM Mono',monospace; font-size:9px; font-weight:700;
+    letter-spacing:.12em; text-transform:uppercase;
+    color:var(--gold); margin-bottom:4px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .pulse-dot {
+    width:6px; height:6px; border-radius:50%;
+    background:var(--gold); display:inline-block;
+    animation:pulse-gold 1.4s infinite;
+  }
+  .agenda-now-title    { font-size:15px; font-weight:700; color:var(--navy); }
+  .agenda-now-location { font-size:12px; color:var(--muted); margin-top:4px; }
+
+  .doc-row {
+    display:flex; align-items:center; gap:12px;
+    padding:14px 20px; border-bottom:1px solid var(--border);
+  }
+  .doc-row:last-child { border-bottom:none; }
+
+  .news-row {
+    padding:14px 20px; border-bottom:1px solid var(--border);
+    display:flex; align-items:flex-start; gap:12px;
+  }
+  .news-row:last-child { border-bottom:none; }
+  .news-row-icon { font-size:18px; flex-shrink:0; margin-top:2px; }
+  .news-tag-badge {
+    color:white; font-family:'DM Mono',monospace; font-size:9px;
+    font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    padding:2px 8px; border-radius:2px; display:inline-block;
+  }
+  .news-tag-badge.crise    { background:#C0392B; }
+  .news-tag-badge.oficial  { background:#1A5276; }
+  .news-tag-badge.imprensa { background:#1E7B45; }
+  .news-tag-badge.votacao  { background:var(--navy); }
+  .news-time  { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); }
+  .news-row-title { font-size:13px; font-weight:600; color:var(--navy); line-height:1.3; }
+
+  .pending-card {
+    background:rgba(212, 131, 15, .07);
+    border:1px solid rgba(212, 131, 15, .2);
+    border-radius:6px; padding: 24px; text-align:center;
+    margin-bottom: 20px;
+  }
+  .pending-card-icon { font-size: 40px; margin-bottom: 12px; }
+  .pending-card-title {
+    font-family:'Playfair Display',serif;
+    font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 6px;
+  }
+  .pending-card-text { font-size: 13px; color: var(--muted); }
+
+  @keyframes pulse-gold {
+    0%,100% { opacity:1; }
+    50%      { opacity:.4; }
+  }
+
+  @media(max-width:640px) {
+    .quick-grid { grid-template-columns:repeat(2,1fr); }
+    .welcome-stats { flex-direction:column; gap:8px; }
+  }
+</style>
+
+{% if read_only %}
+<div class="read-only-banner">
+  <span>🔒</span> Evento encerrado. A interface está em modo somente leitura. Nenhuma interação pode ser realizada.
+</div>
+{% endif %}
+
+<!-- ── WELCOME ─────────────────────────────────────────── -->
+<div class="welcome-card">
+  <div class="welcome-inner">
+    <div class="welcome-label">Portal do Aluno — SWDL {{ now().year if now is defined else '2026' }}</div>
+    <div class="welcome-name">Olá, <span>{{ current_user.name.split()[0] }}</span>!</div>
+    {% if student %}
+    <div class="welcome-global-id">ID Global: {{ student.global_id }}</div>
+    {% endif %}
+    <div class="welcome-stats">
+      <div class="welcome-stat">
+        <strong>{{ student.participations|length if student else 0 }}</strong> Participações
+      </div>
+      <div class="welcome-stat">
+        <strong>{{ delegation.country if delegation else '—' }}</strong> País
+      </div>
+      <div class="welcome-stat">
+        <strong>{{ delegation.committee.upper() if delegation and delegation.committee else '—' }}</strong> Tema
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if not delegation %}
+<!-- ── SEM DESIGNAÇÃO ──────────────────────────────────── -->
+<div class="pending-card">
+  <div class="pending-card-icon">⏳</div>
+  <div class="pending-card-title">Aguardando Designação</div>
+  <div class="pending-card-text">
+    Sua conta está ativa, mas a organização ainda não atribuiu um país, tema e dupla para você.
+    Assim que for designado, as funcionalidades de simulação serão liberadas.
+  </div>
+</div>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--  FASE 1: PRÉ-SIMULAÇÃO                                -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="phase-section">
+  <div class="phase-header">
+    <span class="phase-icon">📚</span>
+    <span class="phase-title">Preparação — Pré-Evento</span>
+    {% if event_phase == 'pre' %}
+      <span class="phase-tag phase-tag-active">Ativo</span>
+    {% else %}
+      <span class="phase-tag phase-tag-future">Concluído</span>
+    {% endif %}
+  </div>
+
+  <div class="quick-grid">
+    <a href="{{ url_for('student.profile') }}" class="quick-card">
+      <div class="quick-icon">👤</div>
+      <div class="quick-label">Meu Perfil</div>
+      <div class="quick-count">ID Global</div>
+    </a>
+    <a href="{{ url_for('student.documentos') }}" class="quick-card">
+      <div class="quick-icon">📁</div>
+      <div class="quick-label">Documentos</div>
+      <div class="quick-count">{{ documentos|length }} arquivo(s)</div>
+    </a>
+    <a href="{{ url_for('student.history') }}" class="quick-card">
+      <div class="quick-icon">📜</div>
+      <div class="quick-label">Meu Histórico</div>
+      <div class="quick-count">{{ student.participations|length if student else 0 }} registro(s)</div>
+    </a>
+    <a href="{{ url_for('student.comunicados') }}" class="quick-card">
+      <div class="quick-icon">📰</div>
+      <div class="quick-label">Comunicados</div>
+      <div class="quick-count">{{ recent_news|length }} novo(s)</div>
+    </a>
+  </div>
+
+  {% if documentos %}
+  <div class="card" style="margin-top: 16px;">
+    <div class="card-header">
+      <span class="card-title">📁 Documentos de Apoio</span>
+      <a href="{{ url_for('student.documentos') }}" class="btn btn-ghost btn-sm">Ver todos</a>
+    </div>
+    <div class="card-body" style="padding:0">
+      {% for doc in documentos[:4] %}
+      <div class="doc-row">
+        <span style="font-size:20px">📄</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--navy)">{{ doc.title }}</div>
+          {% if doc.description %}
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">{{ doc.description[:80] }}{% if doc.description|length > 80 %}...{% endif %}</div>
+          {% endif %}
+        </div>
+        <a href="{{ url_for('student.documento_download', id=doc.id) }}" class="btn btn-navy btn-sm">📥</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% if is_convened %}
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--  FASE 2: DURANTE A SIMULAÇÃO                          -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="phase-section">
+  <div class="phase-header">
+    <span class="phase-icon">🔴</span>
+    <span class="phase-title">Simulação — Ao Vivo</span>
+    {% if event_phase == 'during' %}
+      <span class="phase-tag phase-tag-active">Ativo</span>
+    {% else %}
+      <span class="phase-tag phase-tag-inactive">Inativo</span>
+    {% endif %}
+  </div>
+
+  {% if event_phase == 'during' %}
+  <div class="quick-grid">
+    <a href="{{ url_for('student.attendance') }}" class="quick-card">
+      <div class="quick-icon">📋</div>
+      <div class="quick-label">Registrar Presença</div>
+      <div class="quick-count">{{ delegation.presence_status if delegation else '—' }}</div>
+    </a>
+    <a href="{{ url_for('student.voting') }}" class="quick-card">
+      <div class="quick-icon">🗳️</div>
+      <div class="quick-label">Votação</div>
+      <div class="quick-count">Aberta</div>
+    </a>
+    <a href="{{ url_for('student.comunicados') }}" class="quick-card">
+      <div class="quick-icon">📰</div>
+      <div class="quick-label">Comunicados</div>
+      <div class="quick-count">{{ recent_news|length }} novo(s)</div>
+    </a>
+    <a href="{{ url_for('student.documentos') }}" class="quick-card">
+      <div class="quick-icon">📁</div>
+      <div class="quick-label">Documentos</div>
+      <div class="quick-count">{{ documentos|length }} arquivo(s)</div>
+    </a>
+  </div>
+
+  {% if current_item or next_item %}
+  <div class="card" style="margin-top: 16px;">
+    <div class="card-header">
+      <span class="card-title">📅 Agenda da Simulação</span>
+      <a href="{{ url_for('student.comunicados') }}" class="btn btn-ghost btn-sm">Ver comunicados</a>
+    </div>
+    <div class="card-body">
+      {% if current_item %}
+        <div class="agenda-now">
+          <div class="agenda-now-label">
+            <span class="pulse-dot"></span> Acontecendo agora
+          </div>
+          <div class="agenda-now-title">{{ current_item.title }}</div>
+          {% if current_item.location %}
+          <div class="agenda-now-location">📍 {{ current_item.location }}</div>
+          {% endif %}
+        </div>
+      {% endif %}
+      {% if next_item %}
+        <div style="padding:10px 0">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.1em;
+                      text-transform:uppercase;color:var(--muted);margin-bottom:6px">
+            Próxima atividade
+          </div>
+          <div style="font-size:14px;font-weight:600;color:var(--navy)">
+            {{ next_item.title }}
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">
+            🕐 {{ next_item.start_time }}
+            {% if next_item.location %} · 📍 {{ next_item.location }}{% endif %}
+          </div>
+        </div>
+      {% else %}
+        <p class="text-muted" style="padding:4px 0">Nenhuma atividade programada no momento.</p>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="pending-card" style="margin-bottom:0">
+    <div class="pending-card-icon">🔒</div>
+    <div class="pending-card-title">
+      {% if event_phase == 'pre' %}Simulação ainda não iniciada
+      {% else %}Simulação encerrada{% endif %}
+    </div>
+    <div class="pending-card-text">
+      {% if event_phase == 'pre' %}
+        As funcionalidades de presença e votação estarão disponíveis quando a simulação começar.
+      {% else %}
+        A simulação foi encerrada. Consulte a seção de Pós-Evento para certificados e histórico.
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--  FASE 3: PÓS-SIMULAÇÃO                                -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="phase-section">
+  <div class="phase-header">
+    <span class="phase-icon">🏁</span>
+    <span class="phase-title">Pós-Evento</span>
+    {% if event_phase == 'post' or read_only %}
+      <span class="phase-tag phase-tag-active">Ativo</span>
+    {% elif event_phase == 'pre' %}
+      <span class="phase-tag phase-tag-future">Futuro</span>
+    {% else %}
+      <span class="phase-tag phase-tag-inactive">Em Breve</span>
+    {% endif %}
+  </div>
+
+  <div class="quick-grid">
+    <a href="{{ url_for('student.certificados') }}" class="quick-card {{ 'disabled' if not student or not student.certificate_released }}">
+      <div class="quick-icon">🎓</div>
+      <div class="quick-label">Certificados</div>
+      <div class="quick-count">{{ 'Liberado' if student and student.certificate_released else 'Pendente' }}</div>
+    </a>
+    <a href="{{ url_for('student.history') }}" class="quick-card">
+      <div class="quick-icon">📜</div>
+      <div class="quick-label">Histórico</div>
+      <div class="quick-count">{{ student.participations|length if student else 0 }} edição(ões)</div>
+    </a>
+    <a href="{{ url_for('student.profile') }}" class="quick-card">
+      <div class="quick-icon">👤</div>
+      <div class="quick-label">Meu Perfil</div>
+      <div class="quick-count">ID Global</div>
+    </a>
+    <a href="{{ url_for('student.comunicados') }}" class="quick-card">
+      <div class="quick-icon">📰</div>
+      <div class="quick-label">Comunicados</div>
+      <div class="quick-count">Arquivo</div>
+    </a>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "admin/base.html" %}
+{% block title %}Categorias{% endblock %}
+{% block page_title %}🏷️ Categorias de Notícias{% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-primary" onclick="openCreate()">➕ Nova Categoria</button>
+{% endblock %}
+
+{% block content %}
+<style>
+  .cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .cat-card{border:1px solid var(--border);border-radius:4px;padding:16px;background:var(--white)}
+  .cat-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .cat-name{font-weight:600;font-size:15px;color:var(--navy)}
+  .cat-icon{font-size:24px;margin-right:8px}
+  .cat-slug{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)}
+  .cat-actions{display:flex;gap:6px;margin-top:12px}
+  .inplace-edit{display:none;margin-top:8px}
+  .inplace-edit.open{display:block}
+</style>
+
+<div class="cat-grid">
+  {% for c in categories %}
+  <div class="cat-card">
+    <div class="cat-card-header">
+      <div>
+        <span class="cat-icon">{{ c.icon }}</span>
+        <span class="cat-name">{{ c.name }}</span>
+      </div>
+      <span style="font-size:11px;color:var(--muted)">ordem {{ c.sort_order }}</span>
+    </div>
+    <div class="cat-slug">{{ c.slug }}</div>
+    <div class="cat-actions">
+      <button class="btn btn-ghost btn-sm" onclick="toggleEdit({{ c.id }})">✏️</button>
+      <form method="POST" action="{{ url_for('admin.category_delete', id=c.id) }}"
+            onsubmit="return confirm('Deletar categoria?')" style="display:inline">
+        <button class="btn btn-ghost btn-sm" style="color:var(--red)">🗑️</button>
+      </form>
+    </div>
+
+    <div class="inplace-edit" id="editForm{{ c.id }}">
+      <form method="POST" action="{{ url_for('admin.category_edit', id=c.id) }}">
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text" name="name" value="{{ c.name }}" required>
+        </div>
+        <div class="form-group">
+          <label>Slug</label>
+          <input type="text" name="slug" value="{{ c.slug }}" required>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Ícone (emoji)</label>
+          <input type="text" name="icon" value="{{ c.icon }}" placeholder="📰">
+        </div>
+        <div style="margin-top:8px;display:flex;gap:6px">
+          <button class="btn btn-primary btn-sm">Salvar</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="toggleEdit({{ c.id }})">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+
+  <!-- card nova -->
+  <div class="cat-card" style="border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;min-height:120px;cursor:pointer" onclick="openCreate()">
+    <div style="text-align:center;color:var(--muted)">
+      <div style="font-size:28px;margin-bottom:6px">➕</div>
+      <div style="font-size:13px;font-weight:500">Nova Categoria</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal criar -->
+<div class="modal-overlay" id="createModal" style="display:none">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <span class="modal-title">Nova Categoria</span>
+      <button class="modal-close" onclick="closeCreate()">✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('admin.category_create') }}">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nome *</label>
+          <input type="text" name="name" id="newCatName" required placeholder="Política">
+        </div>
+        <div class="form-group">
+          <label>Slug <span style="font-weight:400;color:var(--muted)">(deixe vazio para auto-gerar)</span></label>
+          <input type="text" name="slug" id="newCatSlug" placeholder="politica">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Ícone <span style="font-weight:400;color:var(--muted)">(emoji)</span></label>
+          <input type="text" name="icon" id="newCatIcon" placeholder="📰">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeCreate()">Cancelar</button>
+        <button class="btn btn-primary">Criar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function toggleEdit(id) {
+    document.getElementById('editForm' + id).classList.toggle('open');
+  }
+  function openCreate() {
+    document.getElementById('createModal').style.display = 'flex';
+  }
+  function closeCreate() {
+    document.getElementById('createModal').style.display = 'none';
+  }
+  document.getElementById('newCatName')?.addEventListener('input', function() {
+    const slug = document.getElementById('newCatSlug');
+    if (!slug.dataset.touched) {
+      slug.value = this.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+  });
+  document.getElementById('newCatSlug')?.addEventListener('input', function() {
+    this.dataset.touched = '1';
+  });
+</script>
+{% endblock %}

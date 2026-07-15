@@ -1,0 +1,65 @@
+{% extends "admin/base.html" %}
+{% block title %}Nova Votação{% endblock %}
+{% block page_title %}Abrir Nova Votação{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('vote.vote_list') }}" class="btn btn-ghost">← Voltar</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:600px">
+  <div class="card">
+    <div class="card-body">
+      <form method="POST">
+
+        <div class="form-group">
+          <label>Título da Resolução *</label>
+          <input type="text" name="title" required
+                 placeholder="Ex: Resolução A/RES/01 — Mudanças Climáticas">
+        </div>
+
+        <div class="form-group">
+          <label>Descrição (opcional)</label>
+          <textarea name="description" rows="3"
+                    placeholder="Resumo do que está sendo votado..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Tempo da Votação *</label>
+          <select name="duration_sec">
+            <option value="60">1 minuto</option>
+            <option value="120" selected>2 minutos</option>
+            <option value="180">3 minutos</option>
+            <option value="300">5 minutos</option>
+            <option value="600">10 minutos</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Tema / Debate</label>
+          <select name="committee">
+            <option value="geral">Geral (todos os temas)</option>
+            {% for t in available_themes %}
+            <option value="{{ t.name }}">{{ t.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div style="background:rgba(183,148,65,.07);border:1px solid rgba(183,148,65,.2);
+                    border-radius:4px;padding:14px 16px;margin-bottom:20px;font-size:13px;
+                    color:var(--muted)">
+          ⚡ Ao criar, a votação abre <strong style="color:var(--navy)">imediatamente</strong>
+          e todos os delegados conectados recebem um pop-up em tempo real.
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button type="submit" class="btn btn-primary">
+            🗳️ Abrir Votação Agora
+          </button>
+          <a href="{{ url_for('vote.vote_list') }}" class="btn btn-ghost">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

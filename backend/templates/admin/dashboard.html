@@ -1,0 +1,486 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}
+  {% if event_phase == 'pre' %}🕒 Pré-Simulação
+  {% elif event_phase == 'during' %}🔴 Durante Simulação
+  {% else %}🏁 Pós-Simulação{% endif %}
+{% endblock %}
+
+{% block topbar_actions %}
+  <form method="POST" action="{{ url_for('admin.crisis_activate') }}"
+        style="display:flex;gap:6px;align-items:center">
+    <input name="message" placeholder="Mensagem de crise..."
+           style="padding:7px 12px;border:1px solid var(--border);border-radius:3px;
+                  font-size:12px;width:200px;outline:none;">
+    <button class="btn btn-danger btn-sm" type="submit">🚨 Ativar Crise</button>
+  </form>
+  <form method="POST" action="{{ url_for('admin.crisis_deactivate') }}">
+    <button class="btn btn-ghost btn-sm" type="submit">✕ Desativar</button>
+  </form>
+{% endblock %}
+
+{% block content %}
+
+<style>
+  .phase-banner {
+    display:flex; align-items:center; gap:12px; margin-bottom:20px;
+    padding:12px 18px; border-radius:6px; font-size:13px;
+  }
+  .phase-banner.pre    { background:#e8f4fd; border:1px solid #b8d4e8; color:#1a5276; }
+  .phase-banner.during { background:#fde8e8; border:1px solid #f5c6cb; color:#721c24; }
+  .phase-banner.post   { background:#e8f5e9; border:1px solid #c8e6c9; color:#1e7b45; }
+  .phase-banner-icon { font-size: 22px; flex-shrink:0; }
+
+  .app-launcher {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px;
+  }
+  .app-tile {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer; text-decoration: none;
+    transition: transform .2s, box-shadow .2s;
+    position: relative; overflow: hidden;
+  }
+  .app-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(16,30,76,.10);
+  }
+  .app-tile:active { transform: translateY(-1px); }
+  .app-tile-icon { font-size: 48px; margin-bottom: 12px; }
+  .app-tile-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 700; color: var(--navy);
+  }
+  .app-tile-sub {
+    font-size: 12px; color: var(--muted); margin-top: 4px;
+  }
+  .app-tile-stats {
+    display: flex; justify-content: center; gap: 20px; margin-top: 16px;
+  }
+  .app-tile-stat { text-align: center; }
+  .app-tile-stat-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px; font-weight: 700; color: var(--gold);
+    display: block;
+  }
+  .app-tile-stat-label {
+    font-size: 9px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--muted);
+  }
+  .app-tile-badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace; font-size: 8px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 10px; margin-top: 10px;
+  }
+  .badge-gestao  { background: rgba(16,30,76,.08); color: var(--navy); }
+  .badge-simulacao { background: rgba(192,57,43,.08); color: var(--red); }
+
+  .app-tile-gestao    { border-top: 3px solid var(--navy); }
+  .app-tile-simulacao { border-top: 3px solid var(--red); }
+  .app-tile-highlight { box-shadow: 0 0 0 2px var(--gold), 0 8px 30px rgba(183,148,65,.15); }
+
+  .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    display: inline-block; margin-right: 4px;
+    animation: live-pulse 1.4s infinite;
+  }
+  .live-dot.red  { background: var(--red); }
+  .live-dot.gold { background: var(--gold); }
+
+  @keyframes live-pulse {
+    0%,100% { opacity: 1; }
+    50%      { opacity: .35; }
+  }
+
+  .mini-stats {
+    display: grid; gap: 10px; margin-bottom: 24px;
+  }
+  .mini-stats-6 { grid-template-columns: repeat(6, 1fr); }
+  .mini-stats-4 { grid-template-columns: repeat(4, 1fr); }
+  .mini-stats-3 { grid-template-columns: repeat(3, 1fr); }
+  .mini-stat {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 5px; padding: 14px 16px; text-align: center;
+  }
+  .mini-stat-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px; font-weight: 700; color: var(--navy); display: block;
+  }
+  .mini-stat-label {
+    font-size: 8px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--muted); margin-top: 2px;
+  }
+  .mini-stat.highlight { border-left: 3px solid var(--gold); }
+
+  .live-now-card {
+    background: rgba(192,57,43,.04);
+    border: 1px solid rgba(192,57,43,.15);
+    border-radius: 6px; padding: 16px 20px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .live-now-card-icon {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--red); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .live-now-card-title {
+    font-size: 15px; font-weight: 700; color: var(--navy);
+  }
+  .live-now-card-sub {
+    font-size: 12px; color: var(--muted); margin-top: 2px;
+  }
+
+  .checklist { list-style:none; padding:0; }
+  .checklist li {
+    display:flex; align-items:center; gap:8px;
+    padding:8px 0; font-size:13px; border-bottom:1px solid var(--border);
+  }
+  .checklist li:last-child { border-bottom:none; }
+  .checklist .done { color: var(--green); }
+  .checklist .pending { color: var(--muted); }
+  .checklist .warn { color: var(--orange); }
+
+  @media(max-width:800px) {
+    .app-launcher { grid-template-columns: 1fr; }
+    .mini-stats-6 { grid-template-columns: repeat(3, 1fr); }
+    .mini-stats-4 { grid-template-columns: repeat(2, 1fr); }
+    .mini-stats-3 { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+
+<!-- ── BANNER DE FASE ────────────────────────────── -->
+<div class="phase-banner {{ event_phase }}">
+  <span class="phase-banner-icon">
+    {% if event_phase == 'pre' %}🕒
+    {% elif event_phase == 'during' %}🔴
+    {% else %}🏁{% endif %}
+  </span>
+  <div>
+    <strong>
+      {% if event_phase == 'pre' %}Modo Pré-Simulação — Foco em Preparação
+      {% elif event_phase == 'during' %}Modo Sessão Ao Vivo — Foco em Dinâmica de Debate
+      {% else %}Modo Pós-Simulação — Foco em Encerramento{% endif %}
+    </strong>
+    <div style="font-size:11px;margin-top:2px;opacity:.7">
+      {% if event_phase == 'pre' %}
+        Gerencie alunos, inscrições, notícias e agenda antes do evento.
+      {% elif event_phase == 'during' %}
+        Acompanhe chamada, votações, oradores e cronômetro em tempo real.
+      {% else %}
+        Libere certificados, consolide dados e arquive o evento.
+      {% endif %}
+    </div>
+  </div>
+  <span style="flex:1"></span>
+  <form method="POST" action="{{ url_for('admin.set_phase', phase='pre') }}" style="display:inline">
+    <button class="btn btn-sm {{ 'btn-primary' if event_phase == 'pre' else 'btn-ghost' }}" type="submit">Pré</button>
+  </form>
+  <form method="POST" action="{{ url_for('admin.set_phase', phase='during') }}" style="display:inline">
+    <button class="btn btn-sm {{ 'btn-primary' if event_phase == 'during' else 'btn-ghost' }}" type="submit">Durante</button>
+  </form>
+  <form method="POST" action="{{ url_for('admin.set_phase', phase='post') }}" style="display:inline">
+    <button class="btn btn-sm {{ 'btn-primary' if event_phase == 'post' else 'btn-ghost' }}" type="submit">Pós</button>
+  </form>
+  <div style="display:flex;align-items:center;gap:6px;margin-left:12px;padding:4px 12px;border-radius:4px;font-size:10px;font-weight:600;font-family:'DM Mono',monospace;letter-spacing:.04em;{{ 'background:rgba(231,76,60,.1);color:#E74C3C;border:1px solid rgba(231,76,60,.2)' if stats.read_only > 0 else 'background:rgba(46,204,113,.1);color:#2ECC71;border:1px solid rgba(46,204,113,.2)' }}">
+    <span>{{ '🔒' if stats.read_only > 0 else '🔓' }}</span>
+    {{ stats.read_only }}/{{ stats.students }} travados
+  </div>
+  {% if stats.read_only < stats.students %}
+  <form method="POST" action="{{ url_for('admin.students_lock_all') }}" style="display:inline">
+    <button class="btn btn-sm" style="background:#E74C3C;color:#fff" title="Travar todos os alunos">🔒 Travar</button>
+  </form>
+  {% else %}
+  <form method="POST" action="{{ url_for('admin.students_unlock_all') }}" style="display:inline">
+    <button class="btn btn-sm btn-ghost" title="Destravar todos os alunos">🔓 Destravar</button>
+  </form>
+  {% endif %}
+  <form method="POST" action="{{ url_for('admin.inscricoes_toggle') }}" style="display:inline">
+    <button class="btn btn-sm {{ 'btn-primary' if inscricoes_abertas else 'btn-ghost' }}" title="Abrir/fechar inscrições de delegados">
+      {{ '📋 Inscrições Abertas' if inscricoes_abertas else '🔒 Inscrições Fechadas' }}
+    </button>
+  </form>
+</div>
+
+{% if event_phase == 'pre' %}
+<!-- ════════════════ MODO PRÉ-SESSÃO ════════════════ -->
+
+<div class="mini-stats mini-stats-6">
+  <div class="mini-stat highlight">
+    <span class="mini-stat-num">{{ stats.students }}</span>
+    <span class="mini-stat-label">🎓 Alunos</span>
+  </div>
+  <div class="mini-stat">
+    <span class="mini-stat-num">{{ stats.delegations }}</span>
+    <span class="mini-stat-label">🌍 Delegações</span>
+  </div>
+  <div class="mini-stat highlight">
+    <span class="mini-stat-num">{{ stats.inscriptions }}</span>
+    <span class="mini-stat-label">📋 Pendentes</span>
+  </div>
+  <div class="mini-stat">
+    <span class="mini-stat-num">{{ stats.students_no_deleg }}</span>
+    <span class="mini-stat-label">⏳ S/ Delegação</span>
+  </div>
+  <div class="mini-stat">
+    <span class="mini-stat-num">{{ stats.news }}</span>
+    <span class="mini-stat-label">📰 Notícias</span>
+  </div>
+  <div class="mini-stat">
+    <span class="mini-stat-num">{{ stats.themes }}</span>
+    <span class="mini-stat-label">🏷️ Temas</span>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-bottom:24px">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📋 Checklist de Preparação</span>
+    </div>
+    <div class="card-body">
+      <ul class="checklist">
+        <li class="{{ 'done' if stats.themes > 0 else 'warn' }}">
+          {{ '✅' if stats.themes > 0 else '⚠️' }} Criar temas/debates
+        </li>
+        <li class="{{ 'done' if stats.students > 0 else 'warn' }}">
+          {{ '✅' if stats.students > 0 else '⚠️' }} Cadastrar alunos
+        </li>
+        <li class="{{ 'done' if stats.delegations == stats.students else ('warn' if stats.delegations > 0 else 'pending') }}">
+          {{ '✅' if stats.delegations == stats.students else '⚠️' if stats.delegations > 0 else '⬜' }} Designar delegações ({{ stats.delegations }}/{{ stats.students }})
+        </li>
+        <li class="{{ 'done' if stats.inscriptions == 0 else 'warn' }}">
+          {{ '✅' if stats.inscriptions == 0 else '⚠️' }} Revisar inscrições pendentes ({{ stats.inscriptions }})
+        </li>
+        <li class="{{ 'done' if stats.agenda > 0 else 'pending' }}">
+          {{ '✅' if stats.agenda > 0 else '⬜' }} Montar agenda do evento
+        </li>
+        <li class="{{ 'done' if stats.news > 0 else 'pending' }}">
+          {{ '✅' if stats.news > 0 else '⬜' }} Publicar notícias de abertura
+        </li>
+        <li class="{{ 'done' if stats.convened > 0 else 'pending' }}">
+          {{ '✅' if stats.convened > 0 else '⬜' }} Convocar alunos para simulação
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📰 Últimas Notícias</span>
+      <a href="{{ url_for('admin.news_create') }}" class="btn btn-primary btn-sm">+ Nova</a>
+    </div>
+    <div class="card-body" style="padding:0">
+      <table class="admin-table">
+        <thead><tr><th>Título</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          {% for n in recent_news %}
+          <tr>
+            <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ n.title }}</td>
+            <td><span class="badge {{ 'badge-approved' if n.published else 'badge-pending' }}">{{ 'Publicada' if n.published else 'Rascunho' }}</span></td>
+            <td><a href="{{ url_for('admin.news_edit', id=n.id) }}" class="btn btn-ghost btn-sm">Editar</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">Nenhuma notícia ainda.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="app-launcher">
+  <a href="{{ url_for('admin.students_list') }}" class="app-tile app-tile-gestao app-tile-highlight">
+    <div class="app-tile-icon">📋</div>
+    <div class="app-tile-title">Gestão</div>
+    <div class="app-tile-sub">Gerenciar alunos, delegações e conteúdo</div>
+    <div class="app-tile-stats">
+      <div class="app-tile-stat">
+        <span class="app-tile-stat-num">{{ stats.students }}</span>
+        <span class="app-tile-stat-label">Alunos</span>
+      </div>
+      <div class="app-tile-stat">
+        <span class="app-tile-stat-num">{{ stats.delegations }}</span>
+        <span class="app-tile-stat-label">Delegações</span>
+      </div>
+      <div class="app-tile-stat">
+        <span class="app-tile-stat-num">{{ stats.inscriptions }}</span>
+        <span class="app-tile-stat-label">Pendentes</span>
+      </div>
+    </div>
+  </a>
+  <a href="{{ url_for('admin.chamada_panel') }}" class="app-tile app-tile-simulacao" style="opacity:.6">
+    <div class="app-tile-icon">🔴</div>
+    <div class="app-tile-title">Simulação</div>
+    <div class="app-tile-sub">Disponível quando o evento iniciar</div>
+  </a>
+</div>
+
+{% elif event_phase == 'during' %}
+<!-- ════════════════ MODO DURANTE SESSÃO ════════════════ -->
+
+<div class="mini-stats mini-stats-4">
+  <div class="mini-stat highlight">
+    <span class="mini-stat-num">{{ stats.presentes }}</span>
+    <span class="mini-stat-label">✅ Presentes</span>
+  </div>
+  <div class="mini-stat highlight">
+    <span class="mini-stat-num">{{ stats.ausentes }}</span>
+    <span class="mini-stat-label">❌ Ausentes</span>
+  </div>
+  <div class="mini-stat highlight">
+    <span class="mini-stat-num">{{ stats.open_votes }}</span>
+    <span class="mini-stat-label">🗳️ Votações Abertas</span>
+  </div>
+  <div class="mini-stat highlight">
+    <span class="mini-stat-num">{{ stats.oradores }}</span>
+    <span class="mini-stat-label">🎤 Oradores</span>
+  </div>
+</div>
+
+{% if current_agenda %}
+<div class="live-now-card" style="margin-bottom:20px">
+  <div class="live-now-card-icon"><span class="live-dot red"></span></div>
+  <div style="flex:1;min-width:0">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--red);margin-bottom:2px">🔴 AGORA</div>
+    <div class="live-now-card-title">{{ current_agenda.title }}</div>
+    <div class="live-now-card-sub">
+      {{ current_agenda.start_time }}{% if current_agenda.end_time %} — {{ current_agenda.end_time }}{% endif %}
+      {% if current_agenda.location %} · 📍 {{ current_agenda.location }}{% endif %}
+      {% if current_agenda.committee %} · 🏛️ {{ current_agenda.committee }}{% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="app-launcher">
+  <a href="{{ url_for('admin.chamada_panel') }}" class="app-tile app-tile-simulacao app-tile-highlight">
+    <div class="app-tile-icon">🔴</div>
+    <div class="app-tile-title">Simulação</div>
+    <div class="app-tile-sub">Painéis ao vivo da sessão</div>
+    <div class="app-tile-stats">
+      <div class="app-tile-stat">
+        <span class="app-tile-stat-num">📋</span>
+        <span class="app-tile-stat-label">Chamada</span>
+      </div>
+      <div class="app-tile-stat">
+        <span class="app-tile-stat-num">🗳️</span>
+        <span class="app-tile-stat-label">Votações</span>
+      </div>
+      <div class="app-tile-stat">
+        <span class="app-tile-stat-num">🎤</span>
+        <span class="app-tile-stat-label">Oradores</span>
+      </div>
+    </div>
+    <span class="app-tile-badge badge-simulacao">
+      Chamada · Votações · Oradores · Cronômetro
+    </span>
+  </a>
+  <a href="{{ url_for('admin.students_list') }}" class="app-tile app-tile-gestao" style="opacity:.6">
+    <div class="app-tile-icon">📋</div>
+    <div class="app-tile-title">Gestão</div>
+    <div class="app-tile-sub">Consultas rápidas (somente leitura)</div>
+  </a>
+</div>
+
+{% else %}
+<!-- ════════════════ MODO PÓS-SESSÃO ════════════════ -->
+
+<div class="mini-stats mini-stats-3">
+  <div class="mini-stat highlight">
+    <span class="mini-stat-num">{{ stats.students }}</span>
+    <span class="mini-stat-label">🎓 Total Alunos</span>
+  </div>
+  <div class="mini-stat highlight">
+    <span class="mini-stat-num">{{ stats.certificates }}</span>
+    <span class="mini-stat-label">🎓 Certificados Liberados</span>
+  </div>
+  <div class="mini-stat highlight">
+    <span class="mini-stat-num">{{ stats.students - stats.certificates }}</span>
+    <span class="mini-stat-label">⏳ Cert. Pendentes</span>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-bottom:24px">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">🏁 Encerramento do Evento</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">
+        O evento está em modo pós-simulação. As seguintes ações estão disponíveis:
+      </p>
+      <ul class="checklist">
+        <li class="{{ 'done' if stats.certificates == stats.students else 'warn' }}">
+          {{ '✅' if stats.certificates == stats.students else '⚠️' }} 
+          Liberar certificados ({{ stats.certificates }}/{{ stats.students }})
+        </li>
+        <li class="{{ 'done' if stats.read_only == stats.students else 'warn' }}">
+          {{ '🔒' if stats.read_only == stats.students else '🔓' }} 
+          Alunos travados ({{ stats.read_only }}/{{ stats.students }})
+        </li>
+        <li class="done">✅ Consolidar dados de participação</li>
+        <li class="done">✅ Arquivar registros do evento</li>
+      </ul>
+      <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+        <a href="{{ url_for('admin.students_list') }}" class="btn btn-navy">🎓 Gerenciar Certificados</a>
+        <a href="/admin/votacoes" class="btn btn-ghost">📊 Resultados</a>
+        {% if stats.read_only < stats.students %}
+        <form method="POST" action="{{ url_for('admin.students_lock_all') }}" style="display:inline">
+          <button class="btn btn-sm" style="background:#E74C3C;color:#fff">🔒 Travar Alunos</button>
+        </form>
+        {% else %}
+        <form method="POST" action="{{ url_for('admin.students_unlock_all') }}" style="display:inline">
+          <button class="btn btn-sm btn-ghost">🔓 Destravar Alunos</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📊 Resumo do Evento</span>
+    </div>
+    <div class="card-body" style="padding:0">
+      <table class="admin-table">
+        <tbody>
+          <tr><td style="font-weight:600">Total de Alunos</td><td>{{ stats.students }}</td></tr>
+          <tr><td style="font-weight:600">Delegações</td><td>{{ stats.delegations }}</td></tr>
+          <tr><td style="font-weight:600">Notícias Publicadas</td><td>{{ stats.news }}</td></tr>
+          <tr><td style="font-weight:600">Itens na Agenda</td><td>{{ stats.agenda }}</td></tr>
+          <tr><td style="font-weight:600">Certificados Liberados</td><td>{{ stats.certificates }}</td></tr>
+          <tr><td style="font-weight:600">Temas de Debate</td><td>{{ stats.themes }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="app-launcher">
+  <a href="{{ url_for('admin.students_list') }}" class="app-tile app-tile-gestao app-tile-highlight">
+    <div class="app-tile-icon">📋</div>
+    <div class="app-tile-title">Gestão</div>
+    <div class="app-tile-sub">Certificados e relatórios pós-evento</div>
+    <div class="app-tile-stats">
+      <div class="app-tile-stat">
+        <span class="app-tile-stat-num">{{ stats.certificates }}</span>
+        <span class="app-tile-stat-label">Certificados</span>
+      </div>
+      <div class="app-tile-stat">
+        <span class="app-tile-stat-num">{{ stats.students - stats.certificates }}</span>
+        <span class="app-tile-stat-label">Pendentes</span>
+      </div>
+    </div>
+  </a>
+  <a href="{{ url_for('admin.chamada_panel') }}" class="app-tile app-tile-simulacao" style="opacity:.5">
+    <div class="app-tile-icon">🔴</div>
+    <div class="app-tile-title">Simulação</div>
+    <div class="app-tile-sub">Evento encerrado</div>
+  </a>
+</div>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Certificado — SWDL</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      font-family:'DM Sans',sans-serif;
+      background:#0B1535; color:#fff;
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+      -webkit-font-smoothing:antialiased;
+    }
+    .cert-wrap {
+      max-width: 720px; width: 100%; padding: 40px 24px;
+    }
+    .cert-card {
+      background: linear-gradient(135deg, #101E4C 0%, #0A1230 100%);
+      border: 1px solid rgba(201,168,76,.2);
+      border-radius: 12px; padding: 48px 40px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .cert-card::before {
+      content:''; position:absolute; inset:0; pointer-events:none;
+      background: radial-gradient(ellipse at 50% 30%, rgba(201,168,76,.08) 0%, transparent 60%);
+    }
+    .cert-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(201,168,76,.12); border: 1px solid rgba(201,168,76,.25);
+      padding: 8px 20px; border-radius: 20px; margin-bottom: 24px;
+      font-family:'DM Mono',monospace; font-size: 10px; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase; color: var(--gold, #C9A84C);
+    }
+    .cert-icon { font-size: 56px; margin-bottom: 16px; }
+    .cert-title {
+      font-family:'Playfair Display',serif;
+      font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 8px;
+    }
+    .cert-subtitle {
+      font-size: 14px; color: rgba(255,255,255,.5); margin-bottom: 28px;
+    }
+    .cert-name {
+      font-family:'Playfair Display',serif;
+      font-size: 32px; font-weight: 900; color: #C9A84C; margin-bottom: 4px;
+    }
+    .cert-label { font-size: 12px; color: rgba(255,255,255,.4); margin-bottom: 24px; }
+    .cert-divider {
+      width: 60px; height: 2px; background: rgba(201,168,76,.3);
+      margin: 0 auto 24px; border-radius: 1px;
+    }
+    .cert-details {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px;
+    }
+    .cert-detail {
+      background: rgba(255,255,255,.04); border-radius: 6px;
+      padding: 14px; border: 1px solid rgba(255,255,255,.06);
+    }
+    .cert-detail-label {
+      font-family:'DM Mono',monospace; font-size: 8px; font-weight: 700;
+      letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.3);
+      margin-bottom: 4px;
+    }
+    .cert-detail-value {
+      font-size: 13px; font-weight: 600; color: #fff;
+    }
+    .cert-hash {
+      background: rgba(255,255,255,.04); border-radius: 6px;
+      padding: 12px 16px; word-break: break-all;
+      font-family:'DM Mono',monospace; font-size: 11px; color: rgba(255,255,255,.35);
+      margin-bottom: 20px;
+    }
+    .cert-valid {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(46,204,113,.12); border: 1px solid rgba(46,204,113,.25);
+      padding: 8px 20px; border-radius: 20px;
+      font-family:'DM Mono',monospace; font-size: 10px; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase; color: #2ECC71;
+    }
+    .cert-footer {
+      margin-top: 24px; font-size: 11px; color: rgba(255,255,255,.25);
+    }
+    @media(max-width:480px) {
+      .cert-card { padding: 32px 20px; }
+      .cert-details { grid-template-columns: 1fr; }
+      .cert-name { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="cert-wrap">
+    <div class="cert-card">
+      <div class="cert-badge">
+        <span style="width:6px;height:6px;border-radius:50%;background:#2ECC71;display:inline-block;animation:pulse 1.5s infinite"></span>
+        Certificado Verificado
+      </div>
+      <div class="cert-icon">🎓</div>
+      <div class="cert-title">Certificado de Participação</div>
+      <div class="cert-subtitle">SESI World Diplomacy League — SWDL 2026</div>
+
+      <div class="cert-name">{{ student.name }}</div>
+      <div class="cert-label">Participante</div>
+      <div class="cert-divider"></div>
+
+      <div class="cert-details">
+        <div class="cert-detail">
+          <div class="cert-detail-label">País / Delegação</div>
+          <div class="cert-detail-value">
+            {{ student.delegation.country_flag if student.delegation else '' }}
+            {{ student.delegation.country if student.delegation else '—' }}
+          </div>
+        </div>
+        <div class="cert-detail">
+          <div class="cert-detail-label">Comitê / Tema</div>
+          <div class="cert-detail-value">{{ student.delegation.committee.upper() if student.delegation and student.delegation.committee else '—' }}</div>
+        </div>
+        <div class="cert-detail">
+          <div class="cert-detail-label">ID Global</div>
+          <div class="cert-detail-value" style="font-family:'DM Mono',monospace;font-size:11px">{{ student.global_id[:16] }}...</div>
+        </div>
+        <div class="cert-detail">
+          <div class="cert-detail-label">Edição</div>
+          <div class="cert-detail-value">SWDL 2026</div>
+        </div>
+      </div>
+
+      <div class="cert-hash">Hash: {{ student.certificate_hash }}</div>
+
+      {% if student.digital_signature %}
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px;background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);padding:8px 18px;border-radius:20px">
+          <span style="font-size:16px">🖊️</span>
+          <span style="font-family:'DM Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2ECC71">Assinado Digitalmente</span>
+        </div>
+        {% if student.signed_at %}
+        <span style="font-size:10px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace">
+          {{ student.signed_at.strftime('%d/%m/%Y %H:%M') }}
+        </span>
+        {% endif %}
+      </div>
+      <div class="cert-hash" style="margin-bottom:12px;font-size:9px">
+        Assinatura: {{ student.digital_signature[:48] ~ '...' if student.digital_signature and student.digital_signature|length > 48 else student.digital_signature }}
+      </div>
+      {% endif %}
+
+      <div class="cert-valid">✅ Válido e Autenticado</div>
+      <div class="cert-footer">
+        Este certificado é digitalmente verificável através do hash único e assinatura HMAC-SHA256.<br>
+        SWDL — Sesi World Diplomacy League
+      </div>
+    </div>
+  </div>
+  <style>
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  </style>
+</body>
+</html>

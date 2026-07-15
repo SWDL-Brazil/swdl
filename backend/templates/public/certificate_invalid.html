@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Certificado Inválido — SWDL</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      font-family:'DM Sans',sans-serif;
+      background:#0B1535; color:#fff;
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+      -webkit-font-smoothing:antialiased;
+    }
+    .wrap { max-width:480px; width:100%; padding:40px 24px; text-align:center; }
+    .card {
+      background: linear-gradient(135deg, #101E4C 0%, #0A1230 100%);
+      border: 1px solid rgba(192,57,43,.2);
+      border-radius: 12px; padding: 48px 32px;
+    }
+    .icon { font-size: 64px; margin-bottom: 16px; }
+    .title {
+      font-family:'Playfair Display',serif;
+      font-size: 24px; font-weight: 700; margin-bottom: 8px;
+    }
+    .desc { font-size: 14px; color: rgba(255,255,255,.5); margin-bottom: 24px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(201,168,76,.12); border: 1px solid rgba(201,168,76,.25);
+      padding: 10px 24px; border-radius: 4px;
+      font-family:'DM Sans',sans-serif; font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .08em;
+      color: #C9A84C; text-decoration: none; cursor: pointer;
+    }
+    .btn:hover { background: rgba(201,168,76,.2); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="icon">🔍</div>
+      <div class="title">Certificado Não Encontrado</div>
+      <div class="desc">
+        O certificado que você está procurando não foi encontrado ou ainda não foi liberado pela organização.
+        Verifique se o código hash está correto.
+      </div>
+      <a href="/" class="btn">← Voltar ao Site</a>
+    </div>
+  </div>
+</body>
+</html>

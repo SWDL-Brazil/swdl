@@ -1,0 +1,79 @@
+{% extends "admin/base.html" %}
+{% block title %}Delegações{% endblock %}
+{% block page_title %}Delegações{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <div class="card-body" style="padding:0">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Candidato</th>
+          <th>País</th>
+          <th>Comitê</th>
+          <th>Parceiro</th>
+          <th>DPO</th>
+          <th>Aceite</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in delegations %}
+        <tr>
+          <td class="text-muted">{{ d.id }}</td>
+          <td style="font-weight:600">
+            {{ d.inscription.name if d.inscription else '—' }}
+          </td>
+          <td>
+            {% if d.country %}
+              {{ d.country_flag }} {{ d.country }}
+            {% else %}
+              <span class="text-muted">Não designado</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if d.committee %}
+              <span class="badge badge-next">{{ d.committee.upper() }}</span>
+            {% else %}—{% endif %}
+          </td>
+          <td class="text-muted">{{ d.pair_name or '—' }}</td>
+          <td>{{ '✅' if d.dpo_uploaded else '⏳' }}</td>
+          <td>{{ '✅' if d.accepted else '⏳' }}</td>
+          <td>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+              <a href="{{ url_for('admin.delegation_assign', id=d.id) }}"
+                 class="btn btn-primary btn-sm">
+                {{ 'Reatribuir' if d.country else '🌍 Designar País' }}
+              </a>
+              {% if d.inscription and not d.user_id %}
+              <form method="POST"
+                    action="{{ url_for('admin.delegation_create_credentials', id=d.id) }}">
+                <button class="btn btn-navy btn-sm" type="submit">🔑 Criar Login</button>
+              </form>
+              {% elif d.user_id %}
+              <span style="font-size:11px;color:var(--green);font-weight:600">✓ Login ativo</span>
+              {% endif %}
+              <form method="POST"
+                    action="{{ url_for('admin.delegation_delete', id=d.id) }}"
+                    onsubmit="return confirm('ATENÇÃO: Deseja realmente deletar esta delegação, seu login e sua inscrição? Esta ação não pode ser desfeita.');"
+                    style="margin-left:4px;">
+                <button class="btn btn-danger btn-sm" type="submit">🗑️ Deletar</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" style="text-align:center;color:var(--muted);padding:32px">
+            Nenhuma delegação criada ainda. Aprove inscrições para começar.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

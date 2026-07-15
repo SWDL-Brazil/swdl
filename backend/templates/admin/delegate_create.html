@@ -1,0 +1,74 @@
+{% extends "admin/base.html" %}
+{% block title %}Novo Aluno{% endblock %}
+{% block page_title %}Criar Conta de Aluno{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.students_list') }}" class="btn btn-ghost">← Alunos</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:520px">
+
+  <div style="background:rgba(183,148,65,.08);border:1px solid rgba(183,148,65,.25);
+              border-radius:4px;padding:14px 18px;margin-bottom:24px;
+              font-size:13px;color:var(--muted);display:flex;gap:10px;align-items:flex-start">
+    <span style="font-size:16px;flex-shrink:0">💡</span>
+    <div>
+      <strong>Etapa 1 de 2:</strong> crie a conta do aluno. A senha é gerada automaticamente como
+      <strong style="color:var(--navy);font-family:'DM Mono',monospace">
+        [4 letras do nome]2025
+      </strong>
+      — ex: <em>Ana Silva</em> → <strong style="font-family:'DM Mono',monospace">ansi2025</strong>.
+      <br><br>
+      Depois de criar a conta, vá em
+      <a href="{{ url_for('admin.students_list') }}" style="color:var(--navy);font-weight:700">Alunos</a>
+      para designar país, tema e dupla.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📝 Dados do Aluno</span>
+    </div>
+    <div class="card-body">
+
+      {% if error %}
+        <div style="background:#fdf0ef;border:1px solid #f5c6cb;color:#721c24;
+                    font-size:13px;padding:11px 14px;border-radius:3px;margin-bottom:18px">
+          ⚠ {{ error }}
+        </div>
+      {% endif %}
+
+      <form method="POST">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nome Completo *</label>
+            <input type="text" name="name" required placeholder="Ex: Ana Silva">
+          </div>
+          <div class="form-group">
+            <label>E-mail *</label>
+            <input type="email" name="email" required placeholder="ana@email.com">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>WhatsApp (opcional — para notificações)</label>
+          <input type="text" name="phone" placeholder="+5519999999999">
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button type="submit" class="btn btn-primary">
+            ✅ Criar Conta
+          </button>
+          <button type="reset" class="btn btn-ghost">
+            Limpar
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
