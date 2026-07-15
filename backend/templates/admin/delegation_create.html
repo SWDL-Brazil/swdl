@@ -1,0 +1,98 @@
+{% extends "admin/base.html" %}
+{% block title %}Nova Delegação{% endblock %}
+{% block page_title %}🌍 Nova Delegação{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.delegations_list') }}" class="btn btn-ghost">← Delegações</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:700px">
+  <div class="card">
+    <div class="card-body">
+      <form method="POST" id="delegForm">
+        <div class="form-group">
+          <label>País *</label>
+          <input type="text" name="country" required placeholder="Ex: Brasil"
+                 style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px">
+        </div>
+
+        <div class="form-row" style="display:flex;gap:12px">
+          <div class="form-group" style="flex:1">
+            <label>Bandeira (emoji)</label>
+            <input type="text" name="flag" placeholder="🇧🇷" maxlength="10"
+                   style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px">
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>URL da Bandeira</label>
+            <input type="text" name="flag_url" placeholder="https://flagcdn.com/br.svg"
+                   style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Tema / Comitê</label>
+          <select name="theme_id" onchange="updateCommittee(this)"
+                  style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px">
+            <option value="">— Nenhum —</option>
+            {% for t in themes %}
+            <option value="{{ t.id }}" data-name="{{ t.name }}">{{ t.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Nome do Comitê (se diferente do tema)</label>
+          <input type="text" name="committee_name" id="committee_name" placeholder="Deixa em branco para usar o nome do tema"
+                 style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px">
+        </div>
+
+        <div class="form-group">
+          <label>Parceiro (opcional)</label>
+          <input type="text" name="pair_name" placeholder="Nome do co-delegado"
+                 style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px">
+        </div>
+
+        <div class="form-group">
+          <label>Alunos * <span style="font-size:11px;color:var(--muted)">(selecione 1 ou mais)</span></label>
+          <div style="max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:4px;padding:4px">
+            {% for s in unassigned_students %}
+            <label class="student-check" style="display:flex;align-items:center;gap:8px;padding:6px 8px;cursor:pointer;border-radius:4px;transition:background .15s"
+                   onmouseover="this.style.background='var(--offwhite2)'" onmouseout="this.style.background=''">
+              <input type="checkbox" name="student_ids" value="{{ s.id }}"
+                     onchange="updateCount()"
+                     style="width:16px;height:16px;accent-color:var(--gold)">
+              <span style="font-weight:500">{{ s.name }}</span>
+              <span style="font-size:11px;color:var(--muted);margin-left:auto">{{ s.email }}</span>
+            </label>
+            {% else %}
+            <p style="text-align:center;color:var(--muted);padding:24px">
+              Nenhum aluno disponível. Crie alunos primeiro.
+            </p>
+            {% endfor %}
+          </div>
+          <div id="studentCount" style="font-size:12px;color:var(--muted);margin-top:6px">0 alunos selecionados</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top:8px">
+          ✅ Criar Delegação
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function updateCommittee(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  const nameInput = document.getElementById('committee_name');
+  if (opt && opt.dataset.name && !nameInput.value) {
+    nameInput.placeholder = 'Deixa em branco para usar: ' + opt.dataset.name;
+  }
+}
+function updateCount() {
+  const checked = document.querySelectorAll('input[name="student_ids"]:checked').length;
+  document.getElementById('studentCount').textContent = checked + ' aluno' + (checked !== 1 ? 's' : '') + ' selecionado' + (checked !== 1 ? 's' : '');
+}
+</script>
+{% endblock %}

@@ -44,10 +44,18 @@
             </span>
           </td>
           <td>
-            <a href="{{ url_for('admin.dpo_download', id=d.id) }}"
-               class="btn btn-navy btn-sm">
-              📥 Baixar DPO
-            </a>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+              <a href="{{ url_for('admin.dpo_download', id=d.id) }}"
+                 class="btn btn-navy btn-sm">
+                📥 Baixar DPO
+              </a>
+              <form method="POST"
+                    action="{{ url_for('admin.dpo_delete', id=d.id) }}"
+                    onsubmit="return confirm('Excluir DPO de {{ d.country or 'delegação' }}? O aluno poderá reenviar.');"
+                    style="margin:0">
+                <button class="btn btn-danger btn-sm" type="submit">🗑️ Excluir</button>
+              </form>
+            </div>
           </td>
         </tr>
         {% else %}

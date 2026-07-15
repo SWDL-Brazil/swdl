@@ -1,5 +1,6 @@
 from extensions import db
 from datetime import datetime, timezone
+import json, os
 
 
 class CertificateTemplate(db.Model):
@@ -7,142 +8,115 @@ class CertificateTemplate(db.Model):
 
     id          = db.Column(db.Integer, primary_key=True)
     name        = db.Column(db.String(100), nullable=False)
-    html_content = db.Column(db.Text, nullable=False)
+    html_content = db.Column(db.Text, nullable=True)
+    pdf_path    = db.Column(db.String(300), nullable=True)
+    fields_json = db.Column(db.Text, nullable=True)
     is_active   = db.Column(db.Boolean, default=False)
     created_at  = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
-    PLACEHOLDERS = [
-        ('{{student_name}}', 'Nome do Aluno'),
-        ('{{country}}', 'País'),
-        ('{{country_flag}}', 'Bandeira (emoji)'),
-        ('{{committee}}', 'Comitê'),
-        ('{{theme}}', 'Tema'),
-        ('{{edition_year}}', 'Ano da Edição'),
-        ('{{date}}', 'Data atual'),
-        ('{{global_id}}', 'ID Global'),
-        ('{{certificate_hash}}', 'Hash do Certificado'),
-        ('{{digital_signature}}', 'Assinatura Digital'),
-    ]
+    PLACEHOLDER_MAP = {
+        'student_name':      'Nome do Aluno',
+        'country':           'País',
+        'country_flag':      'Bandeira (emoji)',
+        'committee':         'Comitê',
+        'theme':             'Tema',
+        'edition_year':      'Ano da Edição',
+        'date':              'Data atual',
+        'global_id':         'ID Global',
+        'certificate_hash':  'Hash do Certificado',
+        'digital_signature': 'Assinatura Digital',
+    }
 
     @classmethod
     def get_active(cls):
         return cls.query.filter_by(is_active=True).first()
 
-    @classmethod
-    def default_html(cls):
-        return '''<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<style>
-  @page { size: landscape; margin: 0; }
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body {
-    font-family: 'Georgia', serif;
-    width: 297mm; height: 210mm;
-    display: flex; align-items: center; justify-content: center;
-    background: #f5f0e8;
-  }
-  .cert {
-    width: 270mm; height: 185mm;
-    background: #fff;
-    border: 3px solid #C9A84C;
-    border-radius: 8px;
-    padding: 40px;
-    text-align: center;
-    position: relative;
-    box-shadow: 0 4px 20px rgba(0,0,0,.08);
-  }
-  .cert::before {
-    content: ''; position: absolute; inset: 8px;
-    border: 1px solid rgba(201,168,76,.3);
-    border-radius: 4px; pointer-events: none;
-  }
-  .cert-badge {
-    font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
-    color: #C9A84C; margin-bottom: 24px;
-  }
-  .cert-title {
-    font-size: 28px; font-weight: 700; color: #101E4C; margin-bottom: 6px;
-  }
-  .cert-sub {
-    font-size: 14px; color: #6B6F85; margin-bottom: 32px;
-  }
-  .cert-name {
-    font-size: 36px; font-weight: 700; color: #C9A84C; margin-bottom: 4px;
-  }
-  .cert-label {
-    font-size: 12px; color: #6B6F85; margin-bottom: 28px;
-    letter-spacing: .1em; text-transform: uppercase;
-  }
-  .cert-details {
-    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;
-    max-width: 600px; margin: 0 auto 28px;
-  }
-  .cert-detail-label {
-    font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
-    color: #6B6F85; margin-bottom: 4px;
-  }
-  .cert-detail-value {
-    font-size: 14px; font-weight: 600; color: #101E4C;
-  }
-  .cert-footer {
-    font-size: 10px; color: #6B6F85; margin-top: 20px;
-  }
-  .cert-seal {
-    position: absolute; bottom: 32px; right: 40px;
-    width: 60px; height: 60px; border-radius: 50%;
-    border: 2px solid #C9A84C; display: flex;
-    align-items: center; justify-content: center;
-    font-size: 20px; color: #C9A84C;
-  }
-</style>
-</head>
-<body>
-<div class="cert">
-  <div class="cert-badge">SESI World Diplomacy League</div>
-  <div class="cert-title">Certificado de Participação</div>
-  <div class="cert-sub">Edição {{edition_year}}</div>
-  <div class="cert-name">{{student_name}}</div>
-  <div class="cert-label">Participante</div>
-  <div class="cert-details">
-    <div>
-      <div class="cert-detail-label">País</div>
-      <div class="cert-detail-value">{{country_flag}} {{country}}</div>
-    </div>
-    <div>
-      <div class="cert-detail-label">Comitê / Tema</div>
-      <div class="cert-detail-value">{{theme}}</div>
-    </div>
-    <div>
-      <div class="cert-detail-label">Data</div>
-      <div class="cert-detail-value">{{date}}</div>
-    </div>
-  </div>
-  <div class="cert-footer">
-    Hash: {{certificate_hash}}<br>
-    Este certificado é digitalmente verificável.
-  </div>
-  <div class="cert-seal">SW</div>
-</div>
-</body>
-</html>'''
+    @property
+    def fields(self):
+        if not self.fields_json:
+            return []
+        try:
+            return json.loads(self.fields_json)
+        except (json.JSONDecodeError, TypeError):
+            return []
 
-    def render(self, student):
+    @fields.setter
+    def fields(self, value):
+        self.fields_json = json.dumps(value, ensure_ascii=False)
+
+    def get_field_value(self, key, student):
         from flask import url_for
         deleg = student.delegation
-        html = self.html_content
-        html = html.replace('{{student_name}}', student.name or '')
-        html = html.replace('{{country}}', deleg.country if deleg else '')
-        html = html.replace('{{country_flag}}', deleg.country_flag if deleg else '')
-        html = html.replace('{{committee}}', (deleg.committee or '').upper() if deleg else '')
-        html = html.replace('{{theme}}', deleg.theme.name if deleg and deleg.theme else (deleg.committee or ''))
-        html = html.replace('{{edition_year}}', str(deleg.edition_year) if deleg and deleg.edition_year else '')
-        html = html.replace('{{date}}', datetime.now(timezone.utc).strftime('%d/%m/%Y'))
-        html = html.replace('{{global_id}}', student.global_id or '')
-        html = html.replace('{{certificate_hash}}', student.certificate_hash or '')
-        html = html.replace('{{digital_signature}}', student.digital_signature or '')
-        return html
+        mapping = {
+            'student_name':      student.name or '',
+            'country':           deleg.country if deleg else '',
+            'country_flag':      deleg.country_flag if deleg else '',
+            'committee':         (deleg.committee or '').upper() if deleg else '',
+            'theme':             deleg.theme.name if deleg and deleg.theme else (deleg.committee or ''),
+            'edition_year':      str(deleg.edition_year) if deleg and deleg.edition_year else '',
+            'date':              datetime.now(timezone.utc).strftime('%d/%m/%Y'),
+            'global_id':         student.global_id or '',
+            'certificate_hash':  student.certificate_hash or '',
+            'digital_signature': student.digital_signature or '',
+        }
+        return mapping.get(key, '')
+
+    def render_pdf(self, student, output_path):
+        from pypdf import PdfReader, PdfWriter
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.pagesizes import A4, landscape
+        from reportlab.lib.colors import HexColor
+        import io
+
+        if not self.pdf_path or not os.path.isfile(self.pdf_path):
+            return False
+
+        reader = PdfReader(self.pdf_path)
+        page = reader.pages[0]
+        pw, ph = float(page.mediabox.width), float(page.mediabox.height)
+
+        packet = io.BytesIO()
+        c = canvas.Canvas(packet, pagesize=(pw, ph))
+
+        for field in (self.fields or []):
+            key = field.get('key', '')
+            value = self.get_field_value(key, student)
+            if not value:
+                continue
+
+            x = float(field.get('x', 0))
+            y = float(field.get('y', 0))
+            font_size = float(field.get('font_size', 12))
+            font = field.get('font', 'Helvetica')
+            align = field.get('align', 'left')
+            color_hex = field.get('color', '#000000')
+
+            try:
+                c.setFillColor(HexColor(color_hex))
+            except:
+                c.setFillColor(HexColor('#000000'))
+            c.setFont(font, font_size)
+
+            if align == 'center':
+                c.drawCentredString(x, y, value)
+            elif align == 'right':
+                c.drawRightString(x, y, value)
+            else:
+                c.drawString(x, y, value)
+
+        c.save()
+        packet.seek(0)
+
+        overlay = PdfReader(packet)
+        page.merge_page(overlay.pages[0])
+
+        writer = PdfWriter()
+        writer.add_page(page)
+
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        with open(output_path, 'wb') as f:
+            writer.write(f)
+        return True
 
     def __repr__(self):
         return f'<CertificateTemplate {self.name}>'

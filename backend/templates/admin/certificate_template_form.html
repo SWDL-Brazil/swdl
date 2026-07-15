@@ -10,65 +10,117 @@
 <div style="max-width:900px">
   <div class="card">
     <div class="card-body">
-      <form method="POST">
+      <form method="POST" enctype="multipart/form-data">
         <div class="form-group">
           <label>Nome do Modelo *</label>
           <input type="text" name="name" required
                  value="{{ template.name if template else '' }}"
-                 placeholder="Ex: Modelo Padrão 2026">
+                 placeholder="Ex: Certificado SWDL 2026"
+                 style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px">
         </div>
 
         <div class="form-group">
-          <label>HTML do Certificado</label>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:8px">
-            Use os placeholders: <code>{{'{{student_name}}'}}</code>, <code>{{'{{country}}'}}</code>, <code>{{'{{theme}}'}}</code>, <code>{{'{{date}}'}}</code>, etc.
-            Deixe em branco para usar o modelo padrão.
+          <label>PDF Template (moldura/certificado em branco)</label>
+          <input type="file" name="pdf_file" accept=".pdf"
+                 {{ 'required' if not template }}
+                 style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px">
+          {% if template and template.pdf_path %}
+          <div style="font-size:12px;color:var(--green);margin-top:4px">
+            ✅ PDF atual: {{ template.pdf_path.split('/')[-1].split('\\')[-1] }}
+            (faça upload para substituir)
           </div>
-          <textarea name="html_content" rows="25"
-                    style="width:100%;font-family:'DM Mono',monospace;font-size:12px;padding:14px;
-                           border:1px solid var(--border);border-radius:4px;background:var(--offwhite2);
-                           color:var(--navy);tab-size:2"
-                    placeholder="&lt;!DOCTYPE html&gt;...">{{ template.html_content if template else '' }}</textarea>
-        </div>
-
-        <div style="display:flex;gap:8px">
-          <button type="submit" class="btn btn-primary">
-            {{ '💾 Salvar' if template else '✅ Criar' }}
-          </button>
-          <a href="{{ url_for('admin.certificate_templates') }}" class="btn btn-ghost">Cancelar</a>
-          {% if template %}
-          <a href="{{ url_for('admin.certificate_template_preview', id=template.id) }}" target="_blank" class="btn btn-ghost" style="margin-left:auto">
-            👁️ Preview
-          </a>
           {% endif %}
         </div>
+
+        <div class="form-group">
+          <label>Campos do Certificado</label>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+            Coordenadas em pontos PDF (0,0 = canto inferior esquerdo). 
+            Para A4 paisagem (297×210mm): 842×595pt.
+            Use <a href="https://www.sejda.com/pdf-measure" target="_blank" style="color:var(--gold)">PDF Measure</a> 
+            para medir as coordenadas no seu template.
+          </div>
+          <div style="overflow-x:auto">
+            <table class="admin-table" style="min-width:700px">
+              <thead>
+                <tr>
+                  <th>Placeholder</th>
+                  <th style="width:70px">X (pt)</th>
+                  <th style="width:70px">Y (pt)</th>
+                  <th style="width:70px">Tamanho</th>
+                  <th style="width:110px">Fonte</th>
+                  <th style="width:80px">Alinhamento</th>
+                  <th style="width:90px">Cor</th>
+                  <th style="width:40px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for key, label in placeholders.items() %}
+                {% set f = None %}
+                {% if template %}
+                  {% for field in (template.fields or []) %}
+                    {% if field.key == key %}{% set f = field %}{% endif %}
+                  {% endfor %}
+                {% endif %}
+                <tr>
+                  <td style="font-size:12px;white-space:nowrap">
+                    <code style="background:var(--offwhite2);padding:2px 6px;border-radius:3px">{{ key }}</code>
+                    <br><span style="font-size:10px;color:var(--muted)">{{ label }}</span>
+                  </td>
+                  <td>
+                    <input type="number" name="field_{{ key }}_x"
+                           value="{{ f.x if f else '' }}" step="1"
+                           style="width:60px;padding:4px 6px;border:1px solid var(--border);border-radius:3px;font-size:12px">
+                  </td>
+                  <td>
+                    <input type="number" name="field_{{ key }}_y"
+                           value="{{ f.y if f else '' }}" step="1"
+                           style="width:60px;padding:4px 6px;border:1px solid var(--border);border-radius:3px;font-size:12px">
+                  </td>
+                  <td>
+                    <input type="number" name="field_{{ key }}_font_size"
+                           value="{{ f.font_size if f else 14 }}" step="1" min="6" max="72"
+                           style="width:60px;padding:4px 6px;border:1px solid var(--border);border-radius:3px;font-size:12px">
+                  </td>
+                  <td>
+                    <select name="field_{{ key }}_font"
+                            style="width:100px;padding:4px 6px;border:1px solid var(--border);border-radius:3px;font-size:12px">
+                      {% for font in ['Helvetica', 'Helvetica-Bold', 'Helvetica-Oblique', 'Times-Roman', 'Times-Bold', 'Times-Italic', 'Courier', 'Courier-Bold'] %}
+                      <option value="{{ font }}" {{ 'selected' if f and f.font == font }}>{{ font }}</option>
+                      {% endfor %}
+                    </select>
+                  </td>
+                  <td>
+                    <select name="field_{{ key }}_align"
+                            style="width:70px;padding:4px 6px;border:1px solid var(--border);border-radius:3px;font-size:12px">
+                      {% for a in ['left', 'center', 'right'] %}
+                      <option value="{{ a }}" {{ 'selected' if f and f.align == a }}>{{ a }}</option>
+                      {% endfor %}
+                    </select>
+                  </td>
+                  <td>
+                    <input type="color" name="field_{{ key }}_color"
+                           value="{{ f.color if f else '#1a1a2e' }}"
+                           style="width:50px;height:30px;padding:2px;border:1px solid var(--border);border-radius:3px;cursor:pointer">
+                  </td>
+                  <td>
+                    <span style="font-size:10px;color:var(--muted);cursor:pointer"
+                          onclick="this.closest('tr').querySelectorAll('input,select').forEach(el => el.value = '')"
+                          title="Limpar">✕</span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          {{ '💾 Salvar' if template else '✅ Criar' }}
+        </button>
+        <a href="{{ url_for('admin.certificate_templates') }}" class="btn btn-ghost">Cancelar</a>
       </form>
     </div>
   </div>
-
-  {% if not template %}
-  <div class="card" style="margin-top:20px">
-    <div class="card-header">
-      <span class="card-title">📄 Modelo Padrão</span>
-    </div>
-    <div class="card-body">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">
-        Se o HTML estiver vazio, o modelo padrão será usado. Clique abaixo para pré-carregar o modelo padrão no editor.
-      </p>
-      <button onclick="loadDefault()" class="btn btn-ghost">📥 Carregar Modelo Padrão</button>
-    </div>
-  </div>
-
-  <script>
-    async function loadDefault() {
-      const res = await fetch('{{ url_for("admin.certificate_template_create") }}', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ name: 'Modelo Padrão', html_content: 'placeholder' })
-      });
-      window.location.reload();
-    }
-  </script>
-  {% endif %}
 </div>
 {% endblock %}

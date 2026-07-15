@@ -106,19 +106,16 @@ def _auto_compile_certificates():
         if deleg and deleg.presence_status in ('presente', 'votante'):
             if not student.certificate_hash:
                 student.certificate_hash = str(__import__('uuid').uuid4())
-            html = template.render(student) if template else ''
-            if html:
-                cert_path = os.path.join(cert_dir, f'{student.certificate_hash}.html')
-                with open(cert_path, 'w', encoding='utf-8') as f:
-                    f.write(html)
-                student.certificate_url = __import__('flask').url_for(
-                    'static',
-                    filename=f'uploads/certificates/{student.certificate_hash}.html',
-                    _external=True
-                )
+            if template and template.pdf_path:
+                pdf_path = os.path.join(cert_dir, f'{student.certificate_hash}.pdf')
+                ok = template.render_pdf(student, pdf_path)
+                if ok:
+                    student.certificate_url = pdf_path
+                else:
+                    student.certificate_url = ''
             else:
                 student.certificate_url = __import__('flask').url_for(
-                    'certificate_view',
+                    'vote.certificate_view',
                     hash=student.certificate_hash,
                     _external=True
                 )

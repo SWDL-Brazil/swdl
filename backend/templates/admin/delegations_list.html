@@ -2,6 +2,10 @@
 {% block title %}Delegações{% endblock %}
 {% block page_title %}Delegações{% endblock %}
 
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.delegation_create') }}" class="btn btn-gold">➕ Nova Delegação</a>
+{% endblock %}
+
 {% block content %}
 
 <div class="card">

@@ -611,6 +611,106 @@ def delegations_list():
                            delegations=delegations)
 
 
+@admin_bp.route('/delegacoes/criar', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def delegation_create():
+    """Cria uma nova delegação do zero (tema, país, alunos)."""
+    from models.theme import Theme
+    from models.student import Student
+    from models.inscription import Inscription
+    from models.user import User
+    import re
+
+    if request.method == 'POST':
+        theme_id = request.form.get('theme_id', type=int)
+        country  = request.form.get('country', '').strip()
+        flag     = request.form.get('flag', '').strip()
+        flag_url = request.form.get('flag_url', '').strip()
+        committee_name = request.form.get('committee_name', '').strip()
+        student_ids = request.form.getlist('student_ids', type=int)
+
+        if not country:
+            flash('O país é obrigatório.', 'error')
+            return redirect(url_for('admin.delegation_create'))
+
+        if not student_ids:
+            flash('Selecione pelo menos um aluno.', 'error')
+            return redirect(url_for('admin.delegation_create'))
+
+        theme = Theme.query.get(theme_id) if theme_id else None
+
+        # Cria Inscription para cada aluno, mas usa a primeira como principal
+        first_student = Student.query.get(student_ids[0])
+        if not first_student:
+            flash('Aluno não encontrado.', 'error')
+            return redirect(url_for('admin.delegation_create'))
+
+        ins = Inscription.query.filter_by(email=first_student.email, status='approved').first()
+        if not ins:
+            ins = Inscription(
+                name=first_student.name,
+                email=first_student.email,
+                phone='',
+                grade='',
+                motivation='',
+                interests='',
+                type='delegate',
+                status='approved',
+                reviewed_at=datetime.now(timezone.utc),
+            )
+            db.session.add(ins)
+            db.session.flush()
+
+        pair_name = request.form.get('pair_name', '').strip()
+
+        deleg = Delegation(
+            inscription_id=ins.id,
+            edition_year=datetime.now(timezone.utc).year,
+            theme_id=theme.id if theme else None,
+            country=country,
+            country_flag=flag,
+            flag_url=flag_url,
+            committee=committee_name or (theme.name if theme else ''),
+            pair_name=pair_name,
+        )
+        db.session.add(deleg)
+        db.session.flush()
+
+        # Vincula todos os alunos selecionados a esta delegação
+        for sid in student_ids:
+            student = Student.query.get(sid)
+            if student:
+                student.delegation_id = deleg.id
+                student.convened = True
+                # Garante ParticipationHistory
+                _ensure_participation_history(student)
+
+                # Checa se já tem User; se não, cria
+                if not student.user_id:
+                    existing = User.query.filter_by(email=student.email, role='delegate').first()
+                    if not existing:
+                        first_name = re.sub(r'[^a-zA-Z]', '', student.name.split()[0]).lower()[:4]
+                        password = f'{first_name}2025'
+                        user = User(name=student.name, email=student.email, role='delegate')
+                        user.set_password(password)
+                        db.session.add(user)
+                        db.session.flush()
+                        student.user_id = user.id
+                    else:
+                        student.user_id = existing.id
+
+        db.session.commit()
+        flash(f'🌍 Delegação {country} criada com {len(student_ids)} aluno(s)!', 'success')
+        return redirect(url_for('admin.delegations_list'))
+
+    themes = Theme.query.all()
+    # Alunos que ainda não têm delegação
+    unassigned = Student.query.filter(Student.delegation_id.is_(None)).order_by(Student.name).all()
+    return render_template('admin/delegation_create.html',
+                           themes=themes, unassigned_students=unassigned)
+
+
 @admin_bp.route('/delegacoes/<int:id>/designar', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -858,6 +958,30 @@ def dpo_download(id):
         as_attachment=True,
         download_name=os.path.basename(deleg.dpo_path)
     )
+
+
+@admin_bp.route('/dpos/<int:id>/deletar', methods=['POST'])
+@login_required
+@admin_required
+def dpo_delete(id):
+    """Exclui o DPO de uma delegação."""
+    from models.participation import ParticipationHistory
+    import os
+    deleg = Delegation.query.get_or_404(id)
+    if deleg.dpo_path and os.path.isfile(deleg.dpo_path):
+        try:
+            os.remove(deleg.dpo_path)
+        except OSError:
+            pass
+    deleg.dpo_path = None
+    deleg.dpo_uploaded = False
+    deleg.accepted = False
+    ParticipationHistory.query.filter_by(
+        delegation_id=deleg.id, action='dpo_upload'
+    ).delete()
+    db.session.commit()
+    flash(f'DPO de {deleg.country or "delegação"} excluído com sucesso.', 'success')
+    return redirect(url_for('admin.dpos_list'))
 
 
 # ══════════════════════════════════════════════════════════════
@@ -1519,21 +1643,44 @@ def invocar_page():
 #  CERTIFICADOS — Gestão e Compilação Automática
 # ══════════════════════════════════════════════════════════════
 
+@admin_bp.route('/certificados/arquivo/<filename>')
+@login_required
+def serve_certificate(filename):
+    """Serve o arquivo PDF do certificado."""
+    from config import Config
+    cert_dir = os.path.join(Config.UPLOAD_FOLDER, 'certificates')
+    filepath = os.path.join(cert_dir, filename)
+    if not os.path.isfile(filepath):
+        abort(404)
+    return send_file(filepath, mimetype='application/pdf')
+
+
 def _compile_certificates():
     """Algoritmo de Compilação por Assiduidade.
-    Gera certificate_hash e certificate_url para alunos elegíveis
-    (que registraram presença como 'presente' ou 'votante')."""
+    Gera certificate_hash e certificado PDF para alunos elegíveis."""
     from models.student import Student
     from models.delegation import Delegation
+    from models.certificate_template import CertificateTemplate
+    from config import Config
     students = Student.query.all()
     generated = 0
+    cert_dir = os.path.join(Config.UPLOAD_FOLDER, 'certificates')
+    os.makedirs(cert_dir, exist_ok=True)
+    template = CertificateTemplate.get_active()
     for student in students:
         deleg = Delegation.query.get(student.delegation_id) if student.delegation_id else None
         if deleg and deleg.presence_status in ('presente', 'votante'):
             if not student.certificate_hash:
                 student.certificate_hash = str(_uuid.uuid4())
-            if not student.certificate_url:
-                student.certificate_url = url_for('certificate_view', hash=student.certificate_hash, _external=True) if student.certificate_hash else ''
+            if template and template.pdf_path:
+                pdf_path = os.path.join(cert_dir, f'{student.certificate_hash}.pdf')
+                ok = template.render_pdf(student, pdf_path)
+                if ok:
+                    student.certificate_url = url_for('admin.serve_certificate', filename=f'{student.certificate_hash}.pdf', _external=True)
+                else:
+                    student.certificate_url = url_for('vote.certificate_view', hash=student.certificate_hash, _external=True)
+            else:
+                student.certificate_url = url_for('vote.certificate_view', hash=student.certificate_hash, _external=True)
             generated += 1
     db.session.commit()
     return generated
@@ -1610,7 +1757,7 @@ def certificate_release(id):
     student = Student.query.get_or_404(id)
     if not student.certificate_hash:
         student.certificate_hash = str(_uuid.uuid4())
-        student.certificate_url = url_for('certificate_view', hash=student.certificate_hash, _external=True)
+        student.certificate_url = url_for('vote.certificate_view', hash=student.certificate_hash, _external=True)
     student.certificate_released = True
     db.session.commit()
     _log_audit('release_certificate', 'student', student.id, student.name)
@@ -1723,20 +1870,46 @@ def certificate_templates():
 @admin_required
 def certificate_template_create():
     from models.certificate_template import CertificateTemplate
+    from config import Config
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
-        html_content = request.form.get('html_content', '').strip()
         if not name:
             flash('Nome do modelo é obrigatório.', 'error')
             return render_template('admin/certificate_template_form.html', template=None)
-        if not html_content:
-            html_content = CertificateTemplate.default_html()
-        tpl = CertificateTemplate(name=name, html_content=html_content)
+
+        tpl = CertificateTemplate(name=name)
+
+        file = request.files.get('pdf_file')
+        if file and file.filename and file.filename.lower().endswith('.pdf'):
+            upload_dir = os.path.join(Config.UPLOAD_FOLDER, 'cert_templates')
+            os.makedirs(upload_dir, exist_ok=True)
+            safe_name = f'tpl_{_uuid.uuid4().hex[:12]}.pdf'
+            filepath = os.path.join(upload_dir, safe_name)
+            file.save(filepath)
+            tpl.pdf_path = filepath
+
+        fields = []
+        for key in CertificateTemplate.PLACEHOLDER_MAP:
+            x = request.form.get(f'field_{key}_x')
+            if x is not None and x.strip():
+                fields.append({
+                    'key': key,
+                    'x': float(request.form.get(f'field_{key}_x', 0)),
+                    'y': float(request.form.get(f'field_{key}_y', 0)),
+                    'font_size': float(request.form.get(f'field_{key}_font_size', 14)),
+                    'font': request.form.get(f'field_{key}_font', 'Helvetica'),
+                    'align': request.form.get(f'field_{key}_align', 'center'),
+                    'color': request.form.get(f'field_{key}_color', '#1a1a2e'),
+                })
+        if fields:
+            tpl.fields = fields
+
         db.session.add(tpl)
         db.session.commit()
         flash(f'✅ Modelo "{name}" criado!', 'success')
         return redirect(url_for('admin.certificate_templates'))
-    return render_template('admin/certificate_template_form.html', template=None)
+    return render_template('admin/certificate_template_form.html', template=None,
+                           placeholders=CertificateTemplate.PLACEHOLDER_MAP)
 
 
 @admin_bp.route('/certificados/modelos/<int:id>/editar', methods=['GET', 'POST'])
@@ -1744,16 +1917,43 @@ def certificate_template_create():
 @admin_required
 def certificate_template_edit(id):
     from models.certificate_template import CertificateTemplate
+    from config import Config
     tpl = CertificateTemplate.query.get_or_404(id)
     if request.method == 'POST':
         tpl.name = request.form.get('name', '').strip()
-        html_content = request.form.get('html_content', '').strip()
-        if html_content:
-            tpl.html_content = html_content
+
+        file = request.files.get('pdf_file')
+        if file and file.filename and file.filename.lower().endswith('.pdf'):
+            upload_dir = os.path.join(Config.UPLOAD_FOLDER, 'cert_templates')
+            os.makedirs(upload_dir, exist_ok=True)
+            safe_name = f'tpl_{_uuid.uuid4().hex[:12]}.pdf'
+            filepath = os.path.join(upload_dir, safe_name)
+            file.save(filepath)
+            if tpl.pdf_path and os.path.isfile(tpl.pdf_path):
+                try: os.remove(tpl.pdf_path)
+                except: pass
+            tpl.pdf_path = filepath
+
+        fields = []
+        for key in CertificateTemplate.PLACEHOLDER_MAP:
+            x = request.form.get(f'field_{key}_x')
+            if x is not None and x.strip():
+                fields.append({
+                    'key': key,
+                    'x': float(request.form.get(f'field_{key}_x', 0)),
+                    'y': float(request.form.get(f'field_{key}_y', 0)),
+                    'font_size': float(request.form.get(f'field_{key}_font_size', 14)),
+                    'font': request.form.get(f'field_{key}_font', 'Helvetica'),
+                    'align': request.form.get(f'field_{key}_align', 'center'),
+                    'color': request.form.get(f'field_{key}_color', '#1a1a2e'),
+                })
+        tpl.fields = fields if fields else None
+
         db.session.commit()
         flash(f'✅ Modelo "{tpl.name}" atualizado!', 'success')
         return redirect(url_for('admin.certificate_templates'))
-    return render_template('admin/certificate_template_form.html', template=tpl)
+    return render_template('admin/certificate_template_form.html', template=tpl,
+                           placeholders=CertificateTemplate.PLACEHOLDER_MAP)
 
 
 @admin_bp.route('/certificados/modelos/<int:id>/ativar', methods=['POST'])
@@ -1775,6 +1975,9 @@ def certificate_template_activate(id):
 def certificate_template_delete(id):
     from models.certificate_template import CertificateTemplate
     tpl = CertificateTemplate.query.get_or_404(id)
+    if tpl.pdf_path and os.path.isfile(tpl.pdf_path):
+        try: os.remove(tpl.pdf_path)
+        except: pass
     db.session.delete(tpl)
     db.session.commit()
     flash(f'🗑️ Modelo "{tpl.name}" deletado.', 'info')
@@ -1786,13 +1989,22 @@ def certificate_template_delete(id):
 @admin_required
 def certificate_template_preview(id):
     from models.certificate_template import CertificateTemplate
+    from models.student import Student
     tpl = CertificateTemplate.query.get_or_404(id)
     student = Student.query.first()
     if not student:
         return '<p>Nenhum aluno cadastrado para preview.</p>'
     if not student.delegation:
         return '<p>Aluno sem delegação para preview.</p>'
-    return tpl.render(student)
+    if not tpl.pdf_path:
+        return '<p>Modelo sem PDF. Faça upload de um PDF primeiro.</p>'
+    import tempfile
+    tmp = tempfile.NamedTemporaryFile(suffix='.pdf', delete=False)
+    ok = tpl.render_pdf(student, tmp.name)
+    if not ok:
+        return '<p>Erro ao renderizar preview.</p>'
+    return send_file(tmp.name, mimetype='application/pdf', as_attachment=False,
+                     download_name=f'preview_{tpl.name}.pdf')
 
 
 # ══════════════════════════════════════════════════════════════

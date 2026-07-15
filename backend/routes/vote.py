@@ -3,13 +3,14 @@
 #  Sistema de votação em tempo real via WebSocket
 # =============================================================
 from flask import (Blueprint, render_template, redirect, url_for,
-                   flash, request, jsonify)
+                   flash, request, jsonify, send_file)
 from flask_login import login_required, current_user
 from flask_socketio import emit, join_room
 from extensions import db, socketio
 from models.vote       import VoteSession, Vote
 from models.delegation import Delegation
 from datetime import datetime
+import os
 
 vote_bp = Blueprint('vote', __name__)
 
@@ -262,12 +263,22 @@ def certificate_view(hash):
     """Página pública de visualização de certificado."""
     from models.student import Student
     from models.certificate_template import CertificateTemplate
+    from config import Config
     student = Student.query.filter_by(certificate_hash=hash).first()
     if not student or not student.certificate_released:
         return render_template('public/certificate_invalid.html'), 404
+    if student.certificate_url and os.path.isfile(student.certificate_url):
+        return send_file(student.certificate_url, mimetype='application/pdf')
     template = CertificateTemplate.get_active()
-    if template and student.delegation:
-        return template.render(student)
+    if template and template.pdf_path and student.delegation:
+        cert_dir = os.path.join(Config.UPLOAD_FOLDER, 'certificates')
+        os.makedirs(cert_dir, exist_ok=True)
+        pdf_path = os.path.join(cert_dir, f'{hash}.pdf')
+        ok = template.render_pdf(student, pdf_path)
+        if ok:
+            student.certificate_url = pdf_path
+            db.session.commit()
+            return send_file(pdf_path, mimetype='application/pdf')
     return render_template('public/certificate_view.html', student=student)
 
 

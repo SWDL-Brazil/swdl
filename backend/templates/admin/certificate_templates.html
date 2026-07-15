@@ -1,84 +1,82 @@
 {% extends "admin/base.html" %}
 {% block title %}Modelos de Certificado{% endblock %}
-{% block page_title %}🎓 Modelos de Certificado{% endblock %}
+{% block page_title %}📄 Modelos de Certificado{% endblock %}
 
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.certificate_template_create') }}" class="btn btn-primary">+ Novo Modelo</a>
+  <a href="{{ url_for('admin.certificate_template_create') }}" class="btn btn-gold">➕ Novo Modelo</a>
 {% endblock %}
 
 {% block content %}
 <div class="card">
   <div class="card-body" style="padding:0">
-    {% for tpl in templates %}
-    <div style="display:flex;align-items:center;gap:16px;padding:16px 22px;border-bottom:1px solid var(--border)">
-      <div style="font-size:24px">{{ '✅' if tpl.is_active else '📄' }}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:15px;font-weight:600;color:var(--navy)">
-          {{ tpl.name }}
-          {% if tpl.is_active %}
-            <span class="badge badge-success" style="margin-left:8px">Ativo</span>
-          {% endif %}
-        </div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">
-          Criado em {{ tpl.created_at.strftime('%d/%m/%Y %H:%M') }}
-          · {{ tpl.html_content|length }} caracteres
-        </div>
-      </div>
-      <div style="display:flex;gap:4px;flex-shrink:0">
-        <a href="{{ url_for('admin.certificate_template_preview', id=tpl.id) }}" target="_blank" class="btn btn-ghost btn-sm">👁️</a>
-        <a href="{{ url_for('admin.certificate_template_edit', id=tpl.id) }}" class="btn btn-ghost btn-sm">✏️</a>
-        {% if not tpl.is_active %}
-        <form method="POST" action="{{ url_for('admin.certificate_template_activate', id=tpl.id) }}" style="display:inline">
-          <button class="btn btn-green btn-sm">Ativar</button>
-        </form>
-        {% endif %}
-        <form method="POST" action="{{ url_for('admin.certificate_template_delete', id=tpl.id) }}"
-              onsubmit="return confirm('Deletar modelo \"{{ tpl.name }}\"?')" style="display:inline">
-          <button class="btn btn-danger btn-sm">Del</button>
-        </form>
-      </div>
-    </div>
-    {% else %}
-    <div class="empty-state">
-      <div class="empty-state-icon">📄</div>
-      <div class="empty-state-title">Nenhum modelo de certificado</div>
-      <p style="font-size:13px;color:var(--muted);margin-top:4px">
-        Crie um modelo HTML com placeholders como <code>{{'{{student_name}}'}}</code>, <code>{{'{{country}}'}}</code>, <code>{{'{{theme}}'}}</code>.
-      </p>
-      <a href="{{ url_for('admin.certificate_template_create') }}" class="btn btn-primary" style="margin-top:16px">+ Criar Modelo</a>
-    </div>
-    {% endfor %}
-  </div>
-</div>
-
-<div class="card" style="margin-top:20px">
-  <div class="card-header">
-    <span class="card-title">📌 Placeholders Disponíveis</span>
-  </div>
-  <div class="card-body" style="padding:16px 22px">
     <table class="admin-table">
       <thead>
         <tr>
-          <th>Placeholder</th>
-          <th>Descrição</th>
+          <th>#</th>
+          <th>Nome</th>
+          <th>PDF</th>
+          <th>Campos</th>
+          <th>Ativo</th>
+          <th>Ações</th>
         </tr>
       </thead>
       <tbody>
-        {% for ph, desc in [
-          ('{{student_name}}', 'Nome completo do aluno'),
-          ('{{country}}', 'País da delegação'),
-          ('{{country_flag}}', 'Bandeira (emoji)'),
-          ('{{committee}}', 'Comitê'),
-          ('{{theme}}', 'Tema do debate'),
-          ('{{edition_year}}', 'Ano da edição'),
-          ('{{date}}', 'Data atual (dd/mm/aaaa)'),
-          ('{{global_id}}', 'ID Global do aluno'),
-          ('{{certificate_hash}}', 'Hash único de verificação'),
-          ('{{digital_signature}}', 'Assinatura digital HMAC'),
-        ] %}
+        {% for t in templates %}
         <tr>
-          <td><code style="background:var(--border);padding:2px 6px;border-radius:2px;font-size:12px">{{ ph }}</code></td>
-          <td style="font-size:13px;color:var(--muted)">{{ desc }}</td>
+          <td class="text-muted">{{ t.id }}</td>
+          <td style="font-weight:600">{{ t.name }}</td>
+          <td>
+            {% if t.pdf_path %}
+              <span style="color:var(--green)">✅ PDF</span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% set fields = t.fields %}
+            {% if fields %}
+              <span style="font-size:12px;color:var(--muted)">{{ fields|length }} campos</span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if t.is_active %}
+              <span class="badge badge-success">Ativo</span>
+            {% else %}
+              <span class="text-muted">Inativo</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+              <a href="{{ url_for('admin.certificate_template_edit', id=t.id) }}"
+                 class="btn btn-primary btn-sm">✏️ Editar</a>
+              {% if t.pdf_path %}
+              <a href="{{ url_for('admin.certificate_template_preview', id=t.id) }}"
+                 target="_blank" class="btn btn-navy btn-sm">👁️ Preview</a>
+              {% endif %}
+              {% if not t.is_active %}
+              <form method="POST"
+                    action="{{ url_for('admin.certificate_template_activate', id=t.id) }}"
+                    style="margin:0">
+                <button class="btn btn-success btn-sm">✅ Ativar</button>
+              </form>
+              {% endif %}
+              <form method="POST"
+                    action="{{ url_for('admin.certificate_template_delete', id=t.id) }}"
+                    onsubmit="return confirm('Deletar modelo {{ t.name }}? Esta ação não pode ser desfeita.');"
+                    style="margin:0">
+                <button class="btn btn-danger btn-sm">🗑️</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" style="text-align:center;color:var(--muted);padding:32px">
+            Nenhum modelo criado ainda.
+            <a href="{{ url_for('admin.certificate_template_create') }}">Criar primeiro modelo</a>.
+          </td>
         </tr>
         {% endfor %}
       </tbody>
