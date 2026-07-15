@@ -104,6 +104,9 @@ def _run_migrations(app):
             ('news', 'category_id', 'INTEGER REFERENCES categories(id)'),
             ('students', 'digital_signature', 'TEXT'),
             ('students', 'signed_at', 'TIMESTAMP' if is_pg else 'DATETIME'),
+            ('news', 'tags', 'VARCHAR(300)'),
+            ('news', 'published', _bool),
+            ('news', 'author_id', 'INTEGER REFERENCES users(id)'),
         ]
 
         for table, col, col_type in migs:
