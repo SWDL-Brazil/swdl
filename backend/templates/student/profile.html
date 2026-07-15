@@ -66,43 +66,5 @@
   </div>
 </div>
 
-{% if delegation %}
-<div class="card" style="margin-top:20px" id="dpo">
-  <div class="card-header">
-    <span class="card-title">📄 Documento de Posição Oficial (DPO)</span>
-  </div>
-  <div class="card-body">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
-      <div>
-        <div style="font-size:13px;color:var(--navy);margin-bottom:4px">
-          <strong>Status:</strong>
-          {% if delegation.dpo_uploaded %}
-            <span style="color:#2ECC71">✅ DPO recebido</span>
-          {% else %}
-            <span style="color:var(--muted)">⏳ Nenhum DPO enviado ainda</span>
-          {% endif %}
-        </div>
-        {% if delegation.dpo_uploaded %}
-        <div style="font-size:11px;color:var(--muted)">
-          Arquivo: {{ delegation.dpo_path.split('/')[-1].split('\\')[-1] if delegation.dpo_path else '—' }}
-        </div>
-        {% endif %}
-      </div>
-      <form method="POST" action="{{ url_for('student.dpo_upload') }}" enctype="multipart/form-data"
-            style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <input type="file" name="dpo_file" accept=".pdf" required
-               style="font-size:12px;padding:6px;border:1px solid var(--border);border-radius:4px;background:var(--white)">
-        <button type="submit" class="btn btn-gold btn-sm">
-          {{ '📤 Substituir DPO' if delegation.dpo_uploaded else '📤 Enviar DPO' }}
-        </button>
-      </form>
-    </div>
-    <div style="margin-top:12px;padding:12px;background:var(--offwhite2);border-radius:4px;font-size:11px;color:var(--muted)">
-      <strong>📌 Instruções:</strong> Envie seu Documento de Posição Oficial em formato PDF.
-      O DPO é obrigatório para participação na simulação. Apenas arquivos PDF são aceitos.
-    </div>
-  </div>
-</div>
-{% endif %}
 
 {% endblock %}

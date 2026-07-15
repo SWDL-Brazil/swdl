@@ -20,18 +20,47 @@
     </div>
     <div class="card-body">
       <form method="POST">
-        <div class="form-row">
-          <div class="form-group">
-            <label>País *</label>
-            <input type="text" name="country" required
+        <div class="form-group">
+          <label>País *</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" name="country" id="countryInput" required
                    value="{{ deleg.country or '' }}"
-                   placeholder="Ex: Brasil">
+                   placeholder="Ex: Brasil" style="flex:1">
+            <button type="button" id="searchFlag"
+                    style="background:var(--navy);color:var(--white);border:none;
+                           border-radius:3px;padding:0 14px;cursor:pointer;
+                           font-size:13px;white-space:nowrap;flex-shrink:0">
+              🔍 Buscar
+            </button>
           </div>
-          <div class="form-group">
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">
+            Digite o país em português
+          </div>
+        </div>
+
+        <div id="flagPreview" style="display:none;text-align:center;margin-bottom:18px">
+          <img id="flagImg" src="" alt="Bandeira"
+               style="height:48px;border-radius:3px;
+                      box-shadow:0 2px 8px rgba(0,0,0,.15)">
+          <div id="flagName" style="font-size:11px;color:var(--muted);margin-top:4px"></div>
+        </div>
+
+        <input type="hidden" name="flag_url" id="flagUrl"
+               value="{{ deleg.flag_url or '' }}">
+        <input type="hidden" name="flag" id="flagEmoji"
+               value="{{ deleg.country_flag or '' }}">
+
+        <div id="flagError"
+             style="display:none;font-size:12px;color:var(--red);margin-bottom:12px">
+          País não encontrado.
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="flex:1">
             <label>Bandeira (emoji)</label>
-            <input type="text" name="flag"
+            <input type="text" name="flag_manual" id="flagEmojiManual"
                    value="{{ deleg.country_flag or '' }}"
-                   placeholder="🇧🇷">
+                   placeholder="🇧🇷" maxlength="10">
           </div>
         </div>
 
@@ -71,4 +100,50 @@
     </div>
   </div>
 </div>
+
+<script>
+  const searchBtn   = document.getElementById('searchFlag');
+  const countryInput = document.getElementById('countryInput');
+  const flagPreview = document.getElementById('flagPreview');
+  const flagImg     = document.getElementById('flagImg');
+  const flagName    = document.getElementById('flagName');
+  const flagUrl     = document.getElementById('flagUrl');
+  const flagEmoji   = document.getElementById('flagEmoji');
+  const flagError   = document.getElementById('flagError');
+
+  async function searchFlag() {
+    const country = countryInput.value.trim();
+    if (!country) return;
+
+    searchBtn.textContent = '⏳';
+    searchBtn.disabled    = true;
+    flagError.style.display = 'none';
+    flagPreview.style.display = 'none';
+
+    try {
+      const res  = await fetch(`/api/bandeira?country=${encodeURIComponent(country)}`);
+      const data = await res.json();
+
+      if (data.ok) {
+        flagImg.src            = data.flag_url;
+        flagName.textContent   = data.name;
+        flagUrl.value          = data.flag_url;
+        flagPreview.style.display = 'block';
+        countryInput.value = data.name;
+      } else {
+        flagError.style.display = 'block';
+      }
+    } catch(e) {
+      flagError.style.display = 'block';
+    }
+
+    searchBtn.textContent = '🔍 Buscar';
+    searchBtn.disabled    = false;
+  }
+
+  searchBtn.addEventListener('click', searchFlag);
+  countryInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); searchFlag(); }
+  });
+</script>
 {% endblock %}

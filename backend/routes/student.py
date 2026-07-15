@@ -11,7 +11,7 @@ from models.document import Document
 from models.vote import VoteSession, Vote
 
 from models.audit_log import AuditLog
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 import os
 
 student_bp = Blueprint('student', __name__)
@@ -49,8 +49,6 @@ def inject_now():
         pass
     first_dt, last_dt = get_agenda_bounds()
     now = datetime.now(timezone.utc)
-    dpo_deadline = first_dt - timedelta(days=3) if first_dt else None
-    dpo_deadline_passed = dpo_deadline and now > dpo_deadline
     event_started = first_dt and now >= first_dt
     event_ended = last_dt and now > last_dt
     is_event_day = now.strftime("%Y-%m-%d") in [
@@ -59,8 +57,6 @@ def inject_now():
     return {
         'now': now,
         'is_convened': is_convened,
-        'dpo_deadline': dpo_deadline,
-        'dpo_deadline_passed': dpo_deadline_passed,
         'event_started': event_started,
         'event_ended': event_ended,
         'is_event_day': is_event_day,
@@ -367,12 +363,10 @@ def dpo_upload():
         flash('Você precisa estar vinculado a uma delegação para enviar DPO.', 'error')
         return redirect(url_for('student.profile'))
 
-    first_dt, _ = get_agenda_bounds()
-    if first_dt:
-        dpo_deadline = first_dt - timedelta(days=3)
-        if datetime.now(timezone.utc) > dpo_deadline:
-            flash('O prazo para envio de DPO expirou (limite de 3 dias antes do evento).', 'error')
-            return redirect(url_for('student.profile'))
+    phase, _, _ = get_agenda_status()
+    if phase != 'during':
+        flash('O envio de DPO só é permitido durante o evento.', 'error')
+        return redirect(url_for('student.profile'))
 
     delegation = Delegation.query.get(student_profile.delegation_id)
     if not delegation:

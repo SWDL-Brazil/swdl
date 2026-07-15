@@ -76,11 +76,8 @@
           {% if delegation.pair_name %}
             <span>👥 Dupla: {{ delegation.pair_name }}</span>
           {% endif %}
-          {% if dpo_deadline and not dpo_deadline_passed %}
-            <span>📄 DPO até {{ dpo_deadline.strftime('%d/%m %H:%M') }}</span>
-          {% elif dpo_deadline_passed %}
-            <span class="debate-meta-expired">📄 Prazo DPO encerrado</span>
-          {% endif %}
+          {% if is_event_day and not event_ended %}
+            <span>📄 DPO disponível</span>
         </div>
       </div>
       <div class="debate-actions">
@@ -90,7 +87,7 @@
         <a href="{{ url_for('student.voting') }}" class="debate-btn {{ 'disabled' if not is_event_day and not event_started }}">
           <span>🗳️</span> Votação
         </a>
-        <a href="{{ url_for('student.profile') }}#dpo" class="debate-btn {{ 'disabled' if dpo_deadline_passed or read_only }}">
+        <a href="{{ url_for('student.profile') }}" class="debate-btn {{ 'disabled' if not is_event_day or read_only }}">
           <span>📄</span> DPO
         </a>
         <a href="{{ url_for('student.documentos') }}" class="debate-btn">
@@ -98,6 +95,22 @@
         </a>
       </div>
     </div>
+    {% if is_event_day and not event_ended and not read_only %}
+    <div class="debate-dpo" style="margin-top:16px;padding:16px;border-top:1px solid var(--border);background:rgba(201,168,76,.06);border-radius:0 0 12px 12px">
+      <form method="POST" action="{{ url_for('student.dpo_upload') }}" enctype="multipart/form-data"
+            style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span style="font-size:13px;font-weight:600;color:var(--navy);white-space:nowrap">📄 DPO:</span>
+        <input type="file" name="dpo_file" accept=".pdf" required
+               style="flex:1;min-width:150px;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:4px;background:var(--white)">
+        <button type="submit" class="btn btn-gold btn-sm">
+          {{ '📤 Substituir' if delegation.dpo_uploaded else '📤 Enviar' }}
+        </button>
+        {% if delegation.dpo_uploaded %}
+        <span style="font-size:11px;color:var(--green)">✅ Recebido</span>
+        {% endif %}
+      </form>
+    </div>
+    {% endif %}
   </div>
 </div>
 {% endif %}
