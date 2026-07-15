@@ -425,7 +425,7 @@
 
     <!-- ── APP: GESTÃO (só admin) ───────────────────────── -->
     {% if is_admin %}
-    <div class="sidebar-group {{ 'collapsed' if active_app == 'simulacao' }}" id="app-gestao">
+    <div class="sidebar-group" id="app-gestao">
       <div class="sidebar-section">Dashboard</div>
       <ul class="sidebar-nav">
         <li>
@@ -547,7 +547,7 @@
     {% endif %}
 
     <!-- ── APP: SIMULAÇÃO ───────────────────────────────── -->
-    <div class="sidebar-group {{ 'collapsed' if active_app == 'gestao' }}" id="app-simulacao">
+    <div class="sidebar-group" id="app-simulacao">
       <div class="sidebar-section">Sessão</div>
       <ul class="sidebar-nav">
         <li>
