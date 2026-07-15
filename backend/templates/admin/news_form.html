@@ -24,7 +24,7 @@
   @media(max-width:900px){.news-editor-grid{grid-template-columns:1fr}}
 </style>
 
-<form method="POST" action="{{ url_for('admin.news_edit', id=news.id) if news else url_for('admin.news_create') }}" id="newsForm">
+<form method="POST" action="{{ url_for('admin.news_edit', id=news.id) if news else url_for('admin.news_create') }}" enctype="multipart/form-data" id="newsForm">
   <input type="hidden" name="body" id="bodyInput">
 
   <div class="news-editor-grid">
@@ -90,11 +90,9 @@
         <div class="card-header"><span class="card-title">🖼️ Imagem de Capa</span></div>
         <div class="card-body">
           <div class="form-group" style="margin-bottom:0">
-            <label>URL da imagem</label>
-            <input type="url" name="cover_image" id="coverInput"
-                   value="{{ news.cover_image if news else '' }}"
-                   placeholder="https://..."
-                   oninput="previewCover(this.value)">
+            <label>Upload de imagem</label>
+            <input type="file" name="cover_image" accept="image/*"
+                   onchange="previewCover(this)">
             {% if news and news.cover_image %}
             <img id="coverPreview" class="cover-preview" src="{{ news.cover_image }}">
             {% else %}
@@ -163,10 +161,13 @@
     document.getElementById('bodyInput').value = quill.root.innerHTML;
   });
 
-  function previewCover(url) {
+  function previewCover(input) {
     const img = document.getElementById('coverPreview');
-    img.src           = url;
-    img.style.display = url ? 'block' : 'none';
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => { img.src = e.target.result; img.style.display = 'block'; };
+      reader.readAsDataURL(input.files[0]);
+    }
   }
 </script>
 {% endblock %}

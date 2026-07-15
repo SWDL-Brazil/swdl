@@ -73,11 +73,13 @@ def inject_globals():
     try:
         phase, _, _ = get_agenda_status()
         active_invoke = EventConfig.get_invoke()
+        active_alerts = UrgentAlert.query.filter_by(active=True).order_by(UrgentAlert.created_at.desc()).all()
         return dict(event_phase=phase or 'pre', active_invoke=active_invoke,
+                    active_alerts=active_alerts,
                     is_admin=current_user.is_admin() if current_user.is_authenticated else False)
     except Exception:
         db.session.rollback()
-        return dict(event_phase='pre', active_invoke=None)
+        return dict(event_phase='pre', active_invoke=None, active_alerts=[])
 
 
 # ── DASHBOARD HOME ─────────────────────────────────────────────
@@ -162,14 +164,24 @@ def themes_list():
 @login_required
 @admin_required
 def theme_create():
+    from config import Config
     name = request.form.get('name', '').strip()
-    image = request.form.get('image', '').strip()
     if not name:
         flash('O nome do tema não pode estar vazio.', 'error')
         return redirect(url_for('admin.themes_list'))
     if Theme.query.filter_by(name=name).first():
         flash('Já existe um tema com este nome.', 'error')
         return redirect(url_for('admin.themes_list'))
+    image = ''
+    file = request.files.get('image')
+    if file and file.filename:
+        upload_dir = os.path.join(Config.UPLOAD_FOLDER, 'themes')
+        os.makedirs(upload_dir, exist_ok=True)
+        ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else 'png'
+        safe_name = f'theme_{_uuid.uuid4().hex[:12]}.{ext}'
+        filepath = os.path.join(upload_dir, safe_name)
+        file.save(filepath)
+        image = url_for('admin.serve_upload', filename=f'themes/{safe_name}', _external=False)
     theme = Theme(name=name, image=image)
     db.session.add(theme)
     db.session.commit()
@@ -181,9 +193,9 @@ def theme_create():
 @login_required
 @admin_required
 def theme_edit(id):
+    from config import Config
     theme = Theme.query.get_or_404(id)
     name = request.form.get('name', '').strip()
-    image = request.form.get('image', '').strip()
     if not name:
         flash('O nome é obrigatório.', 'error')
         return redirect(url_for('admin.themes_list'))
@@ -192,7 +204,15 @@ def theme_edit(id):
         flash('Já existe outro tema com este nome.', 'error')
         return redirect(url_for('admin.themes_list'))
     theme.name = name
-    theme.image = image
+    file = request.files.get('image')
+    if file and file.filename:
+        upload_dir = os.path.join(Config.UPLOAD_FOLDER, 'themes')
+        os.makedirs(upload_dir, exist_ok=True)
+        ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else 'png'
+        safe_name = f'theme_{_uuid.uuid4().hex[:12]}.{ext}'
+        filepath = os.path.join(upload_dir, safe_name)
+        file.save(filepath)
+        theme.image = url_for('admin.serve_upload', filename=f'themes/{safe_name}', _external=False)
     db.session.commit()
     flash(f'Tema "{name}" atualizado!', 'success')
     return redirect(url_for('admin.themes_list'))
@@ -329,8 +349,23 @@ def alert_delete(id):
     return redirect(url_for('admin.alerts_list'))
 
 
+@admin_bp.route('/uploads/<path:filename>')
+def serve_upload(filename):
+    """Serve arquivos enviados via upload."""
+    from config import Config
+    filepath = os.path.join(Config.UPLOAD_FOLDER, filename)
+    if not os.path.isfile(filepath):
+        abort(404)
+    mimetype = 'application/octet-stream'
+    if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp')):
+        mimetype = f'image/{filename.rsplit(".", 1)[-1].lower()}'
+    elif filename.lower().endswith('.pdf'):
+        mimetype = 'application/pdf'
+    return send_file(filepath, mimetype=mimetype)
+
+
 # ══════════════════════════════════════════════════════════════
-#  NOTÍCIAS
+#  NOTÍCIAS / COMUNICADOS
 # ══════════════════════════════════════════════════════════════
 
 @admin_bp.route('/noticias')
@@ -345,6 +380,7 @@ def news_list():
 @login_required
 @admin_required
 def news_create():
+    from config import Config
     if request.method == 'POST':
         cat_id = request.form.get('category_id', type=int)
         news = News(
@@ -354,9 +390,18 @@ def news_create():
             committee  = request.form.get('committee', 'geral'),
             tags       = request.form.get('tags', ''),
             is_crisis  = bool(request.form.get('is_crisis')),
-            published  = bool(request.form.get('published')),
+            published  = request.form.get('action') == 'publish',
             author_id  = current_user.id,
         )
+        file = request.files.get('cover_image')
+        if file and file.filename:
+            upload_dir = os.path.join(Config.UPLOAD_FOLDER, 'news')
+            os.makedirs(upload_dir, exist_ok=True)
+            ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else 'jpg'
+            safe_name = f'news_{_uuid.uuid4().hex[:12]}.{ext}'
+            filepath = os.path.join(upload_dir, safe_name)
+            file.save(filepath)
+            news.cover_image = url_for('admin.serve_upload', filename=f'news/{safe_name}', _external=False)
         db.session.add(news)
         db.session.commit()
         flash('Notícia publicada com sucesso!', 'success')
@@ -370,6 +415,7 @@ def news_create():
 @login_required
 @admin_required
 def news_edit(id):
+    from config import Config
     news = News.query.get_or_404(id)
     if request.method == 'POST':
         cat_id = request.form.get('category_id', type=int)
@@ -379,7 +425,16 @@ def news_edit(id):
         news.committee  = request.form.get('committee', 'geral')
         news.tags       = request.form.get('tags', '')
         news.is_crisis  = bool(request.form.get('is_crisis'))
-        news.published  = bool(request.form.get('published'))
+        news.published  = request.form.get('action') == 'publish'
+        file = request.files.get('cover_image')
+        if file and file.filename:
+            upload_dir = os.path.join(Config.UPLOAD_FOLDER, 'news')
+            os.makedirs(upload_dir, exist_ok=True)
+            ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else 'jpg'
+            safe_name = f'news_{_uuid.uuid4().hex[:12]}.{ext}'
+            filepath = os.path.join(upload_dir, safe_name)
+            file.save(filepath)
+            news.cover_image = url_for('admin.serve_upload', filename=f'news/{safe_name}', _external=False)
         db.session.commit()
         flash('Notícia atualizada.', 'success')
         return redirect(url_for('admin.news_list'))

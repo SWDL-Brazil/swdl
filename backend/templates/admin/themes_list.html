@@ -9,14 +9,14 @@
     <span class="card-title">Criar Novo Tema</span>
   </div>
   <div class="card-body">
-    <form method="POST" action="{{ url_for('admin.theme_create') }}" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+    <form method="POST" action="{{ url_for('admin.theme_create') }}" enctype="multipart/form-data" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
       <div class="form-group" style="flex:1;min-width:180px;margin-bottom:0;">
         <label>Nome do Tema / Debate</label>
         <input type="text" name="name" required placeholder="Ex: Estreito de Ormuz">
       </div>
       <div class="form-group" style="flex:1;min-width:180px;margin-bottom:0;">
-        <label>URL da Imagem</label>
-        <input type="url" name="image" placeholder="https://...">
+        <label>Imagem</label>
+        <input type="file" name="image" accept="image/*">
       </div>
       <button type="submit" class="btn btn-primary">➕ Adicionar</button>
     </form>
@@ -55,14 +55,14 @@
         </tr>
         <tr id="editRow{{ t.id }}" style="display:none">
           <td colspan="4" style="padding:12px 16px;background:var(--offwhite)">
-            <form method="POST" action="{{ url_for('admin.theme_edit', id=t.id) }}" style="display:flex;gap:12px;align-items:flex-end;">
-              <div class="form-group" style="flex:1;margin-bottom:0;">
+            <form method="POST" action="{{ url_for('admin.theme_edit', id=t.id) }}" enctype="multipart/form-data" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+              <div class="form-group" style="flex:1;min-width:150px;margin-bottom:0;">
                 <label>Nome</label>
                 <input type="text" name="name" value="{{ t.name }}" required>
               </div>
-              <div class="form-group" style="flex:1;margin-bottom:0;">
-                <label>URL da Imagem</label>
-                <input type="url" name="image" value="{{ t.image }}" placeholder="https://...">
+              <div class="form-group" style="flex:1;min-width:150px;margin-bottom:0;">
+                <label>Imagem</label>
+                <input type="file" name="image" accept="image/*">
               </div>
               <button class="btn btn-primary btn-sm">Salvar</button>
               <button type="button" class="btn btn-ghost btn-sm" onclick="toggleEdit({{ t.id }})">Cancelar</button>
