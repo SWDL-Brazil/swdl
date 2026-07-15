@@ -94,6 +94,10 @@ def _run_migrations(app):
             ('delegations', 'flag_animation', 'BOOLEAN DEFAULT 1'),
             ('delegations', 'orador', 'BOOLEAN DEFAULT 0'),
             ('event_config', 'inscricoes_abertas', 'BOOLEAN DEFAULT 0'),
+            ('event_config', 'invoke_url', "VARCHAR(500) DEFAULT ''"),
+            ('event_config', 'invoke_label', "VARCHAR(100) DEFAULT ''"),
+            ('event_config', 'invoke_active', 'BOOLEAN DEFAULT 0'),
+            ('event_config', 'invoke_at', 'TIMESTAMP' if is_pg else 'DATETIME'),
         ]
 
         for table, col, col_type in migs:
