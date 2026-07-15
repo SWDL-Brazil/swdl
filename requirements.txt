@@ -1,0 +1,11 @@
+flask
+flask-login
+flask-sqlalchemy
+flask-wtf
+flask-cors
+flask-socketio
+werkzeug
+gunicorn
+gevent
+gevent-websocket
+psycopg2-binary
