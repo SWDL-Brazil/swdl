@@ -349,26 +349,6 @@
     /* ── SIDEBAR COLLAPSED ──────────────────────────────────── */
     .sidebar.collapsed ~ .admin-main { margin-left: 0; }
 
-    /* ── MINI-APP BAR ───────────────────────────────────────── */
-    .mini-app-bar {
-      padding: 10px 32px 0;
-      display: flex; gap: 6px; flex-wrap: wrap;
-    }
-    .mini-app-tile {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 7px 14px; border-radius: 4px;
-      font-size: 12px; font-weight: 600; color: var(--muted);
-      background: var(--white); border: 1px solid var(--border);
-      transition: all .15s; text-decoration: none; cursor: pointer;
-    }
-    .mini-app-tile:hover {
-      color: var(--navy); border-color: var(--navy);
-      transform: translateY(-1px);
-    }
-    .mini-app-tile.active {
-      background: var(--navy); color: var(--white); border-color: var(--navy);
-    }
-    .mini-app-tile .mat-icon { font-size: 14px; }
   </style>
 </head>
 <body>
@@ -511,15 +491,15 @@
           </a>
         </li>
         <li>
-          <a href="{{ url_for('admin.categories_list') }}"
-             class="{{ 'active' if request.endpoint and 'categor' in request.endpoint }}">
-            <span class="nav-icon">🏷️</span> Categorias
-          </a>
-        </li>
-        <li>
           <a href="{{ url_for('admin.alerts_list') }}"
              class="{{ 'active' if request.endpoint and 'alert' in request.endpoint }}">
             <span class="nav-icon">🚨</span> Alertas Ticker
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('admin.themes_list') }}"
+             class="{{ 'active' if 'theme' in (request.endpoint or '') }}">
+            <span class="nav-icon">🏷️</span> Temas
           </a>
         </li>
       </ul>
@@ -657,93 +637,6 @@
       </button>
       <div class="admin-topbar-title">{% block page_title %}{% endblock %}</div>
       <div class="topbar-actions">{% block topbar_actions %}{% endblock %}</div>
-    </div>
-
-    <!-- ── MINI-APP BAR ──────────────────────────────────── -->
-    <div class="mini-app-bar" id="miniAppBar">
-      {% if is_admin and active_app == 'gestao' %}
-      <a href="{{ url_for('admin.dashboard') }}"
-         class="mini-app-tile {{ 'active' if request.endpoint == 'admin.dashboard' }}">
-        <span class="mat-icon">🏠</span> Visão Geral
-      </a>
-      <a href="{{ url_for('admin.students_list') }}"
-         class="mini-app-tile {{ 'active' if request.endpoint in ('admin.students_list', 'admin.student_assign') }}">
-        <span class="mat-icon">🎓</span> Alunos
-      </a>
-      <a href="{{ url_for('admin.delegations_list') }}"
-         class="mini-app-tile {{ 'active' if 'delegation' in (request.endpoint or '') }}">
-        <span class="mat-icon">🌍</span> Delegações
-      </a>
-      <a href="{{ url_for('admin.inscriptions_list') }}"
-         class="mini-app-tile {{ 'active' if 'inscription' in (request.endpoint or '') }}">
-        <span class="mat-icon">📋</span> Inscrições
-      </a>
-      <a href="{{ url_for('admin.news_list') }}"
-          class="mini-app-tile {{ 'active' if request.endpoint and 'news_' in request.endpoint }}">
-        <span class="mat-icon">📰</span> Notícias
-      </a>
-      <a href="{{ url_for('admin.categories_list') }}"
-          class="mini-app-tile {{ 'active' if request.endpoint and 'categor' in request.endpoint }}">
-        <span class="mat-icon">🏷️</span> Categorias
-      </a>
-      <a href="{{ url_for('admin.alerts_list') }}"
-          class="mini-app-tile {{ 'active' if request.endpoint and 'alert' in request.endpoint }}">
-        <span class="mat-icon">🚨</span> Alertas
-      </a>
-      <a href="{{ url_for('admin.agenda_list') }}"
-         class="mini-app-tile {{ 'active' if 'agenda' in (request.endpoint or '') }}">
-        <span class="mat-icon">📅</span> Agenda
-      </a>
-      <a href="{{ url_for('admin.documentos_list') }}"
-         class="mini-app-tile {{ 'active' if 'documento' in (request.endpoint or '') }}">
-        <span class="mat-icon">📁</span> Documentos
-      </a>
-      <a href="{{ url_for('admin.themes_list') }}"
-         class="mini-app-tile {{ 'active' if 'theme' in (request.endpoint or '') }}">
-        <span class="mat-icon">🏷️</span> Temas
-      </a>
-      <a href="{{ url_for('admin.convocar_page') }}"
-         class="mini-app-tile {{ 'active' if 'convocar' in (request.endpoint or '') }}">
-        <span class="mat-icon">📢</span> Convocar
-      </a>
-      <a href="{{ url_for('admin.certificates_list') }}"
-         class="mini-app-tile {{ 'active' if 'certificate' in (request.endpoint or '') }}">
-        <span class="mat-icon">🎓</span> Certificados
-      </a>
-      <a href="{{ url_for('admin.dpos_list') }}"
-         class="mini-app-tile {{ 'active' if 'dpo' in (request.endpoint or '') }}">
-        <span class="mat-icon">📄</span> DPOs
-      </a>
-      <a href="{{ url_for('admin.notifications_config') }}"
-         class="mini-app-tile {{ 'active' if 'notific' in (request.endpoint or '') }}">
-        <span class="mat-icon">🔔</span> Notificações
-      </a>
-      {% elif active_app == 'simulacao' %}
-      <a href="{{ url_for('admin.chamada_panel') }}"
-         class="mini-app-tile {{ 'active' if 'chamada' in (request.endpoint or '') }}">
-        <span class="mat-icon">📋</span> Chamada
-      </a>
-      <a href="{{ url_for('vote.vote_list') }}"
-         class="mini-app-tile {{ 'active' if 'vote' in (request.endpoint or '') }}">
-        <span class="mat-icon">🗳️</span> Votações
-      </a>
-      <a href="{{ url_for('admin.oradores_panel') }}"
-         class="mini-app-tile {{ 'active' if 'oradores' in (request.endpoint or '') }}">
-        <span class="mat-icon">🎤</span> Oradores
-      </a>
-      <a href="{{ url_for('admin.cronometro_panel') }}"
-         class="mini-app-tile {{ 'active' if 'cronometro' in (request.endpoint or '') }}">
-        <span class="mat-icon">⏱️</span> Cronômetro
-      </a>
-      <a href="{{ url_for('admin.dpos_list') }}"
-         class="mini-app-tile {{ 'active' if 'dpo' in (request.endpoint or '') }}">
-        <span class="mat-icon">📄</span> DPOs
-      </a>
-      <a href="{{ url_for('admin.invocar_page') }}"
-         class="mini-app-tile {{ 'active' if request.endpoint in ('admin.invocar_page', 'admin.invocar_sessao') }}">
-        <span class="mat-icon">📡</span> Invocar
-      </a>
-      {% endif %}
     </div>
 
     <div class="admin-body">
