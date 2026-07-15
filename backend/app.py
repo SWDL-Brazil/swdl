@@ -24,13 +24,14 @@ def create_app():
     socketio.init_app(app)
 
     # Handler global para capturar erros 500
-    import traceback
+    import traceback, sys
     @app.errorhandler(500)
     def internal_error(e):
         logger.error(f'500 error: {e}')
-        logger.error(traceback.format_exc())
+        tb = traceback.format_exc()
+        logger.error(tb)
         db.session.rollback()
-        return 'Internal Server Error', 500
+        return f'500 Error<br><pre>{tb}</pre>', 500
 
     # Registra blueprints
     from routes.auth     import auth_bp
