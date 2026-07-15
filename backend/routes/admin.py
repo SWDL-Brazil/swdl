@@ -70,16 +70,14 @@ def moderator_required(f):
 
 @admin_bp.context_processor
 def inject_globals():
-    from models.theme import Theme
     try:
-        themes = Theme.query.order_by(Theme.name).all()
         phase, _, _ = get_agenda_status()
         active_invoke = EventConfig.get_invoke()
-        return dict(available_themes=themes, event_phase=phase or 'pre', active_invoke=active_invoke,
+        return dict(event_phase=phase or 'pre', active_invoke=active_invoke,
                     is_admin=current_user.is_admin() if current_user.is_authenticated else False)
     except Exception:
         db.session.rollback()
-        return dict(available_themes=[], event_phase='pre', active_invoke=None)
+        return dict(event_phase='pre', active_invoke=None)
 
 
 # ── DASHBOARD HOME ─────────────────────────────────────────────
@@ -105,14 +103,29 @@ def dashboard():
         'certificates':   Student.query.filter(Student.certificate_released == True).count(),
         'themes':         Theme.query.count(),
         'open_votes':     VoteSession.query.filter_by(status='open').count(),
-        'presentes':      Delegation.query.filter(Delegation.presence_status.in_(['presente', 'votante'])).count(),
-        'ausentes':       Delegation.query.filter_by(presence_status='ausente').count(),
-        'oradores':       Delegation.query.filter(Delegation.orador == True).count(),
-        'dpos':           Delegation.query.filter(Delegation.dpo_uploaded == True).count(),
-        'students_no_deleg': Student.query.filter(Student.delegation_id.is_(None)).count(),
-        'convened':       Student.query.filter(Student.convened == True).count(),
-        'read_only':      Student.query.filter(Student.read_only == True).count(),
     }
+
+    from sqlalchemy import func
+    rel_stats = db.session.query(
+        func.count().filter(Delegation.presence_status.in_(['presente', 'votante'])).label('presentes'),
+        func.count().filter(Delegation.presence_status == 'ausente').label('ausentes'),
+        func.count().filter(Delegation.orador == True).label('oradores'),
+        func.count().filter(Delegation.dpo_uploaded == True).label('dpos'),
+    ).select_from(Delegation).first()
+    stats['presentes'] = rel_stats.presentes
+    stats['ausentes']  = rel_stats.ausentes
+    stats['oradores']  = rel_stats.oradores
+    stats['dpos']      = rel_stats.dpos
+
+    from sqlalchemy import func as f2
+    stu_stats = db.session.query(
+        f2.count().filter(Student.delegation_id.is_(None)).label('no_deleg'),
+        f2.count().filter(Student.convened == True).label('convened'),
+        f2.count().filter(Student.read_only == True).label('read_only'),
+    ).select_from(Student).first()
+    stats['students_no_deleg'] = stu_stats.no_deleg
+    stats['convened']          = stu_stats.convened
+    stats['read_only']         = stu_stats.read_only
     recent_students      = Student.query.order_by(Student.created_at.desc()).limit(5).all()
     recent_news          = News.query.order_by(News.created_at.desc()).limit(5).all()
     pending_inscriptions = Inscription.query.filter_by(status='pending').order_by(
@@ -349,7 +362,8 @@ def news_create():
         flash('Notícia publicada com sucesso!', 'success')
         return redirect(url_for('admin.news_list'))
     cats = Category.query.order_by(Category.sort_order, Category.name).all()
-    return render_template('admin/news_form.html', news=None, categories=cats)
+    themes = Theme.query.order_by(Theme.name).all()
+    return render_template('admin/news_form.html', news=None, categories=cats, available_themes=themes)
 
 
 @admin_bp.route('/noticias/<int:id>/editar', methods=['GET', 'POST'])
@@ -370,7 +384,8 @@ def news_edit(id):
         flash('Notícia atualizada.', 'success')
         return redirect(url_for('admin.news_list'))
     cats = Category.query.order_by(Category.sort_order, Category.name).all()
-    return render_template('admin/news_form.html', news=news, categories=cats)
+    themes = Theme.query.order_by(Theme.name).all()
+    return render_template('admin/news_form.html', news=news, categories=cats, available_themes=themes)
 
 
 @admin_bp.route('/noticias/<int:id>/deletar', methods=['POST'])
@@ -1336,7 +1351,8 @@ def student_assign(id):
 
         if not country:
             flash('O país é obrigatório.', 'error')
-            return render_template('admin/student_assign.html', student=student)
+            themes = Theme.query.order_by(Theme.name).all()
+            return render_template('admin/student_assign.html', student=student, available_themes=themes)
 
         # Reuse or create delegation
         deleg = Delegation.query.filter_by(user_id=student.user_id).first()
@@ -1373,7 +1389,8 @@ def student_assign(id):
         flash(f'🌍 {country} designado para {student.name}!', 'success')
         return redirect(url_for('admin.students_list'))
 
-    return render_template('admin/student_assign.html', student=student)
+    themes = Theme.query.order_by(Theme.name).all()
+    return render_template('admin/student_assign.html', student=student, available_themes=themes)
 
 
 # ── Travamento manual ─────────────────────────────────────────
@@ -1516,7 +1533,8 @@ def documentos_list():
     """Lista todos os documentos enviados."""
     from models.theme import Theme
     documentos = Document.query.order_by(Document.created_at.desc()).all()
-    return render_template('admin/documentos_list.html', documentos=documentos)
+    themes = Theme.query.order_by(Theme.name).all()
+    return render_template('admin/documentos_list.html', documentos=documentos, available_themes=themes)
 
 
 @admin_bp.route('/documentos/enviar', methods=['POST'])

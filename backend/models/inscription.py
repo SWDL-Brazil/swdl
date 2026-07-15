@@ -10,18 +10,16 @@ class Inscription(db.Model):
 
     id            = db.Column(db.Integer, primary_key=True)
     name          = db.Column(db.String(120), nullable=False)
-    email         = db.Column(db.String(120), nullable=False)
+    email         = db.Column(db.String(120), nullable=False, index=True)
     phone         = db.Column(db.String(30))
-    school        = db.Column(db.String(120))          # escola/NRE
-    grade         = db.Column(db.String(30))           # "1° Ano EM"
+    school        = db.Column(db.String(120))
+    grade         = db.Column(db.String(30))
     partner_name  = db.Column(db.String(120))
     motivation    = db.Column(db.Text)
-    interests     = db.Column(db.String(300))          # CSV de temas
-    # pending | approved | rejected
-    status        = db.Column(db.String(20), default='pending')
-    # delegate | volunteer
+    interests     = db.Column(db.String(300))
+    status        = db.Column(db.String(20), default='pending', index=True)
     type          = db.Column(db.String(20), default='delegate')
-    submitted_at  = db.Column(db.DateTime, default=datetime.utcnow)
+    submitted_at  = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     reviewed_at   = db.Column(db.DateTime)
     reviewed_by   = db.Column(db.Integer, db.ForeignKey('users.id'))
 

@@ -9,17 +9,20 @@ class AgendaItem(db.Model):
     __tablename__ = 'agenda_items'
 
     id          = db.Column(db.Integer, primary_key=True)
-    event_date  = db.Column(db.String(20))                 # "2025-06-14"
-    start_time  = db.Column(db.String(10), nullable=False) # "09:00"
+    event_date  = db.Column(db.String(20), index=True)
+    start_time  = db.Column(db.String(10), nullable=False)
     end_time    = db.Column(db.String(10))
     title       = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
     location    = db.Column(db.String(120))
-    status      = db.Column(db.String(20), default='auto') # auto|break|crisis|vote|award
+    status      = db.Column(db.String(20), default='auto', index=True)
     committee   = db.Column(db.String(60))
-    order       = db.Column(db.Integer, default=0)
-    # day mantido para compatibilidade retroativa
-    day         = db.Column(db.Integer, default=1)
+    order       = db.Column(db.Integer, default=0, index=True)
+    day         = db.Column(db.Integer, default=1, index=True)
+
+    __table_args__ = (
+        db.Index('ix_agenda_date_time', 'event_date', 'start_time'),
+    )
 
     def compute_status(self):
         if self.status in ('break', 'crisis', 'vote', 'award'):

@@ -7,26 +7,26 @@ class Student(db.Model):
     __tablename__ = 'students'
 
     id             = db.Column(db.Integer, primary_key=True)
-    user_id        = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    user_id        = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True, index=True)
     global_id      = db.Column(db.String(36), unique=True, nullable=False, default=lambda: str(uuid.uuid4()))
     name           = db.Column(db.String(120), nullable=False)
     email          = db.Column(db.String(120), unique=True, nullable=False)
 
-    delegation_id  = db.Column(db.Integer, db.ForeignKey('delegations.id'), nullable=True)
+    delegation_id  = db.Column(db.Integer, db.ForeignKey('delegations.id'), nullable=True, index=True)
 
     certificate_url      = db.Column(db.String(500))
-    certificate_released = db.Column(db.Boolean, default=False)
+    certificate_released = db.Column(db.Boolean, default=False, index=True)
     certificate_hash     = db.Column(db.String(128), unique=True)
 
     digital_signature = db.Column(db.Text, nullable=True)
     signed_at         = db.Column(db.DateTime, nullable=True)
 
-    read_only       = db.Column(db.Boolean, default=False)
+    read_only       = db.Column(db.Boolean, default=False, index=True)
     adapted_device  = db.Column(db.Boolean, default=False)
 
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
-    convened    = db.Column(db.Boolean, default=False)
+    convened    = db.Column(db.Boolean, default=False, index=True)
 
     user       = db.relationship('User', backref=db.backref('student_profile', uselist=False))
     delegation = db.relationship('Delegation', backref=db.backref('students', lazy=True))

@@ -9,6 +9,7 @@ from flask_socketio import emit, join_room
 from extensions import db, socketio
 from models.vote       import VoteSession, Vote
 from models.delegation import Delegation
+from models.theme import Theme
 from datetime import datetime
 import os
 
@@ -71,7 +72,8 @@ def vote_create():
         flash(f'Votação "{session.title}" aberta!', 'success')
         return redirect(url_for('vote.vote_list'))
 
-    return render_template('admin/vote_form.html', session=None)
+    return render_template('admin/vote_form.html', session=None,
+                           available_themes=Theme.query.order_by(Theme.name).all())
 
 
 @vote_bp.route('/admin/votacoes/<int:id>/fechar', methods=['POST'])
