@@ -47,9 +47,9 @@
   <div class="debate-inner">
     <div class="debate-header">
       <span class="debate-badge">🎯 Meu Debate</span>
-      {% if event_phase == 'during' %}
+      {% if event_started and not event_ended %}
         <span class="debate-tag debate-tag-live">🔴 Ao Vivo</span>
-      {% elif event_phase == 'pre' %}
+      {% elif not event_started %}
         <span class="debate-tag debate-tag-pre">📅 Pré-Evento</span>
       {% else %}
         <span class="debate-tag debate-tag-post">🏁 Encerrado</span>
@@ -87,7 +87,7 @@
         <a href="{{ url_for('student.attendance') }}" class="debate-btn {{ 'disabled' if read_only }}">
           <span>📋</span> Presença
         </a>
-        <a href="{{ url_for('student.voting') }}" class="debate-btn {{ 'disabled' if not is_event_day and event_phase != 'during' }}">
+        <a href="{{ url_for('student.voting') }}" class="debate-btn {{ 'disabled' if not is_event_day and not event_started }}">
           <span>🗳️</span> Votação
         </a>
         <a href="{{ url_for('student.profile') }}#dpo" class="debate-btn {{ 'disabled' if dpo_deadline_passed or read_only }}">
@@ -103,13 +103,13 @@
 {% endif %}
 
 <!-- ═══════════════════════════════════════════════════════ -->
-<!--  FASE 1: PRÉ-SIMULAÇÃO                                -->
+<!--  FASE 1: PRÉ-EVENTO                                   -->
 <!-- ═══════════════════════════════════════════════════════ -->
 <div class="phase-section">
   <div class="phase-header">
     <span class="phase-icon">📚</span>
     <span class="phase-title">Preparação — Pré-Evento</span>
-    {% if event_phase == 'pre' %}
+    {% if not event_started %}
       <span class="phase-tag phase-tag-active">Ativo</span>
     {% else %}
       <span class="phase-tag phase-tag-future">Concluído</span>
@@ -171,14 +171,14 @@
   <div class="phase-header">
     <span class="phase-icon">🔴</span>
     <span class="phase-title">Simulação — Ao Vivo</span>
-    {% if event_phase == 'during' %}
+    {% if event_started and not event_ended %}
       <span class="phase-tag phase-tag-active">Ativo</span>
     {% else %}
       <span class="phase-tag phase-tag-inactive">Inativo</span>
     {% endif %}
   </div>
 
-  {% if event_phase == 'during' %}
+  {% if event_started and not event_ended %}
   <div class="quick-grid">
     <a href="{{ url_for('student.attendance') }}" class="quick-card">
       <div class="quick-icon">📋</div>
@@ -245,11 +245,11 @@
   <div class="pending-card" style="margin-bottom:0">
     <div class="pending-card-icon">🔒</div>
     <div class="pending-card-title">
-      {% if event_phase == 'pre' %}Simulação ainda não iniciada
+      {% if not event_started %}Simulação ainda não iniciada
       {% else %}Simulação encerrada{% endif %}
     </div>
     <div class="pending-card-text">
-      {% if event_phase == 'pre' %}
+      {% if not event_started %}
         As funcionalidades de presença e votação estarão disponíveis quando a simulação começar.
       {% else %}
         A simulação foi encerrada. Consulte a seção de Pós-Evento para certificados e histórico.
@@ -261,15 +261,15 @@
 {% endif %}
 
 <!-- ═══════════════════════════════════════════════════════ -->
-<!--  FASE 3: PÓS-SIMULAÇÃO                                -->
+<!--  FASE 3: PÓS-EVENTO                                   -->
 <!-- ═══════════════════════════════════════════════════════ -->
 <div class="phase-section">
   <div class="phase-header">
     <span class="phase-icon">🏁</span>
     <span class="phase-title">Pós-Evento</span>
-    {% if event_phase == 'post' or read_only %}
+    {% if event_ended or read_only %}
       <span class="phase-tag phase-tag-active">Ativo</span>
-    {% elif event_phase == 'pre' %}
+    {% elif not event_started %}
       <span class="phase-tag phase-tag-future">Futuro</span>
     {% else %}
       <span class="phase-tag phase-tag-inactive">Em Breve</span>

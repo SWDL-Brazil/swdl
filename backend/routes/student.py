@@ -9,7 +9,7 @@ from models.news import News
 from models.agenda import AgendaItem
 from models.document import Document
 from models.vote import VoteSession, Vote
-from models.event_config import EventConfig
+
 from models.audit_log import AuditLog
 from datetime import datetime, timezone, timedelta
 import os
@@ -42,7 +42,6 @@ def is_event_day():
 
 @student_bp.context_processor
 def inject_now():
-    event_phase = EventConfig.get_phase()
     is_convened = False
     try:
         is_convened = current_user.student_profile.convened
@@ -59,7 +58,6 @@ def inject_now():
     ] if AgendaItem.query.count() else False
     return {
         'now': now,
-        'event_phase': event_phase,
         'is_convened': is_convened,
         'dpo_deadline': dpo_deadline,
         'dpo_deadline_passed': dpo_deadline_passed,
@@ -143,7 +141,6 @@ def dashboard():
         docs = Document.query.order_by(Document.created_at.desc()).all()
 
     read_only   = check_read_only(student_profile)
-    event_phase = EventConfig.get_phase()
 
     return render_template('student/dashboard.html',
                            student=student_profile,
@@ -152,8 +149,7 @@ def dashboard():
                            current_item=current_item,
                            next_item=next_item,
                            documentos=docs,
-                           read_only=read_only,
-                           event_phase=event_phase)
+                           read_only=read_only)
 
 
 # ── MEU HISTÓRICO ──────────────────────────────────────────────

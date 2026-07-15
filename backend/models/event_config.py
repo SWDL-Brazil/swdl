@@ -4,7 +4,6 @@ class EventConfig(db.Model):
     __tablename__ = 'event_config'
 
     id                 = db.Column(db.Integer, primary_key=True)
-    phase              = db.Column(db.String(10), nullable=False, default='pre')
     inscricoes_abertas = db.Column(db.Boolean, default=False)
     invoke_url         = db.Column(db.String(500), default='')
     invoke_active      = db.Column(db.Boolean, default=False)
@@ -15,20 +14,10 @@ class EventConfig(db.Model):
     def _ensure(cls):
         cfg = cls.query.first()
         if not cfg:
-            cfg = cls(phase='pre', inscricoes_abertas=False)
+            cfg = cls(inscricoes_abertas=False)
             db.session.add(cfg)
             db.session.commit()
         return cfg
-
-    @classmethod
-    def get_phase(cls):
-        return cls._ensure().phase
-
-    @classmethod
-    def set_phase(cls, phase):
-        cfg = cls._ensure()
-        cfg.phase = phase
-        db.session.commit()
 
     @classmethod
     def get_inscricoes_abertas(cls):

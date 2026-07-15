@@ -1,9 +1,9 @@
 {% extends "admin/base.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block page_title %}
-  {% if event_phase == 'pre' %}🕒 Pré-Simulação
-  {% elif event_phase == 'during' %}🔴 Durante Simulação
-  {% else %}🏁 Pós-Simulação{% endif %}
+  {% if event_phase == 'pre' %}📅 Pré-Evento
+  {% elif event_phase == 'during' %}🔴 Sessão em Andamento
+  {% else %}🏁 Pós-Evento{% endif %}
 {% endblock %}
 
 {% block topbar_actions %}
@@ -153,39 +153,30 @@
   }
 </style>
 
-<!-- ── BANNER DE FASE ────────────────────────────── -->
+<!-- ── BANNER DE STATUS (AGENDA) ──────────────────── -->
 <div class="phase-banner {{ event_phase }}">
   <span class="phase-banner-icon">
-    {% if event_phase == 'pre' %}🕒
+    {% if event_phase == 'pre' %}📅
     {% elif event_phase == 'during' %}🔴
     {% else %}🏁{% endif %}
   </span>
   <div>
     <strong>
-      {% if event_phase == 'pre' %}Modo Pré-Simulação — Foco em Preparação
-      {% elif event_phase == 'during' %}Modo Sessão Ao Vivo — Foco em Dinâmica de Debate
-      {% else %}Modo Pós-Simulação — Foco em Encerramento{% endif %}
+      {% if event_phase == 'pre' %}📅 Pré-Evento — Aguardando início
+      {% elif event_phase == 'during' %}🔴 Sessão em Andamento — Debate Ao Vivo
+      {% else %}🏁 Pós-Evento — Encerrado{% endif %}
     </strong>
     <div style="font-size:11px;margin-top:2px;opacity:.7">
       {% if event_phase == 'pre' %}
-        Gerencie alunos, inscrições, notícias e agenda antes do evento.
+        Status determinado pela agenda do evento. Gerencie alunos, inscrições e materiais.
       {% elif event_phase == 'during' %}
         Acompanhe chamada, votações, oradores e cronômetro em tempo real.
       {% else %}
-        Libere certificados, consolide dados e arquive o evento.
+        Certificados compilados automaticamente. Libere e assine os certificados.
       {% endif %}
     </div>
   </div>
   <span style="flex:1"></span>
-  <form method="POST" action="{{ url_for('admin.set_phase', phase='pre') }}" style="display:inline">
-    <button class="btn btn-sm {{ 'btn-primary' if event_phase == 'pre' else 'btn-ghost' }}" type="submit">Pré</button>
-  </form>
-  <form method="POST" action="{{ url_for('admin.set_phase', phase='during') }}" style="display:inline">
-    <button class="btn btn-sm {{ 'btn-primary' if event_phase == 'during' else 'btn-ghost' }}" type="submit">Durante</button>
-  </form>
-  <form method="POST" action="{{ url_for('admin.set_phase', phase='post') }}" style="display:inline">
-    <button class="btn btn-sm {{ 'btn-primary' if event_phase == 'post' else 'btn-ghost' }}" type="submit">Pós</button>
-  </form>
   <div style="display:flex;align-items:center;gap:6px;margin-left:12px;padding:4px 12px;border-radius:4px;font-size:10px;font-weight:600;font-family:'DM Mono',monospace;letter-spacing:.04em;{{ 'background:rgba(231,76,60,.1);color:#E74C3C;border:1px solid rgba(231,76,60,.2)' if stats.read_only > 0 else 'background:rgba(46,204,113,.1);color:#2ECC71;border:1px solid rgba(46,204,113,.2)' }}">
     <span>{{ '🔒' if stats.read_only > 0 else '🔓' }}</span>
     {{ stats.read_only }}/{{ stats.students }} travados

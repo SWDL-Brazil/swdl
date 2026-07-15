@@ -17,10 +17,33 @@ from models.audit_log   import AuditLog
 from models.category    import Category
 from models.theme      import Theme
 from models.urgent_alert import UrgentAlert
-from datetime import datetime
+from datetime import datetime, timezone
 import os, uuid as _uuid, hmac, hashlib
 
 admin_bp = Blueprint('admin', __name__)
+
+
+def get_agenda_status():
+    items = AgendaItem.query.filter(
+        AgendaItem.event_date.isnot(None),
+        AgendaItem.start_time.isnot(None)
+    ).order_by(AgendaItem.event_date, AgendaItem.start_time).all()
+    if not items:
+        return None, None, None
+    try:
+        first = items[0]
+        last = items[-1]
+        first_dt = datetime.strptime(f"{first.event_date} {first.start_time}", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+        last_end = last.end_time or '23:59'
+        last_dt = datetime.strptime(f"{last.event_date} {last_end}", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+        now = datetime.now(timezone.utc)
+        if now < first_dt:
+            return 'pre', first_dt, last_dt
+        if now > last_dt:
+            return 'post', first_dt, last_dt
+        return 'during', first_dt, last_dt
+    except (ValueError, TypeError):
+        return None, None, None
 
 
 def admin_required(f):
@@ -50,9 +73,9 @@ def inject_globals():
     from models.theme import Theme
     try:
         themes = Theme.query.order_by(Theme.name).all()
-        phase  = EventConfig.get_phase()
+        phase, _, _ = get_agenda_status()
         active_invoke = EventConfig.get_invoke()
-        return dict(available_themes=themes, event_phase=phase, active_invoke=active_invoke,
+        return dict(available_themes=themes, event_phase=phase or 'pre', active_invoke=active_invoke,
                     is_admin=current_user.is_admin() if current_user.is_authenticated else False)
     except Exception:
         db.session.rollback()
@@ -95,7 +118,7 @@ def dashboard():
     pending_inscriptions = Inscription.query.filter_by(status='pending').order_by(
                            Inscription.submitted_at.desc()).limit(5).all()
     current_agenda       = AgendaItem.query.filter_by(status='now').first()
-    event_phase          = EventConfig.get_phase()
+    event_phase, _, _     = get_agenda_status()
     days_agenda          = AgendaItem.query.with_entities(AgendaItem.day).distinct().order_by(AgendaItem.day).all()
 
     inscricoes_abertas = EventConfig.get_inscricoes_abertas()
@@ -1267,32 +1290,7 @@ def inscricoes_toggle():
     return redirect(url_for('admin.dashboard'))
 
 
-# ══════════════════════════════════════════════════════════════
-#  CONTROLE DE FASE DO EVENTO
-# ══════════════════════════════════════════════════════════════
 
-@admin_bp.route('/fase/<string:phase>', methods=['POST'])
-@login_required
-@admin_required
-def set_phase(phase):
-    """Altera a fase global do evento (pre / during / post).
-    Gatilhos:
-      - ao mudar para 'post': compila certificados + trava alunos (read_only)
-      - ao mudar para 'pre' ou 'during': destrava alunos"""
-    allowed = ('pre', 'during', 'post')
-    if phase not in allowed:
-        flash('Fase inválida.', 'error')
-    else:
-        EventConfig.set_phase(phase)
-        if phase == 'post':
-            locked = Student.query.update({Student.read_only: True})
-            _compile_certificates()
-            flash(f'🏁 Evento encerrado. {locked} alunos travados. Certificados compilados.', 'success')
-        else:
-            unlocked = Student.query.update({Student.read_only: False})
-            db.session.commit()
-            flash(f'Fase alterada para {phase}. {unlocked} alunos destravados.', 'success')
-    return redirect(url_for('admin.dashboard'))
 
 
 # ══════════════════════════════════════════════════════════════
@@ -1588,7 +1586,7 @@ def certificates_list():
                            released=sum(1 for s in students if s.certificate_released),
                            has_hash=sum(1 for s in students if s.certificate_hash),
                            eligible=sum(1 for s in students if s._eligible),
-                           event_phase=EventConfig.get_phase(),
+                            event_phase=get_agenda_status()[0] or 'pre',
                            audit_logs=audit_logs)
 
 
@@ -1788,7 +1786,7 @@ def director_dashboard():
     from models.vote import VoteSession
     from models.student import Student
     themes = Theme.query.order_by(Theme.name).all()
-    phase  = EventConfig.get_phase()
+    phase  = get_agenda_status()[0] or 'pre'
     theme_id = request.args.get('theme_id', None)
     if theme_id and theme_id != 'all':
         try:

@@ -369,7 +369,7 @@
     'admin.agenda_delete', 'admin.agenda_set_status', 'admin.documentos_list',
     'admin.documento_enviar', 'admin.documento_download', 'admin.documento_deletar',
     'admin.themes_list', 'admin.theme_create', 'admin.theme_delete',
-    'admin.dpos_list', 'admin.dpo_download', 'admin.set_phase',
+    'admin.dpos_list', 'admin.dpo_download',
     'admin.convocar_page', 'admin.convocar_toggle', 'admin.convocar_set_theme',
     'admin.convocar_all', 'admin.convocar_uncall_all', 'admin.convocar_by_theme',
     'admin.certificates_list', 'admin.certificates_compile', 'admin.certificate_release',
@@ -389,8 +389,6 @@
   {%- if is_gestao and is_admin -%}
     {%- set active_app = 'gestao' -%}
   {%- elif is_simulacao -%}
-    {%- set active_app = 'simulacao' -%}
-  {%- elif event_phase == 'during' -%}
     {%- set active_app = 'simulacao' -%}
   {%- else -%}
     {%- set active_app = 'gestao' if is_admin else 'simulacao' -%}

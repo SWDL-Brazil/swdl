@@ -20,15 +20,7 @@
     ('student.profile',      '👤', 'Perfil'),
   ] %}
 
-  {% set sim_nav = ['student.attendance', 'student.voting'] if is_convened else [] %}
-  {% set phase_nav = {
-    'pre':    ['student.dashboard', 'student.profile', 'student.documentos', 'student.comunicados', 'student.history'] + sim_nav,
-    'during': ['student.dashboard', 'student.documentos', 'student.comunicados', 'student.history', 'student.profile'] + sim_nav,
-    'post':   ['student.dashboard', 'student.certificados', 'student.history', 'student.profile', 'student.comunicados', 'student.documentos'] + sim_nav,
-  } %}
-
-  {% set visible_endpoints = phase_nav.get(event_phase, phase_nav['pre']) %}
-  {% set nav_items = all_nav | selectattr('0', 'in', visible_endpoints) | list %}
+  {% set nav_items = all_nav %}
 
   <header class="st-topbar">
     <div class="st-topbar-left">

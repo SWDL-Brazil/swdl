@@ -149,9 +149,30 @@ def api_status():
 @api_bp.route('/config')
 def api_config():
     """Retorna configurações públicas do sistema."""
+    from models.agenda import AgendaItem
+    from datetime import datetime, timezone
+    items = AgendaItem.query.filter(
+        AgendaItem.event_date.isnot(None),
+        AgendaItem.start_time.isnot(None)
+    ).order_by(AgendaItem.event_date, AgendaItem.start_time).all()
+    phase = 'pre'
+    if items:
+        try:
+            now = datetime.now(timezone.utc)
+            first = items[0]
+            last = items[-1]
+            first_dt = datetime.strptime(f"{first.event_date} {first.start_time}", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+            last_end = last.end_time or '23:59'
+            last_dt = datetime.strptime(f"{last.event_date} {last_end}", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+            if now >= first_dt and now <= last_dt:
+                phase = 'during'
+            elif now > last_dt:
+                phase = 'post'
+        except (ValueError, TypeError):
+            pass
     return jsonify({
         'inscricoes_abertas': EventConfig.get_inscricoes_abertas(),
-        'phase': EventConfig.get_phase(),
+        'phase': phase,
     })
 
 
