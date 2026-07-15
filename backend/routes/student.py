@@ -11,22 +11,62 @@ from models.document import Document
 from models.vote import VoteSession, Vote
 from models.event_config import EventConfig
 from models.audit_log import AuditLog
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import os
 
 student_bp = Blueprint('student', __name__)
 
 
+def get_agenda_bounds():
+    items = AgendaItem.query.filter(
+        AgendaItem.event_date.isnot(None),
+        AgendaItem.start_time.isnot(None)
+    ).order_by(AgendaItem.event_date, AgendaItem.start_time).all()
+    if not items:
+        return None, None
+    try:
+        first = items[0]
+        last = items[-1]
+        first_dt = datetime.strptime(f"{first.event_date} {first.start_time}", "%Y-%m-%d %H:%M")
+        last_end = last.end_time or '23:59'
+        last_dt = datetime.strptime(f"{last.event_date} {last_end}", "%Y-%m-%d %H:%M")
+        return first_dt.replace(tzinfo=timezone.utc), last_dt.replace(tzinfo=timezone.utc)
+    except (ValueError, TypeError):
+        return None, None
+
+
+def is_event_day():
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return AgendaItem.query.filter(AgendaItem.event_date == today).count() > 0
+
+
 @student_bp.context_processor
 def inject_now():
-    from datetime import datetime
     event_phase = EventConfig.get_phase()
     is_convened = False
     try:
         is_convened = current_user.student_profile.convened
     except Exception:
         pass
-    return {'now': datetime.utcnow, 'event_phase': event_phase, 'is_convened': is_convened}
+    first_dt, last_dt = get_agenda_bounds()
+    now = datetime.now(timezone.utc)
+    dpo_deadline = first_dt - timedelta(days=3) if first_dt else None
+    dpo_deadline_passed = dpo_deadline and now > dpo_deadline
+    event_started = first_dt and now >= first_dt
+    event_ended = last_dt and now > last_dt
+    is_event_day = now.strftime("%Y-%m-%d") in [
+        a.event_date for a in AgendaItem.query.with_entities(AgendaItem.event_date).distinct().all()
+    ] if AgendaItem.query.count() else False
+    return {
+        'now': now,
+        'event_phase': event_phase,
+        'is_convened': is_convened,
+        'dpo_deadline': dpo_deadline,
+        'dpo_deadline_passed': dpo_deadline_passed,
+        'event_started': event_started,
+        'event_ended': event_ended,
+        'is_event_day': is_event_day,
+    }
 
 
 def student_required(f):
@@ -51,6 +91,30 @@ def check_read_only(student):
     return False
 
 
+def _auto_compile_certificates():
+    _, last_dt = get_agenda_bounds()
+    if not last_dt:
+        return 0
+    if datetime.now(timezone.utc) <= last_dt:
+        return 0
+    students = Student.query.all()
+    generated = 0
+    for student in students:
+        deleg = Delegation.query.get(student.delegation_id) if student.delegation_id else None
+        if deleg and deleg.presence_status in ('presente', 'votante'):
+            if not student.certificate_hash:
+                student.certificate_hash = str(__import__('uuid').uuid4())
+            if not student.certificate_url:
+                student.certificate_url = __import__('flask').url_for(
+                    'certificate_view',
+                    hash=student.certificate_hash,
+                    _external=True
+                )
+            generated += 1
+    db.session.commit()
+    return generated
+
+
 # ── DASHBOARD ──────────────────────────────────────────────────
 @student_bp.route('/student')
 @login_required
@@ -62,6 +126,8 @@ def dashboard():
         delegation = Delegation.query.get(student_profile.delegation_id)
     else:
         delegation = None
+
+    _auto_compile_certificates()
 
     recent_news  = News.query.filter_by(published=True)\
                              .order_by(News.created_at.desc()).limit(4).all()
@@ -173,13 +239,18 @@ def voting():
         }
 
     presence_status = delegation.presence_status if delegation else 'ausente'
+    is_event_day = any(
+        a.event_date for a in AgendaItem.query.with_entities(AgendaItem.event_date).distinct().all()
+        if a.event_date == datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    )
 
     return render_template('student/voting.html',
                            student=student_profile,
                            delegation=delegation,
                            open_sessions=open_sessions,
                            voted_ids=voted_ids,
-                           presence_status=presence_status)
+                           presence_status=presence_status,
+                           is_event_day=is_event_day)
 
 
 # ── DOCUMENTOS ─────────────────────────────────────────────────
@@ -282,9 +353,19 @@ UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER') or os.path.join(
 @student_required
 def dpo_upload():
     student_profile = get_student()
+    if check_read_only(student_profile):
+        flash('O evento foi encerrado. A interface está em modo somente leitura.', 'warning')
+        return redirect(url_for('student.profile'))
     if not student_profile or not student_profile.delegation_id:
         flash('Você precisa estar vinculado a uma delegação para enviar DPO.', 'error')
         return redirect(url_for('student.profile'))
+
+    first_dt, _ = get_agenda_bounds()
+    if first_dt:
+        dpo_deadline = first_dt - timedelta(days=3)
+        if datetime.now(timezone.utc) > dpo_deadline:
+            flash('O prazo para envio de DPO expirou (limite de 3 dias antes do evento).', 'error')
+            return redirect(url_for('student.profile'))
 
     delegation = Delegation.query.get(student_profile.delegation_id)
     if not delegation:
@@ -313,7 +394,28 @@ def dpo_upload():
 
     delegation.dpo_path = filepath
     delegation.dpo_uploaded = True
-    db.session.commit()
+
+    year = delegation.edition_year or datetime.now(timezone.utc).year
+    ph = ParticipationHistory.query.filter_by(
+        student_id=student_profile.id, year=year
+    ).first()
+    if ph:
+        ph.dpo_path = filepath
+        ph.dpo_uploaded = True
+    else:
+        ph = ParticipationHistory(
+            student_id=student_profile.id,
+            year=year,
+            committee=delegation.committee,
+            committee_name=delegation.theme.name if delegation.theme else (delegation.committee or ''),
+            country=delegation.country or '',
+            country_flag=delegation.country_flag or '',
+            role='delegate',
+            delegation_name=f"{delegation.country or ''} @ {delegation.committee or ''}",
+            dpo_path=filepath,
+            dpo_uploaded=True,
+        )
+        db.session.add(ph)
 
     log = AuditLog(
         action='dpo_upload',
@@ -322,7 +424,7 @@ def dpo_upload():
         target_name=f"{delegation.country or '?'} — {delegation.committee or '?'}",
         user_id=current_user.id,
         user_name=current_user.name or current_user.email,
-        details=f'DPO enviado por {current_user.name}',
+        details=f'DPO enviado por {current_user.name} — edição {year}',
     )
     db.session.add(log)
     db.session.commit()

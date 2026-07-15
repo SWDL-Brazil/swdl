@@ -32,6 +32,20 @@
 </div>
 {% endif %}
 
+{% if not is_event_day and open_sessions %}
+<div class="card" style="margin-bottom:20px;border:2px solid var(--slate);background:rgba(107,111,133,.04)">
+  <div class="card-body" style="display:flex;align-items:center;gap:14px;padding:16px 22px">
+    <span style="font-size:28px">🔒</span>
+    <div>
+      <div style="font-size:14px;font-weight:700;color:var(--navy)">Votação bloqueada</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">
+        A votação será liberada automaticamente no dia do evento, de acordo com a agenda.
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 {% if open_sessions %}
   {% for session in open_sessions %}
   <div class="card" style="margin-bottom:20px">

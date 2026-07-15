@@ -1,5 +1,5 @@
 from extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid, hmac, hashlib
 
 
@@ -24,7 +24,7 @@ class Student(db.Model):
     read_only       = db.Column(db.Boolean, default=False)
     adapted_device  = db.Column(db.Boolean, default=False)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     convened    = db.Column(db.Boolean, default=False)
 

@@ -1,5 +1,5 @@
 from extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class ParticipationHistory(db.Model):
@@ -17,8 +17,10 @@ class ParticipationHistory(db.Model):
     delegation_name   = db.Column(db.String(120))
 
     details           = db.Column(db.Text)
+    dpo_uploaded      = db.Column(db.Boolean, default=False)
+    dpo_path          = db.Column(db.String(300), nullable=True)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def to_dict(self):
         return {

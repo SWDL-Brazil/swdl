@@ -3,154 +3,6 @@
 
 {% block content %}
 
-<style>
-  .welcome-card {
-    background: var(--navy); border-radius: 8px;
-    padding: 28px 36px; margin-bottom: 28px;
-    position: relative; overflow: hidden;
-  }
-  .welcome-card::before {
-    content:''; position:absolute; inset:0; pointer-events:none;
-    background: radial-gradient(circle at 85% 50%, rgba(183,148,65,.12) 0%, transparent 55%);
-  }
-  .welcome-inner { position:relative; z-index:1; }
-  .welcome-label {
-    font-family:'DM Mono',monospace; font-size:10px;
-    letter-spacing:.14em; text-transform:uppercase;
-    color:rgba(255,255,255,.4); margin-bottom:8px;
-  }
-  .welcome-name {
-    font-family:'Playfair Display',serif;
-    font-size:28px; font-weight:700; color:var(--white); line-height:1.1;
-  }
-  .welcome-name span { color:var(--gold); }
-  .welcome-global-id {
-    font-family:'DM Mono',monospace; font-size:11px;
-    color:rgba(255,255,255,.35); margin-top:6px;
-  }
-  .welcome-stats {
-    display:flex; gap:24px; margin-top:16px;
-  }
-  .welcome-stat {
-    font-size:12px; color:var(--slate);
-  }
-  .welcome-stat strong {
-    font-family:'DM Mono',monospace; font-size:16px; color:var(--gold);
-    display:block;
-  }
-
-  .phase-section {
-    margin-bottom: 32px;
-  }
-  .phase-header {
-    display:flex; align-items:center; gap:10px;
-    margin-bottom: 14px; padding-bottom: 10px;
-    border-bottom: 2px solid var(--border);
-  }
-  .phase-icon { font-size: 20px; }
-  .phase-title {
-    font-family:'Playfair Display',serif;
-    font-size: 18px; font-weight: 700; color: var(--navy);
-  }
-  .phase-tag {
-    font-family:'DM Mono',monospace; font-size: 9px; font-weight: 700;
-    letter-spacing: .1em; text-transform: uppercase;
-    padding: 3px 10px; border-radius: 2px; color: white;
-    margin-left: auto;
-  }
-  .phase-tag-active { background: var(--green); }
-  .phase-tag-inactive { background: var(--muted); }
-  .phase-tag-future { background: var(--slate); color: var(--navy); }
-
-  .quick-grid {
-    display:grid; grid-template-columns:repeat(4,1fr); gap:12px;
-  }
-  .quick-card {
-    background:var(--white); border:1px solid var(--border);
-    border-radius:6px; padding:20px; text-align:center;
-    transition:transform .15s, box-shadow .15s;
-    cursor:pointer; text-decoration:none; display:block;
-  }
-  .quick-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(16,30,76,.08); }
-  .quick-card.disabled { opacity: .5; cursor: default; pointer-events: none; }
-  .quick-card.disabled:hover { transform: none; box-shadow: none; }
-  .quick-icon { font-size:28px; margin-bottom:8px; }
-  .quick-label { font-size:11px; font-weight:600; color:var(--navy); }
-  .quick-count {
-    font-family:'DM Mono',monospace; font-size:13px;
-    color:var(--gold); margin-top:3px;
-  }
-  .quick-msg {
-    font-family:'DM Mono',monospace; font-size:9px;
-    color:var(--muted); margin-top:4px;
-  }
-
-  .agenda-now {
-    background:rgba(183,148,65,.07); border:1px solid rgba(183,148,65,.2);
-    border-radius:4px; padding:14px 16px; margin-bottom:14px;
-  }
-  .agenda-now-label {
-    font-family:'DM Mono',monospace; font-size:9px; font-weight:700;
-    letter-spacing:.12em; text-transform:uppercase;
-    color:var(--gold); margin-bottom:4px;
-    display:flex; align-items:center; gap:6px;
-  }
-  .pulse-dot {
-    width:6px; height:6px; border-radius:50%;
-    background:var(--gold); display:inline-block;
-    animation:pulse-gold 1.4s infinite;
-  }
-  .agenda-now-title    { font-size:15px; font-weight:700; color:var(--navy); }
-  .agenda-now-location { font-size:12px; color:var(--muted); margin-top:4px; }
-
-  .doc-row {
-    display:flex; align-items:center; gap:12px;
-    padding:14px 20px; border-bottom:1px solid var(--border);
-  }
-  .doc-row:last-child { border-bottom:none; }
-
-  .news-row {
-    padding:14px 20px; border-bottom:1px solid var(--border);
-    display:flex; align-items:flex-start; gap:12px;
-  }
-  .news-row:last-child { border-bottom:none; }
-  .news-row-icon { font-size:18px; flex-shrink:0; margin-top:2px; }
-  .news-tag-badge {
-    color:white; font-family:'DM Mono',monospace; font-size:9px;
-    font-weight:700; letter-spacing:.08em; text-transform:uppercase;
-    padding:2px 8px; border-radius:2px; display:inline-block;
-  }
-  .news-tag-badge.crise    { background:#C0392B; }
-  .news-tag-badge.oficial  { background:#1A5276; }
-  .news-tag-badge.imprensa { background:#1E7B45; }
-  .news-tag-badge.votacao  { background:var(--navy); }
-  .news-time  { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); }
-  .news-row-title { font-size:13px; font-weight:600; color:var(--navy); line-height:1.3; }
-
-  .pending-card {
-    background:rgba(212, 131, 15, .07);
-    border:1px solid rgba(212, 131, 15, .2);
-    border-radius:6px; padding: 24px; text-align:center;
-    margin-bottom: 20px;
-  }
-  .pending-card-icon { font-size: 40px; margin-bottom: 12px; }
-  .pending-card-title {
-    font-family:'Playfair Display',serif;
-    font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 6px;
-  }
-  .pending-card-text { font-size: 13px; color: var(--muted); }
-
-  @keyframes pulse-gold {
-    0%,100% { opacity:1; }
-    50%      { opacity:.4; }
-  }
-
-  @media(max-width:640px) {
-    .quick-grid { grid-template-columns:repeat(2,1fr); }
-    .welcome-stats { flex-direction:column; gap:8px; }
-  }
-</style>
-
 {% if read_only %}
 <div class="read-only-banner">
   <span>🔒</span> Evento encerrado. A interface está em modo somente leitura. Nenhuma interação pode ser realizada.
@@ -160,7 +12,7 @@
 <!-- ── WELCOME ─────────────────────────────────────────── -->
 <div class="welcome-card">
   <div class="welcome-inner">
-    <div class="welcome-label">Portal do Aluno — SWDL {{ now().year if now is defined else '2026' }}</div>
+    <div class="welcome-label">Portal do Aluno — SWDL {{ now.year if now is defined else '' }}</div>
     <div class="welcome-name">Olá, <span>{{ current_user.name.split()[0] }}</span>!</div>
     {% if student %}
     <div class="welcome-global-id">ID Global: {{ student.global_id }}</div>
@@ -187,6 +39,65 @@
   <div class="pending-card-text">
     Sua conta está ativa, mas a organização ainda não atribuiu um país, tema e dupla para você.
     Assim que for designado, as funcionalidades de simulação serão liberadas.
+  </div>
+</div>
+{% else %}
+<!-- ── MEU DEBATE ──────────────────────────────────────── -->
+<div class="debate-card">
+  <div class="debate-inner">
+    <div class="debate-header">
+      <span class="debate-badge">🎯 Meu Debate</span>
+      {% if event_phase == 'during' %}
+        <span class="debate-tag debate-tag-live">🔴 Ao Vivo</span>
+      {% elif event_phase == 'pre' %}
+        <span class="debate-tag debate-tag-pre">📅 Pré-Evento</span>
+      {% else %}
+        <span class="debate-tag debate-tag-post">🏁 Encerrado</span>
+      {% endif %}
+    </div>
+    <div class="debate-body">
+      <div class="debate-flags">
+        {% if delegation.flag_url %}
+          <img class="debate-flag" src="{{ delegation.flag_url }}" alt="{{ delegation.country }}">
+        {% elif delegation.country_flag %}
+          <span class="debate-flag-emoji">{{ delegation.country_flag }}</span>
+        {% else %}
+          <span class="debate-flag-emoji">🌍</span>
+        {% endif %}
+      </div>
+      <div class="debate-info">
+        <div class="debate-country">{{ delegation.country or 'País designado' }}</div>
+        <div class="debate-committee">{{ delegation.committee or 'Comitê' }}</div>
+        {% if delegation.theme %}
+          <div class="debate-theme">{{ delegation.theme.name }}</div>
+        {% endif %}
+        <div class="debate-meta">
+          <span>📅 Edição {{ delegation.edition_year or now.year }}</span>
+          {% if delegation.pair_name %}
+            <span>👥 Dupla: {{ delegation.pair_name }}</span>
+          {% endif %}
+          {% if dpo_deadline and not dpo_deadline_passed %}
+            <span>📄 DPO até {{ dpo_deadline.strftime('%d/%m %H:%M') }}</span>
+          {% elif dpo_deadline_passed %}
+            <span class="debate-meta-expired">📄 Prazo DPO encerrado</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="debate-actions">
+        <a href="{{ url_for('student.attendance') }}" class="debate-btn {{ 'disabled' if read_only }}">
+          <span>📋</span> Presença
+        </a>
+        <a href="{{ url_for('student.voting') }}" class="debate-btn {{ 'disabled' if not is_event_day and event_phase != 'during' }}">
+          <span>🗳️</span> Votação
+        </a>
+        <a href="{{ url_for('student.profile') }}#dpo" class="debate-btn {{ 'disabled' if dpo_deadline_passed or read_only }}">
+          <span>📄</span> DPO
+        </a>
+        <a href="{{ url_for('student.documentos') }}" class="debate-btn">
+          <span>📁</span> Documentos
+        </a>
+      </div>
+    </div>
   </div>
 </div>
 {% endif %}
@@ -252,7 +163,7 @@
   {% endif %}
 </div>
 
-{% if is_convened %}
+{% if is_convened or delegation %}
 <!-- ═══════════════════════════════════════════════════════ -->
 <!--  FASE 2: DURANTE A SIMULAÇÃO                          -->
 <!-- ═══════════════════════════════════════════════════════ -->

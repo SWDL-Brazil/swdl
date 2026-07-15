@@ -36,6 +36,7 @@ class Delegation(db.Model):
     flag_animation  = db.Column(db.Boolean, default=True)  # animação ativada?
 
     assigned_at     = db.Column(db.DateTime, default=datetime.utcnow)
+    edition_year    = db.Column(db.Integer, default=lambda: datetime.utcnow().year)
 
     def __repr__(self):
         return f'<Delegation {self.country} @ {self.committee}>'

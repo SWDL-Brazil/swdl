@@ -1075,8 +1075,13 @@ def convocar_set_theme(id):
 
     if student.delegation:
         student.delegation.theme_id = theme.id if theme else None
+        student.delegation.edition_year = datetime.utcnow().year
     else:
-        delegation = Delegation(committee=theme.name if theme else None, theme_id=theme.id if theme else None)
+        delegation = Delegation(
+            committee=theme.name if theme else None,
+            theme_id=theme.id if theme else None,
+            edition_year=datetime.utcnow().year
+        )
         db.session.add(delegation)
         db.session.flush()
         student.delegation_id = delegation.id
@@ -1197,9 +1202,12 @@ def student_assign(id):
             deleg = Delegation(
                 inscription_id=ins.id,
                 user_id=student.user_id,
+                edition_year=datetime.utcnow().year,
             )
             db.session.add(deleg)
             db.session.flush()
+        else:
+            deleg.edition_year = datetime.utcnow().year
 
         theme = Theme.query.filter_by(name=committee).first()
         deleg.theme_id    = theme.id if theme else None
