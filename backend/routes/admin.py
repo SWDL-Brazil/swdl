@@ -593,6 +593,7 @@ def delegations_list():
 @admin_required
 def delegation_assign(id):
     from models.theme import Theme
+    from models.student import Student
     deleg = Delegation.query.get_or_404(id)
     if request.method == 'POST':
         theme_name = request.form['committee']
@@ -603,6 +604,9 @@ def delegation_assign(id):
         deleg.committee    = theme_name
         deleg.pair_name    = request.form.get('pair_name', '')
         deleg.flag_animation = bool(request.form.get('flag_animation'))
+        student = Student.query.filter_by(delegation_id=deleg.id).first()
+        if student and not student.convened:
+            student.convened = True
         db.session.commit()
         flash(f'País {deleg.country} designado com sucesso!', 'success')
         return redirect(url_for('admin.delegations_list'))
@@ -1208,6 +1212,7 @@ def student_assign(id):
         db.session.flush()
 
         student.delegation_id = deleg.id
+        student.convened = True
         db.session.commit()
 
         flash(f'🌍 {country} designado para {student.name}!', 'success')

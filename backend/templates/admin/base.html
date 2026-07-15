@@ -96,12 +96,17 @@
     }
     .app-btn-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
 
-    /* ── Sidebar nav items (collapsible groups) ────────────── */
-    .sidebar-group {
-      overflow: hidden; transition: max-height .3s ease;
-    }
-    .sidebar-group.collapsed { max-height: 0 !important; }
+    /* ── Sidebar nav items ──────────────────────────────── */
+    .sidebar-group { transition: max-height .3s ease; }
 
+    .sidebar-phase-label {
+      padding: 16px 14px 6px;
+      font-family:'DM Mono',monospace; font-size:9px; font-weight:700;
+      letter-spacing:.10em; color:var(--gold);
+      border-top: 1px solid rgba(255,255,255,.06);
+      margin-top: 4px;
+    }
+    .sidebar-phase-label:first-of-type { border-top: none; margin-top: 0; }
     .sidebar-section {
       padding: 14px 14px 3px;
       font-family:'DM Mono',monospace; font-size:8px; font-weight:700;
@@ -425,6 +430,7 @@
 
     <!-- ── APP: GESTÃO (só admin) ───────────────────────── -->
     {% if is_admin %}
+    <div class="sidebar-phase-label">📋 PRÉ / PÓS-EVENTO</div>
     <div class="sidebar-group" id="app-gestao">
       <div class="sidebar-section">Dashboard</div>
       <ul class="sidebar-nav">
@@ -546,6 +552,7 @@
     </div>
     {% endif %}
 
+    <div class="sidebar-phase-label">🔴 DURANTE A SIMULAÇÃO</div>
     <!-- ── APP: SIMULAÇÃO ───────────────────────────────── -->
     <div class="sidebar-group" id="app-simulacao">
       <div class="sidebar-section">Sessão</div>
