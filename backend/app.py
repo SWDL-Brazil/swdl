@@ -103,6 +103,7 @@ def _run_migrations(app):
             ('event_config', 'invoke_at', 'TIMESTAMP' if is_pg else 'DATETIME'),
             ('news', 'category_id', 'INTEGER REFERENCES categories(id)'),
             ('students', 'digital_signature', 'TEXT'),
+            ('students', 'signed_at', 'TIMESTAMP' if is_pg else 'DATETIME'),
         ]
 
         for table, col, col_type in migs:
