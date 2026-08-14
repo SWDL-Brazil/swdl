@@ -134,26 +134,47 @@ def _run_migrations(app):
 
         for table_name, model in tables.items():
             try:
-                existing = {c['name'] for c in inspector.get_columns(table_name)}
+                existing_cols = {c['name']: c for c in inspector.get_columns(table_name)}
             except Exception:
                 continue  # tabela não existe
             for col_name, col in model.__table__.columns.items():
-                if col_name in existing or col_name == 'id':
+                if col_name in ('id',):
                     continue
-                col_type = _to_pg_type(col)
-                try:
-                    if is_pg:
-                        stmt = f'ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS {col_name} {col_type}'
-                        with db.engine.connect() as conn:
-                            conn.execute(sa.text(stmt))
-                            conn.commit()
-                    else:
-                        with db.engine.connect() as conn:
-                            conn.execute(sa.text(f'ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}'))
-                            conn.commit()
-                    print(f'[MIGRATION] Coluna {table_name}.{col_name} criada.')
-                except Exception as e:
-                    print(f'[MIGRATION] Erro ao adicionar {table_name}.{col_name}: {e}')
+                if col_name not in existing_cols:
+                    col_type = _to_pg_type(col)
+                    try:
+                        if is_pg:
+                            stmt = f'ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS {col_name} {col_type}'
+                            with db.engine.connect() as conn:
+                                conn.execute(sa.text(stmt))
+                                conn.commit()
+                        else:
+                            with db.engine.connect() as conn:
+                                conn.execute(sa.text(f'ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}'))
+                                conn.commit()
+                        print(f'[MIGRATION] Coluna {table_name}.{col_name} criada.')
+                    except Exception as e:
+                        print(f'[MIGRATION] Erro ao adicionar {table_name}.{col_name}: {e}')
+                    continue
+                # Redimensiona VARCHARs existentes quando o modelo pede mais espaço
+                col_type_info = existing_cols[col_name].get('type')
+                col_type_name = getattr(col_type_info, '__class__', type(col_type_info)).__name__
+                if col_type_name in ('VARCHAR', 'NVARCHAR', 'String'):
+                    existing_len = getattr(col_type_info, 'length', None)
+                    new_len = getattr(col.type, 'length', None)
+                    if existing_len and new_len and new_len > existing_len:
+                        try:
+                            if is_pg:
+                                stmt = f'ALTER TABLE {table_name} ALTER COLUMN {col_name} TYPE VARCHAR({new_len})'
+                                with db.engine.connect() as conn:
+                                    conn.execute(sa.text(stmt))
+                                    conn.commit()
+                            else:
+                                # SQLite não respeita limite de VARCHAR; nada a fazer
+                                stmt = None
+                            print(f'[MIGRATION] {table_name}.{col_name} redimensionada para VARCHAR({new_len}).')
+                        except Exception as e:
+                            print(f'[MIGRATION] Erro ao redimensionar {table_name}.{col_name}: {e}')
 
 
 def _seed_admin(app):

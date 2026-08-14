@@ -24,7 +24,7 @@ class News(db.Model):
     body        = db.Column(db.Text, nullable=False)  # HTML rico (Quill)
     cover_image = db.Column(db.String(300))           # URL da imagem de capa
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
-    committee   = db.Column(db.String(30), default='geral')
+    committee   = db.Column(db.String(300), default='geral')
     tags        = db.Column(db.String(300), default='')    # "diplomacia,cs,resolucao"
     is_crisis   = db.Column(db.Boolean, default=False)
     published   = db.Column(db.Boolean, default=False)
