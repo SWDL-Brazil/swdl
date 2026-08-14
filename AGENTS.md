@@ -42,6 +42,13 @@ Build a complete student panel + admin backend for the SWDL Model UN platform wi
 - Auto-deploys on push to main
 - Bug fix: `url_for('certificate_view')` → `url_for('vote.certificate_view')` (missing blueprint prefix)
 
+### Public Site (pages/)
+- Crisis banner rewritten: `position: fixed; top:68px; z-index:100` + `body.crisis-active .ticker-bar { margin-top:40px }` — não sobrepõe o ticker
+- Lógica do crisis banner removida do `main.js` → cada página tem seu próprio `loadCrisisBanner()` inline
+- Banner recarrega a cada 60s (junto com ticker/notícias/agenda)
+- Botão ✕ apenas oculta (não destrói permanentemente); próxima poll re-exibe se crise ativa
+- Implementado em todas as 9 páginas públicas com `#crisis-banner`: index, noticias, comites, agenda, sobre, faca-parte, aviso-legal, privacidade, termos
+
 ---
 
 ## Active
@@ -55,6 +62,10 @@ Build a complete student panel + admin backend for the SWDL Model UN platform wi
 ## Key Files
 | File | Purpose |
 |------|---------|
+| `pages/css/variables.css` | Crisis banner CSS (fixed, z-index: 100, body class push) |
+| `pages/js/main.js` | Global JS sem lógica de crisis (só navbar, scroll, counter) |
+| `pages/noticias.html` | Inline JS: loadCrisisBanner + setInterval 60s |
+| `pages/index.html`, `comites.html`, etc. | Cada página com inline script de crisis banner independente |
 | `backend/models/certificate_template.py` | PDF template model with render_pdf() |
 | `backend/models/delegation.py` | Delegation model (country, theme, presence, DPO) |
 | `backend/models/student.py` | Student model (certificate hash, delegation link) |

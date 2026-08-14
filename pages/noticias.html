@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notícias — SWDL</title>
+  <title data-i18n="noticias.page_title">Notícias — SWDL</title>
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/navbar.css">
   <link rel="stylesheet" href="css/pages.css">
@@ -14,7 +14,7 @@
 
 <div id="crisis-banner">
   <div class="crisis-pulse"></div>
-  <span class="crisis-text">🚨 <strong>CRISE — CS:</strong> Sessão de emergência às 14h30.</span>
+  <span class="crisis-text" data-i18n="noticias.crise_banner">🚨 <strong>CRISE — CS:</strong> Sessão de emergência às 14h30.</span>
   <button class="crisis-close">✕</button>
 </div>
 
@@ -26,12 +26,12 @@
     <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
   </a>
   <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="noticias.html">Notícias</a></li>
-    <li><a href="comites.html">Temas</a></li>
-    <li><a href="agenda.html">Agenda</a></li>
-    <li><a href="sobre.html">Sobre</a></li>
-    <li><a href="faca-parte.html" class="nav-cta">Faça Parte</a></li>
+    <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+    <li><a href="noticias.html" data-i18n="nav.noticias">Notícias</a></li>
+    <li><a href="comites.html" data-i18n="nav.comites">Temas</a></li>
+    <li><a href="agenda.html" data-i18n="nav.agenda">Agenda</a></li>
+    <li><a href="sobre.html" data-i18n="nav.sobre">Sobre</a></li>
+    <li><a href="faca-parte.html" class="nav-cta" data-i18n="nav.faca_parte">Faça Parte</a></li>
   </ul>
   <button class="nav-hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -40,7 +40,7 @@
 
 <!-- PAINEL DE CATEGORIAS -->
 <div class="news-cat-panel" id="newsCatPanel">
-  <div class="cat-panel-header">Categorias</div>
+  <div class="cat-panel-header" data-i18n="noticias.categorias_panel_header">Categorias</div>
   <div class="cat-panel-body" id="catPanelBody"></div>
 </div>
 <div class="cat-panel-overlay" id="catPanelOverlay"></div>
@@ -49,10 +49,10 @@
 <div class="ticker-bar" id="tickerBar">
   <div class="ticker-label" id="tickerLabel">
     <span class="ticker-label-dot"></span>
-    <span id="tickerLabelText">ALERTAS</span>
+    <span id="tickerLabelText" data-i18n="noticias.alertas">ALERTAS</span>
   </div>
   <div class="ticker-track" id="tickerTrack">
-    <span class="ticker-item">Carregando alertas...</span>
+    <span class="ticker-item" data-i18n="noticias.carregando_alertas">Carregando alertas...</span>
   </div>
 </div>
 
@@ -62,8 +62,8 @@
     <div class="hero-slide-bg" id="heroSlideBg"></div>
     <div class="hero-slide-overlay"></div>
     <div class="hero-slide-content" id="heroSlideContent">
-      <div class="hero-badge" id="heroBadge">Destaque</div>
-      <h1 class="hero-title" id="heroTitle">Carregando...</h1>
+      <div class="hero-badge" id="heroBadge" data-i18n="noticias.destaque">Destaque</div>
+      <h1 class="hero-title" id="heroTitle" data-i18n="noticias.carregando">Carregando...</h1>
       <p class="hero-excerpt" id="heroExcerpt"></p>
       <div class="hero-meta" id="heroMeta"></div>
     </div>
@@ -74,10 +74,10 @@
 <!-- CARROSSEL DE TEMAS -->
 <section class="comites-carousel-section">
   <div class="carousel-header">
-    <h2>🏛️ Temas</h2>
+    <h2 data-i18n="noticias.temas_title">🏛️ Temas</h2>
   </div>
   <div class="carousel-track" id="comitesCarousel">
-    <div style="padding:32px;text-align:center;color:var(--muted);width:100%">Carregando...</div>
+    <div style="padding:32px;text-align:center;color:var(--muted);width:100%" data-i18n="noticias.carregando_comites">Carregando...</div>
   </div>
 </section>
 
@@ -87,15 +87,15 @@
 
     <!-- GRID DE NOTÍCIAS -->
     <div class="news-grid-dense" id="newsGrid">
-      <div style="padding:48px;text-align:center;color:var(--muted);grid-column:1/-1">Carregando notícias...</div>
+      <div style="padding:48px;text-align:center;color:var(--muted);grid-column:1/-1" data-i18n="noticias.carregando_noticias">Carregando notícias...</div>
     </div>
 
     <!-- SIDEBAR ÚLTIMAS -->
     <aside class="news-utilities">
       <div class="sidebar-updates" id="sidebarUpdates">
-        <div class="sidebar-updates-header">📡 Últimas</div>
+        <div class="sidebar-updates-header" data-i18n="noticias.ultimas">📡 Últimas</div>
         <div class="sidebar-updates-body">
-          <div style="padding:12px;text-align:center;color:var(--muted);font-size:12px">Carregando...</div>
+          <div style="padding:12px;text-align:center;color:var(--muted);font-size:12px" data-i18n="noticias.carregando_ultimas">Carregando...</div>
         </div>
       </div>
     </aside>
@@ -112,31 +112,32 @@
             <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
           </a>
         </div>
-        <p class="footer-brand-desc">A liga que transforma alunos em diplomatas.<br>SESI CE-437, Hortolândia.</p>
+        <p class="footer-brand-desc" data-i18n="footer.brand_desc">A liga que transforma alunos em diplomatas.<br>SESI CE-437, Hortolândia.</p>
       </div>
       <div class="footer-col">
-        <h5>Links Rápidos</h5>
+        <h5 data-i18n="footer.links_title">Links Rápidos</h5>
         <ul>
-          <li><a href="sobre.html">Sobre</a></li>
-          <li><a href="noticias.html">Notícias</a></li>
-          <li><a href="agenda.html">Agenda</a></li>
-          <li><a href="comites.html">Recursos</a></li>
-          <li><a href="faca-parte.html">Faça Parte</a></li>
+          <li><a href="sobre.html" data-i18n="footer.sobre_link">Sobre</a></li>
+          <li><a href="noticias.html" data-i18n="footer.noticias_link">Notícias</a></li>
+          <li><a href="agenda.html" data-i18n="footer.agenda_link">Agenda</a></li>
+          <li><a href="comites.html" data-i18n="footer.comites_link">Recursos</a></li>
+          <li><a href="faca-parte.html" data-i18n="footer.faca_parte_link">Faça Parte</a></li>
         </ul>
       </div>
       <div class="footer-col">
-        <h5>Contato</h5>
+        <h5 data-i18n="footer.contato_title">Contato</h5>
         <ul>
-          <li><a href="mailto:pedro.pereira63@portalsesisp.org.br">pedro.pereira63@portalsesisp.org.br</a></li>
-          <li><a href="#">SESI CE-437, Hortolândia</a></li>
+          <li><a href="mailto:pedro.pereira63@portalsesisp.org.br" data-i18n="footer.email_link">pedro.pereira63@portalsesisp.org.br</a></li>
+          <li><a href="#" data-i18n="footer.endereco_link">SESI CE-437, Hortolândia</a></li>
         </ul>
       </div>
     </div>
+    <div class="footer-langs"></div>
     <div class="footer-bottom">
-      <p class="footer-copy">© 2025 SESI World Diplomacy League — Desenvolvido por <strong>Pedro Bonazzi</strong></p>
+      <p class="footer-copy" data-i18n="footer.copyright">© 2025 SESI World Diplomacy League — Desenvolvido por <strong>Pedro Bonazzi</strong></p>
       <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
-        <a href="privacidade.html" style="font-size:12px;color:rgba(255,255,255,.35)">Política de Privacidade</a>
-        <a href="termos.html" style="font-size:12px;color:rgba(255,255,255,.35)">Termos de Uso</a>
+        <a href="privacidade.html" style="font-size:12px;color:rgba(255,255,255,.35)" data-i18n="footer.privacy_link">Política de Privacidade</a>
+        <a href="termos.html" style="font-size:12px;color:rgba(255,255,255,.35)" data-i18n="footer.terms_link">Termos de Uso</a>
       </div>
     </div>
   </div>
@@ -160,6 +161,30 @@
     for (let i = 0; i < str.length; i++) { h = str.charCodeAt(i) + ((h << 5) - h); h |= 0; }
     return `hsl(${Math.abs(h) % 360}, 45%, 32%)`;
   }
+
+  // ── CRISIS BANNER ──────────────────────────────────────────
+  async function loadCrisisBanner() {
+    const data = await SWDL_API.status();
+    const banner = document.getElementById('crisis-banner');
+    if (!banner) return;
+    if (data && data.crisis_active && data.crisis_message) {
+      const textEl = banner.querySelector('.crisis-text');
+      if (textEl) textEl.innerHTML = `<strong>🚨 CRISE:</strong> ${data.crisis_message}`;
+      banner.classList.add('active');
+      banner.style.display = 'flex';
+    } else {
+      banner.classList.remove('active');
+      banner.style.display = 'none';
+    }
+    document.body.classList.toggle('crisis-active', data && data.crisis_active);
+  }
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.crisis-close');
+    if (btn) {
+      document.getElementById('crisis-banner')?.classList.remove('active');
+      document.body.classList.remove('crisis-active');
+    }
+  });
 
   // ── TICKER ────────────────────────────────────────────────
   async function loadTicker() {
@@ -425,15 +450,17 @@
   (async function init() {
     setupCatPanel();
     await loadCategorias();
-    await Promise.all([loadTicker(), loadComites(), loadNoticias()]);
+    await Promise.all([loadCrisisBanner(), loadTicker(), loadComites(), loadNoticias()]);
 
     // Recarregar a cada 60s
     setInterval(() => {
+      loadCrisisBanner();
       loadTicker();
       loadComites();
       loadNoticias();
     }, 60000);
   })();
 </script>
+<script src="js/i18n.js"></script>
 </body>
 </html>

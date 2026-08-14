@@ -462,11 +462,10 @@ def news_delete(id):
 @login_required
 @admin_required
 def agenda_list():
-    days = {}
-    for day in [1, 2, 3]:
-        days[day] = AgendaItem.query.filter_by(day=day).order_by(
-                    AgendaItem.order, AgendaItem.start_time).all()
-    return render_template('admin/agenda_list.html', days=days)
+    items = AgendaItem.query.order_by(
+        AgendaItem.event_date, AgendaItem.day, AgendaItem.order,
+        AgendaItem.start_time).all()
+    return render_template('admin/agenda_list.html', items=items)
 
 
 @admin_bp.route('/agenda/novo', methods=['GET', 'POST'])
@@ -475,13 +474,14 @@ def agenda_list():
 def agenda_create():
     if request.method == 'POST':
         item = AgendaItem(
-            day         = int(request.form['day']),
+            day         = int(request.form.get('day', 1)),
+            event_date  = request.form.get('event_date', ''),
             start_time  = request.form['start_time'],
             end_time    = request.form.get('end_time', ''),
             title       = request.form['title'],
             description = request.form.get('description', ''),
             location    = request.form.get('location', ''),
-            status      = request.form.get('status', 'next'),
+            status      = request.form.get('status', 'auto'),
             committee   = request.form.get('committee', ''),
             order       = int(request.form.get('order', 0)),
         )
@@ -498,13 +498,14 @@ def agenda_create():
 def agenda_edit(id):
     item = AgendaItem.query.get_or_404(id)
     if request.method == 'POST':
-        item.day         = int(request.form['day'])
+        item.day         = int(request.form.get('day', 1))
+        item.event_date  = request.form.get('event_date', '')
         item.start_time  = request.form['start_time']
         item.end_time    = request.form.get('end_time', '')
         item.title       = request.form['title']
         item.description = request.form.get('description', '')
         item.location    = request.form.get('location', '')
-        item.status      = request.form.get('status', 'next')
+        item.status      = request.form.get('status', 'auto')
         item.committee   = request.form.get('committee', '')
         item.order       = int(request.form.get('order', 0))
         db.session.commit()

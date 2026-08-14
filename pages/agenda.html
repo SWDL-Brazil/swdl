@@ -319,7 +319,7 @@
 
 <div id="crisis-banner">
   <div class="crisis-pulse"></div>
-  <span class="crisis-text">🚨 <strong>CRISE — CS:</strong> Sessão de emergência às 14h30.</span>
+  <span class="crisis-text" data-i18n="agenda.crisis_text">🚨 <strong>CRISE — CS:</strong> Sessão de emergência às 14h30.</span>
   <button class="crisis-close">✕</button>
 </div>
 
@@ -329,12 +329,12 @@
   </a>
 
   <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="noticias.html">Notícias</a></li>
-    <li><a href="comites.html">Temas</a></li>
-    <li><a href="agenda.html">Agenda</a></li>
-    <li><a href="sobre.html">Sobre</a></li>
-    <li><a href="faca-parte.html" class="nav-cta">Faça Parte</a></li>
+    <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+    <li><a href="noticias.html" data-i18n="nav.noticias">Notícias</a></li>
+    <li><a href="comites.html" data-i18n="nav.comites">Temas</a></li>
+    <li><a href="agenda.html" data-i18n="nav.agenda">Agenda</a></li>
+    <li><a href="sobre.html" data-i18n="nav.sobre">Sobre</a></li>
+    <li><a href="faca-parte.html" class="nav-cta" data-i18n="nav.faca_parte">Faça Parte</a></li>
   </ul>
 
   <button class="nav-hamburger" aria-label="Menu">
@@ -344,12 +344,12 @@
 
 <!-- PAGE HERO -->
 <div class="page-hero">
-  <div class="page-hero-bg-text">AGENDA</div>
+  <div class="page-hero-bg-text" data-i18n="agenda.hero_bg">AGENDA</div>
   <div class="page-hero-content">
-    <div class="breadcrumb"><a href="index.html">Home</a> › <span>Agenda</span></div>
-    <div class="section-label">Cronograma</div>
-    <h1>Agenda do Evento</h1>
-    <p>Acompanhe em tempo real o que está acontecendo agora. A atividade atual brilha em dourado.</p>
+    <div class="breadcrumb"><a href="index.html" data-i18n="agenda.breadcrumb_home">Home</a> › <span data-i18n="agenda.breadcrumb_current">Agenda</span></div>
+    <div class="section-label" data-i18n="agenda.hero_label">Cronograma</div>
+    <h1 data-i18n="agenda.hero_title">Agenda do Evento</h1>
+    <p data-i18n="agenda.hero_desc">Acompanhe em tempo real o que está acontecendo agora. A atividade atual brilha em dourado.</p>
   </div>
 </div>
 
@@ -361,23 +361,23 @@
       <div class="now-card-left">
         <div class="now-label">
           <div class="now-pulse"></div>
-          <span id="nowLabel">Acontecendo agora</span>
+          <span id="nowLabel" data-i18n="agenda.now_label">Acontecendo agora</span>
         </div>
         <div class="now-title" id="nowTitle">—</div>
         <div class="now-meta" id="nowMeta"></div>
       </div>
       <div class="now-card-right" id="nowRight" style="display:none">
-        <span class="now-next-label">Próxima atividade</span>
+        <span class="now-next-label" data-i18n="agenda.now_next_label">Próxima atividade</span>
         <div class="now-next-title" id="nowNextTitle">—</div>
         <div class="now-next-time" id="nowNextTime">—</div>
         <div class="now-countdown">
           <div class="countdown-unit">
             <span class="countdown-num" id="cd-min">--</span>
-            <span class="countdown-label">min</span>
+            <span class="countdown-label" data-i18n="agenda.countdown_min">min</span>
           </div>
           <div class="countdown-unit">
             <span class="countdown-num" id="cd-sec">--</span>
-            <span class="countdown-label">seg</span>
+            <span class="countdown-label" data-i18n="agenda.countdown_seg">seg</span>
           </div>
         </div>
       </div>
@@ -386,7 +386,7 @@
     <!-- TIMELINE ÚNICA COM SEPARADORES DE DATA -->
     <div class="smart-timeline" id="timeline-main">
       <div style="padding:40px;text-align:center;color:var(--muted);font-size:14px">
-        Carregando agenda...
+        <span data-i18n="agenda.loading">Carregando agenda...</span>
       </div>
     </div>
 
@@ -402,38 +402,31 @@
             <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
           </a>
         </div>
-        <p class="footer-brand-desc">A liga que transforma alunos em diplomatas.<br>SESI CE-437, Hortolândia.</p>
+        <p class="footer-brand-desc" data-i18n="footer.brand_desc">A liga que transforma alunos em diplomatas.<br>SESI CE-437, Hortolândia.</p>
       </div>
       <div class="footer-col">
-        <h5>Links Rápidos</h5>
+        <h5 data-i18n="footer.links_title">Links Rápidos</h5>
         <ul>
-          <li><a href="sobre.html">Sobre</a></li>
-          <li><a href="agenda.html">Agenda</a></li>
-          <li><a href="comites.html">Recursos</a></li>
-          <li><a href="faca-parte.html">Faça Parte</a></li>
+          <li><a href="sobre.html" data-i18n="footer.sobre_link">Sobre</a></li>
+          <li><a href="agenda.html" data-i18n="footer.agenda_link">Agenda</a></li>
+          <li><a href="comites.html" data-i18n="footer.comites_link">Recursos</a></li>
+          <li><a href="faca-parte.html" data-i18n="footer.faca_parte_link">Faça Parte</a></li>
         </ul>
       </div>
       <div class="footer-col">
-        <h5>Contato</h5>
+        <h5 data-i18n="footer.contato_title">Contato</h5>
         <ul>
-          <li><a href="mailto:pedro.pereira63@portalsesisp.org.br">pedro.pereira63@portalsesisp.org.br</a></li>
-          <li><a href="#">SESI CE-437, Hortolândia</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h5>Acesso</h5>
-        <ul>
-          <li><a href="#">Meu Dashboard</a></li>
-          <li><a href="admin/login.html">Área Admin</a></li>
+          <li><a href="mailto:pedro.pereira63@portalsesisp.org.br" data-i18n="footer.email_link">pedro.pereira63@portalsesisp.org.br</a></li>
+          <li><a href="#" data-i18n="footer.endereco_link">SESI CE-437, Hortolândia</a></li>
         </ul>
       </div>
     </div>
+    <div class="footer-langs"></div>
     <div class="footer-bottom">
-      <p class="footer-copy">© 2025 SESI World Diplomacy League — Desenvolvido por <strong>Pedro Bonazzi</strong></p>
-      <a href="admin/login.html" class="footer-admin-link">⚙ Área Administrativa</a>
+      <p class="footer-copy" data-i18n="footer.copyright">© 2025 SESI World Diplomacy League — Desenvolvido por <strong>Pedro Bonazzi</strong></p>
             <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
-          <a href="privacidade.html" style="font-size:12px;color:rgba(255,255,255,.35)">Política de Privacidade</a>
-          <a href="termos.html" style="font-size:12px;color:rgba(255,255,255,.35)">Termos de Uso</a>
+          <a href="privacidade.html" data-i18n="footer.privacy_link" style="font-size:12px;color:rgba(255,255,255,.35)">Política de Privacidade</a>
+          <a href="termos.html" data-i18n="footer.terms_link" style="font-size:12px;color:rgba(255,255,255,.35)">Termos de Uso</a>
         </div>
     </div>
   </div>
@@ -585,6 +578,30 @@
     countdownInterval = setInterval(tick, 1000);
   }
 
+  // ── CRISIS BANNER ──────────────────────────────────────────
+  async function loadCrisisBanner() {
+    const data = await SWDL_API.status();
+    const banner = document.getElementById('crisis-banner');
+    if (!banner) return;
+    if (data && data.crisis_active && data.crisis_message) {
+      const textEl = banner.querySelector('.crisis-text');
+      if (textEl) textEl.innerHTML = `<strong>🚨 CRISE:</strong> ${data.crisis_message}`;
+      banner.classList.add('active');
+      banner.style.display = 'flex';
+    } else {
+      banner.classList.remove('active');
+      banner.style.display = 'none';
+    }
+    document.body.classList.toggle('crisis-active', data && data.crisis_active);
+  }
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.crisis-close');
+    if (btn) {
+      document.getElementById('crisis-banner')?.classList.remove('active');
+      document.body.classList.remove('crisis-active');
+    }
+  });
+
   // ── CARREGA DADOS DO BACKEND ───────────────────────────────
   async function loadAgenda() {
     try {
@@ -606,8 +623,10 @@
   }
 
   // Carrega imediatamente e atualiza a cada 60 segundos
+  loadCrisisBanner();
   loadAgenda();
-  setInterval(loadAgenda, 60000);
+  setInterval(() => { loadCrisisBanner(); loadAgenda(); }, 60000);
 </script>
+<script src="js/i18n.js"></script>
 </body>
 </html>

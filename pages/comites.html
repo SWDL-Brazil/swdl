@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Temas — SWDL</title>
+  <title data-i18n="comites.page_title">Temas — SWDL</title>
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/navbar.css">
   <link rel="stylesheet" href="css/pages.css">
@@ -14,7 +14,7 @@
 
 <div id="crisis-banner">
   <div class="crisis-pulse"></div>
-  <span class="crisis-text">🚨 <strong>CRISE — CS:</strong> Sessão de emergência às 14h30.</span>
+  <span class="crisis-text" data-i18n="comites.crisis_text">🚨 <strong>CRISE — CS:</strong> Sessão de emergência às 14h30.</span>
   <button class="crisis-close">✕</button>
 </div>
 
@@ -24,12 +24,12 @@
   </a>
 
   <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="noticias.html">Notícias</a></li>
-    <li><a href="comites.html">Comitês</a></li>
-    <li><a href="agenda.html">Agenda</a></li>
-    <li><a href="sobre.html">Sobre</a></li>
-    <li><a href="faca-parte.html" class="nav-cta">Faça Parte</a></li>
+    <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+    <li><a href="noticias.html" data-i18n="nav.noticias">Notícias</a></li>
+    <li><a href="comites.html" data-i18n="nav.comites">Comitês</a></li>
+    <li><a href="agenda.html" data-i18n="nav.agenda">Agenda</a></li>
+    <li><a href="sobre.html" data-i18n="nav.sobre">Sobre</a></li>
+    <li><a href="faca-parte.html" class="nav-cta" data-i18n="nav.faca_parte">Faça Parte</a></li>
   </ul>
 
   <button class="nav-hamburger" aria-label="Menu">
@@ -38,12 +38,12 @@
 </nav>
 
 <div class="page-hero">
-  <div class="page-hero-bg-text">Temas</div>
+  <div class="page-hero-bg-text" data-i18n="comites.hero_bg">Temas</div>
   <div class="page-hero-content">
-    <div class="breadcrumb"><a href="index.html">Home</a> › <span>Temas</span></div>
-    <div class="section-label">Estrutura</div>
-    <h1>Temas & Guias</h1>
-    <p>Cada comitê simula um órgão real das Nações Unidas. Baixe o guia de estudos do seu comitê e prepare-se para representar sua nação.</p>
+    <div class="breadcrumb"><a href="index.html" data-i18n="nav.home">Home</a> › <span data-i18n="comites.breadcrumb_temas">Temas</span></div>
+    <div class="section-label" data-i18n="comites.hero_section_label">Estrutura</div>
+    <h1 data-i18n="comites.hero_title">Temas & Guias</h1>
+    <p data-i18n="comites.hero_desc">Cada comitê simula um órgão real das Nações Unidas. Baixe o guia de estudos do seu comitê e prepare-se para representar sua nação.</p>
   </div>
 </div>
 
@@ -52,39 +52,82 @@
 
     <div class="comites-page-grid">
 
+      <!-- ACNUR -->
+      <div class="comite-page-card reveal" style="--card-color:#1E6B8E; transition-delay:.40s">
+        <div class="comite-page-header">
+          <div class="comite-page-icon">🕊️</div>
+          <div>
+            <div class="comite-page-meta" data-i18n="comites.acnur_edicao">Edição de 2026</div>
+            <h3 data-i18n="comites.acnur_titulo">A Proteção Internacional de Pessoas Deslocadas em Decorrência de Eventos Climáticos Extremos</h3>
+          </div>
+        </div>
+        <div class="comite-page-body">
+          <p data-i18n="comites.acnur_desc">Nesta simulação, os delegados do Alto Comissariado das Nações Unidas para os Refugiados (ACNUR) debaterão a crescente crise dos deslocamentos forçados provocados por eventos climáticos extremos — enchentes, secas, furacões e tempestades. O desafio será construir mecanismos internacionais de proteção, apoio humanitário e integração para as pessoas deslocadas, conciliando soberania nacional, financiamento internacional e responsabilidade compartilhada.</p>
+          <div class="comite-page-topics">
+            <span class="topic-chip" data-i18n="comites.acnur_topic_1">Deslocamento Climático</span>
+            <span class="topic-chip" data-i18n="comites.acnur_topic_2">Refugiados Climáticos</span>
+            <span class="topic-chip" data-i18n="comites.acnur_topic_3">Ajuda Humanitária</span>
+            <span class="topic-chip" data-i18n="comites.acnur_topic_4">Mudanças Climáticas</span>
+            <span class="topic-chip" data-i18n="comites.acnur_topic_5">Responsabilidade Compartilhada</span>
+            <span class="topic-chip" data-i18n="comites.acnur_topic_6">Financiamento Internacional</span>
+          </div>
+          <div class="comite-page-footer">
+            <span class="comite-delegados" data-i18n="comites.acnur_delegados"><strong>11</strong> delegações · 34 estudantes</span>
+            <a href="assent/PDF/Guia de Comitê - ACNUR.pdf"
+              class="btn btn-ghost"
+              style="font-size:11px; padding:8px 16px"
+              download
+              data-i18n="comites.acnur_baixar_guia">
+              📥 Baixar Guia Geral
+            </a>
+
+            <span class="comite-delegados" data-i18n="comites.acnur_manual_delegados"><strong>Manual dos Delegados</strong></span>
+            <a href="assent/PDF/Manual Oficial dos Delegados (5).pdf"
+              class="btn btn-ghost"
+              style="font-size:11px; padding:8px 16px"
+              download
+              data-i18n="comites.acnur_baixar_manual">
+              📥 Baixar Manual
+            </a>
+          </div>
+        </div>
+      </div>
+
       <!-- Estreito de Ormuz -->
       <div class="comite-page-card reveal" style="--card-color:#2E86C1; transition-delay:.40s">
         <div class="comite-page-header">
           <div class="comite-page-icon">☢️</div>
           <div>
-            <div class="comite-page-meta">Edição de 2026</div>
-            <h3>Estreito de Ormuz: A Crise No Comércio Internacional e Escalada Militar</h3>
+            <div class="comite-page-meta" data-i18n="comites.estreito_ormuz_edicao">Edição de 2026</div>
+            <h3 data-i18n="comites.estreito_ormuz_titulo">Estreito de Ormuz: A Crise No Comércio Internacional e Escalada Militar</h3>
           </div>
         </div>
         <div class="comite-page-body">
-          <p>No contexto desta simulação, o Conselho de Segurança reúne-se em sessão de emergência diante do agravamento da guerra no Oriente Médio. A rápida escalada das hostilidades, o envolvimento de múltiplos atores regionais e internacionais e os riscos crescentes de expansão do conflito colocam sobre os delegados a responsabilidade de buscar respostas para uma crise que ultrapassa fronteiras nacionais e afeta a segurança global. </p>
+          <p data-i18n="comites.estreito_ormuz_desc">No contexto desta simulação, o Conselho de Segurança reúne-se em sessão de emergência diante do agravamento da guerra no Oriente Médio. A rápida escalada das hostilidades, o envolvimento de múltiplos atores regionais e internacionais e os riscos crescentes de expansão do conflito colocam sobre os delegados a responsabilidade de buscar respostas para uma crise que ultrapassa fronteiras nacionais e afeta a segurança global. </p>
           <div class="comite-page-topics">
-            <span class="topic-chip">Escalada Militar</span>
-            <span class="topic-chip">Comércio Internacional</span>
-            <span class="topic-chip">Arsenais Nucleares</span>
-            <span class="topic-chip">Petróleo</span>
-            <span class="topic-chip">Sanções Internacionais</span>
-            <span class="topic-chip">Agentes Não-Estatais</span>
+            <span class="topic-chip" data-i18n="comites.estreito_ormuz_topic_1">Escalada Militar</span>
+            <span class="topic-chip" data-i18n="comites.estreito_ormuz_topic_2">Comércio Internacional</span>
+            <span class="topic-chip" data-i18n="comites.estreito_ormuz_topic_3">Arsenais Nucleares</span>
+            <span class="topic-chip" data-i18n="comites.estreito_ormuz_topic_4">Petróleo</span>
+            <span class="topic-chip" data-i18n="comites.estreito_ormuz_topic_5">Sanções Internacionais</span>
+            <span class="topic-chip" data-i18n="comites.estreito_ormuz_topic_6">Agentes Não-Estatais</span>
           </div>
           <div class="comite-page-footer">
-            <span class="comite-delegados"><strong>16</strong> delegações · 32 delegados</span>
+            <span class="comite-delegados" data-i18n="comites.estreito_ormuz_delegados"><strong>16</strong> delegações · 32 delegados</span>
             <a href="assent/PDF/Conselho de Segurança das Nações Unidas.pdf" 
               class="btn btn-ghost" 
               style="font-size:11px; padding:8px 16px" 
-              download>
+              download
+              data-i18n="comites.estreito_ormuz_baixar_guia_geral">
               📥 Baixar Guia Geral
             </a>
 
-            <span class="comite-delegados"><strong>Manual dos Delegados</strong></span>
+            <span class="comite-delegados" data-i18n="comites.estreito_ormuz_manual_delegados"><strong>Manual dos Delegados</strong></span>
             <a href="assent/PDF/Manual Oficial dos Delegados (5).pdf" 
               class="btn btn-ghost" 
               style="font-size:11px; padding:8px 16px" 
-              download>
+              download
+              data-i18n="comites.estreito_ormuz_baixar_manual">
               📥 Baixar Guia Geral
             </a>
           </div>
@@ -127,22 +170,22 @@
         <div class="comite-page-header">
           <div class="comite-page-icon">🌿</div>
           <div>
-            <div class="comite-page-meta">Edição de 2026</div>
-            <h3>Regulamentação da Canábis: Saúde Pública e Economia Global</h3>
+            <div class="comite-page-meta" data-i18n="comites.cannabis_edicao">Edição de 2026</div>
+            <h3 data-i18n="comites.cannabis_titulo">Regulamentação da Canábis: Saúde Pública e Economia Global</h3>
           </div>
         </div>
         <div class="comite-page-body">
-          <p>Este comitê debaterá os impactos da transição global nas políticas sobre a canábis. Os delegados enfrentarão o desafio de equilibrar a descriminalização e o uso medicinal com o controle do narcotráfico, analisando os reflexos socioeconômicos da legalização, a soberania dos Estados e o desenvolvimento de marcos regulatórios internacionais de saúde.</p>
+          <p data-i18n="comites.cannabis_desc">Este comitê debaterá os impactos da transição global nas políticas sobre a canábis. Os delegados enfrentarão o desafio de equilibrar a descriminalização e o uso medicinal com o controle do narcotráfico, analisando os reflexos socioeconômicos da legalização, a soberania dos Estados e o desenvolvimento de marcos regulatórios internacionais de saúde.</p>
           <div class="comite-page-topics">
-            <span class="topic-chip">Saúde Pública</span>
-            <span class="topic-chip">Uso Medicinal</span>
-            <span class="topic-chip">Combate ao Narcotráfico</span>
-            <span class="topic-chip">Marcos Regulatórios</span>
-            <span class="topic-chip">Impacto Econômico</span>
-            <span class="topic-chip">Soberania Nacional</span>
+            <span class="topic-chip" data-i18n="comites.cannabis_topic_1">Saúde Pública</span>
+            <span class="topic-chip" data-i18n="comites.cannabis_topic_2">Uso Medicinal</span>
+            <span class="topic-chip" data-i18n="comites.cannabis_topic_3">Combate ao Narcotráfico</span>
+            <span class="topic-chip" data-i18n="comites.cannabis_topic_4">Marcos Regulatórios</span>
+            <span class="topic-chip" data-i18n="comites.cannabis_topic_5">Impacto Econômico</span>
+            <span class="topic-chip" data-i18n="comites.cannabis_topic_6">Soberania Nacional</span>
           </div>
           <div class="comite-page-footer">
-            <span class="comite-delegados"><strong>16</strong> delegações · 32 delegados</span>
+            <span class="comite-delegados" data-i18n="comites.cannabis_delegados"><strong>16</strong> delegações · 32 delegados</span>
           </div>
         </div>
       </div>
@@ -152,26 +195,27 @@
         <div class="comite-page-header">
           <div class="comite-page-icon">⚖️</div>
           <div>
-            <div class="comite-page-meta">Edição de 2025</div>
-            <h3>Combate à Misoginia: Direitos Humanos e Violência de Gênero</h3>
+            <div class="comite-page-meta" data-i18n="comites.misoginia_edicao">Edição de 2025</div>
+            <h3 data-i18n="comites.misoginia_titulo">Combate à Misoginia: Direitos Humanos e Violência de Gênero</h3>
           </div>
         </div>
         <div class="comite-page-body">
-          <p>Nesta simulação, os delegados debaterão estratégias globais para erradicar a misoginia estrutural e a violência baseada em gênero. O foco estará na criação de mecanismos internacionais de proteção, no combate ao discurso de ódio online e na garantia dos direitos fundamentais das mulheres, enfrentando retrocessos sociais e legislativos em escala global.</p>
+          <p data-i18n="comites.misoginia_desc">Nesta simulação, os delegados debaterão estratégias globais para erradicar a misoginia estrutural e a violência baseada em gênero. O foco estará na criação de mecanismos internacionais de proteção, no combate ao discurso de ódio online e na garantia dos direitos fundamentais das mulheres, enfrentando retrocessos sociais e legislativos em escala global.</p>
           <div class="comite-page-topics">
-            <span class="topic-chip">Violência de Gênero</span>
-            <span class="topic-chip">Direitos Humanos</span>
-            <span class="topic-chip">Discurso de Ódio Online</span>
-            <span class="topic-chip">Igualdade Salarial</span>
-            <span class="topic-chip">Mecanismos de Proteção</span>
-            <span class="topic-chip">Legislação Internacional</span>
+            <span class="topic-chip" data-i18n="comites.misoginia_topic_1">Violência de Gênero</span>
+            <span class="topic-chip" data-i18n="comites.misoginia_topic_2">Direitos Humanos</span>
+            <span class="topic-chip" data-i18n="comites.misoginia_topic_3">Discurso de Ódio Online</span>
+            <span class="topic-chip" data-i18n="comites.misoginia_topic_4">Igualdade Salarial</span>
+            <span class="topic-chip" data-i18n="comites.misoginia_topic_5">Mecanismos de Proteção</span>
+            <span class="topic-chip" data-i18n="comites.misoginia_topic_6">Legislação Internacional</span>
           </div>
           <div class="comite-page-footer">
-            <span class="comite-delegados"><strong>16</strong> delegações · 32 delegados</span>
+            <span class="comite-delegados" data-i18n="comites.misoginia_delegados"><strong>16</strong> delegações · 32 delegados</span>
             <a href="assent/PDF/Misoginia como Violação dos Direitos Humanos Ações e Responsabilidades Internacionais.pdf" 
               class="btn btn-ghost" 
               style="font-size:11px; padding:8px 16px" 
-              download>
+              download
+              data-i18n="comites.misoginia_baixar_guia">
               📥 Baixar Guia Geral
             </a>
           </div>
@@ -183,20 +227,20 @@
         <div class="comite-page-header">
           <div class="comite-page-icon">🌿</div>
           <div>
-            <div class="comite-page-meta">MMA — Meio Ambiente</div>
-            <h3>Programa da ONU para o Meio Ambiente</h3>
+            <div class="comite-page-meta" data-i18n="comites.mma_meta">MMA — Meio Ambiente</div>
+            <h3 data-i18n="comites.mma_titulo">Programa da ONU para o Meio Ambiente</h3>
           </div>
         </div>
         <div class="comite-page-body">
-          <p>O principal órgão ambiental do sistema das Nações Unidas. Debate metas climáticas, preservação da biodiversidade e transição energética global.</p>
+          <p data-i18n="comites.mma_desc">O principal órgão ambiental do sistema das Nações Unidas. Debate metas climáticas, preservação da biodiversidade e transição energética global.</p>
           <div class="comite-page-topics">
-            <span class="topic-chip">Mudanças Climáticas</span>
-            <span class="topic-chip">Biodiversidade</span>
-            <span class="topic-chip">Energia Renovável</span>
-            <span class="topic-chip">Poluição dos Oceanos</span>
+            <span class="topic-chip" data-i18n="comites.mma_topic_1">Mudanças Climáticas</span>
+            <span class="topic-chip" data-i18n="comites.mma_topic_2">Biodiversidade</span>
+            <span class="topic-chip" data-i18n="comites.mma_topic_3">Energia Renovável</span>
+            <span class="topic-chip" data-i18n="comites.mma_topic_4">Poluição dos Oceanos</span>
           </div>
           <div class="comite-page-footer">
-            <span class="comite-delegados"><strong>18</strong> delegações · 36 delegados</span>
+            <span class="comite-delegados" data-i18n="comites.mma_delegados"><strong>18</strong> delegações · 36 delegados</span>
 
           </div>
         </div>
@@ -207,20 +251,20 @@
         <div class="comite-page-header">
           <div class="comite-page-icon">⚖️</div>
           <div>
-            <div class="comite-page-meta">DHR — Direitos Humanos</div>
-            <h3>Conselho de Direitos Humanos</h3>
+            <div class="comite-page-meta" data-i18n="comites.dhr_meta">DHR — Direitos Humanos</div>
+            <h3 data-i18n="comites.dhr_titulo">Conselho de Direitos Humanos</h3>
           </div>
         </div>
         <div class="comite-page-body">
-          <p>Órgão responsável pela promoção e proteção dos direitos humanos em todo o mundo. Debate violações, proteção de minorias e direitos de refugiados.</p>
+          <p data-i18n="comites.dhr_desc">Órgão responsável pela promoção e proteção dos direitos humanos em todo o mundo. Debate violações, proteção de minorias e direitos de refugiados.</p>
           <div class="comite-page-topics">
-            <span class="topic-chip">Proteção de Minorias</span>
-            <span class="topic-chip">Refugiados</span>
-            <span class="topic-chip">Liberdade de Expressão</span>
-            <span class="topic-chip">Trabalho Infantil</span>
+            <span class="topic-chip" data-i18n="comites.dhr_topic_1">Proteção de Minorias</span>
+            <span class="topic-chip" data-i18n="comites.dhr_topic_2">Refugiados</span>
+            <span class="topic-chip" data-i18n="comites.dhr_topic_3">Liberdade de Expressão</span>
+            <span class="topic-chip" data-i18n="comites.dhr_topic_4">Trabalho Infantil</span>
           </div>
           <div class="comite-page-footer">
-            <span class="comite-delegados"><strong>16</strong> delegações · 32 delegados</span>
+            <span class="comite-delegados" data-i18n="comites.dhr_delegados"><strong>16</strong> delegações · 32 delegados</span>
           </div>
         </div>
       </div>
@@ -230,20 +274,20 @@
         <div class="comite-page-header">
           <div class="comite-page-icon">💰</div>
           <div>
-            <div class="comite-page-meta">ECOSOC — Econômico e Social</div>
-            <h3>Conselho Econômico e Social</h3>
+            <div class="comite-page-meta" data-i18n="comites.ecosoc_meta">ECOSOC — Econômico e Social</div>
+            <h3 data-i18n="comites.ecosoc_titulo">Conselho Econômico e Social</h3>
           </div>
         </div>
         <div class="comite-page-body">
-          <p>Principal fórum para debater questões econômicas, sociais e ambientais internacionais. Coordena o trabalho das agências especializadas da ONU.</p>
+          <p data-i18n="comites.ecosoc_desc">Principal fórum para debater questões econômicas, sociais e ambientais internacionais. Coordena o trabalho das agências especializadas da ONU.</p>
           <div class="comite-page-topics">
-            <span class="topic-chip">Combate à Pobreza</span>
-            <span class="topic-chip">Comércio Internacional</span>
-            <span class="topic-chip">Dívida Externa</span>
-            <span class="topic-chip">ODS — Agenda 2030</span>
+            <span class="topic-chip" data-i18n="comites.ecosoc_topic_1">Combate à Pobreza</span>
+            <span class="topic-chip" data-i18n="comites.ecosoc_topic_2">Comércio Internacional</span>
+            <span class="topic-chip" data-i18n="comites.ecosoc_topic_3">Dívida Externa</span>
+            <span class="topic-chip" data-i18n="comites.ecosoc_topic_4">ODS — Agenda 2030</span>
           </div>
           <div class="comite-page-footer">
-            <span class="comite-delegados"><strong>14</strong> delegações · 28 delegados</span>
+            <span class="comite-delegados" data-i18n="comites.ecosoc_delegados"><strong>14</strong> delegações · 28 delegados</span>
           </div>
         </div>
       </div>
@@ -253,20 +297,20 @@
         <div class="comite-page-header">
           <div class="comite-page-icon">☢️</div>
           <div>
-            <div class="comite-page-meta">DISEC — Desarmamento</div>
-            <h3>Comitê de Desarmamento e Segurança</h3>
+            <div class="comite-page-meta" data-i18n="comites.disec_meta">DISEC — Desarmamento</div>
+            <h3 data-i18n="comites.disec_titulo">Comitê de Desarmamento e Segurança</h3>
           </div>
         </div>
         <div class="comite-page-body">
-          <p>Primeiro Comitê da Assembleia Geral da ONU. Trata de questões de desarmamento e segurança internacional, incluindo armas nucleares e cibernéticas.</p>
+          <p data-i18n="comites.disec_desc">Primeiro Comitê da Assembleia Geral da ONU. Trata de questões de desarmamento e segurança internacional, incluindo armas nucleares e cibernéticas.</p>
           <div class="comite-page-topics">
-            <span class="topic-chip">Não-Proliferação Nuclear</span>
-            <span class="topic-chip">Guerras Cibernéticas</span>
-            <span class="topic-chip">Armas Autônomas</span>
-            <span class="topic-chip">Tratados de Paz</span>
+            <span class="topic-chip" data-i18n="comites.disec_topic_1">Não-Proliferação Nuclear</span>
+            <span class="topic-chip" data-i18n="comites.disec_topic_2">Guerras Cibernéticas</span>
+            <span class="topic-chip" data-i18n="comites.disec_topic_3">Armas Autônomas</span>
+            <span class="topic-chip" data-i18n="comites.disec_topic_4">Tratados de Paz</span>
           </div>
           <div class="comite-page-footer">
-            <span class="comite-delegados"><strong>16</strong> delegações · 32 delegados</span>
+            <span class="comite-delegados" data-i18n="comites.disec_delegados"><strong>16</strong> delegações · 32 delegados</span>
           </div>
         </div>
       </div>
@@ -276,20 +320,20 @@
         <div class="comite-page-header">
           <div class="comite-page-icon">🏥</div>
           <div>
-            <div class="comite-page-meta">OMS — Saúde Global</div>
-            <h3>Organização Mundial da Saúde</h3>
+            <div class="comite-page-meta" data-i18n="comites.oms_meta">OMS — Saúde Global</div>
+            <h3 data-i18n="comites.oms_titulo">Organização Mundial da Saúde</h3>
           </div>
         </div>
         <div class="comite-page-body">
-          <p>Agência especializada da ONU responsável pela saúde pública internacional. Debate pandemias, acesso universal a medicamentos e sistemas de saúde resilientes.</p>
+          <p data-i18n="comites.oms_desc">Agência especializada da ONU responsável pela saúde pública internacional. Debate pandemias, acesso universal a medicamentos e sistemas de saúde resilientes.</p>
           <div class="comite-page-topics">
-            <span class="topic-chip">Prevenção de Pandemias</span>
-            <span class="topic-chip">Acesso a Vacinas</span>
-            <span class="topic-chip">Saúde Mental Global</span>
-            <span class="topic-chip">Resistência Antimicrobiana</span>
+            <span class="topic-chip" data-i18n="comites.oms_topic_1">Prevenção de Pandemias</span>
+            <span class="topic-chip" data-i18n="comites.oms_topic_2">Acesso a Vacinas</span>
+            <span class="topic-chip" data-i18n="comites.oms_topic_3">Saúde Mental Global</span>
+            <span class="topic-chip" data-i18n="comites.oms_topic_4">Resistência Antimicrobiana</span>
           </div>
           <div class="comite-page-footer">
-            <span class="comite-delegados"><strong>16</strong> delegações · 32 delegados</span>
+            <span class="comite-delegados" data-i18n="comites.oms_delegados"><strong>16</strong> delegações · 32 delegados</span>
 
           </div>
         </div>
@@ -300,24 +344,25 @@
         <div class="comite-page-header">
           <div class="comite-page-icon">🛡️</div>
           <div>
-            <div class="comite-page-meta">CS — Conselho de Segurança</div>
-            <h3>Conselho de Segurança da ONU</h3>
+            <div class="comite-page-meta" data-i18n="comites.cs_meta">CS — Conselho de Segurança</div>
+            <h3 data-i18n="comites.cs_titulo">Conselho de Segurança da ONU</h3>
           </div>
         </div>
         <div class="comite-page-body">
-          <p>O órgão de maior responsabilidade da ONU para manutenção da paz e segurança internacionais. Os 15 membros debatem crises, sanções e operações de paz ao redor do mundo.</p>
+          <p data-i18n="comites.cs_desc">O órgão de maior responsabilidade da ONU para manutenção da paz e segurança internacionais. Os 15 membros debatem crises, sanções e operações de paz ao redor do mundo.</p>
           <div class="comite-page-topics">
-            <span class="topic-chip">Conflitos Armados</span>
-            <span class="topic-chip">Manutenção da Paz</span>
-            <span class="topic-chip">Sanções Internacionais</span>
-            <span class="topic-chip">Direito Humanitário</span>
+            <span class="topic-chip" data-i18n="comites.cs_topic_1">Conflitos Armados</span>
+            <span class="topic-chip" data-i18n="comites.cs_topic_2">Manutenção da Paz</span>
+            <span class="topic-chip" data-i18n="comites.cs_topic_3">Sanções Internacionais</span>
+            <span class="topic-chip" data-i18n="comites.cs_topic_4">Direito Humanitário</span>
           </div>
           <div class="comite-page-footer">
-            <span class="comite-delegados"><strong>15</strong> delegações · 30 delegados</span>
+            <span class="comite-delegados" data-i18n="comites.cs_delegados"><strong>15</strong> delegações · 30 delegados</span>
             <a href="assent/PDF/Conselho de Segurança das Nações Unidas.pdf" 
               class="btn btn-ghost" 
               style="font-size:11px; padding:8px 16px" 
-              download>
+              download
+              data-i18n="comites.cs_baixar_guia">
               📥 Baixar Guia Geral
             </a>
           </div>
@@ -337,36 +382,67 @@
             <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
           </a>
         </div>
-        <p class="footer-brand-desc">A liga que transforma alunos em diplomatas.<br>SESI CE-437, Hortolândia.</p>
+        <p class="footer-brand-desc" data-i18n="footer.brand_desc">A liga que transforma alunos em diplomatas.<br>SESI CE-437, Hortolândia.</p>
       </div>
       <div class="footer-col">
-        <h5>Links Rápidos</h5>
+        <h5 data-i18n="footer.links_title">Links Rápidos</h5>
         <ul>
-          <li><a href="sobre.html">Sobre</a></li>
-          <li><a href="noticias.html">Notícias</a></li>
-          <li><a href="agenda.html">Agenda</a></li>
-          <li><a href="comites.html">Recursos</a></li>
-          <li><a href="faca-parte.html">Faça Parte</a></li>
+          <li><a href="sobre.html" data-i18n="footer.sobre_link">Sobre</a></li>
+          <li><a href="noticias.html" data-i18n="footer.noticias_link">Notícias</a></li>
+          <li><a href="agenda.html" data-i18n="footer.agenda_link">Agenda</a></li>
+          <li><a href="comites.html" data-i18n="footer.comites_link">Recursos</a></li>
+          <li><a href="faca-parte.html" data-i18n="footer.faca_parte_link">Faça Parte</a></li>
         </ul>
       </div>
       <div class="footer-col">
-        <h5>Contato</h5>
+        <h5 data-i18n="footer.contato_title">Contato</h5>
         <ul>
-          <li><a href="mailto:pedro.pereira63@portalsesisp.org.br">pedro.pereira63@portalsesisp.org.br</a></li>
-          <li><a href="#">SESI CE-437, Hortolândia</a></li>
+          <li><a href="mailto:pedro.pereira63@portalsesisp.org.br" data-i18n="footer.email_link">pedro.pereira63@portalsesisp.org.br</a></li>
+          <li><a href="#" data-i18n="footer.endereco_link">SESI CE-437, Hortolândia</a></li>
         </ul>
       </div>
     </div>
+    <div class="footer-langs"></div>
     <div class="footer-bottom">
-      <p class="footer-copy">© 2025 SESI World Diplomacy League — Desenvolvido por <strong>Pedro Bonazzi</strong></p>
+      <p class="footer-copy" data-i18n="footer.copyright">© 2025 SESI World Diplomacy League — Desenvolvido por <strong>Pedro Bonazzi</strong></p>
             <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
-          <a href="privacidade.html" style="font-size:12px;color:rgba(255,255,255,.35)">Política de Privacidade</a>
-          <a href="termos.html" style="font-size:12px;color:rgba(255,255,255,.35)">Termos de Uso</a>
+          <a href="privacidade.html" data-i18n="footer.privacy_link" style="font-size:12px;color:rgba(255,255,255,.35)">Política de Privacidade</a>
+          <a href="termos.html" data-i18n="footer.terms_link" style="font-size:12px;color:rgba(255,255,255,.35)">Termos de Uso</a>
         </div>
     </div>
   </div>
 </footer>
 
 <script src="js/main.js"></script>
+<script>
+(async function() {
+  if (typeof SWDL_API === 'undefined') return;
+  async function loadCrisisBanner() {
+    const data = await SWDL_API.status();
+    const banner = document.getElementById('crisis-banner');
+    if (!banner) return;
+    if (data && data.crisis_active && data.crisis_message) {
+      const textEl = banner.querySelector('.crisis-text');
+      if (textEl) textEl.innerHTML = `<strong>🚨 CRISE:</strong> ${data.crisis_message}`;
+      banner.classList.add('active');
+      banner.style.display = 'flex';
+    } else {
+      banner.classList.remove('active');
+      banner.style.display = 'none';
+    }
+    document.body.classList.toggle('crisis-active', data && data.crisis_active);
+  }
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.crisis-close');
+    if (btn) {
+      document.getElementById('crisis-banner')?.classList.remove('active');
+      document.body.classList.remove('crisis-active');
+    }
+  });
+  await loadCrisisBanner();
+  setInterval(loadCrisisBanner, 60000);
+})();
+</script>
+<script src="js/i18n.js"></script>
 </body>
 </html>

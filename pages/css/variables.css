@@ -260,12 +260,12 @@ h1, h2, h3, h4, h5 {
 .dot-disec   { background: #E67E22; }
 .dot-oms     { background: var(--blue); }
 
-/* ── CRISIS BANNER ─────────────────────────────────────────── */
+/* ── CRISIS BANNER (fixo no topo, empurra o ticker) ───────── */
 #crisis-banner {
   position: fixed;
   top: 68px;
   left: 0; right: 0;
-  z-index: 90;
+  z-index: 100;
   background: var(--red);
   padding: 10px 48px;
   display: none;
@@ -274,6 +274,7 @@ h1, h2, h3, h4, h5 {
   animation: slide-down 0.4s ease;
 }
 #crisis-banner.active { display: flex; }
+body.crisis-active .ticker-bar { margin-top: 40px; }
 
 .crisis-pulse {
   width: 10px; height: 10px;
@@ -286,10 +287,10 @@ h1, h2, h3, h4, h5 {
   font-size: 13px;
   font-weight: 500;
   color: var(--white);
+  flex: 1;
 }
 .crisis-text strong { color: #FFCCCC; }
 .crisis-close {
-  margin-left: auto;
   background: none;
   border: none;
   color: rgba(255,255,255,0.6);
@@ -298,6 +299,7 @@ h1, h2, h3, h4, h5 {
   line-height: 1;
   padding: 0 4px;
   transition: color 0.2s;
+  flex-shrink: 0;
 }
 .crisis-close:hover { color: var(--white); }
 

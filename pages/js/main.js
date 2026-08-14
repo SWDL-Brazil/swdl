@@ -78,32 +78,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ── CRISIS BANNER (local toggle) ───────────────────────────
-  const crisisClose = document.querySelector('.crisis-close');
-  if (crisisClose) {
-    crisisClose.addEventListener('click', () => {
-      document.getElementById('crisis-banner')?.classList.remove('active');
-    });
-  }
-
-  // ── CRISIS BANNER (via API) ────────────────────────────────
-  // Verifica se há crise ativa no backend
-  if (typeof SWDL_API !== 'undefined') {
-    SWDL_API.status().then(data => {
-      if (!data) return;
-      const banner = document.getElementById('crisis-banner');
-      if (!banner) return;
-
-      if (data.crisis_active && data.crisis_message) {
-        const textEl = banner.querySelector('.crisis-text');
-        if (textEl) textEl.innerHTML = `🚨 <strong>CRISE:</strong> ${data.crisis_message}`;
-        banner.classList.add('active');
-        banner.style.display = 'flex';
-      } else {
-        banner.classList.remove('active');
-        banner.style.display = 'none';
-      }
-    });
-  }
-
 });
