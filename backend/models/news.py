@@ -25,7 +25,7 @@ class News(db.Model):
     cover_image = db.Column(db.String(300))           # URL da imagem de capa
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
     committee   = db.Column(db.String(300), default='geral')
-    tags        = db.Column(db.String(300), default='')    # "diplomacia,cs,resolucao"
+    tags        = db.Column(db.Text, default='')       # "diplomacia,cs,resolucao"
     is_crisis   = db.Column(db.Boolean, default=False)
     published   = db.Column(db.Boolean, default=False)
     created_at  = db.Column(db.DateTime, default=datetime.utcnow)

@@ -162,17 +162,19 @@ def _run_migrations(app):
                 if col_type_name in ('VARCHAR', 'NVARCHAR', 'String'):
                     existing_len = getattr(col_type_info, 'length', None)
                     new_len = getattr(col.type, 'length', None)
-                    if existing_len and new_len and new_len > existing_len:
+                    target = None
+                    if new_len is None:
+                        target = 'TEXT'  # modelo virou Text -> remove limite
+                    elif existing_len and new_len and new_len > existing_len:
+                        target = f'VARCHAR({new_len})'
+                    if target:
                         try:
                             if is_pg:
-                                stmt = f'ALTER TABLE {table_name} ALTER COLUMN {col_name} TYPE VARCHAR({new_len})'
+                                stmt = f'ALTER TABLE {table_name} ALTER COLUMN {col_name} TYPE {target}'
                                 with db.engine.connect() as conn:
                                     conn.execute(sa.text(stmt))
                                     conn.commit()
-                            else:
-                                # SQLite não respeita limite de VARCHAR; nada a fazer
-                                stmt = None
-                            print(f'[MIGRATION] {table_name}.{col_name} redimensionada para VARCHAR({new_len}).')
+                            print(f'[MIGRATION] {table_name}.{col_name} redimensionada para {target}.')
                         except Exception as e:
                             print(f'[MIGRATION] Erro ao redimensionar {table_name}.{col_name}: {e}')
 
