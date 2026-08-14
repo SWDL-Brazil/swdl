@@ -98,7 +98,7 @@ def _run_migrations(app):
         from models.user import User
         from models.delegation import Delegation
         from models.inscription import Inscription
-        from models.news import News
+        from models.news import News, slugify
         from models.student import Student
         from models.document import Document
         from models.event_config import EventConfig
@@ -177,6 +177,26 @@ def _run_migrations(app):
                             print(f'[MIGRATION] {table_name}.{col_name} redimensionada para {target}.')
                         except Exception as e:
                             print(f'[MIGRATION] Erro ao redimensionar {table_name}.{col_name}: {e}')
+
+        # Backfill: gera slugs únicos para notícias antigas que ficaram sem slug
+        from models.news import News
+        try:
+            from sqlalchemy import func
+            missing = News.query.filter(
+                (News.slug.is_(None)) | (News.slug == '')
+            ).all()
+            for n in missing:
+                base = slugify(n.title) or 'noticia'
+                slug = base
+                i = 1
+                while News.query.filter(News.slug == slug).filter(News.id != n.id).first():
+                    slug = f'{base}-{i}'; i += 1
+                n.slug = slug
+            if missing:
+                db.session.commit()
+                print(f'[MIGRATION] Slugs gerados para {len(missing)} notícia(s).')
+        except Exception as e:
+            print(f'[MIGRATION] Erro ao gerar slugs: {e}')
 
 
 def _seed_admin(app):
