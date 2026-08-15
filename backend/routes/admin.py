@@ -784,7 +784,9 @@ def delegation_create():
     # Alunos que ainda não têm delegação
     unassigned = Student.query.filter(Student.delegation_id.is_(None)).order_by(Student.name).all()
     return render_template('admin/delegation_create.html',
-                           themes=themes, unassigned_students=unassigned)
+                           themes=themes,
+                           unassigned_students=unassigned,
+                           all_students=Student.query.order_by(Student.name).all())
 
 
 @admin_bp.route('/delegacoes/<int:id>/designar', methods=['GET', 'POST'])
@@ -817,7 +819,9 @@ def delegation_assign(id):
         flash(f'País {deleg.country} designado com sucesso!', 'success')
         return redirect(url_for('admin.delegations_list'))
     available_themes = Theme.query.all()
-    return render_template('admin/delegation_assign.html', deleg=deleg, available_themes=available_themes)
+    return render_template('admin/delegation_assign.html', deleg=deleg,
+                           available_themes=available_themes,
+                           all_students=Student.query.order_by(Student.name).all())
 
 
 @admin_bp.route('/delegacoes/<int:id>/deletar', methods=['POST'])
@@ -1457,7 +1461,9 @@ def student_assign(id):
         if not country:
             flash('O país é obrigatório.', 'error')
             themes = Theme.query.order_by(Theme.name).all()
-            return render_template('admin/student_assign.html', student=student, available_themes=themes)
+            return render_template('admin/student_assign.html', student=student,
+                                   available_themes=themes,
+                                   all_students=Student.query.order_by(Student.name).all())
 
         # Reuse or create delegation — prioriza a delegação já vinculada ao aluno
         deleg = student.delegation
@@ -1507,7 +1513,9 @@ def student_assign(id):
         return redirect(url_for('admin.students_list'))
 
     themes = Theme.query.order_by(Theme.name).all()
-    return render_template('admin/student_assign.html', student=student, available_themes=themes)
+    return render_template('admin/student_assign.html', student=student,
+                           available_themes=themes,
+                           all_students=Student.query.order_by(Student.name).all())
 
 
 # ── Travamento manual ─────────────────────────────────────────

@@ -62,8 +62,22 @@
 
         <div class="form-group">
           <label>Membros extras do grupo <span style="font-size:11px;color:var(--muted)">(opcional)</span></label>
-          <input type="text" name="members" placeholder="Separe por vírgula: Maria, João"
-                 style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px">
+          <div style="display:flex;gap:8px">
+            <input type="text" name="members" id="membersInput" placeholder="Separe por vírgula: Maria, João"
+                   style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:4px">
+            <select id="memberSelect"
+                    style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:4px">
+              <option value="">➕ Conta existente...</option>
+              {% for s in all_students %}
+                <option value="{{ s.name }}">{{ s.name }} — {{ s.email }}</option>
+              {% endfor %}
+            </select>
+            <button type="button" id="addMemberBtn"
+                    style="background:var(--navy);color:var(--white);border:none;border-radius:3px;padding:0 14px;cursor:pointer;font-size:13px;white-space:nowrap;flex-shrink:0">
+              Adicionar
+            </button>
+          </div>
+          <div id="membersPreview" style="font-size:12px;margin-top:4px"></div>
           <div style="font-size:11px;color:var(--muted);margin-top:4px">
             Alunos selecionados abaixo já contam como membros. O formato
             (individual, dupla, trio ou grupo) é definido automaticamente pela quantidade total.
@@ -155,5 +169,72 @@ function updateCount() {
   const checked = document.querySelectorAll('input[name="student_ids"]:checked').length;
   document.getElementById('studentCount').textContent = checked + ' aluno' + (checked !== 1 ? 's' : '') + ' selecionado' + (checked !== 1 ? 's' : '');
 }
+
+// ── Membros: inserir nomes de contas existentes ──────────
+const memberInput  = document.getElementById('membersInput');
+const memberSelect = document.getElementById('memberSelect');
+const addMemberBtn = document.getElementById('addMemberBtn');
+const membersPrev  = document.getElementById('membersPreview');
+
+function currentMembers() {
+  return memberInput.value.split(',').map(s => s.trim()).filter(Boolean);
+}
+function renderMembersPreview() {
+  membersPrev.innerHTML = '';
+  currentMembers().forEach(name => {
+    const chip = document.createElement('span');
+    chip.textContent = name;
+    chip.style.cssText = 'display:inline-block;background:rgba(16,30,76,.06);border:1px solid var(--border);border-radius:12px;padding:2px 10px;margin:3px 4px 0 0;font-size:12px;color:var(--navy)';
+    membersPrev.appendChild(chip);
+  });
+}
+function findMemberOption(name) {
+  return Array.from(memberSelect.options).find(o => o.value === name);
+}
+function studentNameFromCheckbox(cb) {
+  const label = cb.closest('label');
+  if (!label) return '';
+  const nameSpan = label.querySelector('span');
+  return nameSpan ? nameSpan.textContent.trim() : '';
+}
+
+addMemberBtn.addEventListener('click', () => {
+  const name = memberSelect.value.trim();
+  if (!name) return;
+  const list = currentMembers();
+  if (!list.includes(name)) {
+    list.push(name);
+    memberInput.value = list.join(', ');
+  }
+  // Se o aluno existe na lista de vinculação, marca o checkbox também
+  document.querySelectorAll('input[name="student_ids"]').forEach(cb => {
+    if (studentNameFromCheckbox(cb) === name) {
+      cb.checked = true;
+      updateCount();
+    }
+  });
+  const opt = findMemberOption(name);
+  if (opt) opt.remove();
+  renderMembersPreview();
+});
+
+// Sincroniza: marcar/desmarcar checkbox remove/retorna a opção do seletor
+document.querySelectorAll('input[name="student_ids"]').forEach(cb => {
+  cb.addEventListener('change', () => {
+    const name = studentNameFromCheckbox(cb);
+    const opt  = findMemberOption(name);
+    if (cb.checked) {
+      if (opt) opt.remove();
+    } else if (!opt && name && !currentMembers().includes(name)) {
+      const o = document.createElement('option');
+      o.value = name;
+      o.textContent = name;
+      memberSelect.appendChild(o);
+    }
+  });
+});
+
+memberInput.addEventListener('input', renderMembersPreview);
+renderMembersPreview();
 </script>
 {% endblock %}
