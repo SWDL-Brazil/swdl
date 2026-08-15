@@ -14,7 +14,7 @@
               font-size:13px;color:var(--muted);display:flex;gap:10px;align-items:flex-start">
     <span style="font-size:16px;flex-shrink:0">🌍</span>
     <div>
-      <strong>Etapa 2 de 2:</strong> atribua país, tema e dupla para
+      <strong>Etapa 2 de 2:</strong> atribua país, tema e formato (individual, dupla, trio ou grupo) para
       <strong style="color:var(--navy)">{{ student.name }}</strong>.
       <br>
       ID Global: <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--navy)">{{ student.global_id[:16] }}...</span>
@@ -78,10 +78,13 @@
         </div>
 
         <div class="form-group">
-          <label>Nome do Parceiro de Dupla</label>
-          <input type="text" name="pair_name"
-                 value="{{ student.delegation.pair_name if student.delegation else '' }}"
-                 placeholder="Ex: Bruno Costa">
+          <label>Membros extras do grupo <span style="font-size:11px;color:var(--muted)">(opcional)</span></label>
+          <input type="text" name="members"
+                 value="{{ (student.delegation.members or student.delegation.pair_name) if student.delegation else '' }}"
+                 placeholder="Separe por vírgula: Maria, João">
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">
+            Alunos vinculados já contam. O formato (individual, dupla, trio ou grupo) é definido automaticamente.
+          </div>
         </div>
 
         <div class="form-group" style="margin-top:4px">

@@ -75,10 +75,13 @@
         </div>
 
         <div class="form-group">
-          <label>Nome do Parceiro de Dupla</label>
-          <input type="text" name="pair_name"
-                 value="{{ deleg.pair_name or '' }}"
-                 placeholder="Nome do colega que representa o mesmo país">
+          <label>Membros extras do grupo <span style="font-size:11px;color:var(--muted)">(opcional)</span></label>
+          <input type="text" name="members"
+                 value="{{ deleg.members or deleg.pair_name or '' }}"
+                 placeholder="Separe por vírgula: Maria, João">
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">
+            Alunos vinculados já contam. O formato (individual, dupla, trio ou grupo) é definido automaticamente.
+          </div>
         </div>
 
         <div class="form-group" style="margin-top:4px">

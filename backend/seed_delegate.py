@@ -2,6 +2,7 @@ from app import create_app
 from extensions import db
 from models.user import User
 from models.delegation import Delegation
+from models.student import Student
 
 app = create_app()
 
@@ -17,9 +18,14 @@ with app.app_context():
         print('♻️  Delegado antigo removido.')
 
     # Cria usuário
-    u = User(name='Ana Silva', email='delegado@teste.com', role='delegate')
+    u = User(name='Ana Silva', email='delegado@teste.com', role='student')
     u.set_password('teste2025')
     db.session.add(u)
+    db.session.flush()
+
+    # Perfil de aluno
+    s = Student(user_id=u.id, name='Ana Silva', email='delegado@teste.com')
+    db.session.add(s)
     db.session.flush()
 
     # Cria delegação com bandeira
@@ -33,6 +39,8 @@ with app.app_context():
         flag_animation = True,
     )
     db.session.add(d)
+    db.session.flush()
+    s.delegation_id = d.id
     db.session.commit()
     print('✅ Delegado criado!')
     print('   Login: delegado@teste.com')

@@ -164,7 +164,7 @@ def delegate_vote_page():
 @vote_bp.route('/api/votar', methods=['POST'])
 @login_required
 def api_submit_vote():
-    if current_user.role != 'delegate':
+    if current_user.role not in ('student', 'delegate'):
         return jsonify({'ok': False, 'error': 'Acesso negado'}), 403
 
     data       = request.get_json(silent=True) or {}

@@ -13,7 +13,7 @@
           <th>Delegado</th>
           <th>País</th>
           <th>Comitê</th>
-          <th>Parceiro</th>
+          <th>Membros</th>
           <th>Arquivo</th>
           <th>Ações</th>
         </tr>
@@ -37,7 +37,12 @@
               <span class="badge badge-next">{{ d.committee.upper() }}</span>
             {% else %}—{% endif %}
           </td>
-          <td class="text-muted">{{ d.pair_name or '—' }}</td>
+          <td class="text-muted">
+            {% set membros = d.member_names() %}
+            {% if membros %}
+              <span style="font-weight:600;color:var(--navy)">{{ d.group_label() }}</span>: {{ membros|join(', ') }}
+            {% else %}—{% endif %}
+          </td>
           <td>
             <span style="font-size:12px;color:var(--muted);font-family:'DM Mono',monospace">
               {{ d.dpo_path.split('\\')[-1].split('/')[-1] if d.dpo_path else '—' }}

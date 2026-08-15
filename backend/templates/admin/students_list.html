@@ -19,7 +19,7 @@
           <th>ID Global</th>
           <th>País</th>
           <th>Tema</th>
-          <th>Dupla</th>
+          <th>Formato</th>
           <th>Status</th>
           <th>Ações</th>
         </tr>
@@ -43,7 +43,14 @@
               <span class="badge badge-next">{{ s.delegation.committee.upper() }}</span>
             {% else %}—{% endif %}
           </td>
-          <td class="text-muted">{{ s.delegation.pair_name if s.delegation and s.delegation.pair_name else '—' }}</td>
+          <td class="text-muted">
+            {% if s.delegation %}
+              {% set membros = s.delegation.member_names() %}
+              {% if membros %}
+                <span style="font-weight:600;color:var(--navy)">{{ s.delegation.group_label() }}</span>: {{ membros|join(', ') }}
+              {% else %}—{% endif %}
+            {% else %}—{% endif %}
+          </td>
           <td>
             {% if s.delegation %}
               <span style="color:var(--green);font-weight:600;font-size:12px">✅ Designado</span>

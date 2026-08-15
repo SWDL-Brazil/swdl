@@ -17,7 +17,7 @@
           <th>Candidato</th>
           <th>País</th>
           <th>Comitê</th>
-          <th>Parceiro</th>
+          <th>Membros</th>
           <th>DPO</th>
           <th>Aceite</th>
           <th>Ações</th>
@@ -42,7 +42,12 @@
               <span class="badge badge-next">{{ d.committee.upper() }}</span>
             {% else %}—{% endif %}
           </td>
-          <td class="text-muted">{{ d.pair_name or '—' }}</td>
+          <td class="text-muted">
+            {% set membros = d.member_names() %}
+            {% if membros %}
+              <span style="font-weight:600;color:var(--navy)">{{ d.group_label() }}</span>: {{ membros|join(', ') }}
+            {% else %}—{% endif %}
+          </td>
           <td>{{ '✅' if d.dpo_uploaded else '⏳' }}</td>
           <td>{{ '✅' if d.accepted else '⏳' }}</td>
           <td>

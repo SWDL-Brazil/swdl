@@ -37,7 +37,8 @@
   <div class="pending-card-icon">⏳</div>
   <div class="pending-card-title">Aguardando Designação</div>
   <div class="pending-card-text">
-    Sua conta está ativa, mas a organização ainda não atribuiu um país, tema e dupla para você.
+    Sua conta está ativa, mas a organização ainda não atribuiu um país, tema e formato de debate
+    (individual, dupla, trio ou grupo) para você.
     Assim que for designado, as funcionalidades de simulação serão liberadas.
   </div>
 </div>
@@ -73,8 +74,8 @@
         {% endif %}
         <div class="debate-meta">
           <span>📅 Edição {{ delegation.edition_year or now.year }}</span>
-          {% if delegation.pair_name %}
-            <span>👥 Dupla: {{ delegation.pair_name }}</span>
+          {% if delegation.member_names() %}
+            <span>👥 {{ delegation.group_label() }}: {{ delegation.member_names()|join(', ') }}</span>
           {% endif %}
           {% if is_event_day and not event_ended %}
             <span>📄 DPO disponível</span>

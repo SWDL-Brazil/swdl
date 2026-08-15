@@ -574,7 +574,7 @@ def inscription_detail(id):
 def inscription_approve(id):
     ins = Inscription.query.get_or_404(id)
     ins.status      = 'approved'
-    ins.reviewed_at = datetime.utcnow()
+    ins.reviewed_at = datetime.now(timezone.utc)
     ins.reviewed_by = current_user.id
 
     # Cria conta de usuário + perfil de aluno automaticamente
@@ -661,7 +661,7 @@ def inscription_approve(id):
 def inscription_reject(id):
     ins = Inscription.query.get_or_404(id)
     ins.status      = 'rejected'
-    ins.reviewed_at = datetime.utcnow()
+    ins.reviewed_at = datetime.now(timezone.utc)
     ins.reviewed_by = current_user.id
     db.session.commit()
     flash(f'Inscrição de {ins.name} rejeitada.', 'info')
@@ -733,6 +733,7 @@ def delegation_create():
             db.session.flush()
 
         pair_name = request.form.get('pair_name', '').strip()
+        members   = request.form.get('members', '').strip()
 
         deleg = Delegation(
             inscription_id=ins.id,
@@ -743,6 +744,7 @@ def delegation_create():
             flag_url=flag_url,
             committee=committee_name or (theme.name if theme else ''),
             pair_name=pair_name,
+            members=members,
         )
         db.session.add(deleg)
         db.session.flush()
@@ -758,17 +760,21 @@ def delegation_create():
 
                 # Checa se já tem User; se não, cria
                 if not student.user_id:
-                    existing = User.query.filter_by(email=student.email, role='delegate').first()
+                    existing = User.query.filter_by(email=student.email).first()
                     if not existing:
                         first_name = re.sub(r'[^a-zA-Z]', '', student.name.split()[0]).lower()[:4]
                         password = f'{first_name}{datetime.now(timezone.utc).year}'
-                        user = User(name=student.name, email=student.email, role='delegate')
+                        user = User(name=student.name, email=student.email, role='student')
                         user.set_password(password)
                         db.session.add(user)
                         db.session.flush()
                         student.user_id = user.id
                     else:
                         student.user_id = existing.id
+
+        # Vincula a delegação ao usuário do aluno principal (para login/votação)
+        if not deleg.user_id and first_student.user_id:
+            deleg.user_id = first_student.user_id
 
         db.session.commit()
         flash(f'🌍 Delegação {country} criada com {len(student_ids)} aluno(s)!', 'success')
@@ -789,17 +795,24 @@ def delegation_assign(id):
     from models.student import Student
     deleg = Delegation.query.get_or_404(id)
     if request.method == 'POST':
-        theme_name = request.form['committee']
+        theme_name = request.form.get('committee', '').strip()
         theme = Theme.query.filter_by(name=theme_name).first()
         deleg.theme_id    = theme.id if theme else None
-        deleg.country      = request.form['country']
+        deleg.country      = request.form.get('country', '').strip()
         deleg.country_flag = request.form.get('flag', '')
         deleg.committee    = theme_name
-        deleg.pair_name    = request.form.get('pair_name', '')
+        deleg.pair_name    = request.form.get('pair_name', '').strip()
+        deleg.members      = request.form.get('members', '').strip()
         deleg.flag_animation = bool(request.form.get('flag_animation'))
-        student = Student.query.filter_by(delegation_id=deleg.id).first()
-        if student and not student.convened:
-            student.convened = True
+
+        # Convoca todos os alunos da delegação e sincroniza o histórico
+        for student in deleg.students:
+            if not student.convened:
+                student.convened = True
+            if not deleg.user_id and student.user_id:
+                deleg.user_id = student.user_id
+            _ensure_participation_history(student)
+
         db.session.commit()
         flash(f'País {deleg.country} designado com sucesso!', 'success')
         return redirect(url_for('admin.delegations_list'))
@@ -825,6 +838,10 @@ def delegation_delete(id):
     if deleg.inscription_id:
         ins_to_delete = Inscription.query.get(deleg.inscription_id)
 
+    # Remove também os perfis de Student (evita FK órfãs; participations
+    # são removidas em cascata pelo modelo)
+    students_to_delete = list(deleg.students) if deleg.students else []
+
     db.session.delete(deleg)
 
     if user_to_delete:
@@ -832,6 +849,9 @@ def delegation_delete(id):
 
     if ins_to_delete:
         db.session.delete(ins_to_delete)
+
+    for s in students_to_delete:
+        db.session.delete(s)
 
     db.session.commit()
     flash('Delegação e login deletados com sucesso.', 'success')
@@ -1046,9 +1066,15 @@ def dpo_delete(id):
     deleg.dpo_path = None
     deleg.dpo_uploaded = False
     deleg.accepted = False
-    ParticipationHistory.query.filter_by(
-        delegation_id=deleg.id, action='dpo_upload'
-    ).delete()
+    # Limpa os campos de DPO nas participações dos alunos da delegação
+    year = deleg.edition_year or datetime.now(timezone.utc).year
+    for s in deleg.students:
+        ph = ParticipationHistory.query.filter_by(
+            student_id=s.id, year=year
+        ).first()
+        if ph:
+            ph.dpo_path = None
+            ph.dpo_uploaded = False
     db.session.commit()
     flash(f'DPO de {deleg.country or "delegação"} excluído com sucesso.', 'success')
     return redirect(url_for('admin.dpos_list'))
@@ -1072,23 +1098,30 @@ def delegation_create_credentials(id):
 
     ins = deleg.inscription
 
-    # Verifica se já tem conta
-    existing = User.query.filter_by(email=ins.email, role='delegate').first()
+    # Verifica se já tem conta (independente de role)
+    existing = User.query.filter_by(email=ins.email).first()
     if existing:
         flash(f'Delegado {ins.name} já possui credenciais.', 'info')
         return redirect(url_for('admin.delegations_list'))
 
-    # Gera senha padrão: primeiros 4 chars do nome + ano
+    # Gera senha padrão: primeiros 4 chars do nome + ano atual
     import re
     first_name = re.sub(r'[^a-zA-Z]', '', ins.name.split()[0]).lower()[:4]
-    password   = f'{first_name}2025'
+    password   = f'{first_name}{datetime.now(timezone.utc).year}'
 
-    user = User(name=ins.name, email=ins.email, role='delegate')
+    user = User(name=ins.name, email=ins.email, role='student')
     user.set_password(password)
     db.session.add(user)
     db.session.flush()  # garante o user.id
 
     deleg.user_id = user.id
+
+    # Vincula o perfil de aluno (se houver) ao novo login
+    from models.student import Student
+    for s in deleg.students:
+        if s and not s.user_id:
+            s.user_id = user.id
+
     db.session.commit()
 
     flash(
@@ -1129,18 +1162,28 @@ def seed_test_delegate():
         interests    = 'Paz e Segurança, Direitos Humanos',
         type         = 'delegate',
         status       = 'approved',
-        reviewed_at  = datetime.utcnow(),
+        reviewed_at  = datetime.now(timezone.utc),
     )
     db.session.add(ins)
     db.session.flush()
 
     # 2. Usuário
-    user = User(name='Ana Silva (Teste)', email='delegado@teste.com', role='delegate')
+    user = User(name='Ana Silva (Teste)', email='delegado@teste.com', role='student')
     user.set_password('teste2025')
     db.session.add(user)
     db.session.flush()
 
-    # 3. Delegação com país designado
+    # 3. Perfil de aluno
+    from models.student import Student
+    student = Student(
+        user_id = user.id,
+        name    = 'Ana Silva (Teste)',
+        email   = 'delegado@teste.com',
+    )
+    db.session.add(student)
+    db.session.flush()
+
+    # 4. Delegação com país designado
     deleg = Delegation(
         inscription_id = ins.id,
         user_id        = user.id,
@@ -1152,6 +1195,8 @@ def seed_test_delegate():
         dpo_uploaded   = False,
     )
     db.session.add(deleg)
+    db.session.flush()
+    student.delegation_id = deleg.id
     db.session.commit()
 
     flash('✅ Delegado de teste criado! Login: delegado@teste.com / teste2025', 'success')
@@ -1167,7 +1212,7 @@ def seed_test_delegate():
 @admin_required
 def delegate_create():
     """Step 1: cria apenas a conta do aluno (name + email).
-    A designação de país/tema/dupla é feita depois em /alunos."""
+    A designação de país/tema/formato é feita depois em /alunos."""
     from models.user        import User
     from models.inscription import Inscription
     from models.student     import Student
@@ -1192,7 +1237,7 @@ def delegate_create():
                 phone       = request.form.get('phone', ''),
                 type        = 'delegate',
                 status      = 'approved',
-                reviewed_at = datetime.utcnow(),
+                reviewed_at = datetime.now(timezone.utc),
                 reviewed_by = current_user.id,
             )
             db.session.add(ins)
@@ -1292,12 +1337,12 @@ def convocar_set_theme(id):
 
     if student.delegation:
         student.delegation.theme_id = theme.id if theme else None
-        student.delegation.edition_year = datetime.utcnow().year
+        student.delegation.edition_year = datetime.now(timezone.utc).year
     else:
         delegation = Delegation(
             committee=theme.name if theme else None,
             theme_id=theme.id if theme else None,
-            edition_year=datetime.utcnow().year
+            edition_year=datetime.now(timezone.utc).year
         )
         db.session.add(delegation)
         db.session.flush()
@@ -1314,25 +1359,29 @@ def convocar_set_theme(id):
 
 
 def _ensure_participation_history(student):
-    """Cria ParticipationHistory para o ano atual se ainda não existir."""
+    """Cria ou atualiza ParticipationHistory para o ano atual."""
     from models.participation import ParticipationHistory
-    year = datetime.utcnow().year
-    existing = ParticipationHistory.query.filter_by(
+    if not student.delegation:
+        return
+    year = datetime.now(timezone.utc).year
+    deleg = student.delegation
+    data = dict(
+        committee=deleg.committee,
+        committee_name=deleg.theme.name if deleg.theme else (deleg.committee or ''),
+        country=deleg.country or '',
+        country_flag=deleg.country_flag or '',
+        role='delegate',
+        delegation_name=f"{deleg.country or ''} @ {deleg.committee or ''}",
+    )
+    entry = ParticipationHistory.query.filter_by(
         student_id=student.id, year=year
     ).first()
-    if not existing and student.delegation:
-        deleg = student.delegation
-        entry = ParticipationHistory(
-            student_id=student.id,
-            year=year,
-            committee=deleg.committee,
-            committee_name=deleg.theme.name if deleg.theme else (deleg.committee or ''),
-            country=deleg.country or '',
-            country_flag=deleg.country_flag or '',
-            role='delegate',
-            delegation_name=f"{deleg.country or ''} @ {deleg.committee or ''}",
-        )
+    if not entry:
+        entry = ParticipationHistory(student_id=student.id, year=year, **data)
         db.session.add(entry)
+    else:
+        for k, v in data.items():
+            setattr(entry, k, v)
 
 
 # ── Convocar em lote ──────────────────────────────────────────
@@ -1391,7 +1440,7 @@ def convocar_by_theme(theme_id):
 @login_required
 @admin_required
 def student_assign(id):
-    """Step 2: atribui país, tema e dupla a um aluno existente."""
+    """Step 2: atribui país, tema e formato (individual, dupla, trio ou grupo) a um aluno existente."""
     from models.delegation import Delegation
     from models.theme import Theme
 
@@ -1403,14 +1452,17 @@ def student_assign(id):
         flag_url = request.form.get('flag_url', '').strip()
         committee = request.form.get('committee', '').strip()
         pair_name = request.form.get('pair_name', '').strip()
+        members   = request.form.get('members', '').strip()
 
         if not country:
             flash('O país é obrigatório.', 'error')
             themes = Theme.query.order_by(Theme.name).all()
             return render_template('admin/student_assign.html', student=student, available_themes=themes)
 
-        # Reuse or create delegation
-        deleg = Delegation.query.filter_by(user_id=student.user_id).first()
+        # Reuse or create delegation — prioriza a delegação já vinculada ao aluno
+        deleg = student.delegation
+        if not deleg and student.user_id:
+            deleg = Delegation.query.filter_by(user_id=student.user_id).first()
         if not deleg:
             ins = Inscription.query.filter_by(email=student.email, status='approved').first()
             if not ins:
@@ -1420,12 +1472,18 @@ def student_assign(id):
             deleg = Delegation(
                 inscription_id=ins.id,
                 user_id=student.user_id,
-                edition_year=datetime.utcnow().year,
+                edition_year=datetime.now(timezone.utc).year,
             )
             db.session.add(deleg)
             db.session.flush()
         else:
-            deleg.edition_year = datetime.utcnow().year
+            deleg.edition_year = datetime.now(timezone.utc).year
+            if not deleg.inscription_id:
+                ins = Inscription.query.filter_by(email=student.email, status='approved').first()
+                if ins:
+                    deleg.inscription_id = ins.id
+            if not deleg.user_id and student.user_id:
+                deleg.user_id = student.user_id
 
         theme = Theme.query.filter_by(name=committee).first()
         deleg.theme_id    = theme.id if theme else None
@@ -1434,11 +1492,15 @@ def student_assign(id):
         deleg.flag_url     = flag_url
         deleg.committee    = committee
         deleg.pair_name    = pair_name
+        deleg.members      = members
         deleg.flag_animation = bool(request.form.get('flag_animation'))
         db.session.flush()
 
         student.delegation_id = deleg.id
         student.convened = True
+        # Garante/atualiza ParticipationHistory de todos os alunos da delegação
+        for s in deleg.students:
+            _ensure_participation_history(s)
         db.session.commit()
 
         flash(f'🌍 {country} designado para {student.name}!', 'success')
@@ -1621,7 +1683,7 @@ def documento_enviar():
     upload_dir = os.path.join(Config.UPLOAD_FOLDER, 'documentos')
     os.makedirs(upload_dir, exist_ok=True)
 
-    safe_name = f'doc_{datetime.utcnow().strftime("%Y%m%d%H%M%S")}_{file.filename}'
+    safe_name = f'doc_{datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")}_{file.filename}'
     filepath = os.path.join(upload_dir, safe_name)
     file.save(filepath)
 
@@ -1765,7 +1827,7 @@ def _sign_certificate(student):
         return None
     secret = current_app.config.get('SECRET_KEY', 'swdl-secret')
     student.digital_signature = student.compute_signature(secret)
-    student.signed_at = datetime.utcnow()
+    student.signed_at = datetime.now(timezone.utc)
     db.session.commit()
     return student.digital_signature
 
