@@ -1388,6 +1388,24 @@ def _ensure_participation_history(student):
             setattr(entry, k, v)
 
 
+def _cleanup_orphan_delegation(deleg_id):
+    """Remove uma delegação que ficou sem alunos, desde que não tenha votos,
+    DPO ou presença registrada (evita perda de dados)."""
+    from models.vote import Vote
+    d = Delegation.query.get(deleg_id)
+    if not d:
+        return
+    if d.students:
+        return
+    if Vote.query.filter_by(delegation_id=d.id).first():
+        return
+    if d.dpo_path or d.dpo_uploaded:
+        return
+    if d.presence_status and d.presence_status != 'ausente':
+        return
+    db.session.delete(d)
+
+
 # ── Convocar em lote ──────────────────────────────────────────
 
 @admin_bp.route('/convocar/todos', methods=['POST'])
@@ -1461,17 +1479,25 @@ def student_assign(id):
         if not country:
             flash('O país é obrigatório.', 'error')
             themes = Theme.query.order_by(Theme.name).all()
-            joinable = Student.query.filter(Student.delegation_id.is_(None),
-                                            Student.id != student.id).order_by(Student.name).all()
+            joinable = Student.query.filter(Student.id != student.id).order_by(Student.name).all()
             return render_template('admin/student_assign.html', student=student,
                                    available_themes=themes,
                                    all_students=Student.query.order_by(Student.name).all(),
                                    joinable_students=joinable)
 
         # Reuse or create delegation — prioriza a delegação já vinculada ao aluno
+        extra_ids = request.form.getlist('extra_ids', type=int)
         deleg = student.delegation
         if not deleg and student.user_id:
             deleg = Delegation.query.filter_by(user_id=student.user_id).first()
+        if not deleg:
+            # Se o aluno principal ainda não tem delegação, junta-se à
+            # delegação do primeiro aluno marcado que já estiver designado
+            for i in extra_ids:
+                s = Student.query.get(i)
+                if s and s.delegation_id:
+                    deleg = s.delegation
+                    break
         if not deleg:
             ins = Inscription.query.filter_by(email=student.email, status='approved').first()
             if not ins:
@@ -1506,8 +1532,15 @@ def student_assign(id):
         db.session.flush()
 
         # Vincula o aluno principal + os marcados para entrar na mesma delegação
-        extra_ids  = request.form.getlist('extra_ids', type=int)
         member_ids = [student.id] + [i for i in extra_ids if i != student.id]
+
+        # Guarda delegações antigas dos alunos que serão movidos
+        old_deleg_ids = set()
+        for sid in member_ids:
+            s = Student.query.get(sid)
+            if s and s.delegation_id and s.delegation_id != deleg.id:
+                old_deleg_ids.add(s.delegation_id)
+
         for sid in member_ids:
             s = Student.query.get(sid)
             if not s:
@@ -1520,6 +1553,14 @@ def student_assign(id):
         # Atualiza também quem já estava na delegação (histórico/país consistente)
         for s in deleg.students:
             _ensure_participation_history(s)
+
+        # Persiste a movimentação antes de avaliar delegações órfãs
+        db.session.flush()
+
+        # Limpa delegações antigas que ficaram vazias após a movimentação
+        for old_id in old_deleg_ids:
+            _cleanup_orphan_delegation(old_id)
+
         db.session.commit()
 
         nomes = ', '.join(s.name for s in (Student.query.get(i) for i in member_ids) if s)
@@ -1527,8 +1568,9 @@ def student_assign(id):
         return redirect(url_for('admin.students_list'))
 
     themes = Theme.query.order_by(Theme.name).all()
-    joinable = Student.query.filter(Student.delegation_id.is_(None),
-                                    Student.id != student.id).order_by(Student.name).all()
+    # Todos os outros alunos podem entrar na mesma delegação (mesmo se já
+    # designados — o aviso na tela indica a situação atual)
+    joinable = Student.query.filter(Student.id != student.id).order_by(Student.name).all()
     return render_template('admin/student_assign.html', student=student,
                            available_themes=themes,
                            all_students=Student.query.order_by(Student.name).all(),

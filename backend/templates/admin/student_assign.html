@@ -117,22 +117,27 @@
         <div class="form-group" style="margin-top:4px">
           <label>👥 Entrar na mesma delegação <span style="font-size:11px;color:var(--muted)">(opcional)</span></label>
           <div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:4px;padding:4px">
+            {% set deleg_id_atual = student.delegation.id if student.delegation else None %}
             {% for s in joinable_students %}
             <label style="display:flex;align-items:center;gap:8px;padding:6px 8px;cursor:pointer;border-radius:4px;transition:background .15s"
                    onmouseover="this.style.background='var(--offwhite2)'" onmouseout="this.style.background=''">
               <input type="checkbox" name="extra_ids" value="{{ s.id }}"
                      style="width:16px;height:16px;accent-color:var(--gold)">
               <span style="font-weight:500">{{ s.name }}</span>
+              {% if s.delegation and s.delegation.id != deleg_id_atual %}
+                <span style="font-size:10px;color:var(--orange)">já em {{ s.delegation.country or 'outra delegação' }}</span>
+              {% endif %}
               <span style="font-size:11px;color:var(--muted);margin-left:auto">{{ s.email }}</span>
             </label>
             {% else %}
             <p style="text-align:center;color:var(--muted);padding:16px">
-              Nenhum aluno disponível. Todos já estão designados ou vinculados a esta delegação.
+              Nenhum outro aluno cadastrado.
             </p>
             {% endfor %}
           </div>
           <div style="font-size:11px;color:var(--muted);margin-top:4px">
             Os marcados receberão o mesmo país/tema e formarão o mesmo grupo desta designação.
+            Quem já estiver em outra delegação será movido para esta.
           </div>
         </div>
 
