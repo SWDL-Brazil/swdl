@@ -588,7 +588,7 @@ def inscription_approve(id):
     existing_user = User.query.filter_by(email=ins.email).first()
     if not existing_user:
         first    = re.sub(r'[^a-zA-Z]', '', ins.name.split()[0]).lower()[:4]
-        password = f'{first}2025'
+        password = f'{first}{datetime.now(timezone.utc).year}'
 
         user = User(name=ins.name, email=ins.email, role='student')
         user.set_password(password)
@@ -761,7 +761,7 @@ def delegation_create():
                     existing = User.query.filter_by(email=student.email, role='delegate').first()
                     if not existing:
                         first_name = re.sub(r'[^a-zA-Z]', '', student.name.split()[0]).lower()[:4]
-                        password = f'{first_name}2025'
+                        password = f'{first_name}{datetime.now(timezone.utc).year}'
                         user = User(name=student.name, email=student.email, role='delegate')
                         user.set_password(password)
                         db.session.add(user)
@@ -1184,7 +1184,7 @@ def delegate_create():
             error = f'Já existe um usuário com o e-mail {email}.'
         else:
             first    = re.sub(r'[^a-zA-Z]', '', name.split()[0]).lower()[:4]
-            password = f'{first}2025'
+            password = f'{first}{datetime.now(timezone.utc).year}'
 
             ins = Inscription(
                 name        = name,
