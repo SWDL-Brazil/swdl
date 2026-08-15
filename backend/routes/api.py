@@ -37,6 +37,7 @@ def api_news():
     return jsonify([{
         'id':        n.id,
         'title':     n.title,
+        'slug':      n.slug,
         'body':      n.body,
         'category':  n.category_obj.name if n.category_obj else 'Geral',
         'category_slug': n.category_obj.slug if n.category_obj else 'geral',
