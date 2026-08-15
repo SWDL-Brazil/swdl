@@ -1461,9 +1461,12 @@ def student_assign(id):
         if not country:
             flash('O país é obrigatório.', 'error')
             themes = Theme.query.order_by(Theme.name).all()
+            joinable = Student.query.filter(Student.delegation_id.is_(None),
+                                            Student.id != student.id).order_by(Student.name).all()
             return render_template('admin/student_assign.html', student=student,
                                    available_themes=themes,
-                                   all_students=Student.query.order_by(Student.name).all())
+                                   all_students=Student.query.order_by(Student.name).all(),
+                                   joinable_students=joinable)
 
         # Reuse or create delegation — prioriza a delegação já vinculada ao aluno
         deleg = student.delegation
@@ -1502,20 +1505,34 @@ def student_assign(id):
         deleg.flag_animation = bool(request.form.get('flag_animation'))
         db.session.flush()
 
-        student.delegation_id = deleg.id
-        student.convened = True
-        # Garante/atualiza ParticipationHistory de todos os alunos da delegação
+        # Vincula o aluno principal + os marcados para entrar na mesma delegação
+        extra_ids  = request.form.getlist('extra_ids', type=int)
+        member_ids = [student.id] + [i for i in extra_ids if i != student.id]
+        for sid in member_ids:
+            s = Student.query.get(sid)
+            if not s:
+                continue
+            s.delegation_id = deleg.id
+            s.convened = True
+            if not deleg.user_id and s.user_id:
+                deleg.user_id = s.user_id
+            _ensure_participation_history(s)
+        # Atualiza também quem já estava na delegação (histórico/país consistente)
         for s in deleg.students:
             _ensure_participation_history(s)
         db.session.commit()
 
-        flash(f'🌍 {country} designado para {student.name}!', 'success')
+        nomes = ', '.join(s.name for s in (Student.query.get(i) for i in member_ids) if s)
+        flash(f'🌍 {country} designado para {nomes}!', 'success')
         return redirect(url_for('admin.students_list'))
 
     themes = Theme.query.order_by(Theme.name).all()
+    joinable = Student.query.filter(Student.delegation_id.is_(None),
+                                    Student.id != student.id).order_by(Student.name).all()
     return render_template('admin/student_assign.html', student=student,
                            available_themes=themes,
-                           all_students=Student.query.order_by(Student.name).all())
+                           all_students=Student.query.order_by(Student.name).all(),
+                           joinable_students=joinable)
 
 
 # ── Travamento manual ─────────────────────────────────────────
