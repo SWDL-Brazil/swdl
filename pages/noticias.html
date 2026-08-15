@@ -56,49 +56,40 @@
   </div>
 </div>
 
-<!-- HERO CARROSSEL -->
-<header class="news-hero" id="heroCarousel">
-  <div class="hero-slide" id="heroSlide">
-    <div class="hero-slide-bg" id="heroSlideBg"></div>
-    <div class="hero-slide-overlay"></div>
-    <div class="hero-slide-content" id="heroSlideContent">
-      <div class="hero-badge" id="heroBadge" data-i18n="noticias.destaque">Destaque</div>
-      <h1 class="hero-title" id="heroTitle" data-i18n="noticias.carregando">Carregando...</h1>
-      <p class="hero-excerpt" id="heroExcerpt"></p>
-      <div class="hero-meta" id="heroMeta"></div>
-    </div>
-  </div>
-  <div class="hero-dots" id="heroDots"></div>
-</header>
+<!-- PILLS DE CATEGORIA -->
+<div class="category-pills" id="categoryPills"></div>
 
-<!-- CARROSSEL DE TEMAS -->
-<section class="comites-carousel-section">
-  <div class="carousel-header">
-    <h2 data-i18n="noticias.temas_title">🏛️ Temas</h2>
-  </div>
-  <div class="carousel-track" id="comitesCarousel">
-    <div style="padding:32px;text-align:center;color:var(--muted);width:100%" data-i18n="noticias.carregando_comites">Carregando...</div>
-  </div>
-</section>
-
-<!-- MAIN LAYOUT: GRID + SIDEBAR -->
+<!-- ZONA DE DESTAQUE: LEAD + ÚLTIMAS -->
 <main class="news-main">
-  <div class="news-grid-container">
+  <div class="news-container">
 
-    <!-- GRID DE NOTÍCIAS -->
-    <div class="news-grid-dense" id="newsGrid">
-      <div style="padding:48px;text-align:center;color:var(--muted);grid-column:1/-1" data-i18n="noticias.carregando_noticias">Carregando notícias...</div>
+    <div class="news-lead">
+      <!-- LEAD (2/3) -->
+      <div class="lead-featured" id="leadFeatured">
+        <div style="padding:48px;text-align:center;color:var(--muted)" data-i18n="noticias.carregando_noticias">Carregando notícias...</div>
+      </div>
+
+      <!-- ÚLTIMAS (1/3) -->
+      <aside class="news-utilities">
+        <div class="sidebar-updates" id="sidebarUpdates">
+          <div class="sidebar-updates-header" data-i18n="noticias.ultimas">📡 Últimas</div>
+          <div class="sidebar-updates-body">
+            <div style="padding:12px;text-align:center;color:var(--muted);font-size:12px" data-i18n="noticias.carregando_ultimas">Carregando...</div>
+          </div>
+        </div>
+      </aside>
     </div>
 
-    <!-- SIDEBAR ÚLTIMAS -->
-    <aside class="news-utilities">
-      <div class="sidebar-updates" id="sidebarUpdates">
-        <div class="sidebar-updates-header" data-i18n="noticias.ultimas">📡 Últimas</div>
-        <div class="sidebar-updates-body">
-          <div style="padding:12px;text-align:center;color:var(--muted);font-size:12px" data-i18n="noticias.carregando_ultimas">Carregando...</div>
-        </div>
+    <!-- MAIS NOTÍCIAS -->
+    <section class="more-section">
+      <div class="more-header">
+        <h2 data-i18n="noticias.mais_title">Mais notícias</h2>
       </div>
-    </aside>
+      <div class="more-grid" id="moreGrid">
+        <div style="padding:48px;text-align:center;color:var(--muted);grid-column:1/-1" data-i18n="noticias.carregando_noticias">Carregando notícias...</div>
+      </div>
+    </section>
+
   </div>
 </main>
 
@@ -208,43 +199,36 @@
     track.innerHTML = items + items;
   }
 
-  // ── CARROSSEL DE COMITÊS ───────────────────────────────────
-  async function loadComites() {
-    const comites = await SWDL_API.get('/comites');
-    const el = document.getElementById('comitesCarousel');
-    if (!comites || !comites.length) {
-      el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);width:100%">Nenhum comitê ativo</div>';
-      return;
-    }
-    el.innerHTML = comites.map(c => {
-      const statusClass = c.status_type;
-      const color = hashColor(c.name);
-      const imgHtml = c.image
-        ? `<div class="comite-card-img"><img src="${c.image}" alt="${c.name}"></div>`
-        : '';
-      return `
-        <div class="comite-card">
-          ${imgHtml}
-          <div class="comite-card-top" style="border-left-color:${color}">
-            <div class="comite-card-name">${c.name}</div>
-            <div class="comite-card-status ${statusClass}">${c.status_label}</div>
-          </div>
-          <div class="comite-card-body">
-            <div class="comite-card-time">
-              <span class="comite-time-label">Próxima:</span>
-              <span class="comite-time-value">${c.next_time}</span>
-            </div>
-            ${c.next_title ? `<div class="comite-card-subtitle">${c.next_title}</div>` : ''}
-          </div>
-        </div>`;
-    }).join('');
-  }
-
   // ── CATEGORIAS ─────────────────────────────────────────────
   async function loadCategorias() {
     const cats = await SWDL_API.get('/categorias');
     if (!cats) return;
     categories = cats;
+    renderCategoryPills();
+  }
+
+  // ── PILLS DE CATEGORIA ─────────────────────────────────────
+  function renderCategoryPills() {
+    const el = document.getElementById('categoryPills');
+    if (!el) return;
+    const pills = [
+      { slug: 'all', name: categories.find(c => c.slug === 'geral')?.name || 'Todas' },
+      ...categories.filter(c => c.slug !== 'geral'),
+    ];
+    el.innerHTML = pills.map(c => `
+      <button class="cat-pill ${currentCat === c.slug ? 'active' : ''}" data-cat="${c.slug}">
+        ${c.icon || ''} ${c.name}
+      </button>`).join('');
+
+    el.querySelectorAll('.cat-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentCat = btn.dataset.cat;
+        el.querySelectorAll('.cat-pill').forEach(b => b.classList.toggle('active', b === btn));
+        renderLead(currentCat === 'all' ? allNews[0] : (allNews.find(n => n.category_slug === currentCat) || null));
+        renderGrid(currentCat === 'all' ? allNews : allNews.filter(n => n.category_slug === currentCat));
+        renderSidebar(currentCat === 'all' ? allNews.slice(0, 6) : allNews.filter(n => n.category_slug === currentCat).slice(0, 6));
+      });
+    });
   }
 
   // ── NOTÍCIAS ───────────────────────────────────────────────
@@ -252,106 +236,48 @@
     const news = await SWDL_API.noticias({ limit: 30 });
     if (!news) return;
     allNews = news;
-    if (news.length) renderHeroCarousel(news.slice(0, 5));
-    renderGrid(news);
+    renderLead(news[0] || null);
+    renderGrid(news.slice(1));
     renderSidebar(news.slice(0, 6));
   }
 
-  let heroInterval;
-
-  function renderHeroCarousel(slides) {
-    if (!slides.length) return;
-    let current = 0;
-
-    function showSlide(i) {
-      const n = slides[i];
-      const link = n.slug ? `${API_BASE}/noticia/${n.slug}` : '#';
-      const bg = document.getElementById('heroSlideBg');
-      const title = document.getElementById('heroTitle');
-      const excerpt = document.getElementById('heroExcerpt');
-      const badge = document.getElementById('heroBadge');
-      const meta = document.getElementById('heroMeta');
-      const wrapper = document.getElementById('heroSlide');
-
-      badge.innerHTML = `<span style="background:${hashColor(n.category_slug || 'geral')};padding:4px 12px;border-radius:2px">${n.category_icon || '📰'} ${n.category}</span>`;
-      title.innerHTML = `<a href="${link}" style="text-decoration:none;color:inherit">${n.title}</a>`;
-      excerpt.textContent = n.excerpt || (n.body || '').replace(/<[^>]*>/g,'').slice(0,150);
-      meta.innerHTML = `
-        <span class="hero-time">${n.time_ago}</span>
-        <span class="hero-committee" style="background:${hashColor(n.committee)}">${n.committee.toUpperCase()}</span>`;
-
-      if (n.image_url) {
-        bg.style.backgroundImage = `url(${n.image_url})`;
-        bg.style.backgroundSize = 'cover';
-        bg.style.backgroundPosition = 'center';
-      } else {
-        bg.style.backgroundImage = `linear-gradient(135deg, ${hashColor(n.category_slug || 'geral')}, var(--navy))`;
-      }
+  function renderLead(n) {
+    const el = document.getElementById('leadFeatured');
+    if (!el) return;
+    if (!n) {
+      el.innerHTML = '<div style="padding:48px;text-align:center;color:var(--muted)">Nenhuma notícia publicada ainda.</div>';
+      return;
     }
-
-    // Dots
-    const dotsEl = document.getElementById('heroDots');
-    dotsEl.innerHTML = slides.map((_, i) =>
-      `<span class="hero-dot ${i === 0 ? 'active' : ''}" data-idx="${i}"></span>`
-    ).join('');
-
-    showSlide(0);
-
-    dotsEl.addEventListener('click', (e) => {
-      const dot = e.target.closest('.hero-dot');
-      if (!dot) return;
-      clearInterval(heroInterval);
-      current = parseInt(dot.dataset.idx);
-      showSlide(current);
-      document.querySelectorAll('.hero-dot').forEach(d => d.classList.remove('active'));
-      dot.classList.add('active');
-      heroInterval = setInterval(next, 6000);
-    });
-
-    function next() {
-      current = (current + 1) % slides.length;
-      showSlide(current);
-      document.querySelectorAll('.hero-dot').forEach((d, i) => d.classList.toggle('active', i === current));
-    }
-    clearInterval(heroInterval);
-    heroInterval = setInterval(next, 6000);
+    const link = n.slug ? `${API_BASE}/noticia/${n.slug}` : '#';
+    const color = hashColor(n.category_slug || 'geral');
+    el.innerHTML = `
+      <a href="${link}" style="text-decoration:none;color:inherit">
+        ${n.image_url
+          ? `<div class="lead-img"><img src="${n.image_url}" alt="${n.title}"></div>`
+          : `<div class="lead-img" style="background:linear-gradient(135deg,${color},var(--navy));display:flex;align-items:center;justify-content:center;font-size:48px">${n.category_icon || '📰'}</div>`}
+        <div class="lead-body">
+          <div class="lead-category" style="background:${color}">${n.category_icon || ''} ${n.category}</div>
+          <h2 class="lead-title">${n.title}</h2>
+          ${n.excerpt ? `<p class="lead-excerpt">${n.excerpt}</p>` : ''}
+          <div class="lead-meta">
+            <span>${n.time_ago}</span>
+            ${n.committee ? `<span class="lead-committee">${n.committee.toUpperCase()}</span>` : ''}
+          </div>
+        </div>
+      </a>`;
   }
 
   function renderGrid(news) {
-    const el = document.getElementById('newsGrid');
+    const el = document.getElementById('moreGrid');
+    if (!el) return;
     if (!news.length) {
       el.innerHTML = '<div style="padding:48px;text-align:center;color:var(--muted);grid-column:1/-1">Nenhuma notícia publicada ainda.</div>';
       return;
     }
-    el.innerHTML = news.map((n, i) => {
-      const color = hashColor(n.committee);
-      const link  = n.slug ? `${API_BASE}/noticia/${n.slug}` : '#';
+    el.innerHTML = news.map(n => {
+      const color = hashColor(n.committee || 'geral');
       const catBg = hashColor(n.category_slug || 'geral');
-
-      if (i === 0) return ''; // hero já mostra a primeira
-
-      // Destaque visual para a 2ª notícia
-      const isFeatured = i === 1;
-      if (isFeatured) {
-        return `
-          <article class="grid-card grid-card-featured">
-            <a href="${link}" style="text-decoration:none;color:inherit">
-              ${n.image_url ? `<div class="grid-card-img"><img src="${n.image_url}" alt="${n.title}"></div>` : `<div class="grid-card-img" style="background:linear-gradient(135deg,${color},var(--navy));display:flex;align-items:center;justify-content:center;font-size:32px">${n.category_icon || '📰'}</div>`}
-              <div class="grid-card-body">
-                <div class="grid-card-tags">
-                  <span class="grid-tag" style="background:${catBg}">${n.category_icon || ''} ${n.category}</span>
-                  <span class="grid-tag" style="background:${color}">${n.committee.toUpperCase()}</span>
-                </div>
-                <h3 class="grid-card-title">${n.title}</h3>
-                ${n.excerpt ? `<p class="grid-card-excerpt">${n.excerpt}</p>` : ''}
-                <div class="grid-card-meta">
-                  <span>${n.time_ago}</span>
-                </div>
-              </div>
-            </a>
-          </article>`;
-      }
-
+      const link  = n.slug ? `${API_BASE}/noticia/${n.slug}` : '#';
       return `
         <article class="grid-card">
           <a href="${link}" style="text-decoration:none;color:inherit">
@@ -359,23 +285,24 @@
             <div class="grid-card-body">
               <div class="grid-card-tags">
                 <span class="grid-tag" style="background:${catBg}">${n.category_icon || ''} ${n.category}</span>
-                <span class="grid-tag" style="background:${color};opacity:.85">${n.committee.toUpperCase()}</span>
+                ${n.committee ? `<span class="grid-tag" style="background:${color};opacity:.85">${n.committee.toUpperCase()}</span>` : ''}
               </div>
               <h3 class="grid-card-title">${n.title}</h3>
+              ${n.excerpt ? `<p class="grid-card-excerpt">${n.excerpt}</p>` : ''}
               <div class="grid-card-meta">
                 <span>${n.time_ago}</span>
               </div>
             </div>
           </a>
         </article>`;
-    }).filter(Boolean).join('');
+    }).join('');
   }
 
   function renderSidebar(news) {
     const el = document.querySelector('.sidebar-updates-body');
     if (!el || !news.length) return;
     el.innerHTML = news.map(n => {
-      const color = hashColor(n.committee);
+      const color = hashColor(n.committee || 'geral');
       const link  = n.slug ? `${API_BASE}/noticia/${n.slug}` : '#';
       return `
         <a href="${link}" class="sidebar-item" style="text-decoration:none;color:inherit">
@@ -420,7 +347,10 @@
             const filtered = currentCat === 'all'
               ? allNews
               : allNews.filter(n => n.category_slug === currentCat);
-            renderGrid(filtered);
+            renderLead(filtered[0] || null);
+            renderGrid(filtered.slice(1));
+            renderSidebar(filtered.slice(0, 6));
+            renderCategoryPills();
             panel.classList.remove('open');
             overlay.classList.remove('open');
           });
@@ -450,13 +380,12 @@
   (async function init() {
     setupCatPanel();
     await loadCategorias();
-    await Promise.all([loadCrisisBanner(), loadTicker(), loadComites(), loadNoticias()]);
+    await Promise.all([loadCrisisBanner(), loadTicker(), loadNoticias()]);
 
     // Recarregar a cada 60s
     setInterval(() => {
       loadCrisisBanner();
       loadTicker();
-      loadComites();
       loadNoticias();
     }, 60000);
   })();
