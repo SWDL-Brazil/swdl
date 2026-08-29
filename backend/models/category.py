@@ -1,5 +1,5 @@
 from extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class Category(db.Model):
@@ -10,7 +10,7 @@ class Category(db.Model):
     slug       = db.Column(db.String(80), unique=True, nullable=False)
     icon       = db.Column(db.String(20), default='')      # emoji
     sort_order = db.Column(db.Integer, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     news = db.relationship('News', backref='category_obj', lazy='select')
 

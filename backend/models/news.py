@@ -2,7 +2,7 @@
 #  SWDL — models/news.py
 # =============================================================
 from extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 import re, unicodedata
 
 
@@ -28,9 +28,9 @@ class News(db.Model):
     tags        = db.Column(db.Text, default='')       # "diplomacia,cs,resolucao"
     is_crisis   = db.Column(db.Boolean, default=False)
     published   = db.Column(db.Boolean, default=False)
-    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at  = db.Column(db.DateTime, default=datetime.utcnow,
-                            onupdate=datetime.utcnow)
+    created_at  = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at  = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
+                            onupdate=lambda: datetime.now(timezone.utc))
     author_id   = db.Column(db.Integer, db.ForeignKey('users.id'))
     author      = db.relationship('User', backref='news')
 
@@ -46,7 +46,7 @@ class News(db.Model):
         db.session.commit()
 
     def time_ago(self):
-        delta = datetime.utcnow() - self.created_at
+        delta = datetime.now(timezone.utc) - self.created_at
         s = int(delta.total_seconds())
         if s < 60:    return 'agora mesmo'
         if s < 3600:  return f'há {s//60} min'

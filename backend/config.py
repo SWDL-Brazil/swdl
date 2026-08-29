@@ -8,7 +8,7 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
     # Segurança
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'swdl-secret-change-in-production')
+    SECRET_KEY = os.environ['SECRET_KEY']
 
     # Banco de dados
     _db_url = os.environ.get('DATABASE_URL', '')
@@ -24,6 +24,9 @@ class Config:
 
     # Sessão
     PERMANENT_SESSION_LIFETIME = timedelta(hours=8)
+    SESSION_COOKIE_SECURE = ENV == 'production'
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
 
     # WTForms CSRF
     WTF_CSRF_ENABLED = True

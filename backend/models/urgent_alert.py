@@ -1,5 +1,5 @@
 from extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class UrgentAlert(db.Model):
@@ -8,7 +8,7 @@ class UrgentAlert(db.Model):
     id         = db.Column(db.Integer, primary_key=True)
     message    = db.Column(db.String(300), nullable=False)
     active     = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     def to_dict(self):

@@ -42,12 +42,12 @@ class EventConfig(db.Model):
 
     @classmethod
     def set_invoke(cls, url, label=''):
-        from datetime import datetime
+        from datetime import datetime, timezone
         cfg = cls._ensure()
         cfg.invoke_url = url
         cfg.invoke_label = label
         cfg.invoke_active = True
-        cfg.invoke_at = datetime.utcnow()
+        cfg.invoke_at = datetime.now(timezone.utc)
         db.session.commit()
 
     @classmethod

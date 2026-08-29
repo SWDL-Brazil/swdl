@@ -11,6 +11,7 @@ from models.document import Document
 from models.vote import VoteSession, Vote
 
 from models.audit_log import AuditLog
+from routes.agenda_utils import get_agenda_status
 from datetime import datetime, timezone
 import os
 
@@ -85,36 +86,41 @@ def check_read_only(student):
     return False
 
 
+_auto_compiled = False
+
 def _auto_compile_certificates():
+    global _auto_compiled
+    if _auto_compiled:
+        return 0
     _, last_dt = get_agenda_bounds()
     if not last_dt:
         return 0
     if datetime.now(timezone.utc) <= last_dt:
         return 0
+    _auto_compiled = True
     from models.certificate_template import CertificateTemplate
+    from sqlalchemy.orm import joinedload
     template = CertificateTemplate.get_active()
-    students = Student.query.all()
+    students = Student.query.options(joinedload(Student.delegation)).all()
     generated = 0
-    cert_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'static', 'uploads', 'certificates')
+    from config import Config
+    cert_dir = os.path.join(Config.UPLOAD_FOLDER, 'certificates')
     os.makedirs(cert_dir, exist_ok=True)
     for student in students:
-        deleg = Delegation.query.get(student.delegation_id) if student.delegation_id else None
+        deleg = student.delegation
         if deleg and deleg.presence_status in ('presente', 'votante'):
             if not student.certificate_hash:
-                student.certificate_hash = str(__import__('uuid').uuid4())
+                import uuid
+                student.certificate_hash = str(uuid.uuid4())
             if template and template.pdf_path:
                 pdf_path = os.path.join(cert_dir, f'{student.certificate_hash}.pdf')
                 ok = template.render_pdf(student, pdf_path)
                 if ok:
-                    student.certificate_url = pdf_path
+                    student.certificate_url = url_for('admin.serve_certificate', filename=f'{student.certificate_hash}.pdf', _external=True)
                 else:
-                    student.certificate_url = ''
+                    student.certificate_url = url_for('vote.certificate_view', hash=student.certificate_hash, _external=True)
             else:
-                student.certificate_url = __import__('flask').url_for(
-                    'vote.certificate_view',
-                    hash=student.certificate_hash,
-                    _external=True
-                )
+                student.certificate_url = url_for('vote.certificate_view', hash=student.certificate_hash, _external=True)
             generated += 1
     db.session.commit()
     return generated
@@ -346,9 +352,9 @@ def profile():
 
 # ── DPO (Documento de Posição Oficial) ────────────────────────
 
-UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER') or os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), '..', 'static', 'uploads', 'dpo'
-)
+def _get_upload_folder():
+    from config import Config
+    return os.path.join(Config.UPLOAD_FOLDER, 'dpo')
 
 
 @student_bp.route('/student/dpo/enviar', methods=['POST'])
@@ -388,9 +394,10 @@ def dpo_upload():
         flash('Apenas arquivos PDF são permitidos.', 'error')
         return redirect(url_for('student.profile'))
 
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    dpo_dir = _get_upload_folder()
+    os.makedirs(dpo_dir, exist_ok=True)
     safe_name = f"dpo_{delegation.id}_{delegation.country or 'delegacao'}.pdf"
-    filepath = os.path.join(UPLOAD_FOLDER, safe_name)
+    filepath = os.path.join(dpo_dir, safe_name)
     file.save(filepath)
 
     delegation.dpo_path = filepath

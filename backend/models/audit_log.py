@@ -1,5 +1,5 @@
 from extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class AuditLog(db.Model):
@@ -13,7 +13,7 @@ class AuditLog(db.Model):
     user_id        = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     user_name      = db.Column(db.String(120), default='')
     details        = db.Column(db.Text, default='')
-    created_at     = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at     = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     user = db.relationship('User', backref=db.backref('audit_logs', lazy=True))
 

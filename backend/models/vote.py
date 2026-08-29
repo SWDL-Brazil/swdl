@@ -2,7 +2,7 @@
 #  SWDL — models/vote.py
 # =============================================================
 from extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class VoteSession(db.Model):
@@ -14,7 +14,7 @@ class VoteSession(db.Model):
     committee    = db.Column(db.String(30), default='geral')
     status       = db.Column(db.String(20), default='open')  # open | closed
     duration_sec = db.Column(db.Integer, default=120)        # cronômetro em segundos
-    created_at   = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at   = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     closed_at    = db.Column(db.DateTime)
     created_by   = db.Column(db.Integer, db.ForeignKey('users.id'))
 
@@ -67,7 +67,7 @@ class Vote(db.Model):
     delegation_id  = db.Column(db.Integer, db.ForeignKey('delegations.id'),
                                nullable=False)
     choice         = db.Column(db.String(20), nullable=False)
-    voted_at       = db.Column(db.DateTime, default=datetime.utcnow)
+    voted_at       = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
         db.UniqueConstraint('session_id', 'delegation_id', name='one_vote_per_session'),

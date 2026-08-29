@@ -2,7 +2,7 @@
 #  SWDL — models/delegation.py
 # =============================================================
 from extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class Delegation(db.Model):
@@ -32,8 +32,8 @@ class Delegation(db.Model):
 
     flag_animation  = db.Column(db.Boolean, default=True)
 
-    assigned_at     = db.Column(db.DateTime, default=datetime.utcnow)
-    edition_year    = db.Column(db.Integer, default=lambda: datetime.utcnow().year, index=True)
+    assigned_at     = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    edition_year    = db.Column(db.Integer, default=lambda: datetime.now(timezone.utc).year, index=True)
 
     def _extra_members(self):
         """Nomes extras além dos alunos vinculados (membros sem conta)."""

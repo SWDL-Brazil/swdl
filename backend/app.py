@@ -20,7 +20,8 @@ def create_app():
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Faça login para acessar esta área.'
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    allowed_origins = os.environ.get('CORS_ORIGINS', '*').split(',')
+    CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
     socketio.init_app(app)
 
     # Handler global para capturar erros 500
@@ -31,7 +32,9 @@ def create_app():
         tb = traceback.format_exc()
         logger.error(tb)
         db.session.rollback()
-        return f'500 Error<br><pre>{tb}</pre>', 500
+        if app.config.get('DEBUG'):
+            return f'500 Error<br><pre>{tb}</pre>', 500
+        return 'Erro interno do servidor.', 500
 
     # Registra blueprints
     from routes.auth     import auth_bp
@@ -209,21 +212,15 @@ def _seed_admin(app):
                 email='admin@swdl.com',
                 role='admin'
             )
-            admin.set_password('swdl2025')
+            admin_password = os.environ.get('ADMIN_PASSWORD', 'swdl2025')
+            admin.set_password(admin_password)
             db.session.add(admin)
             db.session.commit()
             print('[SWDL] Admin padrão criado → admin@swdl.com / swdl2025')
 
-        # Garante que o EventConfig existe (via raw SQL para evitar erro de schema)
-        import sqlalchemy as sa
-        try:
-            cfg = db.session.execute(sa.text('SELECT id, phase FROM event_config LIMIT 1')).fetchone()
-        except Exception:
-            cfg = None
-        if not cfg:
-            db.session.execute(sa.text("INSERT INTO event_config (phase) VALUES ('pre')"))
-            db.session.commit()
-            print('[SWDL] EventConfig criado (fase: pre).')
+        # Garante que o EventConfig existe
+        EventConfig._ensure()
+        print('[SWDL] EventConfig verificado.')
 
 
 if __name__ == '__main__':

@@ -9,3 +9,7 @@ services:
         generateValue: true
       - key: FLASK_ENV
         value: production
+      - key: ADMIN_PASSWORD
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://swdl-5a3fa.web.app

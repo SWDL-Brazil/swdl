@@ -11,3 +11,4 @@ gevent-websocket
 psycopg2-binary
 pypdf
 reportlab
+packaging

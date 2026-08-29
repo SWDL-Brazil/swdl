@@ -10,7 +10,7 @@ from extensions import db, socketio
 from models.vote       import VoteSession, Vote
 from models.delegation import Delegation
 from models.theme import Theme
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 
 vote_bp = Blueprint('vote', __name__)
@@ -83,7 +83,7 @@ def vote_close(id):
 
     session = VoteSession.query.get_or_404(id)
     session.status    = 'closed'
-    session.closed_at = datetime.utcnow()
+    session.closed_at = datetime.now(timezone.utc)
     db.session.commit()
 
     # Notifica fechamento

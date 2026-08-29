@@ -18,32 +18,10 @@ from models.category    import Category
 from models.theme      import Theme
 from models.urgent_alert import UrgentAlert
 from datetime import datetime, timezone
+from routes.agenda_utils import get_agenda_status
 import os, uuid as _uuid, hmac, hashlib
 
 admin_bp = Blueprint('admin', __name__)
-
-
-def get_agenda_status():
-    items = AgendaItem.query.filter(
-        AgendaItem.event_date.isnot(None),
-        AgendaItem.start_time.isnot(None)
-    ).order_by(AgendaItem.event_date, AgendaItem.start_time).all()
-    if not items:
-        return None, None, None
-    try:
-        first = items[0]
-        last = items[-1]
-        first_dt = datetime.strptime(f"{first.event_date} {first.start_time}", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
-        last_end = last.end_time or '23:59'
-        last_dt = datetime.strptime(f"{last.event_date} {last_end}", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
-        now = datetime.now(timezone.utc)
-        if now < first_dt:
-            return 'pre', first_dt, last_dt
-        if now > last_dt:
-            return 'post', first_dt, last_dt
-        return 'during', first_dt, last_dt
-    except (ValueError, TypeError):
-        return None, None, None
 
 
 def admin_required(f):
@@ -350,10 +328,13 @@ def alert_delete(id):
 
 
 @admin_bp.route('/uploads/<path:filename>')
+@login_required
 def serve_upload(filename):
     """Serve arquivos enviados via upload."""
     from config import Config
-    filepath = os.path.join(Config.UPLOAD_FOLDER, filename)
+    filepath = os.path.realpath(os.path.join(Config.UPLOAD_FOLDER, filename))
+    if not filepath.startswith(os.path.realpath(Config.UPLOAD_FOLDER)):
+        abort(403)
     if not os.path.isfile(filepath):
         abort(404)
     mimetype = 'application/octet-stream'
@@ -676,7 +657,12 @@ def inscription_reject(id):
 @login_required
 @admin_required
 def delegations_list():
-    delegations = Delegation.query.all()
+    from sqlalchemy.orm import joinedload
+    delegations = Delegation.query.options(
+        joinedload(Delegation.inscription),
+        joinedload(Delegation.students),
+        joinedload(Delegation.theme),
+    ).all()
     return render_template('admin/delegations_list.html',
                            delegations=delegations)
 
@@ -802,6 +788,7 @@ def delegation_assign(id):
         deleg.theme_id    = theme.id if theme else None
         deleg.country      = request.form.get('country', '').strip()
         deleg.country_flag = request.form.get('flag', '')
+        deleg.flag_url     = request.form.get('flag_url', '').strip()
         deleg.committee    = theme_name
         deleg.pair_name    = request.form.get('pair_name', '').strip()
         deleg.members      = request.form.get('members', '').strip()
@@ -1120,7 +1107,10 @@ def delegation_create_credentials(id):
 
     deleg.user_id = user.id
 
-    # Vincula o perfil de aluno (se houver) ao novo login
+    # Vincula o perfil de aluno (se houver) ao novo login.
+    # NOTA: Todos os students da delegação compartilham o mesmo User
+    # (login compartilhado para votação). Criação de contas individuais
+    # é feita em delegation_create ou delegate_create.
     from models.student import Student
     for s in deleg.students:
         if s and not s.user_id:
@@ -1134,78 +1124,6 @@ def delegation_create_credentials(id):
         'success'
     )
     return redirect(url_for('admin.delegations_list'))
-
-
-# ══════════════════════════════════════════════════════════════
-#  SEED DE TESTE (remover em produção)
-# ══════════════════════════════════════════════════════════════
-
-@admin_bp.route('/seed-teste')
-@login_required
-@admin_required
-def seed_test_delegate():
-    """Cria um delegado de teste completo. Remover antes do evento."""
-    from models.user        import User
-    from models.inscription import Inscription
-    from models.delegation  import Delegation
-    from datetime import datetime
-
-    # Evita duplicata
-    if User.query.filter_by(email='delegado@teste.com').first():
-        flash('Delegado de teste já existe! Login: delegado@teste.com / teste2025', 'info')
-        return redirect(url_for('admin.delegations_list'))
-
-    # 1. Inscrição
-    ins = Inscription(
-        name         = 'Ana Silva (Teste)',
-        email        = 'delegado@teste.com',
-        phone        = '(19) 99999-0000',
-        grade        = '2º Ano EM',
-        partner_name = 'Bruno Costa (Teste)',
-        motivation   = 'Quero representar o Brasil no CS!',
-        interests    = 'Paz e Segurança, Direitos Humanos',
-        type         = 'delegate',
-        status       = 'approved',
-        reviewed_at  = datetime.now(timezone.utc),
-    )
-    db.session.add(ins)
-    db.session.flush()
-
-    # 2. Usuário
-    user = User(name='Ana Silva (Teste)', email='delegado@teste.com', role='student')
-    user.set_password('teste2025')
-    db.session.add(user)
-    db.session.flush()
-
-    # 3. Perfil de aluno
-    from models.student import Student
-    student = Student(
-        user_id = user.id,
-        name    = 'Ana Silva (Teste)',
-        email   = 'delegado@teste.com',
-    )
-    db.session.add(student)
-    db.session.flush()
-
-    # 4. Delegação com país designado
-    deleg = Delegation(
-        inscription_id = ins.id,
-        user_id        = user.id,
-        country        = 'Brasil',
-        country_flag   = '🇧🇷',
-        committee      = 'cs',
-        pair_name      = 'Bruno Costa (Teste)',
-        accepted       = False,
-        dpo_uploaded   = False,
-    )
-    db.session.add(deleg)
-    db.session.flush()
-    student.delegation_id = deleg.id
-    db.session.commit()
-
-    flash('✅ Delegado de teste criado! Login: delegado@teste.com / teste2025', 'success')
-    return redirect(url_for('admin.delegations_list'))
-
 
 # ══════════════════════════════════════════════════════════════
 #  CRIAR ALUNO (Step 1: apenas conta)
@@ -1295,7 +1213,10 @@ def delegate_create():
 @admin_required
 def students_list():
     """Lista todos os alunos cadastrados com status da designação."""
-    students = Student.query.order_by(Student.created_at.desc()).all()
+    from sqlalchemy.orm import joinedload
+    students = Student.query.options(
+        joinedload(Student.delegation)
+    ).order_by(Student.created_at.desc()).all()
     return render_template('admin/students_list.html', students=students)
 
 
@@ -1334,6 +1255,7 @@ def convocar_set_theme(id):
     """Define o tema/debate ao qual o aluno será convocado."""
     from models.delegation import Delegation
     from models.theme import Theme
+    from models.inscription import Inscription
     from models.participation import ParticipationHistory
     student = Student.query.get_or_404(id)
     theme_id = request.form.get('theme_id', type=int)
@@ -1343,7 +1265,26 @@ def convocar_set_theme(id):
         student.delegation.theme_id = theme.id if theme else None
         student.delegation.edition_year = datetime.now(timezone.utc).year
     else:
+        # Busca Inscription existente ou cria uma nova
+        ins = Inscription.query.filter_by(email=student.email, status='approved').first()
+        if not ins:
+            ins = Inscription(
+                name=student.name,
+                email=student.email,
+                phone='',
+                grade='',
+                motivation='',
+                interests='',
+                type='delegate',
+                status='approved',
+                reviewed_at=datetime.now(timezone.utc),
+            )
+            db.session.add(ins)
+            db.session.flush()
+
         delegation = Delegation(
+            inscription_id=ins.id,
+            user_id=student.user_id,
             committee=theme.name if theme else None,
             theme_id=theme.id if theme else None,
             edition_year=datetime.now(timezone.utc).year
@@ -1863,14 +1804,15 @@ def _compile_certificates():
     from models.student import Student
     from models.delegation import Delegation
     from models.certificate_template import CertificateTemplate
+    from sqlalchemy.orm import joinedload
     from config import Config
-    students = Student.query.all()
+    students = Student.query.options(joinedload(Student.delegation)).all()
     generated = 0
     cert_dir = os.path.join(Config.UPLOAD_FOLDER, 'certificates')
     os.makedirs(cert_dir, exist_ok=True)
     template = CertificateTemplate.get_active()
     for student in students:
-        deleg = Delegation.query.get(student.delegation_id) if student.delegation_id else None
+        deleg = student.delegation
         if deleg and deleg.presence_status in ('presente', 'votante'):
             if not student.certificate_hash:
                 student.certificate_hash = str(_uuid.uuid4())
@@ -1920,11 +1862,11 @@ def certificates_list():
     """Página de gestão de certificados."""
     from models.student import Student
     from models.delegation import Delegation
-    students = Student.query.order_by(Student.name).all()
+    from sqlalchemy.orm import joinedload
+    students = Student.query.options(joinedload(Student.delegation)).order_by(Student.name).all()
 
-    eligible = 0
     for s in students:
-        deleg = Delegation.query.get(s.delegation_id) if s.delegation_id else None
+        deleg = s.delegation
         s._eligible = deleg and deleg.presence_status in ('presente', 'votante')
 
     audit_logs = AuditLog.query.order_by(AuditLog.created_at.desc()).limit(50).all()

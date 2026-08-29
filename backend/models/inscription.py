@@ -2,7 +2,7 @@
 #  SWDL — models/inscription.py
 # =============================================================
 from extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class Inscription(db.Model):
@@ -19,7 +19,7 @@ class Inscription(db.Model):
     interests     = db.Column(db.String(300))
     status        = db.Column(db.String(20), default='pending', index=True)
     type          = db.Column(db.String(20), default='delegate')
-    submitted_at  = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    submitted_at  = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     reviewed_at   = db.Column(db.DateTime)
     reviewed_by   = db.Column(db.Integer, db.ForeignKey('users.id'))
 
