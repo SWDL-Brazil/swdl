@@ -6,6 +6,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+import os
 from flask import Flask
 from extensions import db, login_manager, socketio
 from config import Config
