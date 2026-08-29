@@ -22,6 +22,10 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'}
 
+    # Ambiente
+    ENV = os.environ.get('FLASK_ENV', 'development')
+    DEBUG = ENV == 'development'
+
     # Sessão
     PERMANENT_SESSION_LIFETIME = timedelta(hours=8)
     SESSION_COOKIE_SECURE = ENV == 'production'
@@ -30,7 +34,3 @@ class Config:
 
     # WTForms CSRF
     WTF_CSRF_ENABLED = True
-
-    # Ambiente
-    ENV = os.environ.get('FLASK_ENV', 'development')
-    DEBUG = ENV == 'development'
