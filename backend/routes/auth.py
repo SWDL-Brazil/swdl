@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 from models.user import User
 from extensions import login_manager
-from werkzeug.utils import safe_url
+from urllib.parse import urlparse
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -32,7 +32,7 @@ def login():
         if user and user.check_password(password) and user.is_active:
             login_user(user, remember=remember)
             next_page = request.args.get('next')
-            if next_page and safe_url(next_page):
+            if next_page and not urlparse(next_page).netloc:
                 return redirect(next_page)
             if user.is_director():
                 return redirect(url_for('admin.director_dashboard'))
