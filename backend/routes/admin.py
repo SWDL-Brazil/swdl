@@ -1788,9 +1788,8 @@ def invocar_page():
     active_invoke = EventConfig.get_invoke()
     return render_template('admin/invocar.html', active_invoke=active_invoke)
 
-
 # ══════════════════════════════════════════════════════════════
-#  CERTIFICADOS — Gestão e Compilação Automática
+#  CERTIFICADOS — Codigo de verificacao + Upload manual
 # ══════════════════════════════════════════════════════════════
 
 @admin_bp.route('/certificados/arquivo/<filename>')
@@ -1805,41 +1804,9 @@ def serve_certificate(filename):
     return send_file(filepath, mimetype='application/pdf')
 
 
-def _compile_certificates():
-    """Algoritmo de Compilação por Assiduidade.
-    Gera certificate_hash e certificado PDF para alunos elegíveis."""
-    from models.student import Student
-    from models.delegation import Delegation
-    from models.certificate_template import CertificateTemplate
-    from sqlalchemy.orm import joinedload
-    from config import Config
-    students = Student.query.options(joinedload(Student.delegation)).all()
-    generated = 0
-    cert_dir = os.path.join(Config.UPLOAD_FOLDER, 'certificates')
-    os.makedirs(cert_dir, exist_ok=True)
-    template = CertificateTemplate.get_active()
-    for student in students:
-        deleg = student.delegation
-        if deleg and deleg.presence_status in ('presente', 'votante'):
-            if not student.certificate_hash:
-                student.certificate_hash = str(_uuid.uuid4())
-            if template and template.pdf_path:
-                pdf_path = os.path.join(cert_dir, f'{student.certificate_hash}.pdf')
-                ok = template.render_pdf(student, pdf_path)
-                if ok:
-                    student.certificate_url = url_for('admin.serve_certificate', filename=f'{student.certificate_hash}.pdf', _external=True)
-                else:
-                    student.certificate_url = url_for('vote.certificate_view', hash=student.certificate_hash, _external=True)
-            else:
-                student.certificate_url = url_for('vote.certificate_view', hash=student.certificate_hash, _external=True)
-            generated += 1
-    db.session.commit()
-    return generated
-
-
 def _sign_certificate(student):
     """Gera uma assinatura HMAC-SHA256 para o certificado."""
-    if not student.certificate_hash:
+    if not student.verification_code:
         return None
     secret = current_app.config.get('SECRET_KEY', 'swdl-secret')
     student.digital_signature = student.compute_signature(secret)
@@ -1866,7 +1833,7 @@ def _log_audit(action, target_type, target_id, target_name='', details=''):
 @login_required
 @admin_required
 def certificates_list():
-    """Página de gestão de certificados."""
+    """Pagina de gestao de certificados."""
     from models.student import Student
     from models.delegation import Delegation
     from sqlalchemy.orm import joinedload
@@ -1882,20 +1849,92 @@ def certificates_list():
                            students=students,
                            total=len(students),
                            released=sum(1 for s in students if s.certificate_released),
-                           has_hash=sum(1 for s in students if s.certificate_hash),
+                           has_code=sum(1 for s in students if s.verification_code),
                            eligible=sum(1 for s in students if s._eligible),
-                            event_phase=get_agenda_status()[0] or 'pre',
+                           event_phase=get_agenda_status()[0] or 'pre',
                            audit_logs=audit_logs)
 
 
-@admin_bp.route('/certificados/compilar', methods=['POST'])
+@admin_bp.route('/certificados/gerar-codigos', methods=['POST'])
 @login_required
 @admin_required
-def certificates_compile():
-    """Executa o algoritmo de compilação por assiduidade."""
-    count = _compile_certificates()
-    _log_audit('compile_certificates', 'system', 0, details=f'Compilados {count} certificados')
-    flash(f'✅ Certificados compilados para {count} alunos com presença registrada!', 'success')
+def certificates_generate_codes():
+    """Gera codigo de verificacao para todos os elegiveis sem codigo."""
+    from models.student import Student
+    from models.student import generate_verification_code
+    students = Student.query.filter(Student.verification_code.is_(None)).all()
+    count = 0
+    for s in students:
+        deleg = s.delegation
+        if deleg and deleg.presence_status in ('presente', 'votante'):
+            s.verification_code = generate_verification_code()
+            count += 1
+    db.session.commit()
+    _log_audit('generate_codes', 'system', 0, details=f'{count} codigos gerados')
+    flash(f'{count} codigos de verificacao gerados!', 'success')
+    return redirect(url_for('admin.certificates_list'))
+
+
+@admin_bp.route('/certificados/<int:id>/upload', methods=['POST'])
+@login_required
+@admin_required
+def certificate_upload(id):
+    """Upload do PDF personalizado de um aluno."""
+    from models.student import Student
+    from config import Config
+    student = Student.query.get_or_404(id)
+
+    if not student.verification_code:
+        student.verification_code = generate_verification_code()
+        db.session.flush()
+
+    if 'cert_file' not in request.files:
+        flash('Nenhum arquivo selecionado.', 'error')
+        return redirect(url_for('admin.certificates_list'))
+
+    file = request.files['cert_file']
+    if file.filename == '':
+        flash('Nenhum arquivo selecionado.', 'error')
+        return redirect(url_for('admin.certificates_list'))
+
+    if not file.filename.lower().endswith('.pdf'):
+        flash('Apenas arquivos PDF sao permitidos.', 'error')
+        return redirect(url_for('admin.certificates_list'))
+
+    cert_dir = os.path.join(Config.UPLOAD_FOLDER, 'certificates')
+    os.makedirs(cert_dir, exist_ok=True)
+    safe_name = f'{student.verification_code}.pdf'
+    filepath = os.path.join(cert_dir, safe_name)
+    file.save(filepath)
+
+    student.certificate_url = url_for('admin.serve_certificate', filename=safe_name, _external=True)
+    db.session.commit()
+    _log_audit('upload_certificate', 'student', student.id, student.name,
+               details=f'PDF enviado: {safe_name}')
+    flash(f'PDF de {student.name} enviado com sucesso!', 'success')
+    return redirect(url_for('admin.certificates_list'))
+
+
+@admin_bp.route('/certificados/<int:id>/remover-pdf', methods=['POST'])
+@login_required
+@admin_required
+def certificate_remove_pdf(id):
+    """Remove o PDF uploadado de um aluno."""
+    from models.student import Student
+    from config import Config
+    student = Student.query.get_or_404(id)
+
+    if student.verification_code:
+        cert_dir = os.path.join(Config.UPLOAD_FOLDER, 'certificates')
+        filepath = os.path.join(cert_dir, f'{student.verification_code}.pdf')
+        if os.path.isfile(filepath):
+            try: os.remove(filepath)
+            except: pass
+
+    student.certificate_url = None
+    db.session.commit()
+    _log_audit('remove_certificate_pdf', 'student', student.id, student.name)
+    flash(f'PDF de {student.name} removido.', 'info')
     return redirect(url_for('admin.certificates_list'))
 
 
@@ -1903,16 +1942,15 @@ def certificates_compile():
 @login_required
 @admin_required
 def certificate_release(id):
-    """Libera o certificado de um aluno específico."""
+    """Libera o certificado de um aluno especifico."""
     from models.student import Student
     student = Student.query.get_or_404(id)
-    if not student.certificate_hash:
-        student.certificate_hash = str(_uuid.uuid4())
-        student.certificate_url = url_for('vote.certificate_view', hash=student.certificate_hash, _external=True)
+    if not student.verification_code:
+        student.verification_code = generate_verification_code()
     student.certificate_released = True
     db.session.commit()
     _log_audit('release_certificate', 'student', student.id, student.name)
-    flash(f'✅ Certificado liberado para {student.name}!', 'success')
+    flash(f'Certificado liberado para {student.name}!', 'success')
     return redirect(url_for('admin.certificates_list'))
 
 
@@ -1920,18 +1958,18 @@ def certificate_release(id):
 @login_required
 @admin_required
 def certificates_release_all():
-    """Libera certificados de todos os alunos com hash gerado."""
+    """Libera certificados de todos os alunos com codigo gerado."""
     from models.student import Student
     students = Student.query.filter(
-        Student.certificate_hash.isnot(None),
-        Student.certificate_hash != '',
+        Student.verification_code.isnot(None),
+        Student.verification_code != '',
         Student.certificate_released == False
     ).all()
     for s in students:
         s.certificate_released = True
     db.session.commit()
     _log_audit('release_all_certificates', 'system', 0, details=f'{len(students)} certificados liberados em lote')
-    flash(f'✅ {len(students)} certificados liberados em lote!', 'success')
+    flash(f'{len(students)} certificados liberados em lote!', 'success')
     return redirect(url_for('admin.certificates_list'))
 
 
@@ -1939,13 +1977,13 @@ def certificates_release_all():
 @login_required
 @admin_required
 def certificate_revoke(id):
-    """Reverte a liberação de um certificado."""
+    """Reverte a liberacao de um certificado."""
     from models.student import Student
     student = Student.query.get_or_404(id)
     student.certificate_released = False
     db.session.commit()
     _log_audit('revoke_certificate', 'student', student.id, student.name)
-    flash(f'🔒 Certificado de {student.name} revertido.', 'info')
+    flash(f'Certificado de {student.name} revertido.', 'info')
     return redirect(url_for('admin.certificates_list'))
 
 
@@ -1957,16 +1995,15 @@ def certificate_revoke(id):
 def certificate_sign(id):
     """Assina digitalmente (HMAC) o certificado de um aluno."""
     student = Student.query.get_or_404(id)
-    if not student.certificate_hash:
-        student.certificate_hash = str(_uuid.uuid4())
-        student.certificate_url = url_for('vote.certificate_view', hash=student.certificate_hash, _external=True)
+    if not student.verification_code:
+        student.verification_code = generate_verification_code()
         db.session.commit()
     sig = _sign_certificate(student)
     if sig:
         _log_audit('sign_certificate', 'student', student.id, student.name)
-        flash(f'✅ Certificado de {student.name} assinado digitalmente!', 'success')
+        flash(f'Certificado de {student.name} assinado digitalmente!', 'success')
     else:
-        flash('⚠️ Não foi possível assinar.', 'error')
+        flash('Nao foi possivel assinar.', 'error')
     return redirect(url_for('admin.certificates_list'))
 
 
@@ -1974,10 +2011,10 @@ def certificate_sign(id):
 @login_required
 @admin_required
 def certificates_sign_all():
-    """Assina digitalmente todos os certificados compilados."""
+    """Assina digitalmente todos os certificados com codigo."""
     students = Student.query.filter(
-        Student.certificate_hash.isnot(None),
-        Student.certificate_hash != '',
+        Student.verification_code.isnot(None),
+        Student.verification_code != '',
     ).all()
     count = 0
     for s in students:
@@ -1985,7 +2022,7 @@ def certificates_sign_all():
         if sig:
             count += 1
     _log_audit('sign_all_certificates', 'system', 0, details=f'{count} certificados assinados')
-    flash(f'✅ {count} certificados assinados digitalmente!', 'success')
+    flash(f'{count} certificados assinados digitalmente!', 'success')
     return redirect(url_for('admin.certificates_list'))
 
 
@@ -1999,163 +2036,8 @@ def certificate_unsign(id):
     student.signed_at = None
     db.session.commit()
     _log_audit('unsign_certificate', 'student', student.id, student.name)
-    flash(f'🔓 Assinatura removida de {student.name}.', 'info')
+    flash(f'Assinatura removida de {student.name}.', 'info')
     return redirect(url_for('admin.certificates_list'))
-
-
-# ══════════════════════════════════════════════════════════════
-#  MODELOS DE CERTIFICADO
-# ══════════════════════════════════════════════════════════════
-
-@admin_bp.route('/certificados/modelos')
-@login_required
-@admin_required
-def certificate_templates():
-    from models.certificate_template import CertificateTemplate
-    templates = CertificateTemplate.query.order_by(CertificateTemplate.created_at.desc()).all()
-    return render_template('admin/certificate_templates.html', templates=templates)
-
-
-@admin_bp.route('/certificados/modelos/novo', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def certificate_template_create():
-    from models.certificate_template import CertificateTemplate
-    from config import Config
-    if request.method == 'POST':
-        name = request.form.get('name', '').strip()
-        if not name:
-            flash('Nome do modelo é obrigatório.', 'error')
-            return render_template('admin/certificate_template_form.html', template=None)
-
-        tpl = CertificateTemplate(name=name)
-
-        file = request.files.get('pdf_file')
-        if file and file.filename and file.filename.lower().endswith('.pdf'):
-            upload_dir = os.path.join(Config.UPLOAD_FOLDER, 'cert_templates')
-            os.makedirs(upload_dir, exist_ok=True)
-            safe_name = f'tpl_{_uuid.uuid4().hex[:12]}.pdf'
-            filepath = os.path.join(upload_dir, safe_name)
-            file.save(filepath)
-            tpl.pdf_path = filepath
-
-        fields = []
-        for key in CertificateTemplate.PLACEHOLDER_MAP:
-            x = request.form.get(f'field_{key}_x')
-            if x is not None and x.strip():
-                fields.append({
-                    'key': key,
-                    'x': float(request.form.get(f'field_{key}_x', 0)),
-                    'y': float(request.form.get(f'field_{key}_y', 0)),
-                    'font_size': float(request.form.get(f'field_{key}_font_size', 14)),
-                    'font': request.form.get(f'field_{key}_font', 'Helvetica'),
-                    'align': request.form.get(f'field_{key}_align', 'center'),
-                    'color': request.form.get(f'field_{key}_color', '#1a1a2e'),
-                })
-        if fields:
-            tpl.fields = fields
-
-        db.session.add(tpl)
-        db.session.commit()
-        flash(f'✅ Modelo "{name}" criado!', 'success')
-        return redirect(url_for('admin.certificate_templates'))
-    return render_template('admin/certificate_template_form.html', template=None,
-                           placeholders=CertificateTemplate.PLACEHOLDER_MAP)
-
-
-@admin_bp.route('/certificados/modelos/<int:id>/editar', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def certificate_template_edit(id):
-    from models.certificate_template import CertificateTemplate
-    from config import Config
-    tpl = CertificateTemplate.query.get_or_404(id)
-    if request.method == 'POST':
-        tpl.name = request.form.get('name', '').strip()
-
-        file = request.files.get('pdf_file')
-        if file and file.filename and file.filename.lower().endswith('.pdf'):
-            upload_dir = os.path.join(Config.UPLOAD_FOLDER, 'cert_templates')
-            os.makedirs(upload_dir, exist_ok=True)
-            safe_name = f'tpl_{_uuid.uuid4().hex[:12]}.pdf'
-            filepath = os.path.join(upload_dir, safe_name)
-            file.save(filepath)
-            if tpl.pdf_path and os.path.isfile(tpl.pdf_path):
-                try: os.remove(tpl.pdf_path)
-                except: pass
-            tpl.pdf_path = filepath
-
-        fields = []
-        for key in CertificateTemplate.PLACEHOLDER_MAP:
-            x = request.form.get(f'field_{key}_x')
-            if x is not None and x.strip():
-                fields.append({
-                    'key': key,
-                    'x': float(request.form.get(f'field_{key}_x', 0)),
-                    'y': float(request.form.get(f'field_{key}_y', 0)),
-                    'font_size': float(request.form.get(f'field_{key}_font_size', 14)),
-                    'font': request.form.get(f'field_{key}_font', 'Helvetica'),
-                    'align': request.form.get(f'field_{key}_align', 'center'),
-                    'color': request.form.get(f'field_{key}_color', '#1a1a2e'),
-                })
-        tpl.fields = fields if fields else None
-
-        db.session.commit()
-        flash(f'✅ Modelo "{tpl.name}" atualizado!', 'success')
-        return redirect(url_for('admin.certificate_templates'))
-    return render_template('admin/certificate_template_form.html', template=tpl,
-                           placeholders=CertificateTemplate.PLACEHOLDER_MAP)
-
-
-@admin_bp.route('/certificados/modelos/<int:id>/ativar', methods=['POST'])
-@login_required
-@admin_required
-def certificate_template_activate(id):
-    from models.certificate_template import CertificateTemplate
-    CertificateTemplate.query.update({CertificateTemplate.is_active: False})
-    tpl = CertificateTemplate.query.get_or_404(id)
-    tpl.is_active = True
-    db.session.commit()
-    flash(f'✅ Modelo "{tpl.name}" definido como ativo!', 'success')
-    return redirect(url_for('admin.certificate_templates'))
-
-
-@admin_bp.route('/certificados/modelos/<int:id>/deletar', methods=['POST'])
-@login_required
-@admin_required
-def certificate_template_delete(id):
-    from models.certificate_template import CertificateTemplate
-    tpl = CertificateTemplate.query.get_or_404(id)
-    if tpl.pdf_path and os.path.isfile(tpl.pdf_path):
-        try: os.remove(tpl.pdf_path)
-        except: pass
-    db.session.delete(tpl)
-    db.session.commit()
-    flash(f'🗑️ Modelo "{tpl.name}" deletado.', 'info')
-    return redirect(url_for('admin.certificate_templates'))
-
-
-@admin_bp.route('/certificados/modelos/<int:id>/preview')
-@login_required
-@admin_required
-def certificate_template_preview(id):
-    from models.certificate_template import CertificateTemplate
-    from models.student import Student
-    tpl = CertificateTemplate.query.get_or_404(id)
-    student = Student.query.first()
-    if not student:
-        return '<p>Nenhum aluno cadastrado para preview.</p>'
-    if not student.delegation:
-        return '<p>Aluno sem delegação para preview.</p>'
-    if not tpl.pdf_path:
-        return '<p>Modelo sem PDF. Faça upload de um PDF primeiro.</p>'
-    import tempfile
-    tmp = tempfile.NamedTemporaryFile(suffix='.pdf', delete=False)
-    ok = tpl.render_pdf(student, tmp.name)
-    if not ok:
-        return '<p>Erro ao renderizar preview.</p>'
-    return send_file(tmp.name, mimetype='application/pdf', as_attachment=False,
-                     download_name=f'preview_{tpl.name}.pdf')
 
 
 # ══════════════════════════════════════════════════════════════

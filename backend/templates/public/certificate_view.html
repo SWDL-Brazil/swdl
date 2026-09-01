@@ -125,7 +125,7 @@
         </div>
       </div>
 
-      <div class="cert-hash">Hash: {{ student.certificate_hash }}</div>
+      <div class="cert-hash">Codigo: {{ student.verification_code or student.certificate_hash }}</div>
 
       {% if student.digital_signature %}
       <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">

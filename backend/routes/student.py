@@ -86,46 +86,6 @@ def check_read_only(student):
     return False
 
 
-_auto_compiled = False
-
-def _auto_compile_certificates():
-    global _auto_compiled
-    if _auto_compiled:
-        return 0
-    _, last_dt = get_agenda_bounds()
-    if not last_dt:
-        return 0
-    if datetime.now(timezone.utc) <= last_dt:
-        return 0
-    _auto_compiled = True
-    from models.certificate_template import CertificateTemplate
-    from sqlalchemy.orm import joinedload
-    template = CertificateTemplate.get_active()
-    students = Student.query.options(joinedload(Student.delegation)).all()
-    generated = 0
-    from config import Config
-    cert_dir = os.path.join(Config.UPLOAD_FOLDER, 'certificates')
-    os.makedirs(cert_dir, exist_ok=True)
-    for student in students:
-        deleg = student.delegation
-        if deleg and deleg.presence_status in ('presente', 'votante'):
-            if not student.certificate_hash:
-                import uuid
-                student.certificate_hash = str(uuid.uuid4())
-            if template and template.pdf_path:
-                pdf_path = os.path.join(cert_dir, f'{student.certificate_hash}.pdf')
-                ok = template.render_pdf(student, pdf_path)
-                if ok:
-                    student.certificate_url = url_for('admin.serve_certificate', filename=f'{student.certificate_hash}.pdf', _external=True)
-                else:
-                    student.certificate_url = url_for('vote.certificate_view', hash=student.certificate_hash, _external=True)
-            else:
-                student.certificate_url = url_for('vote.certificate_view', hash=student.certificate_hash, _external=True)
-            generated += 1
-    db.session.commit()
-    return generated
-
-
 # ── DASHBOARD ──────────────────────────────────────────────────
 @student_bp.route('/student')
 @login_required
@@ -137,8 +97,6 @@ def dashboard():
         delegation = Delegation.query.get(student_profile.delegation_id)
     else:
         delegation = None
-
-    _auto_compile_certificates()
 
     recent_news  = News.query.filter_by(published=True)\
                              .order_by(News.created_at.desc()).limit(4).all()
@@ -471,14 +429,16 @@ def api_attendance():
 # ── API: verificar certificado (endpoint público) ──────────────
 @student_bp.route('/api/certificado/validar')
 def api_validate_certificate():
-    hash_code = request.args.get('hash', '')
-    if not hash_code:
-        return jsonify({'ok': False, 'error': 'Hash é obrigatório.'}), 400
+    code = request.args.get('code', '') or request.args.get('hash', '')
+    if not code:
+        return jsonify({'ok': False, 'error': 'Codigo e obrigatorio.'}), 400
 
-    student = Student.query.filter_by(certificate_hash=hash_code).first()
+    student = Student.query.filter(
+        (Student.verification_code == code) | (Student.certificate_hash == code)
+    ).first()
     if not student or not student.certificate_released:
         return jsonify({'ok': False, 'valid': False,
-                        'error': 'Certificado não encontrado ou não liberado.'}), 404
+                        'error': 'Certificado nao encontrado ou nao liberado.'}), 404
 
     sig_valid = student.verify_signature(current_app.config.get('SECRET_KEY', 'swdl-secret')) if student.digital_signature else None
 
@@ -486,6 +446,7 @@ def api_validate_certificate():
         'ok': True,
         'valid': True,
         'name': student.name,
+        'verification_code': student.verification_code,
         'certificate_url': student.certificate_url,
         'digital_signature': bool(student.digital_signature),
         'signature_valid': sig_valid,

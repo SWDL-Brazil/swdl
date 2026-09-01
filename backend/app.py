@@ -114,7 +114,6 @@ def _run_migrations(app):
         from models.urgent_alert import UrgentAlert
         from models.vote import VoteSession, Vote
         from models.system_config import SystemConfig
-        from models.certificate_template import CertificateTemplate
 
         tables = {
             User.__tablename__: User,
@@ -133,7 +132,6 @@ def _run_migrations(app):
             VoteSession.__tablename__: VoteSession,
             Vote.__tablename__: Vote,
             SystemConfig.__tablename__: SystemConfig,
-            CertificateTemplate.__tablename__: CertificateTemplate,
         }
 
         for table_name, model in tables.items():

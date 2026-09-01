@@ -1,6 +1,13 @@
 from extensions import db
 from datetime import datetime, timezone
-import uuid, hmac, hashlib
+import uuid, hmac, hashlib, secrets, string
+
+
+def generate_verification_code():
+    """Gera codigo curto no formato SWDL-XXXXXX (6 chars alfanumericos)."""
+    alphabet = string.ascii_uppercase + string.digits
+    code = ''.join(secrets.choice(alphabet) for _ in range(6))
+    return f'SWDL-{code}'
 
 
 class Student(db.Model):
@@ -14,9 +21,10 @@ class Student(db.Model):
 
     delegation_id  = db.Column(db.Integer, db.ForeignKey('delegations.id'), nullable=True, index=True)
 
-    certificate_url      = db.Column(db.String(500))
+    verification_code   = db.Column(db.String(12), unique=True, nullable=True, index=True)
+    certificate_url     = db.Column(db.String(500))
     certificate_released = db.Column(db.Boolean, default=False, index=True)
-    certificate_hash     = db.Column(db.String(128), unique=True)
+    certificate_hash    = db.Column(db.String(128), unique=True)
 
     digital_signature = db.Column(db.Text, nullable=True)
     signed_at         = db.Column(db.DateTime, nullable=True)
@@ -42,7 +50,7 @@ class Student(db.Model):
             self.name,
             deleg.country if deleg else '',
             deleg.committee if deleg else '',
-            self.certificate_hash or '',
+            self.verification_code or self.certificate_hash or '',
         ]
 
     def compute_signature(self, secret):
@@ -66,6 +74,7 @@ class Student(db.Model):
             'name': self.name,
             'email': self.email,
             'has_delegation': self.delegation_id is not None,
+            'verification_code': self.verification_code,
             'certificate_released': self.certificate_released,
             'digital_signature': bool(self.digital_signature),
             'signed_at': self.signed_at.isoformat() if self.signed_at else None,

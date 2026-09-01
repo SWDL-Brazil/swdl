@@ -260,27 +260,17 @@ def on_join_telao(data):
 #  CERTIFICADOS — visualização pública
 # ══════════════════════════════════════════════════════════════
 
-@vote_bp.route('/certificado/<hash>')
-def certificate_view(hash):
-    """Página pública de visualização de certificado."""
+@vote_bp.route('/certificado/<code>')
+def certificate_view(code):
+    """Pagina publica de visualizacao de certificado."""
     from models.student import Student
-    from models.certificate_template import CertificateTemplate
-    from config import Config
-    student = Student.query.filter_by(certificate_hash=hash).first()
+    student = Student.query.filter(
+        (Student.verification_code == code) | (Student.certificate_hash == code)
+    ).first()
     if not student or not student.certificate_released:
         return render_template('public/certificate_invalid.html'), 404
     if student.certificate_url and os.path.isfile(student.certificate_url):
         return send_file(student.certificate_url, mimetype='application/pdf')
-    template = CertificateTemplate.get_active()
-    if template and template.pdf_path and student.delegation:
-        cert_dir = os.path.join(Config.UPLOAD_FOLDER, 'certificates')
-        os.makedirs(cert_dir, exist_ok=True)
-        pdf_path = os.path.join(cert_dir, f'{hash}.pdf')
-        ok = template.render_pdf(student, pdf_path)
-        if ok:
-            student.certificate_url = pdf_path
-            db.session.commit()
-            return send_file(pdf_path, mimetype='application/pdf')
     return render_template('public/certificate_view.html', student=student)
 
 

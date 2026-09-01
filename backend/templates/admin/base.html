@@ -389,12 +389,10 @@
     'admin.dpos_list', 'admin.dpo_download',
     'admin.convocar_page', 'admin.convocar_toggle', 'admin.convocar_set_theme',
     'admin.convocar_all', 'admin.convocar_uncall_all', 'admin.convocar_by_theme',
-    'admin.certificates_list', 'admin.certificates_compile', 'admin.certificate_release',
+    'admin.certificates_list', 'admin.certificates_generate_codes', 'admin.certificate_upload',
+    'admin.certificate_remove_pdf', 'admin.certificate_release',
     'admin.certificates_release_all', 'admin.certificate_revoke',
     'admin.certificate_sign',     'admin.certificates_sign_all', 'admin.certificate_unsign',
-    'admin.certificate_templates', 'admin.certificate_template_create',
-    'admin.certificate_template_edit', 'admin.certificate_template_activate',
-    'admin.certificate_template_delete', 'admin.certificate_template_preview',
     'admin.notifications_config', 'admin.test_email_config'] -%}
   {%- set simulacao_endpoints = ['admin.chamada_panel', 'admin.set_presence',
     'admin.chamada_control_screen', 'admin.oradores_panel', 'admin.oradores_toggle',
@@ -542,14 +540,8 @@
       <ul class="sidebar-nav">
         <li>
           <a href="{{ url_for('admin.certificates_list') }}"
-             class="{{ 'active' if request.endpoint == 'admin.certificates_list' or 'certificate_release' in (request.endpoint or '') or 'certificate_sign' in (request.endpoint or '') or 'certificates_compile' in (request.endpoint or '') }}">
-            <span class="nav-icon">🎓</span> Gerenciar
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('admin.certificate_templates') }}"
-             class="{{ 'active' if 'certificate_template' in (request.endpoint or '') }}">
-            <span class="nav-icon">📄</span> Modelos
+             class="{{ 'active' if request.endpoint == 'admin.certificates_list' or 'certificate_release' in (request.endpoint or '') or 'certificate_sign' in (request.endpoint or '') or 'certificates_generate' in (request.endpoint or '') or 'certificate_upload' in (request.endpoint or '') }}">
+            <span class="nav-icon">&#127891;</span> Certificados
           </a>
         </li>
       </ul>
