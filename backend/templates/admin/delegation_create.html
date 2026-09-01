@@ -36,11 +36,17 @@
         </div>
 
         <input type="hidden" name="flag_url" id="flagUrl" value="">
-        <input type="hidden" name="flag" id="flagEmoji" value="">
 
         <div id="flagError"
              style="display:none;font-size:12px;color:var(--red);margin-bottom:12px">
           País não encontrado.
+        </div>
+
+        <div class="form-group">
+          <label>Bandeira (emoji) <span style="font-size:11px;color:var(--muted)">(opcional)</span></label>
+          <input type="text" name="flag" id="flagEmojiManual"
+                 placeholder="🇧🇷" maxlength="10"
+                 style="width:120px;padding:8px 10px;border:1px solid var(--border);border-radius:4px">
         </div>
 
         <div class="form-group">
@@ -69,7 +75,10 @@
                     style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:4px">
               <option value="">➕ Conta existente...</option>
               {% for s in all_students %}
-                <option value="{{ s.name }}">{{ s.name }} — {{ s.email }}</option>
+                <option value="{{ s.name }}"
+                  {% if s.delegation_id %} disabled style="color:var(--muted)"{% endif %}>
+                  {{ s.name }}{% if s.delegation_id %} (delegado){% endif %} — {{ s.email }}
+                </option>
               {% endfor %}
             </select>
             <button type="button" id="addMemberBtn"
@@ -113,51 +122,8 @@
   </div>
 </div>
 
+<script src="{{ url_for('static', filename='js/admin-delegation.js') }}"></script>
 <script>
-const searchBtn   = document.getElementById('searchFlag');
-const countryInput = document.getElementById('countryInput');
-const flagPreview = document.getElementById('flagPreview');
-const flagImg     = document.getElementById('flagImg');
-const flagName    = document.getElementById('flagName');
-const flagUrl     = document.getElementById('flagUrl');
-const flagEmoji   = document.getElementById('flagEmoji');
-const flagError   = document.getElementById('flagError');
-
-async function searchFlag() {
-  const country = countryInput.value.trim();
-  if (!country) return;
-
-  searchBtn.textContent = '⏳';
-  searchBtn.disabled    = true;
-  flagError.style.display = 'none';
-  flagPreview.style.display = 'none';
-
-  try {
-    const res  = await fetch(`/api/bandeira?country=${encodeURIComponent(country)}`);
-    const data = await res.json();
-
-    if (data.ok) {
-      flagImg.src            = data.flag_url;
-      flagName.textContent   = data.name;
-      flagUrl.value          = data.flag_url;
-      flagPreview.style.display = 'block';
-      countryInput.value = data.name;
-    } else {
-      flagError.style.display = 'block';
-    }
-  } catch(e) {
-    flagError.style.display = 'block';
-  }
-
-  searchBtn.textContent = '🔍 Buscar';
-  searchBtn.disabled    = false;
-}
-
-searchBtn.addEventListener('click', searchFlag);
-countryInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') { e.preventDefault(); searchFlag(); }
-});
-
 function updateCommittee(sel) {
   const opt = sel.options[sel.selectedIndex];
   const nameInput = document.getElementById('committee_name');
@@ -170,27 +136,6 @@ function updateCount() {
   document.getElementById('studentCount').textContent = checked + ' aluno' + (checked !== 1 ? 's' : '') + ' selecionado' + (checked !== 1 ? 's' : '');
 }
 
-// ── Membros: inserir nomes de contas existentes ──────────
-const memberInput  = document.getElementById('membersInput');
-const memberSelect = document.getElementById('memberSelect');
-const addMemberBtn = document.getElementById('addMemberBtn');
-const membersPrev  = document.getElementById('membersPreview');
-
-function currentMembers() {
-  return memberInput.value.split(',').map(s => s.trim()).filter(Boolean);
-}
-function renderMembersPreview() {
-  membersPrev.innerHTML = '';
-  currentMembers().forEach(name => {
-    const chip = document.createElement('span');
-    chip.textContent = name;
-    chip.style.cssText = 'display:inline-block;background:rgba(16,30,76,.06);border:1px solid var(--border);border-radius:12px;padding:2px 10px;margin:3px 4px 0 0;font-size:12px;color:var(--navy)';
-    membersPrev.appendChild(chip);
-  });
-}
-function findMemberOption(name) {
-  return Array.from(memberSelect.options).find(o => o.value === name);
-}
 function studentNameFromCheckbox(cb) {
   const label = cb.closest('label');
   if (!label) return '';
@@ -198,27 +143,27 @@ function studentNameFromCheckbox(cb) {
   return nameSpan ? nameSpan.textContent.trim() : '';
 }
 
-addMemberBtn.addEventListener('click', () => {
-  const name = memberSelect.value.trim();
-  if (!name) return;
-  const list = currentMembers();
-  if (!list.includes(name)) {
-    list.push(name);
-    memberInput.value = list.join(', ');
-  }
-  // Se o aluno existe na lista de vinculação, marca o checkbox também
-  document.querySelectorAll('input[name="student_ids"]').forEach(cb => {
-    if (studentNameFromCheckbox(cb) === name) {
-      cb.checked = true;
-      updateCount();
-    }
-  });
-  const opt = findMemberOption(name);
-  if (opt) opt.remove();
-  renderMembersPreview();
-});
+// Sync: checking a student checkbox adds them to member picker
+const { currentMembers, findMemberOption, renderMembersPreview, memberInput, memberSelect } = window.DelegationForm;
 
-// Sincroniza: marcar/desmarcar checkbox remove/retorna a opção do seletor
+if (memberSelect) {
+  const addMemberBtn = document.getElementById('addMemberBtn');
+  if (addMemberBtn) {
+    addMemberBtn.addEventListener('click', () => {
+      const name = memberSelect.value.trim();
+      if (!name) return;
+      // Also check the matching student checkbox
+      document.querySelectorAll('input[name="student_ids"]').forEach(cb => {
+        if (studentNameFromCheckbox(cb) === name) {
+          cb.checked = true;
+          updateCount();
+        }
+      });
+    });
+  }
+}
+
+// Sync: checking/unchecking student checkbox updates member picker options
 document.querySelectorAll('input[name="student_ids"]').forEach(cb => {
   cb.addEventListener('change', () => {
     const name = studentNameFromCheckbox(cb);
@@ -233,8 +178,5 @@ document.querySelectorAll('input[name="student_ids"]').forEach(cb => {
     }
   });
 });
-
-memberInput.addEventListener('input', renderMembersPreview);
-renderMembersPreview();
 </script>
 {% endblock %}

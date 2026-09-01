@@ -201,6 +201,9 @@ def theme_edit(id):
 @admin_required
 def theme_delete(id):
     theme = Theme.query.get_or_404(id)
+    if theme.delegations:
+        flash(f'Não é possível deletar: {len(theme.delegations)} delegação(ões) usa(m) este tema.', 'error')
+        return redirect(url_for('admin.themes_list'))
     db.session.delete(theme)
     db.session.commit()
     flash('Tema deletado.', 'info')
@@ -783,14 +786,13 @@ def delegation_assign(id):
     from models.student import Student
     deleg = Delegation.query.get_or_404(id)
     if request.method == 'POST':
-        theme_name = request.form.get('committee', '').strip()
-        theme = Theme.query.filter_by(name=theme_name).first()
+        theme_id = request.form.get('theme_id', type=int)
+        theme = Theme.query.get(theme_id) if theme_id else None
         deleg.theme_id    = theme.id if theme else None
         deleg.country      = request.form.get('country', '').strip()
         deleg.country_flag = request.form.get('flag', '')
         deleg.flag_url     = request.form.get('flag_url', '').strip()
-        deleg.committee    = theme_name
-        deleg.pair_name    = request.form.get('pair_name', '').strip()
+        deleg.committee    = theme.name if theme else ''
         deleg.members      = request.form.get('members', '').strip()
         deleg.flag_animation = bool(request.form.get('flag_animation'))
 
@@ -818,7 +820,7 @@ def delegation_delete(id):
     from models.vote import Vote
     deleg = Delegation.query.get_or_404(id)
 
-    # Deleta os votos da delegação primeiro para evitar erros de Foreign Key
+    # 1. Deleta votos
     Vote.query.filter_by(delegation_id=deleg.id).delete()
 
     user_to_delete = None
@@ -829,20 +831,27 @@ def delegation_delete(id):
     if deleg.inscription_id:
         ins_to_delete = Inscription.query.get(deleg.inscription_id)
 
-    # Remove também os perfis de Student (evita FK órfãs; participations
-    # são removidas em cascata pelo modelo)
+    # 2. Desvincula students da delegação (limpa FK antes de deletar)
     students_to_delete = list(deleg.students) if deleg.students else []
+    for s in students_to_delete:
+        s.delegation_id = None
 
+    db.session.flush()
+
+    # 3. Deleta students (ParticipationHistory cascade)
+    for s in students_to_delete:
+        db.session.delete(s)
+
+    # 4. Deleta delegação
     db.session.delete(deleg)
 
+    # 5. Deleta user (sem mais student referenciando)
     if user_to_delete:
         db.session.delete(user_to_delete)
 
+    # 6. Deleta inscrição
     if ins_to_delete:
         db.session.delete(ins_to_delete)
-
-    for s in students_to_delete:
-        db.session.delete(s)
 
     db.session.commit()
     flash('Delegação e login deletados com sucesso.', 'success')
@@ -1413,8 +1422,7 @@ def student_assign(id):
         country  = request.form.get('country', '').strip()
         flag     = request.form.get('flag', '').strip()
         flag_url = request.form.get('flag_url', '').strip()
-        committee = request.form.get('committee', '').strip()
-        pair_name = request.form.get('pair_name', '').strip()
+        theme_id = request.form.get('theme_id', type=int)
         members   = request.form.get('members', '').strip()
 
         if not country:
@@ -1461,13 +1469,12 @@ def student_assign(id):
             if not deleg.user_id and student.user_id:
                 deleg.user_id = student.user_id
 
-        theme = Theme.query.filter_by(name=committee).first()
+        theme = Theme.query.get(theme_id) if theme_id else None
         deleg.theme_id    = theme.id if theme else None
         deleg.country      = country
         deleg.country_flag = flag
         deleg.flag_url     = flag_url
-        deleg.committee    = committee
-        deleg.pair_name    = pair_name
+        deleg.committee    = theme.name if theme else ''
         deleg.members      = members
         deleg.flag_animation = bool(request.form.get('flag_animation'))
         db.session.flush()

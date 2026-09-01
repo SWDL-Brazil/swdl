@@ -56,8 +56,6 @@
 
         <input type="hidden" name="flag_url" id="flagUrl"
                value="{{ student.delegation.flag_url if student.delegation else '' }}">
-        <input type="hidden" name="flag" id="flagEmoji"
-               value="{{ student.delegation.country_flag if student.delegation else '' }}">
 
         <div id="flagError"
              style="display:none;font-size:12px;color:var(--red);margin-bottom:12px">
@@ -65,12 +63,20 @@
         </div>
 
         <div class="form-group">
+          <label>Bandeira (emoji) <span style="font-size:11px;color:var(--muted)">(opcional)</span></label>
+          <input type="text" name="flag" id="flagEmojiManual"
+                 value="{{ student.delegation.country_flag if student.delegation else '' }}"
+                 placeholder="🇧🇷" maxlength="10"
+                 style="width:120px;padding:8px 10px;border:1px solid var(--border);border-radius:4px">
+        </div>
+
+        <div class="form-group">
           <label>Tema / Debate *</label>
-          <select name="committee" required>
+          <select name="theme_id" required>
             <option value="">Selecione...</option>
             {% for t in available_themes %}
-            <option value="{{ t.name }}"
-              {{ 'selected' if student.delegation and student.delegation.committee == t.name }}>
+            <option value="{{ t.id }}"
+              {{ 'selected' if student.delegation and student.delegation.theme_id == t.id }}>
               {{ t.name }}
             </option>
             {% endfor %}
@@ -88,7 +94,10 @@
               {% set tomados = student.delegation.member_names() if student.delegation else [] %}
               {% for s in all_students %}
                 {% if s.name not in tomados %}
-                <option value="{{ s.name }}">{{ s.name }} — {{ s.email }}</option>
+                <option value="{{ s.name }}"
+                  {% if s.delegation_id %} disabled style="color:var(--muted)"{% endif %}>
+                  {{ s.name }}{% if s.delegation_id %} (delegado){% endif %} — {{ s.email }}
+                </option>
                 {% endif %}
               {% endfor %}
             </select>
@@ -152,85 +161,5 @@
 
 </div>
 
-<script>
-  const searchBtn   = document.getElementById('searchFlag');
-  const countryInput = document.getElementById('countryInput');
-  const flagPreview = document.getElementById('flagPreview');
-  const flagImg     = document.getElementById('flagImg');
-  const flagName    = document.getElementById('flagName');
-  const flagUrl     = document.getElementById('flagUrl');
-  const flagEmoji   = document.getElementById('flagEmoji');
-  const flagError   = document.getElementById('flagError');
-
-  async function searchFlag() {
-    const country = countryInput.value.trim();
-    if (!country) return;
-
-    searchBtn.textContent = '⏳';
-    searchBtn.disabled    = true;
-    flagError.style.display = 'none';
-    flagPreview.style.display = 'none';
-
-    try {
-      const res  = await fetch(`/api/bandeira?country=${encodeURIComponent(country)}`);
-      const data = await res.json();
-
-      if (data.ok) {
-        flagImg.src            = data.flag_url;
-        flagName.textContent   = data.name;
-        flagUrl.value          = data.flag_url;
-        flagPreview.style.display = 'block';
-        countryInput.value = data.name;
-      } else {
-        flagError.style.display = 'block';
-      }
-    } catch(e) {
-      flagError.style.display = 'block';
-    }
-
-    searchBtn.textContent = '🔍 Buscar';
-    searchBtn.disabled    = false;
-  }
-
-  searchBtn.addEventListener('click', searchFlag);
-  countryInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); searchFlag(); }
-  });
-
-  // ── Membros: inserir nomes de contas existentes ──────────
-  const memberInput  = document.getElementById('membersInput');
-  const memberSelect = document.getElementById('memberSelect');
-  const addMemberBtn = document.getElementById('addMemberBtn');
-  const membersPrev  = document.getElementById('membersPreview');
-
-  function currentMembers() {
-    return memberInput.value.split(',').map(s => s.trim()).filter(Boolean);
-  }
-  function renderMembersPreview() {
-    membersPrev.innerHTML = '';
-    currentMembers().forEach(name => {
-      const chip = document.createElement('span');
-      chip.textContent = name;
-      chip.style.cssText = 'display:inline-block;background:rgba(16,30,76,.06);border:1px solid var(--border);border-radius:12px;padding:2px 10px;margin:3px 4px 0 0;font-size:12px;color:var(--navy)';
-      membersPrev.appendChild(chip);
-    });
-  }
-  function findMemberOption(name) {
-    return Array.from(memberSelect.options).find(o => o.value === name);
-  }
-  addMemberBtn.addEventListener('click', () => {
-    const name = memberSelect.value.trim();
-    if (!name) return;
-    const list = currentMembers();
-    if (!list.includes(name)) {
-      list.push(name);
-      memberInput.value = list.join(', ');
-    }
-    const opt = findMemberOption(name);
-    if (opt) opt.remove();
-    renderMembersPreview();
-  });
-  memberInput.addEventListener('input', renderMembersPreview);
-  renderMembersPreview();
-</script>
+<script src="{{ url_for('static', filename='js/admin-delegation.js') }}"></script>
 {% endblock %}
