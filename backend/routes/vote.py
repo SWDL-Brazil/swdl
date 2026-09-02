@@ -315,6 +315,16 @@ def api_telao_estado():
     from models.delegation import Delegation
     session = VoteSession.query.filter_by(status='open')\
                                .order_by(VoteSession.created_at.desc()).first()
+
+    session_data = None
+    if session:
+        sd = session.to_dict()
+        # Calcula tempo restante baseado no created_at + duration_sec
+        elapsed = (datetime.now(timezone.utc) - session.created_at).total_seconds()
+        remaining = max(0, session.duration_sec - elapsed)
+        sd['remaining_sec'] = int(remaining)
+        session_data = sd
+
     news    = News.query.filter_by(published=True)\
                         .order_by(News.created_at.desc()).limit(6).all()
 
@@ -322,7 +332,7 @@ def api_telao_estado():
                                .order_by(Delegation.country).all()
 
     return jsonify({
-        'session': session.to_dict() if session else None,
+        'session': session_data,
         'ticker':  [n.title for n in news],
         'oradores': [{
             'id':        d.id,
@@ -332,3 +342,27 @@ def api_telao_estado():
             'committee': d.committee or '',
         } for d in oradores],
     })
+
+
+@vote_bp.route('/api/vote/<int:id>/auto_close', methods=['POST'])
+def api_auto_close(id):
+    """Fecha uma votação automaticamente quando o timer expira (chamado pelo telão)."""
+    session = VoteSession.query.get(id)
+    if not session or session.status != 'open':
+        return jsonify({'ok': False, 'reason': 'not found or already closed'}), 200
+
+    elapsed = (datetime.now(timezone.utc) - session.created_at).total_seconds()
+    if elapsed < session.duration_sec:
+        return jsonify({'ok': False, 'reason': 'not expired yet'}), 200
+
+    session.status    = 'closed'
+    session.closed_at = datetime.now(timezone.utc)
+    db.session.commit()
+
+    data = session.to_dict()
+    socketio.emit('vote_closed', data, room='all_delegates')
+    socketio.emit('vote_closed', data, room='admin')
+    socketio.emit('vote_closed', data, room='vote_list')
+    socketio.emit('vote_closed', data, room='telao')
+
+    return jsonify({'ok': True})

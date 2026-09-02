@@ -545,7 +545,7 @@
 
   // CRONÔMETRO VOTAÇÃO
   const CIRC=226;let voteInterval=null,voteRem=0,voteTotal=120,currentSession=null;
-  function startVoteTimer(secs){clearInterval(voteInterval);voteTotal=secs||120;voteRem=voteTotal;renderVoteTimer();voteInterval=setInterval(()=>{if(voteRem>0){voteRem--;renderVoteTimer();}else clearInterval(voteInterval);},1000);}
+  function startVoteTimer(secs){clearInterval(voteInterval);voteTotal=secs||120;voteRem=voteTotal;renderVoteTimer();voteInterval=setInterval(()=>{if(voteRem>0){voteRem--;renderVoteTimer();}else{clearInterval(voteInterval);if(currentSession){fetch('/api/vote/'+currentSession.id+'/auto_close',{method:'POST'});showResult(currentSession);}}},1000);}
   function renderVoteTimer(){const mm=String(Math.floor(voteRem/60)).padStart(2,'0');const ss=String(voteRem%60).padStart(2,'0');document.getElementById('timerNum').textContent=`${mm}:${ss}`;const arc=document.getElementById('timerArc');arc.style.strokeDashoffset=CIRC*(1-voteRem/voteTotal);if(voteRem<=10)arc.style.stroke='var(--red-l)';else if(voteRem<=30)arc.style.stroke='#E67E22';else arc.style.stroke='var(--gold)';}
 
   // WEBSOCKET — com debug
@@ -557,16 +557,33 @@
   socket.emit('join_telao',{});
   socket.on('vote_opened',(data)=>loadSession(data));
   socket.on('vote_update',(data)=>{if(currentSession&&data.id===currentSession.id)renderVotes(data);});
-  socket.on('vote_closed',(data)=>{if(currentSession&&data.id===currentSession.id)showResult(data);});
+  socket.on('vote_closed',(data)=>{
+    if(currentSession&&data.id===currentSession.id){
+      showResult(data);
+    }else{
+      currentSession=null;show('idleScreen');
+    }
+  });
 
   async function poll() {
     try {
       const res = await fetch('/api/telao/estado');
       const data = await res.json();
-      if (data.session && (!currentSession || currentSession.id !== data.session.id))
-        loadSession(data.session);
-      else if (data.session && currentSession)
-        renderVotes(data.session);
+      if (data.session) {
+        if (!currentSession || currentSession.id !== data.session.id) {
+          loadSession(data.session);
+        } else {
+          renderVotes(data.session);
+        }
+        if (data.session.remaining_sec !== undefined && data.session.remaining_sec <= 0 && currentSession) {
+          fetch('/api/vote/' + currentSession.id + '/auto_close', {method:'POST'});
+          showResult(currentSession);
+          return;
+        }
+      } else if (!data.session && currentSession) {
+        currentSession = null;
+        show('idleScreen');
+      }
       if (data.ticker && data.ticker.length)
         buildTicker(data.ticker);
       var ov = document.getElementById('oradores-overlay');
@@ -583,7 +600,7 @@
   }
   poll(); setInterval(poll, 15000);
 
-  function loadSession(session){currentSession=session;show('voteScreen');document.getElementById('qTitle').textContent=session.title||'—';document.getElementById('qDesc').textContent=session.description||'';const ct=document.getElementById('committeeTag');ct.textContent=(session.committee||'GERAL').toUpperCase();ct.style.display='block';['favor','contra','abstencao'].forEach(k=>{const el=document.getElementById('list-'+k);if(el)el.innerHTML='';const cnt=document.getElementById('cnt-'+k);if(cnt)cnt.textContent='0';});if(session.votes)session.votes.forEach(addVote);if(session.counts)updateCounts(session.counts);startVoteTimer(session.duration_sec||120);}
+  function loadSession(session){currentSession=session;show('voteScreen');document.getElementById('qTitle').textContent=session.title||'—';document.getElementById('qDesc').textContent=session.description||'';const ct=document.getElementById('committeeTag');ct.textContent=(session.committee||'GERAL').toUpperCase();ct.style.display='block';['favor','contra','abstencao'].forEach(k=>{const el=document.getElementById('list-'+k);if(el)el.innerHTML='';const cnt=document.getElementById('cnt-'+k);if(cnt)cnt.textContent='0';});if(session.votes)session.votes.forEach(addVote);if(session.counts)updateCounts(session.counts);startVoteTimer(session.remaining_sec!=null?session.remaining_sec:(session.duration_sec||120));}
   function renderVotes(data){['favor','contra','abstencao'].forEach(k=>{const el=document.getElementById('list-'+k);if(el)el.innerHTML='';});if(data.votes)data.votes.forEach(addVote);if(data.counts)updateCounts(data.counts);}
   function addVote(vote){const listEl=document.getElementById('list-'+vote.choice);if(!listEl)return;const item=document.createElement('div');item.className='t-country-item';let flag='';if(vote.flag_url&&vote.flag_url.trim())flag=`<img class="t-flag-img" src="${vote.flag_url}" onerror="this.style.display='none'" alt="">`;else if(vote.flag)flag=`<span class="t-flag-emoji">${vote.flag}</span>`;else flag=`<span class="t-flag-emoji">🌍</span>`;item.innerHTML=`${flag}<span class="t-country-name">${vote.country||'?'}</span>`;listEl.appendChild(item);const cnt=document.getElementById('cnt-'+vote.choice);if(cnt){cnt.style.transform='scale(1.3)';setTimeout(()=>cnt.style.transform='scale(1)',200);}}
   function updateCounts(c){document.getElementById('cnt-favor').textContent=c.favor||0;document.getElementById('cnt-contra').textContent=c.contra||0;document.getElementById('cnt-abstencao').textContent=c.abstencao||0;}
