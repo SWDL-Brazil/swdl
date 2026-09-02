@@ -319,8 +319,11 @@ def api_telao_estado():
     session_data = None
     if session:
         sd = session.to_dict()
-        # Calcula tempo restante baseado no created_at + duration_sec
-        elapsed = (datetime.now(timezone.utc) - session.created_at).total_seconds()
+        if session.created_at:
+            created = session.created_at.replace(tzinfo=timezone.utc) if session.created_at.tzinfo is None else session.created_at
+            elapsed = (datetime.now(timezone.utc) - created).total_seconds()
+        else:
+            elapsed = 0
         remaining = max(0, session.duration_sec - elapsed)
         sd['remaining_sec'] = int(remaining)
         session_data = sd
@@ -351,7 +354,10 @@ def api_auto_close(id):
     if not session or session.status != 'open':
         return jsonify({'ok': False, 'reason': 'not found or already closed'}), 200
 
-    elapsed = (datetime.now(timezone.utc) - session.created_at).total_seconds()
+    elapsed = 0
+    if session.created_at:
+        created = session.created_at.replace(tzinfo=timezone.utc) if session.created_at.tzinfo is None else session.created_at
+        elapsed = (datetime.now(timezone.utc) - created).total_seconds()
     if elapsed < session.duration_sec:
         return jsonify({'ok': False, 'reason': 'not expired yet'}), 200
 
