@@ -30,11 +30,10 @@ class VoteSession(db.Model):
                 'total': len(votes)}
 
     def vote_details(self):
-        """Retorna lista de votos com dados da delegacao (usa cache se disponivel)."""
-        from models.delegation import Delegation
+        """Retorna lista de votos com dados da delegacao."""
         details = []
         for v in self.votes:
-            d = getattr(v, '_delegation', None) or Delegation.query.get(v.delegation_id)
+            d = v.delegation
             details.append({
                 'choice':    v.choice,
                 'country':   d.country   if d else '?',
@@ -93,6 +92,8 @@ class Vote(db.Model):
                                nullable=False)
     choice         = db.Column(db.String(20), nullable=False)
     voted_at       = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    delegation = db.relationship('Delegation', backref='votes')
 
     __table_args__ = (
         db.UniqueConstraint('session_id', 'delegation_id', name='one_vote_per_session'),
