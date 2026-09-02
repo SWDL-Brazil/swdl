@@ -2,18 +2,24 @@
 #  SWDL — Funções compartilhadas de agenda
 # =============================================================
 from datetime import datetime, timezone
-from models.agenda import AgendaItem
 
 
 def get_agenda_status():
     """Retorna (phase, first_dt, last_dt) baseado nos itens de agenda.
-    phase: 'pre', 'during', 'post' ou None."""
+    phase: 'pre', 'during', 'post' ou None.
+    Memoizado por request via flask.g."""
+    from flask import g
+    if hasattr(g, '_agenda_status'):
+        return g._agenda_status
+
+    from models.agenda import AgendaItem
     items = AgendaItem.query.filter(
         AgendaItem.event_date.isnot(None),
         AgendaItem.start_time.isnot(None)
     ).order_by(AgendaItem.event_date, AgendaItem.start_time).all()
     if not items:
-        return None, None, None
+        g._agenda_status = (None, None, None)
+        return g._agenda_status
     try:
         first = items[0]
         last = items[-1]
@@ -26,9 +32,17 @@ def get_agenda_status():
         ).replace(tzinfo=timezone.utc)
         now = datetime.now(timezone.utc)
         if now < first_dt:
-            return 'pre', first_dt, last_dt
-        if now > last_dt:
-            return 'post', first_dt, last_dt
-        return 'during', first_dt, last_dt
+            g._agenda_status = ('pre', first_dt, last_dt)
+        elif now > last_dt:
+            g._agenda_status = ('post', first_dt, last_dt)
+        else:
+            g._agenda_status = ('during', first_dt, last_dt)
     except (ValueError, TypeError):
-        return None, None, None
+        g._agenda_status = (None, None, None)
+    return g._agenda_status
+
+
+def get_agenda_bounds():
+    """Retorna (first_dt, last_dt) sem fase. Memoizado por request."""
+    phase, first_dt, last_dt = get_agenda_status()
+    return first_dt, last_dt

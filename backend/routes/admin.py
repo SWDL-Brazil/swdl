@@ -2166,24 +2166,33 @@ def director_dashboard():
     # Certificados
     certificates = Student.query.filter(Student.certificate_released == True).count()
 
-    # Itens da agenda por dia (para timeline)
+    # Itens da agenda por dia (para timeline) — batch query
     days_raw = AgendaItem.query.with_entities(AgendaItem.day).distinct().order_by(AgendaItem.day).all()
     days_agenda = [d[0] for d in days_raw]
     agenda_items_by_day = {}
-    for day in days_agenda:
-        agenda_items_by_day[day] = AgendaItem.query.filter_by(day=day).count()
+    if days_agenda:
+        day_counts = db.session.query(
+            AgendaItem.day, db.func.count()
+        ).filter(AgendaItem.day.in_(days_agenda)).group_by(AgendaItem.day).all()
+        agenda_items_by_day = dict(day_counts)
 
-    # Stats por tema (para o contexto)
+    # Stats por tema — batch GROUP BY (1 query em vez de 6*N)
+    from sqlalchemy import func
+    theme_rows = db.session.query(
+        Delegation.theme_id,
+        func.count().label('total'),
+        func.count().filter(Delegation.presence_status == 'presente').label('presentes'),
+        func.count().filter(Delegation.presence_status == 'votante').label('votantes'),
+        func.count().filter(Delegation.presence_status == 'ausente').label('ausentes'),
+        func.count().filter(Delegation.orador == True).label('oradores'),
+        func.count().filter(Delegation.dpo_uploaded == True).label('dpos'),
+    ).group_by(Delegation.theme_id).all()
     theme_stats = {}
-    for t in themes:
-        tq = Delegation.query.filter_by(theme_id=t.id)
-        theme_stats[t.id] = {
-            'total': tq.count(),
-            'presentes': tq.filter_by(presence_status='presente').count(),
-            'votantes': tq.filter_by(presence_status='votante').count(),
-            'ausentes': tq.filter_by(presence_status='ausente').count(),
-            'oradores': tq.filter(Delegation.orador == True).count(),
-            'dpos': tq.filter(Delegation.dpo_uploaded == True).count(),
+    for row in theme_rows:
+        theme_stats[row.theme_id] = {
+            'total': row.total, 'presentes': row.presentes,
+            'votantes': row.votantes, 'ausentes': row.ausentes,
+            'oradores': row.oradores, 'dpos': row.dpos,
         }
 
     selected_theme = Theme.query.get(theme_id) if theme_id else None

@@ -559,29 +559,29 @@
   socket.on('vote_update',(data)=>{if(currentSession&&data.id===currentSession.id)renderVotes(data);});
   socket.on('vote_closed',(data)=>{if(currentSession&&data.id===currentSession.id)showResult(data);});
 
-  // Polling para atualizar overlay (so se estiver ativo)
-  async function fetchOradores() {
+  async function poll() {
     try {
-      var ov = document.getElementById('oradores-overlay');
-      if (!ov) return;
       const res = await fetch('/api/telao/estado');
       const data = await res.json();
-      if (data.oradores && data.oradores.length) {
-        // Atualiza contador
-        var cnt = ov.querySelector('div[style*="font-size:28px"]');
-        if (cnt) cnt.textContent = data.oradores.length;
-      } else {
-        ov.remove();
-        show('idleScreen');
+      if (data.session && (!currentSession || currentSession.id !== data.session.id))
+        loadSession(data.session);
+      else if (data.session && currentSession)
+        renderVotes(data.session);
+      if (data.ticker && data.ticker.length)
+        buildTicker(data.ticker);
+      var ov = document.getElementById('oradores-overlay');
+      if (ov) {
+        if (data.oradores && data.oradores.length) {
+          var cnt = ov.querySelector('div[style*="font-size:28px"]');
+          if (cnt) cnt.textContent = data.oradores.length;
+        } else {
+          ov.remove();
+          show('idleScreen');
+        }
       }
-    } catch(e) {
-      console.error('[TELAO] fetchOradores error:', e);
-    }
+    } catch(e) { console.error('[TELAO] poll error', e); }
   }
-
-  async function init(){try{const res=await fetch('/api/telao/estado');const data=await res.json();if(data.session&&(!currentSession||currentSession.id!==data.session.id))loadSession(data.session);else if(data.session&&currentSession)renderVotes(data.session);if(data.ticker&&data.ticker.length)buildTicker(data.ticker);}catch(e){console.error('init error',e);}}
-  init();setInterval(init,15000);
-  fetchOradores();setInterval(fetchOradores,15000);
+  poll(); setInterval(poll, 15000);
 
   function loadSession(session){currentSession=session;show('voteScreen');document.getElementById('qTitle').textContent=session.title||'—';document.getElementById('qDesc').textContent=session.description||'';const ct=document.getElementById('committeeTag');ct.textContent=(session.committee||'GERAL').toUpperCase();ct.style.display='block';['favor','contra','abstencao'].forEach(k=>{const el=document.getElementById('list-'+k);if(el)el.innerHTML='';const cnt=document.getElementById('cnt-'+k);if(cnt)cnt.textContent='0';});if(session.votes)session.votes.forEach(addVote);if(session.counts)updateCounts(session.counts);startVoteTimer(session.duration_sec||120);}
   function renderVotes(data){['favor','contra','abstencao'].forEach(k=>{const el=document.getElementById('list-'+k);if(el)el.innerHTML='';});if(data.votes)data.votes.forEach(addVote);if(data.counts)updateCounts(data.counts);}

@@ -28,7 +28,7 @@ def moderator_required(f):
 
 def _broadcast_results(session_id):
     """Emite os resultados atualizados para todos os clientes."""
-    session = VoteSession.query.get(session_id)
+    session = VoteSession.get_with_votes(session_id)
     if session:
         data = session.to_dict()
         socketio.emit('vote_update', data, room=f'session_{session_id}')
@@ -44,7 +44,7 @@ def _broadcast_results(session_id):
 @login_required
 @moderator_required
 def vote_list():
-    sessions = VoteSession.query.order_by(VoteSession.created_at.desc()).all()
+    sessions = VoteSession.all_with_votes()
     return render_template('admin/vote_list.html', sessions=sessions)
 
 
@@ -110,13 +110,14 @@ def vote_delete(id):
 @login_required
 @moderator_required
 def vote_results(id):
-    session = VoteSession.query.get_or_404(id)
-    votes   = Vote.query.filter_by(session_id=id).all()
+    from sqlalchemy.orm import joinedload
+    session = VoteSession.query.options(
+        joinedload(VoteSession.votes).joinedload(Vote.delegation)
+    ).get_or_404(id)
 
-    # Enriquece com dados da delegação
     vote_details = []
-    for v in votes:
-        deleg = Delegation.query.get(v.delegation_id)
+    for v in session.votes:
+        deleg = v.delegation
         vote_details.append({
             'country':  deleg.country if deleg else '?',
             'flag':     deleg.country_flag if deleg else '',
@@ -205,9 +206,10 @@ def api_submit_vote():
     # Broadcast em tempo real
     _broadcast_results(session_id)
 
-    # Atualiza vote list
-    all_sessions = VoteSession.query.order_by(VoteSession.created_at.desc()).all()
-    socketio.emit('sessions_sync', [s.to_dict() for s in all_sessions], room='vote_list')
+    # Atualiza vote list — envia apenas a sessao atualizada
+    session_data = VoteSession.get_with_votes(session_id)
+    if session_data:
+        socketio.emit('vote_list_update', session_data.to_dict(), room='vote_list')
 
     return jsonify({'ok': True, 'choice': choice})
 
@@ -220,8 +222,7 @@ def api_submit_vote():
 def on_join_session(data):
     session_id = data.get('session_id')
     join_room(f'session_{session_id}')
-    # Envia estado atual imediatamente
-    session = VoteSession.query.get(session_id)
+    session = VoteSession.get_with_votes(session_id)
     if session:
         emit('vote_update', session.to_dict())
 
@@ -235,25 +236,23 @@ def on_join_admin(data):
 @socketio.on('join_vote_list')
 def on_join_vote_list(data):
     join_room('vote_list')
-    # Envia todas as sessões para sincronizar a tabela
-    sessions = VoteSession.query.order_by(VoteSession.created_at.desc()).all()
+    sessions = VoteSession.all_with_votes()
     emit('sessions_sync', [s.to_dict() for s in sessions])
 
 
 @socketio.on('join_delegates')
 def on_join_delegates(data):
     join_room('all_delegates')
-    open_sessions = VoteSession.query.filter_by(status='open').all()
+    open_sessions = VoteSession.open_with_votes()
     emit('open_sessions', [s.to_dict() for s in open_sessions])
 
 
 @socketio.on('join_telao')
 def on_join_telao(data):
     join_room('telao')
-    # Envia sessão aberta imediatamente ao telão conectar
-    session = VoteSession.query.filter_by(status='open')                               .order_by(VoteSession.created_at.desc()).first()
-    if session:
-        emit('vote_opened', session.to_dict())
+    open_sessions = VoteSession.open_with_votes()
+    if open_sessions:
+        emit('vote_opened', open_sessions[0].to_dict())
 
 
 # ══════════════════════════════════════════════════════════════

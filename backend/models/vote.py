@@ -22,18 +22,19 @@ class VoteSession(db.Model):
                             cascade='all, delete-orphan')
 
     def count(self):
-        favor     = sum(1 for v in self.votes if v.choice == 'favor')
-        contra    = sum(1 for v in self.votes if v.choice == 'contra')
-        abstencao = sum(1 for v in self.votes if v.choice == 'abstencao')
+        votes = self.votes
+        favor     = sum(1 for v in votes if v.choice == 'favor')
+        contra    = sum(1 for v in votes if v.choice == 'contra')
+        abstencao = sum(1 for v in votes if v.choice == 'abstencao')
         return {'favor': favor, 'contra': contra, 'abstencao': abstencao,
-                'total': len(self.votes)}
+                'total': len(votes)}
 
     def vote_details(self):
-        """Retorna lista de votos com dados da delegação."""
+        """Retorna lista de votos com dados da delegacao (usa cache se disponivel)."""
         from models.delegation import Delegation
         details = []
         for v in self.votes:
-            d = Delegation.query.get(v.delegation_id)
+            d = getattr(v, '_delegation', None) or Delegation.query.get(v.delegation_id)
             details.append({
                 'choice':    v.choice,
                 'country':   d.country   if d else '?',
@@ -56,6 +57,30 @@ class VoteSession(db.Model):
             'votes':        self.vote_details(),
             'created_at':   self.created_at.isoformat(),
         }
+
+    @staticmethod
+    def get_with_votes(session_id):
+        """Busca sessao com votes e delegacoes eager-loaded (1 query)."""
+        from sqlalchemy.orm import joinedload
+        return VoteSession.query.options(
+            joinedload(VoteSession.votes).joinedload(Vote.delegation)
+        ).get(session_id)
+
+    @staticmethod
+    def open_with_votes():
+        """Retorna sessoes abertas com votes eager-loaded (1 query)."""
+        from sqlalchemy.orm import joinedload
+        return VoteSession.query.options(
+            joinedload(VoteSession.votes).joinedload(Vote.delegation)
+        ).filter_by(status='open').order_by(VoteSession.created_at.desc()).all()
+
+    @staticmethod
+    def all_with_votes():
+        """Retorna todas as sessoes com votes eager-loaded (1 query)."""
+        from sqlalchemy.orm import joinedload
+        return VoteSession.query.options(
+            joinedload(VoteSession.votes).joinedload(Vote.delegation)
+        ).order_by(VoteSession.created_at.desc()).all()
 
 
 class Vote(db.Model):

@@ -18,29 +18,6 @@ import os
 student_bp = Blueprint('student', __name__)
 
 
-def get_agenda_bounds():
-    items = AgendaItem.query.filter(
-        AgendaItem.event_date.isnot(None),
-        AgendaItem.start_time.isnot(None)
-    ).order_by(AgendaItem.event_date, AgendaItem.start_time).all()
-    if not items:
-        return None, None
-    try:
-        first = items[0]
-        last = items[-1]
-        first_dt = datetime.strptime(f"{first.event_date} {first.start_time}", "%Y-%m-%d %H:%M")
-        last_end = last.end_time or '23:59'
-        last_dt = datetime.strptime(f"{last.event_date} {last_end}", "%Y-%m-%d %H:%M")
-        return first_dt.replace(tzinfo=timezone.utc), last_dt.replace(tzinfo=timezone.utc)
-    except (ValueError, TypeError):
-        return None, None
-
-
-def is_event_day():
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    return AgendaItem.query.filter(AgendaItem.event_date == today).count() > 0
-
-
 @student_bp.context_processor
 def inject_now():
     is_convened = False
@@ -48,13 +25,12 @@ def inject_now():
         is_convened = current_user.student_profile.convened
     except Exception:
         pass
-    first_dt, last_dt = get_agenda_bounds()
+    phase, first_dt, last_dt = get_agenda_status()
     now = datetime.now(timezone.utc)
     event_started = first_dt and now >= first_dt
     event_ended = last_dt and now > last_dt
-    is_event_day = now.strftime("%Y-%m-%d") in [
-        a.event_date for a in AgendaItem.query.with_entities(AgendaItem.event_date).distinct().all()
-    ] if AgendaItem.query.count() else False
+    today_str = now.strftime("%Y-%m-%d")
+    is_event_day = AgendaItem.query.filter(AgendaItem.event_date == today_str).count() > 0
     return {
         'now': now,
         'is_convened': is_convened,
@@ -206,10 +182,8 @@ def voting():
         }
 
     presence_status = delegation.presence_status if delegation else 'ausente'
-    is_event_day = any(
-        a.event_date for a in AgendaItem.query.with_entities(AgendaItem.event_date).distinct().all()
-        if a.event_date == datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    )
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    is_event_day = AgendaItem.query.filter(AgendaItem.event_date == today_str).count() > 0
 
     return render_template('student/voting.html',
                            student=student_profile,
