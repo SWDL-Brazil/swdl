@@ -1,15 +1,15 @@
 {% extends "student/base.html" %}
+{% from "student/_macros.html" import empty_state %}
 {% block title %}Meu Histórico{% endblock %}
 
 {% block content %}
-
 <div class="page-header">
   <div>
     <h1 class="page-title">📜 Meu Histórico</h1>
     <p class="page-sub">Registro completo das suas participações na SWDL.</p>
   </div>
   {% if student %}
-  <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">
+  <div class="mono text-muted">
     ID Global: {{ student.global_id }}
   </div>
   {% endif %}
@@ -40,16 +40,6 @@
   </div>
 </div>
 {% else %}
-<div class="card">
-  <div class="card-body" style="text-align:center;padding:48px">
-    <div style="font-size:48px;margin-bottom:16px">📭</div>
-    <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px">
-      Nenhum registro encontrado
-    </div>
-    <p style="font-size:14px;color:var(--muted);max-width:400px;margin:0 auto">
-      Suas participações passadas aparecerão aqui. O histórico é vinculado ao seu ID Global único.
-    </p>
-  </div>
-</div>
+{{ empty_state('📭', 'Nenhum registro encontrado', 'Suas participações passadas aparecerão aqui. O histórico é vinculado ao seu ID Global único.') }}
 {% endif %}
 {% endblock %}

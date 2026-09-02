@@ -1,4 +1,5 @@
 {% extends "student/base.html" %}
+{% from "student/_macros.html" import field_pair %}
 {% block title %}Meu Perfil{% endblock %}
 
 {% block content %}
@@ -16,18 +17,9 @@
     </div>
     <div class="card-body">
       <div style="display:flex;flex-direction:column;gap:16px">
-        <div>
-          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Nome</div>
-          <div style="font-size:16px;font-weight:600;color:var(--navy)">{{ current_user.name }}</div>
-        </div>
-        <div>
-          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">E-mail</div>
-          <div style="font-size:16px;font-weight:600;color:var(--navy)">{{ current_user.email }}</div>
-        </div>
-        <div>
-          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Tipo de Acesso</div>
-          <div style="font-size:16px;font-weight:600;color:var(--navy)">Aluno</div>
-        </div>
+        {{ field_pair('Nome', current_user.name) }}
+        {{ field_pair('E-mail', current_user.email) }}
+        {{ field_pair('Tipo de Acesso', 'Aluno') }}
       </div>
     </div>
   </div>
@@ -40,31 +32,19 @@
       {% if student %}
       <div style="display:flex;flex-direction:column;gap:16px">
         <div>
-          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">ID Global</div>
-          <div style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--navy);word-break:break-all">
-            {{ student.global_id }}
-          </div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px">
-            Identificador único e permanente. Vincula todo o seu histórico entre edições.
-          </div>
+          <div class="field-label">ID Global</div>
+          <div class="field-value-mono">{{ student.global_id }}</div>
+          <div class="field-help">Identificador único e permanente. Vincula todo o seu histórico entre edições.</div>
         </div>
-        <div>
-          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Membro desde</div>
-          <div style="font-size:16px;font-weight:600;color:var(--navy)">{{ student.created_at.strftime('%d/%m/%Y') if student.created_at else '—' }}</div>
-        </div>
-        <div>
-          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Participações</div>
-          <div style="font-size:16px;font-weight:600;color:var(--navy)">{{ student.participations|length }} edição(ões)</div>
-        </div>
+        {{ field_pair('Membro desde', student.created_at.strftime('%d/%m/%Y') if student.created_at else '—') }}
+        {{ field_pair('Participações', student.participations|length ~ ' edição(ões)') }}
       </div>
       {% else %}
-      <div style="text-align:center;padding:20px;color:var(--muted)">
+      <div class="empty-state">
         Perfil de aluno não encontrado. Entre em contato com a organização.
       </div>
       {% endif %}
     </div>
   </div>
 </div>
-
-
 {% endblock %}

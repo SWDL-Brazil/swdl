@@ -1,6 +1,6 @@
 from flask import (Blueprint, render_template, redirect,
-                   url_for, flash, request, abort, jsonify, current_app)
-from flask_login import login_required, current_user
+                   url_for, flash, request, abort, jsonify, current_app, g)
+from flask_login import login_required, current_user, logout_user
 from extensions import db
 from models.student import Student
 from models.participation import ParticipationHistory
@@ -9,14 +9,38 @@ from models.news import News
 from models.agenda import AgendaItem
 from models.document import Document
 from models.vote import VoteSession, Vote
-
-from models.audit_log import AuditLog
 from routes.agenda_utils import get_agenda_status
 from datetime import datetime, timezone
 import os
 
 student_bp = Blueprint('student', __name__)
 
+
+# ── HELPERS ────────────────────────────────────────────────────
+
+def get_student():
+    """Student com cache por request via flask.g."""
+    if hasattr(g, '_student'):
+        return g._student
+    g._student = Student.query.filter_by(user_id=current_user.id).first()
+    return g._student
+
+
+def get_delegation(student_profile):
+    """Delegation com cache por request via flask.g."""
+    if hasattr(g, '_delegation'):
+        return g._delegation
+    g._delegation = None
+    if student_profile and student_profile.delegation_id:
+        g._delegation = Delegation.query.get(student_profile.delegation_id)
+    return g._delegation
+
+
+def check_read_only(student):
+    return student and student.read_only
+
+
+# ── CONTEXT PROCESSOR ──────────────────────────────────────────
 
 @student_bp.context_processor
 def inject_now():
@@ -52,27 +76,13 @@ def student_required(f):
     return decorated
 
 
-def get_student():
-    return Student.query.filter_by(user_id=current_user.id).first()
-
-
-def check_read_only(student):
-    if student and student.read_only:
-        return True
-    return False
-
-
 # ── DASHBOARD ──────────────────────────────────────────────────
 @student_bp.route('/student')
 @login_required
 @student_required
 def dashboard():
     student_profile = get_student()
-
-    if student_profile and student_profile.delegation_id:
-        delegation = Delegation.query.get(student_profile.delegation_id)
-    else:
-        delegation = None
+    delegation = get_delegation(student_profile)
 
     recent_news  = News.query.filter_by(published=True)\
                              .order_by(News.created_at.desc()).limit(4).all()
@@ -87,7 +97,7 @@ def dashboard():
     else:
         docs = Document.query.order_by(Document.created_at.desc()).all()
 
-    read_only   = check_read_only(student_profile)
+    read_only = check_read_only(student_profile)
 
     return render_template('student/dashboard.html',
                            student=student_profile,
@@ -126,9 +136,7 @@ def attendance():
         flash('O evento foi encerrado. A interface está em modo somente leitura.', 'warning')
         return redirect(url_for('student.dashboard'))
 
-    delegation = None
-    if student_profile and student_profile.delegation_id:
-        delegation = Delegation.query.get(student_profile.delegation_id)
+    delegation = get_delegation(student_profile)
 
     if request.method == 'POST' and delegation:
         action = request.form.get('action')
@@ -139,7 +147,6 @@ def attendance():
             db.session.commit()
             flash('Presença registrada com sucesso!', 'success')
             if quick_mode:
-                from flask_login import logout_user
                 logout_user()
                 return redirect(url_for('auth.student_login'))
         elif action == 'modo_adaptado':
@@ -148,7 +155,6 @@ def attendance():
             db.session.commit()
             flash('Presença registrada em modo adaptado (dispositivo compartilhado).', 'success')
             if quick_mode:
-                from flask_login import logout_user
                 logout_user()
                 return redirect(url_for('auth.student_login'))
         return redirect(url_for('student.attendance'))
@@ -168,9 +174,7 @@ def voting():
         flash('O evento foi encerrado. A interface está em modo somente leitura.', 'warning')
         return redirect(url_for('student.dashboard'))
 
-    delegation = None
-    if student_profile and student_profile.delegation_id:
-        delegation = Delegation.query.get(student_profile.delegation_id)
+    delegation = get_delegation(student_profile)
 
     open_sessions = VoteSession.query.filter_by(status='open').all()
 
@@ -182,16 +186,13 @@ def voting():
         }
 
     presence_status = delegation.presence_status if delegation else 'ausente'
-    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    is_event_day = AgendaItem.query.filter(AgendaItem.event_date == today_str).count() > 0
 
     return render_template('student/voting.html',
                            student=student_profile,
                            delegation=delegation,
                            open_sessions=open_sessions,
                            voted_ids=voted_ids,
-                           presence_status=presence_status,
-                           is_event_day=is_event_day)
+                           presence_status=presence_status)
 
 
 # ── DOCUMENTOS ─────────────────────────────────────────────────
@@ -200,9 +201,7 @@ def voting():
 @student_required
 def documentos():
     student_profile = get_student()
-    delegation = None
-    if student_profile and student_profile.delegation_id:
-        delegation = Delegation.query.get(student_profile.delegation_id)
+    delegation = get_delegation(student_profile)
 
     cat = request.args.get('categoria', '')
 
@@ -235,7 +234,6 @@ def documentos():
 @student_required
 def documento_download(id):
     from flask import send_file
-    import os
     doc = Document.query.get_or_404(id)
     if not os.path.isfile(doc.file_path):
         flash('Arquivo não encontrado.', 'error')
@@ -274,9 +272,7 @@ def certificados():
 @student_required
 def profile():
     student_profile = get_student()
-    delegation = None
-    if student_profile and student_profile.delegation_id:
-        delegation = Delegation.query.get(student_profile.delegation_id)
+    delegation = get_delegation(student_profile)
     return render_template('student/profile.html',
                            student=student_profile,
                            delegation=delegation)
@@ -293,6 +289,8 @@ def _get_upload_folder():
 @login_required
 @student_required
 def dpo_upload():
+    from models.audit_log import AuditLog
+
     student_profile = get_student()
     if check_read_only(student_profile):
         flash('O evento foi encerrado. A interface está em modo somente leitura.', 'warning')
@@ -306,7 +304,7 @@ def dpo_upload():
         flash('O envio de DPO só é permitido durante o evento.', 'error')
         return redirect(url_for('student.profile'))
 
-    delegation = Delegation.query.get(student_profile.delegation_id)
+    delegation = get_delegation(student_profile)
     if not delegation:
         flash('Delegação não encontrada.', 'error')
         return redirect(url_for('student.profile'))
@@ -385,9 +383,7 @@ def api_attendance():
     data = request.get_json(silent=True) or {}
     adapted = data.get('adapted', False)
 
-    delegation = None
-    if student_profile and student_profile.delegation_id:
-        delegation = Delegation.query.get(student_profile.delegation_id)
+    delegation = get_delegation(student_profile)
 
     if not delegation:
         return jsonify({'ok': False, 'error': 'Delegação não encontrada.'}), 404

@@ -6,6 +6,7 @@
   <title>{% block title %}Dashboard{% endblock %} — SWDL Aluno</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/student.css') }}">
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
 
@@ -24,7 +25,7 @@
 
   <header class="st-topbar">
     <div class="st-topbar-left">
-      <a href="/" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+      <a href="/" class="st-logo-link">
         <div class="st-logo-badge">SW</div>
         <div class="st-logo-text">
           SWDL <span>Portal do Aluno</span>
@@ -44,8 +45,8 @@
 
     <div class="st-topbar-right">
       <div class="st-user-chip">
-        <div class="st-avatar">{{ current_user.name[0].upper() }}</div>
-        <div class="st-user-name">{{ current_user.name.split()[0] }}</div>
+        <div class="st-avatar">{{ current_user.name[0].upper() if current_user.name else '?' }}</div>
+        <div class="st-user-name">{{ current_user.name.split()[0] if current_user.name else 'Aluno' }}</div>
       </div>
       <a href="{{ url_for('auth.student_logout') }}" class="st-logout">Sair →</a>
     </div>
@@ -65,40 +66,7 @@
     {% block content %}{% endblock %}
   </main>
 
-  <!-- Global Socket.IO for Students -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
-  <script>
-    const sio = io();
-    sio.emit('join_students', {});
-
-    // Ouvinte para a Invocação Ativa de Sessão
-    sio.on('invoke_session', (data) => {
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    });
-
-    sio.on('vote_opened', (data) => {
-      const toast = document.createElement('div');
-      toast.style.cssText = `
-        position:fixed;bottom:24px;right:24px;z-index:8500;
-        background:var(--navy);color:white;border-radius:6px;
-        padding:14px 20px;box-shadow:0 8px 32px rgba(0,0,0,.3);
-        border:1px solid rgba(183,148,65,.3);
-        font-size:13px;cursor:pointer;
-        animation:toastIn .3s ease forwards;
-      `;
-      toast.innerHTML = `<strong>🗳️ ${data.title}</strong><br><span style="font-size:11px;color:rgba(255,255,255,.6)">Nova votação aberta!</span>`;
-      toast.onclick = () => { window.location.href = '{{ url_for("student.voting") }}'; };
-      document.body.appendChild(toast);
-      setTimeout(() => {
-        toast.style.transition = 'opacity .3s,transform .3s';
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(10px)';
-        setTimeout(() => toast.remove(), 300);
-      }, 6000);
-    });
-  </script>
+  {% block extra_scripts %}{% endblock %}
 
 </body>
 </html>

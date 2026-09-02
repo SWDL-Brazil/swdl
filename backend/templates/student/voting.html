@@ -16,16 +16,14 @@
 {% endif %}
 
 {% if presence_status == 'ausente' and delegation %}
-<div class="card" style="margin-bottom:20px;border:2px solid var(--orange);background:rgba(212,131,15,.04)">
-  <div class="card-body" style="display:flex;align-items:center;gap:14px;padding:16px 22px">
-    <span style="font-size:28px">⚠️</span>
+<div class="warning-card">
+  <div class="warning-card-body">
+    <span class="warning-card-icon">⚠️</span>
     <div>
-      <div style="font-size:14px;font-weight:700;color:var(--navy)">Presença não registrada</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:2px">
+      <div class="warning-card-title">Presença não registrada</div>
+      <div class="warning-card-text">
         Você precisa registrar sua presença antes de votar.
-        <a href="{{ url_for('student.attendance') }}" style="color:var(--gold);font-weight:600;text-decoration:underline">
-          Registrar presença →
-        </a>
+        <a href="{{ url_for('student.attendance') }}">Registrar presença →</a>
       </div>
     </div>
   </div>
@@ -33,12 +31,12 @@
 {% endif %}
 
 {% if not is_event_day and open_sessions %}
-<div class="card" style="margin-bottom:20px;border:2px solid var(--slate);background:rgba(107,111,133,.04)">
-  <div class="card-body" style="display:flex;align-items:center;gap:14px;padding:16px 22px">
-    <span style="font-size:28px">🔒</span>
+<div class="warning-card" style="border-color:var(--slate)">
+  <div class="warning-card-body">
+    <span class="warning-card-icon">🔒</span>
     <div>
-      <div style="font-size:14px;font-weight:700;color:var(--navy)">Votação bloqueada</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:2px">
+      <div class="warning-card-title">Votação bloqueada</div>
+      <div class="warning-card-text">
         A votação será liberada automaticamente no dia do evento, de acordo com a agenda.
       </div>
     </div>
@@ -55,60 +53,51 @@
     </div>
     <div class="card-body">
       {% if session.description %}
-      <p style="font-size:14px;color:var(--muted);margin-bottom:20px">{{ session.description }}</p>
+      <p class="text-muted" style="margin-bottom:20px">{{ session.description }}</p>
       {% endif %}
 
       {% if session.id in voted_ids %}
-        <div style="text-align:center;padding:24px;background:rgba(30,123,69,.06);border-radius:6px">
+        <div class="cert-center" style="padding:24px;background:rgba(30,123,69,.06);border-radius:6px">
           <div style="font-size:40px;margin-bottom:10px">✅</div>
           <div style="font-size:16px;font-weight:700;color:var(--green)">Voto registrado</div>
-          <div style="font-size:13px;color:var(--muted);margin-top:4px">
+          <div class="text-muted" style="margin-top:4px">
             Strict Single Vote: apenas um voto por delegação.
           </div>
         </div>
       {% elif delegation and presence_status == 'ausente' %}
-        <div style="text-align:center;padding:24px;color:var(--muted);background:rgba(212,131,15,.04);border-radius:6px">
+        <div class="cert-center" style="padding:24px;color:var(--muted);background:rgba(212,131,15,.04);border-radius:6px">
           <div style="font-size:32px;margin-bottom:8px">⚠️</div>
           <div style="font-size:14px;font-weight:600;color:var(--orange);margin-bottom:4px">Registre sua presença primeiro</div>
-          <div style="font-size:12px">Você precisa estar presente para votar.</div>
+          <div class="text-muted">Você precisa estar presente para votar.</div>
         </div>
       {% elif delegation %}
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px" id="voteOptions">
-          <div class="v-opt" data-choice="favor" onclick="selectVote('favor',this)"
-               style="display:flex;align-items:center;gap:14px;padding:14px 18px;
-                      border-radius:6px;cursor:pointer;border:2px solid var(--border);
-                      transition:border-color .2s,background .2s,transform .15s">
-            <span style="font-size:24px">✅</span>
-            <div><div style="font-size:14px;font-weight:700;color:var(--navy)">A Favor</div>
-                 <div style="font-size:11px;color:var(--muted)">Apoia a resolução</div></div>
-            <div class="v-check" style="margin-left:auto;width:22px;height:22px;border-radius:50%;
-                 border:2px solid var(--border);display:flex;align-items:center;
-                 justify-content:center;font-size:12px;color:transparent;transition:all .2s"></div>
+        <div class="v-opt-group" id="voteOptions">
+          <div class="v-opt" data-choice="favor" onclick="selectVote('favor',this)">
+            <span class="v-opt-icon">✅</span>
+            <div>
+              <div class="v-opt-label">A Favor</div>
+              <div class="v-opt-desc">Apoia a resolução</div>
+            </div>
+            <div class="v-check"></div>
           </div>
-          <div class="v-opt" data-choice="contra" onclick="selectVote('contra',this)"
-               style="display:flex;align-items:center;gap:14px;padding:14px 18px;
-                      border-radius:6px;cursor:pointer;border:2px solid var(--border);
-                      transition:border-color .2s,background .2s,transform .15s">
-            <span style="font-size:24px">❌</span>
-            <div><div style="font-size:14px;font-weight:700;color:var(--navy)">Contra</div>
-                 <div style="font-size:11px;color:var(--muted)">Rejeita a resolução</div></div>
-            <div class="v-check" style="margin-left:auto;width:22px;height:22px;border-radius:50%;
-                 border:2px solid var(--border);display:flex;align-items:center;
-                 justify-content:center;font-size:12px;color:transparent;transition:all .2s"></div>
+          <div class="v-opt" data-choice="contra" onclick="selectVote('contra',this)">
+            <span class="v-opt-icon">❌</span>
+            <div>
+              <div class="v-opt-label">Contra</div>
+              <div class="v-opt-desc">Rejeita a resolução</div>
+            </div>
+            <div class="v-check"></div>
           </div>
-          <div class="v-opt" data-choice="abstencao" onclick="selectVote('abstencao',this)"
-               style="display:flex;align-items:center;gap:14px;padding:14px 18px;
-                      border-radius:6px;cursor:pointer;border:2px solid var(--border);
-                      transition:border-color .2s,background .2s,transform .15s">
-            <span style="font-size:24px">🤝</span>
-            <div><div style="font-size:14px;font-weight:700;color:var(--navy)">Abstenção</div>
-                 <div style="font-size:11px;color:var(--muted)">Não vota a favor nem contra</div></div>
-            <div class="v-check" style="margin-left:auto;width:22px;height:22px;border-radius:50%;
-                 border:2px solid var(--border);display:flex;align-items:center;
-                 justify-content:center;font-size:12px;color:transparent;transition:all .2s"></div>
+          <div class="v-opt" data-choice="abstencao" onclick="selectVote('abstencao',this)">
+            <span class="v-opt-icon">🤝</span>
+            <div>
+              <div class="v-opt-label">Abstenção</div>
+              <div class="v-opt-desc">Não vota a favor nem contra</div>
+            </div>
+            <div class="v-check"></div>
           </div>
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:14px;text-align:center">
+        <div class="text-muted" style="margin-bottom:14px;text-align:center">
           ⚠️ Strict Single Vote: apenas <strong>um voto por delegação</strong>, independentemente do número de alunos.
         </div>
         <button id="submitVote" disabled onclick="submitVote({{ session.id }})"
@@ -117,10 +106,10 @@
         </button>
         <div id="voteResult" style="display:none;text-align:center;padding:20px 0">
           <div id="voteResultIcon" style="font-size:44px;margin-bottom:10px"></div>
-          <div id="voteResultTitle" style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--navy)"></div>
+          <div id="voteResultTitle" class="cert-title"></div>
         </div>
       {% else %}
-        <div style="text-align:center;padding:24px;color:var(--muted)">
+        <div class="empty-state">
           Você precisa estar vinculado a uma delegação para votar.
         </div>
       {% endif %}
@@ -129,68 +118,23 @@
   {% endfor %}
 {% else %}
 <div class="card">
-  <div class="card-body" style="text-align:center;padding:48px">
-    <div style="font-size:48px;margin-bottom:16px">🗳️</div>
-    <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px">
-      Nenhuma votação aberta
-    </div>
-    <p style="font-size:14px;color:var(--muted)">
+  <div class="card-body empty-state">
+    <div class="empty-state-icon">🗳️</div>
+    <div class="empty-state-title">Nenhuma votação aberta</div>
+    <p class="empty-state-text">
       No momento não há votações em andamento. Assim que uma votação for aberta, você será notificado.
     </p>
   </div>
 </div>
 {% endif %}
+{% endblock %}
 
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/student-voting.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-  let selectedChoice = null;
-
-  function selectVote(choice, el) {
-    selectedChoice = choice;
-    const colors = {favor:'var(--green)',contra:'var(--red)',abstencao:'var(--slate)'};
-    document.querySelectorAll('.v-opt').forEach(o => {
-      o.style.border = '2px solid var(--border)';
-      o.style.background = '';
-      o.querySelector('.v-check').style.background = '';
-      o.querySelector('.v-check').style.color = 'transparent';
-      o.querySelector('.v-check').style.borderColor = 'var(--border)';
-      o.querySelector('.v-check').textContent = '';
-    });
-    el.style.border = `2px solid ${colors[choice]}`;
-    const chk = el.querySelector('.v-check');
-    chk.style.background = colors[choice];
-    chk.style.borderColor = colors[choice];
-    chk.style.color = 'white';
-    chk.textContent = '✓';
-    document.getElementById('submitVote').disabled = false;
-  }
-
-  async function submitVote(sessionId) {
-    if (!selectedChoice) return;
-    const btn = document.getElementById('submitVote');
-    btn.disabled = true; btn.textContent = 'Registrando...';
-    try {
-      const res = await fetch('/api/votar', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({session_id: sessionId, choice: selectedChoice})
-      });
-      const data = await res.json();
-      if (data.ok) {
-        const icons = {favor:'✅',contra:'❌',abstencao:'🤝'};
-        const labels = {favor:'A Favor registrado!',contra:'Contra registrado!',abstencao:'Abstenção registrada!'};
-        document.getElementById('voteOptions').style.display = 'none';
-        document.getElementById('submitVote').style.display = 'none';
-        document.getElementById('voteResult').style.display = 'block';
-        document.getElementById('voteResultIcon').textContent = icons[selectedChoice];
-        document.getElementById('voteResultTitle').textContent = labels[selectedChoice];
-      } else {
-        btn.disabled = false; btn.textContent = 'Confirmar Voto';
-        alert(data.error || 'Erro ao votar.');
-      }
-    } catch (e) {
-      btn.disabled = false; btn.textContent = 'Confirmar Voto';
-      alert('Erro de conexão. Tente novamente.');
-    }
-  }
+  const sio = io();
+  sio.emit('join_students', {});
+  sio.on('vote_opened', (data) => { window.location.reload(); });
 </script>
 {% endblock %}

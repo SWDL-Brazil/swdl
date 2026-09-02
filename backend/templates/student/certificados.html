@@ -1,35 +1,30 @@
 {% extends "student/base.html" %}
+{% from "student/_macros.html" import empty_state %}
 {% block title %}Certificados{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
-    <h1 class="page-title">Certificados</h1>
-    <p class="page-sub">Visualize e valide seu certificado de participacao.</p>
+    <h1 class="page-title">🎓 Certificados</h1>
+    <p class="page-sub">Visualize e valide seu certificado de participação.</p>
   </div>
 </div>
 
 {% if student and student.certificate_released and student.verification_code %}
 <div class="card">
-  <div class="card-body" style="text-align:center;padding:40px">
-    <div style="font-size:64px;margin-bottom:16px">&#127891;</div>
-    <div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--navy);margin-bottom:8px">
-      Certificado Disponivel
-    </div>
-    <p style="font-size:14px;color:var(--muted);margin-bottom:24px;max-width:400px;margin-left:auto;margin-right:auto">
-      Seu certificado de participacao foi liberado pela organizacao.
+  <div class="card-body cert-center">
+    <div class="cert-icon">🎓</div>
+    <div class="cert-title">Certificado Disponível</div>
+    <p class="cert-subtitle">
+      Seu certificado de participação foi liberado pela organização.
     </p>
 
-    <div style="background:var(--offwhite2);border:2px solid var(--gold);border-radius:8px;padding:24px;margin-bottom:24px;display:inline-block">
-      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">
-        Seu Codigo de Verificacao
-      </div>
-      <div style="font-family:'DM Mono',monospace;font-size:28px;font-weight:700;color:var(--navy);letter-spacing:.05em">
-        {{ student.verification_code }}
-      </div>
+    <div class="cert-code-box">
+      <div class="cert-code-label">Seu Código de Verificação</div>
+      <div class="cert-code-value">{{ student.verification_code }}</div>
     </div>
 
-    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <div class="cert-actions">
       {% if student.certificate_url %}
       <a href="{{ student.certificate_url }}" target="_blank" class="btn btn-gold">
         Baixar Certificado (PDF)
@@ -37,24 +32,20 @@
       {% endif %}
     </div>
 
-    <div style="margin-top:20px;padding:16px;background:var(--offwhite2);border-radius:4px;text-align:left;max-width:500px;margin-left:auto;margin-right:auto">
-      <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">
-        Validacao Publica
+    <div class="cert-info-box">
+      <div class="cert-info-label">Validação Pública</div>
+      <div class="cert-info-text">
+        Qualquer pessoa pode validar seu certificado usando seu código:
       </div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">
-        Qualquer pessoa pode validar seu certificado usando seu codigo:
-      </div>
-      <code style="display:block;background:var(--border);padding:8px 12px;border-radius:4px;font-size:11px;word-break:break-all;color:var(--navy)">
+      <code class="cert-code-block">
         {{ request.host_url }}api/certificado/validar?code={{ student.verification_code }}
       </code>
 
       {% if student.digital_signature %}
       <div style="margin-top:12px;display:flex;align-items:center;gap:8px">
-        <span style="background:rgba(46,204,113,.12);color:#2ECC71;border:1px solid rgba(46,204,113,.25);padding:2px 10px;border-radius:10px;font-family:'DM Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">
-          Assinado Digitalmente
-        </span>
+        <span class="cert-signed-badge">Assinado Digitalmente</span>
         {% if student.signed_at %}
-        <span style="font-size:10px;color:var(--muted)">
+        <span class="text-muted">
           {{ student.signed_at.strftime('%d/%m/%Y %H:%M') }}
         </span>
         {% endif %}
@@ -64,29 +55,8 @@
   </div>
 </div>
 {% elif student and not student.certificate_released %}
-<div class="card">
-  <div class="card-body" style="text-align:center;padding:48px">
-    <div style="font-size:48px;margin-bottom:16px">&#128274;</div>
-    <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px">
-      Certificado nao liberado
-    </div>
-    <p style="font-size:14px;color:var(--muted);max-width:400px;margin:0 auto">
-      Seu certificado sera disponibilizado assim que a organizacao liberar.
-      Fique atento aos comunicados oficiais.
-    </p>
-  </div>
-</div>
+{{ empty_state('🔒', 'Certificado não liberado', 'Seu certificado será disponibilizado assim que a organização liberar. Fique atento aos comunicados oficiais.') }}
 {% else %}
-<div class="card">
-  <div class="card-body" style="text-align:center;padding:48px">
-    <div style="font-size:48px;margin-bottom:16px">&#127891;</div>
-    <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px">
-      Certificados
-    </div>
-    <p style="font-size:14px;color:var(--muted)">
-      Complete sua participacao para receber seu certificado.
-    </p>
-  </div>
-</div>
+{{ empty_state('🎓', 'Certificados', 'Complete sua participação para receber seu certificado.') }}
 {% endif %}
 {% endblock %}

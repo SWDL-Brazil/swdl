@@ -1,0 +1,79 @@
+{# ── MACROS REUTILIZÁVEIS — Painel do Aluno ── #}
+
+{# Empty state padronizado #}
+{% macro empty_state(icon, title, text) %}
+<div class="card">
+  <div class="card-body empty-state">
+    <div class="empty-state-icon">{{ icon }}</div>
+    <div class="empty-state-title">{{ title }}</div>
+    <p class="empty-state-text">{{ text }}</p>
+  </div>
+</div>
+{% endmacro %}
+
+{# Par label + value (perfil, attendance, etc) #}
+{% macro field_pair(label, value) %}
+<div>
+  <div class="field-label">{{ label }}</div>
+  <div class="field-value">{{ value }}</div>
+</div>
+{% endmacro %}
+
+{# Par label + value com help text #}
+{% macro field_pair_with_help(label, value, help_text) %}
+<div>
+  <div class="field-label">{{ label }}</div>
+  <div class="field-value">{{ value }}</div>
+  {% if help_text %}
+  <div class="field-help">{{ help_text }}</div>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{# Opção de voto (voting.html) #}
+{% macro vote_option(choice, icon, label, desc) %}
+<div class="v-opt" data-choice="{{ choice }}" onclick="selectVote('{{ choice }}',this)">
+  <span class="v-opt-icon">{{ icon }}</span>
+  <div>
+    <div class="v-opt-label">{{ label }}</div>
+    <div class="v-opt-desc">{{ desc }}</div>
+  </div>
+  <div class="v-check"></div>
+</div>
+{% endmacro %}
+
+{# Linha de documento #}
+{% macro doc_row(doc) %}
+<div class="doc-row">
+  <span class="doc-row-icon">📄</span>
+  <div class="doc-row-content">
+    <div class="doc-row-title">{{ doc.title }}</div>
+    {% if doc.description %}
+    <div class="doc-row-desc">{{ doc.description }}</div>
+    {% endif %}
+    <div class="doc-row-meta">
+      {% set cat_colors = {'guias': 'badge-oficial', 'comunicados': 'badge-warning', 'resolucoes': 'badge-success', 'mesa': 'badge-crise'} %}
+      {% set cat_labels = {'guias': 'Guia', 'comunicados': 'Comunicado', 'resolucoes': 'Resolução', 'mesa': 'Mesa'} %}
+      <span class="badge {{ cat_colors.get(doc.category, 'badge-votacao') }}">{{ cat_labels.get(doc.category, 'Doc') }}</span>
+      {% if doc.theme %}
+      <span class="badge badge-votacao">{{ doc.theme.name }}</span>
+      {% endif %}
+      <span>{{ doc.created_at.strftime('%d/%m/%Y') }}</span>
+    </div>
+  </div>
+  <a href="{{ url_for('student.documento_download', id=doc.id) }}" class="btn btn-navy btn-sm doc-row-btn">📥 Baixar</a>
+</div>
+{% endmacro %}
+
+{# Card de aviso (attendance, voting) #}
+{% macro warning_card(icon, title, text, color='var(--orange)') %}
+<div class="warning-card" style="border-color:{{ color }}">
+  <div class="warning-card-body">
+    <span class="warning-card-icon">{{ icon }}</span>
+    <div>
+      <div class="warning-card-title">{{ title }}</div>
+      <div class="warning-card-text">{{ text }}</div>
+    </div>
+  </div>
+</div>
+{% endmacro %}
