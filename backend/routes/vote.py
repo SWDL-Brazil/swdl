@@ -68,6 +68,7 @@ def vote_create():
         # Notifica todos que uma nova votação abriu
         data = session.to_dict()
         socketio.emit('vote_opened', data, room='all_delegates')
+        socketio.emit('vote_opened', data, room='vote_list')
         socketio.emit('vote_opened', data, room='telao')
         flash(f'Votação "{session.title}" aberta!', 'success')
         return redirect(url_for('vote.vote_list'))
@@ -90,6 +91,7 @@ def vote_close(id):
     data = session.to_dict()
     socketio.emit('vote_closed', data, room='all_delegates')
     socketio.emit('vote_closed', data, room='admin')
+    socketio.emit('vote_closed', data, room='vote_list')
     socketio.emit('vote_closed', data, room='telao')
     flash(f'Votação "{session.title}" encerrada.', 'info')
     return redirect(url_for('vote.vote_list'))
