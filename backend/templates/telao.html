@@ -558,11 +558,7 @@
   socket.on('vote_opened',(data)=>loadSession(data));
   socket.on('vote_update',(data)=>{if(currentSession&&data.id===currentSession.id)renderVotes(data);});
   socket.on('vote_closed',(data)=>{
-    if(currentSession&&data.id===currentSession.id){
-      showResult(data);
-    }else{
-      currentSession=null;show('idleScreen');
-    }
+    showResult(data);
   });
 
   async function poll() {
@@ -604,7 +600,7 @@
   function renderVotes(data){['favor','contra','abstencao'].forEach(k=>{const el=document.getElementById('list-'+k);if(el)el.innerHTML='';});if(data.votes)data.votes.forEach(addVote);if(data.counts)updateCounts(data.counts);}
   function addVote(vote){const listEl=document.getElementById('list-'+vote.choice);if(!listEl)return;const item=document.createElement('div');item.className='t-country-item';let flag='';if(vote.flag_url&&vote.flag_url.trim())flag=`<img class="t-flag-img" src="${vote.flag_url}" onerror="this.style.display='none'" alt="">`;else if(vote.flag)flag=`<span class="t-flag-emoji">${vote.flag}</span>`;else flag=`<span class="t-flag-emoji">🌍</span>`;item.innerHTML=`${flag}<span class="t-country-name">${vote.country||'?'}</span>`;listEl.appendChild(item);const cnt=document.getElementById('cnt-'+vote.choice);if(cnt){cnt.style.transform='scale(1.3)';setTimeout(()=>cnt.style.transform='scale(1)',200);}}
   function updateCounts(c){document.getElementById('cnt-favor').textContent=c.favor||0;document.getElementById('cnt-contra').textContent=c.contra||0;document.getElementById('cnt-abstencao').textContent=c.abstencao||0;}
-  function showResult(data){clearInterval(voteInterval);currentSession=null;show('resultScreen');const c=data.counts||{favor:0,contra:0,abstencao:0};const max=Math.max(c.favor,c.contra,c.abstencao,1);const mH=160;document.getElementById('rTitle').textContent=data.title;document.getElementById('r-favor').textContent=c.favor;document.getElementById('r-contra').textContent=c.contra;document.getElementById('r-abs').textContent=c.abstencao;setTimeout(()=>{document.getElementById('rb-favor').style.height=(c.favor/max*mH)+'px';document.getElementById('rb-contra').style.height=(c.contra/max*mH)+'px';document.getElementById('rb-abs').style.height=(c.abstencao/max*mH)+'px';},100);const v=document.getElementById('rVerdict');if(c.favor>c.contra){v.textContent='✅ Resolução Aprovada';v.className='result-verdict v-ok';}else if(c.contra>c.favor){v.textContent='❌ Resolução Rejeitada';v.className='result-verdict v-no';}else{v.textContent='🤝 Empate';v.className='result-verdict v-tie';}document.getElementById('committeeTag').style.display='none';setTimeout(()=>show('idleScreen'),12000);}
+  function showResult(data){clearInterval(voteInterval);currentSession=null;show('resultScreen');var ov=document.getElementById('oradores-overlay');if(ov)ov.remove();const c=data.counts||{favor:0,contra:0,abstencao:0};const max=Math.max(c.favor,c.contra,c.abstencao,1);const mH=160;document.getElementById('rTitle').textContent=data.title;document.getElementById('r-favor').textContent=c.favor;document.getElementById('r-contra').textContent=c.contra;document.getElementById('r-abs').textContent=c.abstencao;setTimeout(()=>{document.getElementById('rb-favor').style.height=(c.favor/max*mH)+'px';document.getElementById('rb-contra').style.height=(c.contra/max*mH)+'px';document.getElementById('rb-abs').style.height=(c.abstencao/max*mH)+'px';},100);const v=document.getElementById('rVerdict');if(c.favor>c.contra){v.textContent='✅ Resolução Aprovada';v.className='result-verdict v-ok';}else if(c.contra>c.favor){v.textContent='❌ Resolução Rejeitada';v.className='result-verdict v-no';}else{v.textContent='🤝 Empate';v.className='result-verdict v-tie';}document.getElementById('committeeTag').style.display='none';setTimeout(()=>show('idleScreen'),12000);}
   // ══════ ORADORES (Lista de Oradores) ══════
   socket.on('oradores_show', (data) => {
     console.log('[ORADORES] show via WS', JSON.stringify(data));
@@ -680,7 +676,7 @@
     resetSpeech();
   });
 
-  function show(id){['idleScreen','voteScreen','resultScreen','chamadaScreen','speechScreen'].forEach(s=>{document.getElementById(s).style.display=s===id?'flex':'none';});}
+  function show(id){['idleScreen','voteScreen','resultScreen','chamadaScreen','speechScreen','oradoresScreen'].forEach(s=>{const el=document.getElementById(s);if(el)el.style.display=s===id?'flex':'none';});var ov=document.getElementById('oradores-overlay');if(ov&&id!=='idleScreen')ov.remove();}
   function buildTicker(items){document.getElementById('tickerInner').innerHTML=[...items,...items].map(t=>`<span class="t-ticker-item">${t}</span><span class="t-ticker-sep"> ◆ </span>`).join('');}
 
   // ══════ CHAMADA (Lista de Presença) Ocultada (Sprint 2) ══════
