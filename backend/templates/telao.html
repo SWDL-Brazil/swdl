@@ -749,38 +749,43 @@
   function startVoteTimer(secs){clearInterval(voteInterval);voteTotal=secs||120;voteRem=voteTotal;renderVoteTimer();voteInterval=setInterval(()=>{if(voteRem>0){voteRem--;renderVoteTimer();}else{clearInterval(voteInterval);if(currentSession){fetch('/api/vote/'+currentSession.id+'/auto_close',{method:'POST'});showResult(currentSession);}}},1000);}
   function renderVoteTimer(){const mm=String(Math.floor(voteRem/60)).padStart(2,'0');const ss=String(voteRem%60).padStart(2,'0');document.getElementById('timerNum').textContent=`${mm}:${ss}`;const arc=document.getElementById('timerArc');arc.style.strokeDashoffset=CIRC*(1-voteRem/voteTotal);if(voteRem<=10)arc.style.stroke='var(--red-l)';else if(voteRem<=30)arc.style.stroke='#E67E22';else arc.style.stroke='var(--gold)';}
 
-  // WEBSOCKET — com reconexão e debug
-  console.log('[TELAO] Pagina carregada');
-  const socket = io({
-    transports: ['polling', 'websocket'],
-    reconnection: true,
-    reconnectionAttempts: 999,
-    reconnectionDelay: 2000,
-    reconnectionDelayMax: 30000,
-    timeout: 30000,
-  });
-  socket.on('connect', () => {
-    console.log('[TELAO] Socket conectado:', socket.id);
-    socket.emit('join_telao', {});
-  });
-  socket.on('connect_error', (err) => {
-    console.error('[TELAO] Erro conexao:', err.message);
-  });
-  socket.on('disconnect', (reason) => {
-    console.log('[TELAO] Socket desconectado:', reason);
-  });
-  socket.on('reconnect_attempt', (attempt) => {
-    console.log('[TELAO] Reconectando... tentativa', attempt);
-  });
-  socket.on('reconnect', () => {
-    console.log('[TELAO] Reconectado com sucesso');
-    socket.emit('join_telao', {});
-  });
-  socket.on('vote_opened',(data)=>loadSession(data));
-  socket.on('vote_update',(data)=>{if(currentSession&&data.id===currentSession.id)renderVotes(data);});
-  socket.on('vote_closed',(data)=>{
-    showResult(data);
-  });
+  // WEBSOCKET — opcional (se falhar, polling sozinho dá conta)
+  var socket = null;
+  try {
+    socket = io({
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 3,
+      reconnectionDelay: 3000,
+      timeout: 8000,
+    });
+    socket.on('connect', function() { socket.emit('join_telao', {}); });
+    socket.on('vote_opened', function(data) { loadSession(data); });
+    socket.on('vote_update', function(data) { if (currentSession && data.id === currentSession.id) renderVotes(data); });
+    socket.on('vote_closed', function(data) { showResult(data); });
+    socket.on('oradores_show', function(data) { showOradores(data); });
+    socket.on('oradores_hide', function() { hideOradores(); });
+    socket.on('oradores_toggle', function() { poll(); });
+    socket.on('chamada_show', function(data) { showChamada(data); });
+    socket.on('chamada_hide', function() { show('idleScreen'); });
+    socket.on('speaker_queue_show', function(data) { showSpeakerQueue(data); });
+    socket.on('speaker_queue_hide', function() { show('idleScreen'); });
+    socket.on('speaker_queue_display', function(data) { renderSpeakerQueue(data); });
+    socket.on('speaker_started', function(data) { sqActiveEntry = data; updateActiveSpeakerDisplay(data); });
+    socket.on('speaker_ended', function() { sqActiveEntry = null; });
+    socket.on('speech_timer_start', function(data) { startSpeechTimer(data.duration || 90); });
+    socket.on('speech_timer_stop', function() { stopSpeechTimer(); });
+    socket.on('speech_timer_reset', function() { resetSpeechTimer(); });
+    socket.on('motion_queue_show', function(data) { showMotionQueue(data); });
+    socket.on('motion_queue_hide', function() { show('idleScreen'); });
+    socket.on('motion_queue_display', function(data) { renderMotionQueue(data); });
+    socket.on('motion_activated', function(data) { renderMotionActive(data); });
+    socket.on('motion_completed', function() { document.getElementById('moActiveCard').style.display = 'none'; });
+    socket.on('resolution_display', function(data) { showResolutionDisplay(data); });
+    socket.on('resolution_voting', function(data) { showResolutionVoting(data); });
+    socket.on('resolution_completed', function(data) { showResolutionCompleted(data); });
+    socket.on('resolution_hide', function() { show('idleScreen'); });
+  } catch(e) { socket = null; }
 
   async function poll() {
     try {
@@ -820,7 +825,7 @@
       if (e.name !== 'AbortError') console.error('[TELAO] poll error', e);
     }
   }
-  poll(); setInterval(poll, 15000);
+  poll(); setInterval(poll, 5000);
 
   function loadSession(session){currentSession=session;show('voteScreen');document.getElementById('qTitle').textContent=session.title||'—';document.getElementById('qDesc').textContent=session.description||'';const ct=document.getElementById('committeeTag');ct.textContent=(session.committee||'GERAL').toUpperCase();ct.style.display='block';['favor','contra','abstencao'].forEach(k=>{const el=document.getElementById('list-'+k);if(el)el.innerHTML='';const cnt=document.getElementById('cnt-'+k);if(cnt)cnt.textContent='0';});if(session.votes)session.votes.forEach(addVote);if(session.counts)updateCounts(session.counts);startVoteTimer(session.remaining_sec!=null?session.remaining_sec:(session.duration_sec||120));}
   function renderVotes(data){['favor','contra','abstencao'].forEach(k=>{const el=document.getElementById('list-'+k);if(el)el.innerHTML='';});if(data.votes)data.votes.forEach(addVote);if(data.counts)updateCounts(data.counts);}
@@ -828,85 +833,59 @@
   function updateCounts(c){document.getElementById('cnt-favor').textContent=c.favor||0;document.getElementById('cnt-contra').textContent=c.contra||0;document.getElementById('cnt-abstencao').textContent=c.abstencao||0;}
   function showResult(data){clearInterval(voteInterval);currentSession=null;show('resultScreen');var ov=document.getElementById('oradores-overlay');if(ov)ov.remove();const c=data.counts||{favor:0,contra:0,abstencao:0};const max=Math.max(c.favor,c.contra,c.abstencao,1);const mH=160;document.getElementById('rTitle').textContent=data.title;document.getElementById('r-favor').textContent=c.favor;document.getElementById('r-contra').textContent=c.contra;document.getElementById('r-abs').textContent=c.abstencao;setTimeout(()=>{document.getElementById('rb-favor').style.height=(c.favor/max*mH)+'px';document.getElementById('rb-contra').style.height=(c.contra/max*mH)+'px';document.getElementById('rb-abs').style.height=(c.abstencao/max*mH)+'px';},100);const v=document.getElementById('rVerdict');if(c.favor>c.contra){v.textContent='✅ Resolução Aprovada';v.className='result-verdict v-ok';}else if(c.contra>c.favor){v.textContent='❌ Resolução Rejeitada';v.className='result-verdict v-no';}else{v.textContent='🤝 Empate';v.className='result-verdict v-tie';}document.getElementById('committeeTag').style.display='none';setTimeout(()=>show('idleScreen'),12000);}
   // ══════ ORADORES (Lista de Oradores) ══════
-  socket.on('oradores_show', (data) => {
-    console.log('[ORADORES] show via WS', JSON.stringify(data));
-    try {
-      ['idleScreen','voteScreen','resultScreen','chamadaScreen','speakerQueueScreen','oradoresScreen','speechScreen'].forEach(function(s) {
-        var e = document.getElementById(s);
-        if (e) e.style.display = 'none';
+  function showOradores(data) {
+    ['idleScreen','voteScreen','resultScreen','chamadaScreen','speakerQueueScreen','oradoresScreen','speechScreen'].forEach(function(s) {
+      var e = document.getElementById(s);
+      if (e) e.style.display = 'none';
+    });
+    var old = document.getElementById('oradores-overlay');
+    if (old) old.remove();
+    var overlay = document.createElement('div');
+    overlay.id = 'oradores-overlay';
+    overlay.style.cssText = 'position:fixed;top:110px;left:0;right:0;bottom:36px;z-index:200;background:var(--navy-d,#0B1535);overflow:auto;padding:24px 32px';
+    var header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.1)';
+    header.innerHTML = '<div style="font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--gold,#C9A84C)"><span class="live-dot"></span> Lista de Oradores</div>' +
+      '<div style="font-family:\'Playfair Display\',serif;font-size:28px;font-weight:900;color:var(--gold,#C9A84C)">' + (data.oradores ? data.oradores.length : 0) + '</div>';
+    overlay.appendChild(header);
+    var grid = document.createElement('div');
+    grid.style.cssText = 'display:flex;flex-wrap:wrap;gap:12px';
+    if (data.oradores) {
+      data.oradores.forEach(function(d) {
+        var card = document.createElement('div');
+        card.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 20px;min-width:140px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px';
+        var flagHtml = '';
+        if (d.flag_url && d.flag_url.trim()) {
+          flagHtml = '<img src="' + d.flag_url + '" style="height:36px;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.4)" onerror="this.style.display=\'none\'">';
+        } else if (d.flag) {
+          flagHtml = '<span style="font-size:44px;line-height:1">' + d.flag + '</span>';
+        } else {
+          flagHtml = '<span style="font-size:44px;line-height:1">🌍</span>';
+        }
+        card.innerHTML = flagHtml + '<span style="font-size:13px;font-weight:600;color:var(--white,#fff);text-align:center">' + (d.country || '?') + '</span>';
+        grid.appendChild(card);
       });
-      // Remove overlay antigo se existir
-      var old = document.getElementById('oradores-overlay');
-      if (old) old.remove();
-      // Cria overlay DIRETO no body - SEM DEPENDER de CSS
-      var overlay = document.createElement('div');
-      overlay.id = 'oradores-overlay';
-      overlay.style.cssText = 'position:fixed;top:110px;left:0;right:0;bottom:36px;z-index:200;background:var(--navy-d,#0B1535);overflow:auto;padding:24px 32px';
-      var header = document.createElement('div');
-      header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.1)';
-      header.innerHTML = '<div style="font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--gold,#C9A84C)"><span class="live-dot"></span> Lista de Oradores</div>' +
-        '<div style="font-family:\'Playfair Display\',serif;font-size:28px;font-weight:900;color:var(--gold,#C9A84C)">' + (data.oradores ? data.oradores.length : 0) + '</div>';
-      overlay.appendChild(header);
-      var grid = document.createElement('div');
-      grid.style.cssText = 'display:flex;flex-wrap:wrap;gap:12px';
-      if (data.oradores) {
-        data.oradores.forEach(function(d) {
-          var card = document.createElement('div');
-          card.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 20px;min-width:140px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px';
-          var flagHtml = '';
-          if (d.flag_url && d.flag_url.trim()) {
-            flagHtml = '<img src="' + d.flag_url + '" style="height:36px;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.4)" onerror="this.style.display=\'none\'">';
-          } else if (d.flag) {
-            flagHtml = '<span style="font-size:44px;line-height:1">' + d.flag + '</span>';
-          } else {
-            flagHtml = '<span style="font-size:44px;line-height:1">🌍</span>';
-          }
-          card.innerHTML = flagHtml + '<span style="font-size:13px;font-weight:600;color:var(--white,#fff);text-align:center">' + (d.country || '?') + '</span>';
-          grid.appendChild(card);
-        });
-      }
-      overlay.appendChild(grid);
-      document.body.appendChild(overlay);
-    } catch(e) {
-      console.error('[ORADORES] ERRO:', e.message, e.stack);
     }
-  });
+    overlay.appendChild(grid);
+    document.body.appendChild(overlay);
+  }
 
-  socket.on('oradores_hide', () => {
-    console.log('[ORADORES] hide via WS', new Date().toISOString());
+  function hideOradores() {
     var ov = document.getElementById('oradores-overlay');
     if (ov) ov.remove();
     show('idleScreen');
-  });
-
-  socket.on('oradores_toggle', (data) => {
-    console.log('[ORADORES] toggle via WS', data);
-    fetchOradores();
-  });
+  }
 
   // ══════ CRONÔMETRO DE ORATÓRIA (controle via admin) ══════
-  socket.on('speech_timer_start', (data) => {
-    console.log('[CRONOMETRO] start via WS', data);
-    startSpeech(data.duration || 90);
-  });
-
-  socket.on('speech_timer_stop', () => {
-    console.log('[CRONOMETRO] stop via WS');
-    clearInterval(speechInterval);
-    speechRunning = false;
-  });
-
-  socket.on('speech_timer_reset', () => {
-    console.log('[CRONOMETRO] reset via WS');
-    resetSpeech();
-  });
+  function startSpeechTimer(duration) { startSpeech(duration || 90); }
+  function stopSpeechTimer() { clearInterval(speechInterval); speechRunning = false; }
+  function resetSpeechTimer() { resetSpeech(); }
 
   function show(id){['idleScreen','voteScreen','resultScreen','chamadaScreen','speechScreen','speakerQueueScreen','motionScreen','resolutionScreen','oradoresScreen'].forEach(s=>{const el=document.getElementById(s);if(el)el.style.display=s===id?'flex':'none';});var ov=document.getElementById('oradores-overlay');if(ov&&id!=='idleScreen')ov.remove();}
   function buildTicker(items){document.getElementById('tickerInner').innerHTML=[...items,...items].map(t=>`<span class="t-ticker-item">${t}</span><span class="t-ticker-sep"> ◆ </span>`).join('');}
 
   // ══════ CHAMADA (Lista de Presença) ══════
-  socket.on('chamada_show', function(data) {
-    console.log('[CHAMADA] show via WS', data);
+  function showChamada(data) {
     show('chamadaScreen');
     var committee = data.committee || 'Geral';
     document.getElementById('chCommittee').textContent = 'Chamada — ' + committee.toUpperCase();
@@ -924,22 +903,7 @@
     document.getElementById('chCntPresente').textContent = presentes.length;
     document.getElementById('chCntVotante').textContent = votantes.length;
     document.getElementById('chCntAusente').textContent = ausentes.length;
-  });
-
-  socket.on('chamada_hide', function() {
-    console.log('[CHAMADA] hide via WS');
-    show('idleScreen');
-  });
-
-  socket.on('chamada_update', function(data) {
-    console.log('[CHAMADA] update via WS', data);
-    // Re-fetch full chamada state
-    fetch('/api/telao/estado').then(function(r){return r.json();}).then(function(d){
-      if (d.chamada) {
-        socket.emit('join_telao', {});
-      }
-    });
-  });
+  }
 
   function renderChamadaColumn(listId, countId, items) {
     var list = document.getElementById(listId);
@@ -962,37 +926,10 @@
   // ══════ FILA DE ORADORES (Speaker Queue) ══════
   var sqActiveEntry = null;
 
-  socket.on('speaker_queue_show', function(data) {
-    console.log('[SPEAKER_QUEUE] show via WS', data);
+  function showSpeakerQueue(data) {
     show('speakerQueueScreen');
     renderSpeakerQueue(data);
-  });
-
-  socket.on('speaker_queue_hide', function() {
-    console.log('[SPEAKER_QUEUE] hide via WS');
-    show('idleScreen');
-  });
-
-  socket.on('speaker_queue_display', function(data) {
-    console.log('[SPEAKER_QUEUE] display via WS', data);
-    var ov = document.getElementById('oradores-overlay');
-    if (ov) return; // oradores overlay takes priority
-    renderSpeakerQueue(data);
-  });
-
-  socket.on('speaker_started', function(data) {
-    console.log('[SPEAKER_QUEUE] started via WS', data);
-    sqActiveEntry = data;
-    var ov = document.getElementById('oradores-overlay');
-    if (!ov && document.getElementById('speakerQueueScreen').style.display === 'flex') {
-      updateActiveSpeakerDisplay(data);
-    }
-  });
-
-  socket.on('speaker_ended', function(data) {
-    console.log('[SPEAKER_QUEUE] ended via WS', data);
-    sqActiveEntry = null;
-  });
+  }
 
   function renderSpeakerQueue(data) {
     var committee = data.committee || 'all';
@@ -1054,32 +991,7 @@
   }
 
   // ══════ FILA DE MOÇÕES (Motion Queue) ══════
-  socket.on('motion_queue_show', function(data) {
-    console.log('[MOTION] queue show via WS', data);
-    show('motionScreen');
-    renderMotionQueue(data);
-  });
-
-  socket.on('motion_queue_hide', function() {
-    console.log('[MOTION] queue hide via WS');
-    show('idleScreen');
-  });
-
-  socket.on('motion_queue_display', function(data) {
-    console.log('[MOTION] queue display via WS', data);
-    renderMotionQueue(data);
-  });
-
-  socket.on('motion_activated', function(data) {
-    console.log('[MOTION] activated via WS', data);
-    renderMotionActive(data);
-  });
-
-  socket.on('motion_completed', function(data) {
-    console.log('[MOTION] completed via WS', data);
-    document.getElementById('moActiveCard').style.display = 'none';
-  });
-
+  function showMotionQueue(data) { show('motionScreen'); renderMotionQueue(data); }
   function renderMotionQueue(data) {
     var committee = data.committee || 'all';
     document.getElementById('moCommittee').textContent =
@@ -1143,33 +1055,12 @@
   }
 
   // ══════ RESOLUÇÕES ══════
-  socket.on('resolution_display', function(data) {
-    console.log('[RESOLUTION] display via WS', data);
-    if (data.active) {
-      show('resolutionScreen');
-      renderResolution(data.active);
-    } else if (data.submitted && data.submitted.length > 0) {
-      show('resolutionScreen');
-      renderResolution(data.submitted[0]);
-    }
-  });
-
-  socket.on('resolution_voting', function(data) {
-    console.log('[RESOLUTION] voting via WS', data);
-    show('resolutionScreen');
-    renderResolution(data);
-  });
-
-  socket.on('resolution_completed', function(data) {
-    console.log('[RESOLUTION] completed via WS', data);
-    show('resolutionScreen');
-    renderResolutionCompleted(data);
-  });
-
-  socket.on('resolution_hide', function() {
-    console.log('[RESOLUTION] hide via WS');
-    show('idleScreen');
-  });
+  function showResolutionDisplay(data) {
+    if (data.active) { show('resolutionScreen'); renderResolution(data.active); }
+    else if (data.submitted && data.submitted.length > 0) { show('resolutionScreen'); renderResolution(data.submitted[0]); }
+  }
+  function showResolutionVoting(data) { show('resolutionScreen'); renderResolution(data); }
+  function showResolutionCompleted(data) { show('resolutionScreen'); renderResolutionCompleted(data); }
 
   function renderResolution(res) {
     document.getElementById('rsTitle').textContent = res.title;
