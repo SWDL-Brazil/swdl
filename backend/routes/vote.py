@@ -10,6 +10,7 @@ from extensions import db, socketio
 from models.vote       import VoteSession, Vote
 from models.delegation import Delegation
 from models.theme import Theme
+from models.speech_log import SpeechLog
 from datetime import datetime, timezone
 import os
 
@@ -204,6 +205,14 @@ def api_submit_vote():
     )
     db.session.add(vote)
     db.session.commit()
+
+    SpeechLog.log(
+        delegation_id=delegation.id,
+        committee=vote_session.committee,
+        log_type='vote_cast',
+        reference_id=session_id,
+        reference_type='vote',
+    )
 
     # Broadcast em tempo real
     _broadcast_results(session_id)

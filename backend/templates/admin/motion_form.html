@@ -1,0 +1,105 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Nova Moção{% endblock %}
+
+{% block page_title %}➕ Nova Moção{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Criar Moção (Mesa)</h3>
+    </div>
+    <div class="card-body">
+      <form method="POST">
+        <div class="form-group">
+          <label for="committee">Comitê</label>
+          <select name="committee" id="committee" required>
+            {% for c in available_committees %}
+            <option value="{{ c }}" {% if committee_filter == c %}selected{% endif %}>{{ c.upper() }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="motion_type">Tipo de Moção</label>
+          <select name="motion_type" id="motion_type" required onchange="updateDefaults()">
+            {% for key, info in motion_types.items() %}
+            <option value="{{ key }}" data-total="{{ info.default_total }}" data-speaking="{{ info.default_speaking }}">
+              {{ info.icon }} {{ info.label }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="proposer_id">Proposta por (Delegação)</label>
+          <select name="proposer_id" id="proposer_id" required>
+            <option value="">Selecione...</option>
+            {% for d in delegations %}
+            <option value="{{ d.id }}">{{ d.country_flag or '🌍' }} {{ d.country }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="topic">Tópico / Assunto</label>
+          <input type="text" name="topic" id="topic" required maxlength="300"
+                 placeholder="Ex: Questão daSegurança Alimentar Global">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="total_time">Tempo Total (segundos)</label>
+            <input type="number" name="total_time" id="total_time" value="900" min="0" max="7200">
+          </div>
+          <div class="form-group">
+            <label for="speaking_time">Tempo por Orador (segundos)</label>
+            <input type="number" name="speaking_time" id="speaking_time" value="60" min="0" max="600">
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:20px;">
+          <button type="submit" class="btn btn-gold"> Criar Moção</button>
+          <a href="{{ url_for('motion.motions_panel', committee=committee_filter) }}" class="btn btn-ghost">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Tipos de Moção</h3>
+    </div>
+    <div class="card-body">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        {% for key, info in motion_types.items() %}
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:6px;background:rgba(16,30,76,.03);border:1px solid var(--border);">
+          <span style="font-size:20px;">{{ info.icon }}</span>
+          <div style="flex:1;">
+            <div style="font-weight:700;font-size:13px;">{{ info.label }}</div>
+            <div style="font-size:11px;color:var(--muted);">
+              {% if info.default_total > 0 %}
+                Total: {{ info.default_total // 60 }}min
+                {% if info.default_speaking > 0 %} · Orador: {{ info.default_speaking }}s{% endif %}
+              {% else %}
+                Voto direto
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function updateDefaults() {
+    const sel = document.getElementById('motion_type');
+    const opt = sel.options[sel.selectedIndex];
+    document.getElementById('total_time').value = opt.dataset.total;
+    document.getElementById('speaking_time').value = opt.dataset.speaking;
+  }
+</script>
+{% endblock %}

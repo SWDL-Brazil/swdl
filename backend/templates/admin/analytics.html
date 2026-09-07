@@ -1,0 +1,153 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Analytics{% endblock %}
+
+{% block page_title %}📊 Analytics — Dashboard de Participação{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom:16px;">
+  <div class="form-group" style="margin-bottom:0;min-width:250px;">
+    <label for="committee-filter">Filtrar por Comitê</label>
+    <select id="committee-filter" onchange="filterCommittee(this.value)">
+      <option value="all" {% if committee_filter == 'all' %}selected{% endif %}>Todos os Comitês</option>
+      {% for c in available_committees %}
+      <option value="{{ c }}" {% if committee_filter == c %}selected{% endif %}>{{ c.upper() }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <a href="{{ url_for('analytics.analytics_export', committee=committee_filter) }}" target="_blank" class="btn btn-navy btn-sm">📥 Exportar JSON</a>
+</div>
+
+{# ═══════ STATS GERAIS ═══════ #}
+<div class="stats-grid">
+  <div class="stat-tile">
+    <span class="stat-tile-num">{{ stats.total_speeches }}</span>
+    <span class="stat-tile-label">Discursos</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-num" style="color:var(--gold);">
+      {% set hours = (stats.total_speech_time // 3600) %}
+      {% set mins = ((stats.total_speech_time % 3600) // 60) %}
+      {{ hours }}h{{ '%02d'|format(mins) }}
+    </span>
+    <span class="stat-tile-label">Tempo Total de Fala</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-num" style="color:var(--green);">{{ stats.total_motions }}</span>
+    <span class="stat-tile-label">Moções</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-num" style="color:var(--orange);">{{ stats.total_votes }}</span>
+    <span class="stat-tile-label">Votos</span>
+  </div>
+</div>
+
+<div class="grid-2">
+  {# ═══════ RANKING POR DELEGAÇÃO ═══════ #}
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">🏆 Ranking de Participação</h3>
+    </div>
+    <div class="card-body" style="padding:0;">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th style="width:40px;">#</th>
+            <th>País</th>
+            <th style="text-align:center;">Discursos</th>
+            <th style="text-align:center;">Tempo</th>
+            <th style="text-align:center;">Moções</th>
+            <th style="text-align:center;">Votos</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in stats.delegations[:20] %}
+          <tr>
+            <td><strong style="color:var(--gold);">{{ loop.index }}</strong></td>
+            <td>
+              {% if d.flag_url %}
+                <img src="{{ d.flag_url }}" alt="" style="width:24px;height:auto;border-radius:2px;border:1px solid var(--border);vertical-align:middle;">
+              {% else %}
+                <span style="font-size:16px;">{{ d.flag or '🌍' }}</span>
+              {% endif %}
+              <strong>{{ d.country }}</strong>
+            </td>
+            <td style="text-align:center;">{{ d.speeches }}</td>
+            <td style="text-align:center;">
+              {% set h = (d.total_time // 3600) %}
+              {% set m = ((d.total_time % 3600) // 60) %}
+              {% set s = (d.total_time % 60) %}
+              {% if h > 0 %}{{ h }}h{% endif %}{{ '%02d'|format(m) }}:{{ '%02d'|format(s) }}
+            </td>
+            <td style="text-align:center;">{{ d.motions }}</td>
+            <td style="text-align:center;">{{ d.votes }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" style="text-align:center;padding:32px;color:var(--muted);">
+              Nenhum dado de participação ainda.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {# ═══════ TIMELINE ═══════ #}
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">📅 Timeline da Sessão</h3>
+    </div>
+    <div class="card-body" style="padding:0;max-height:600px;overflow-y:auto;">
+      {% for entry in timeline %}
+      <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:12px;">
+        <div style="min-width:60px;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;">
+          {{ entry.created_at.strftime('%H:%M') if entry.created_at else '--:--' }}
+        </div>
+        <div>
+          {% if entry.log_type == 'speech' %}
+            <span style="color:var(--green);">🎤</span>
+            <strong>{{ entry.delegation.country if entry.delegation else '?' }}</strong> discursou
+            {% if entry.duration_sec > 0 %}
+              <span style="color:var(--muted);">({{ entry.duration_sec }}s)</span>
+            {% endif %}
+          {% elif entry.log_type == 'motion_proposed' %}
+            <span style="color:var(--gold);">📋</span>
+            <strong>{{ entry.delegation.country if entry.delegation else '?' }}</strong> propôs moção
+          {% elif entry.log_type == 'motion_seconded' %}
+            <span style="color:var(--gold);">👍</span>
+            <strong>{{ entry.delegation.country if entry.delegation else '?' }}</strong> secondou moção
+          {% elif entry.log_type == 'vote_cast' %}
+            <span style="color:var(--orange);">🗳️</span>
+            <strong>{{ entry.delegation.country if entry.delegation else '?' }}</strong> votou
+          {% elif entry.log_type == 'amendment_proposed' %}
+            <span style="color:var(--slate);">📝</span>
+            <strong>{{ entry.delegation.country if entry.delegation else '?' }}</strong> propôs emenda
+          {% elif entry.log_type == 'resolution_created' %}
+            <span style="color:var(--navy);">📜</span>
+            <strong>{{ entry.delegation.country if entry.delegation else '?' }}</strong> criou resolução
+          {% endif %}
+          {% if entry.topic %}
+            <span style="color:var(--muted);">— {{ entry.topic[:60] }}</span>
+          {% endif %}
+        </div>
+        <div style="margin-left:auto;">
+          <span class="badge badge-oficial" style="font-size:9px;">{{ entry.committee }}</span>
+        </div>
+      </div>
+      {% else %}
+      <div style="text-align:center;padding:32px;color:var(--muted);">
+        Nenhum evento registrado ainda.
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+  function filterCommittee(val) {
+    window.location.href = "{{ url_for('analytics.analytics_panel') }}?committee=" + val;
+  }
+</script>
+{% endblock %}

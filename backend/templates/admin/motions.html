@@ -1,0 +1,236 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Moções{% endblock %}
+
+{% block page_title %}📋 Moções — Fila de Debate{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('motion.motion_create', committee=committee_filter) }}" class="btn btn-gold btn-sm">➕ Nova Moção</a>
+  <button class="btn btn-navy btn-sm" onclick="controlScreen('show')">📺 Exibir no Telão</button>
+  <button class="btn btn-danger btn-sm" onclick="controlScreen('hide')">✖ Ocultar Telão</button>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom:16px;">
+  <div class="form-group" style="margin-bottom:0;min-width:250px;">
+    <label for="committee-filter">Filtrar por Comitê</label>
+    <select id="committee-filter" onchange="filterCommittee(this.value)">
+      <option value="all" {% if committee_filter == 'all' %}selected{% endif %}>Todos os Comitês</option>
+      {% for c in available_committees %}
+      <option value="{{ c }}" {% if committee_filter == c %}selected{% endif %}>{{ c.upper() }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-pending">0</span>
+    <span class="stat-tile-label">Pendentes</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-active" style="color:var(--green);">0</span>
+    <span class="stat-tile-label">Ativa</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-approved" style="color:var(--gold);">0</span>
+    <span class="stat-tile-label">Aprovadas Hoje</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-rejected" style="color:var(--red);">0</span>
+    <span class="stat-tile-label">Rejeitadas Hoje</span>
+  </div>
+</div>
+
+{# ═══════ MOÇÃO ATIVA ═══════ #}
+{% if active %}
+<div class="card" style="margin-bottom:20px;border-left:4px solid var(--green);">
+  <div class="card-header" style="background:rgba(30,123,69,.04);">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:24px;">{{ active.type_info().icon }}</span>
+      <div>
+        <div class="card-title" style="color:var(--green);">{{ active.type_info().label }} — Em Andamento</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:2px;">
+          {{ active.topic }} · Proposta por: {{ active.proposer.country if active.proposer else '?' }}
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">
+          Total: {{ active.total_time // 60 }}min · Por orador: {{ active.speaking_time }}s
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-sm btn-ghost" onclick="completeMotion({{ active.id }})">⏹ Concluir</button>
+  </div>
+</div>
+{% endif %}
+
+{# ═══════ FILA PENDENTE ═══════ #}
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-header">
+    <h3 class="card-title">Fila Pendente</h3>
+    <a href="{{ url_for('motion.motion_create', committee=committee_filter) }}" class="btn btn-sm btn-gold">➕ Nova Moção</a>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Tópico</th>
+          <th>Proposta por</th>
+          <th>Comitê</th>
+          <th>Tempo</th>
+          <th>Seconding</th>
+          <th style="text-align:right;">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in pending %}
+        <tr id="motion-{{ m.id }}">
+          <td>
+            <span style="font-size:16px;">{{ m.type_info().icon }}</span>
+            <span style="font-size:11px;font-weight:600;">{{ m.type_info().label }}</span>
+          </td>
+          <td style="max-width:250px;">
+            <strong>{{ m.topic }}</strong>
+            {% if m.chair_notes %}
+              <div style="font-size:10px;color:var(--muted);margin-top:2px;">📝 {{ m.chair_notes }}</div>
+            {% endif %}
+          </td>
+          <td>
+            {% if m.proposer %}
+              <span style="font-size:14px;">{{ m.proposer.country_flag or '🌍' }}</span>
+              {{ m.proposer.country }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td><span class="badge badge-oficial">{{ m.committee.upper() }}</span></td>
+          <td>
+            {% if m.total_time > 0 %}
+              {{ m.total_time // 60 }}min{% if m.speaking_time > 0 %} · {{ m.speaking_time }}s{% endif %}
+            {% else %}
+              Voto
+            {% endif %}
+          </td>
+          <td>
+            {% if m.seconded_by %}
+              <span class="badge" style="background:rgba(30,123,69,.1);color:var(--green);">
+                ✓ {{ m.seconded_by.country }}
+              </span>
+            {% else %}
+              <span style="color:var(--muted);font-size:11px;">Aguardando</span>
+            {% endif %}
+          </td>
+          <td style="text-align:right;white-space:nowrap;">
+            <button class="btn btn-sm btn-primary" onclick="activateMotion({{ m.id }})" title="Ativar (iniciar debate)">▶ Ativar</button>
+            <button class="btn btn-sm btn-ghost" onclick="approveMotion({{ m.id }})" title="Aprovar">✓</button>
+            <button class="btn btn-sm btn-danger" onclick="rejectMotion({{ m.id }})" title="Rejeitar">✗</button>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" style="text-align:center;padding:32px;color:var(--muted);">
+            Nenhuma moção pendente. Delegados podem propor pelo portal.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# ═══════ HISTÓRICO ═══════ #}
+{% if log %}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Histórico de Hoje</h3>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Tópico</th>
+          <th>Proposta por</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in log %}
+        <tr>
+          <td>
+            <span style="font-size:14px;">{{ m.type_info().icon }}</span>
+            {{ m.type_info().label }}
+          </td>
+          <td>{{ m.topic }}</td>
+          <td>
+            {{ m.proposer.country if m.proposer else '?' }}
+          </td>
+          <td>
+            {% if m.status == 'approved' %}
+              <span class="badge" style="background:rgba(30,123,69,.1);color:var(--green);">✓ Aprovada</span>
+            {% elif m.status == 'rejected' %}
+              <span class="badge" style="background:rgba(192,57,43,.1);color:var(--red);">✗ Rejeitada</span>
+            {% elif m.status == 'active' %}
+              <span class="badge" style="background:rgba(183,148,65,.1);color:var(--gold);">▶ Ativa</span>
+            {% elif m.status == 'completed' %}
+              <span class="badge" style="background:rgba(138,144,170,.1);color:var(--slate);">Concluída</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<script>
+  function filterCommittee(val) {
+    window.location.href = "{{ url_for('motion.motions_panel') }}?committee=" + val;
+  }
+
+  function updateCounters() {
+    document.getElementById('count-pending').textContent = '{{ pending|length }}';
+    document.getElementById('count-active').textContent = '{{ "1" if active else "0" }}';
+    document.getElementById('count-approved').textContent = '{{ log|selectattr("status","equalto","approved")|list|length }}';
+    document.getElementById('count-rejected').textContent = '{{ log|selectattr("status","equalto","rejected")|list|length }}';
+  }
+
+  function approveMotion(id) {
+    fetch("{{ url_for('motion.motion_approve', id=0) }}".replace('/0/', '/' + id + '/'), {
+      method: 'POST', headers: {'Content-Type': 'application/json'}
+    }).then(r => r.json()).then(d => { if (d.status === 'success') location.reload(); else alert(d.message); });
+  }
+
+  function rejectMotion(id) {
+    if (!confirm('Rejeitar esta moção?')) return;
+    fetch("{{ url_for('motion.motion_reject', id=0) }}".replace('/0/', '/' + id + '/'), {
+      method: 'POST', headers: {'Content-Type': 'application/json'}
+    }).then(r => r.json()).then(d => { if (d.status === 'success') location.reload(); else alert(d.message); });
+  }
+
+  function activateMotion(id) {
+    fetch("{{ url_for('motion.motion_activate', id=0) }}".replace('/0/', '/' + id + '/'), {
+      method: 'POST', headers: {'Content-Type': 'application/json'}
+    }).then(r => r.json()).then(d => { if (d.status === 'success') location.reload(); else alert(d.message); });
+  }
+
+  function completeMotion(id) {
+    fetch("{{ url_for('motion.motion_complete', id=0) }}".replace('/0/', '/' + id + '/'), {
+      method: 'POST', headers: {'Content-Type': 'application/json'}
+    }).then(r => r.json()).then(d => { if (d.status === 'success') location.reload(); });
+  }
+
+  function controlScreen(action) {
+    const committee = document.getElementById('committee-filter').value;
+    fetch("{{ url_for('motion.motion_telao') }}", {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ action: action, committee: committee })
+    }).then(r => r.json()).then(d => {
+      if (d.status === 'success') alert(action === 'show' ? '📺 Moções enviadas ao Telão!' : '🔕 Ocultado do Telão.');
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", updateCounters);
+</script>
+{% endblock %}

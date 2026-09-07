@@ -43,12 +43,20 @@ def create_app():
     from routes.api      import api_bp
     from routes.vote     import vote_bp
     from routes.student  import student_bp
+    from routes.speaker_queue import speaker_bp
+    from routes.motion   import motion_bp
+    from routes.resolution import resolution_bp
+    from routes.analytics import analytics_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp,   url_prefix='/admin')
     app.register_blueprint(api_bp,     url_prefix='/api')
     app.register_blueprint(vote_bp)
     app.register_blueprint(student_bp)
+    app.register_blueprint(speaker_bp)
+    app.register_blueprint(motion_bp)
+    app.register_blueprint(resolution_bp)
+    app.register_blueprint(analytics_bp)
 
     # Cria as tabelas se não existirem
     with app.app_context():
@@ -65,6 +73,10 @@ def create_app():
         from models.participation import ParticipationHistory
         from models.event_config import EventConfig
         from models.system_config import SystemConfig
+        from models.speaker import SpeakerEntry
+        from models.motion import Motion
+        from models.resolution import Resolution, Amendment
+        from models.speech_log import SpeechLog
 
         db.create_all()
         _run_migrations(app)
@@ -114,6 +126,10 @@ def _run_migrations(app):
         from models.urgent_alert import UrgentAlert
         from models.vote import VoteSession, Vote
         from models.system_config import SystemConfig
+        from models.speaker import SpeakerEntry
+        from models.motion import Motion
+        from models.resolution import Resolution, Amendment
+        from models.speech_log import SpeechLog
 
         tables = {
             User.__tablename__: User,
@@ -132,6 +148,11 @@ def _run_migrations(app):
             VoteSession.__tablename__: VoteSession,
             Vote.__tablename__: Vote,
             SystemConfig.__tablename__: SystemConfig,
+            SpeakerEntry.__tablename__: SpeakerEntry,
+            Motion.__tablename__: Motion,
+            Resolution.__tablename__: Resolution,
+            Amendment.__tablename__: Amendment,
+            SpeechLog.__tablename__: SpeechLog,
         }
 
         for table_name, model in tables.items():

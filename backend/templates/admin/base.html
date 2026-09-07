@@ -401,7 +401,21 @@
     'vote.vote_list', 'vote.vote_create', 'vote.vote_detail', 'vote.vote_toggle',
     'vote.vote_delete', 'vote.vote_telao', 'vote.vote_results',
     'vote.vote_toggle_status', 'admin.invocar_page',
-    'admin.director_dashboard'] -%}
+    'admin.director_dashboard',
+    'speaker.speaker_queue_panel', 'speaker.speaker_queue_add',
+    'speaker.speaker_queue_reorder', 'speaker.speaker_queue_start',
+    'speaker.speaker_queue_skip', 'speaker.speaker_queue_end',
+    'speaker.speaker_queue_start_next', 'speaker.speaker_queue_clear',
+    'speaker.speaker_queue_telao',
+    'motion.motions_panel', 'motion.motion_create',
+    'motion.motion_approve', 'motion.motion_reject',
+    'motion.motion_activate', 'motion.motion_complete',
+    'motion.motion_telao',
+    'resolution.resolutions_panel', 'resolution.resolution_detail',
+    'resolution.resolution_approve_submission', 'resolution.resolution_reject_submission',
+    'resolution.resolution_telao', 'resolution.resolution_vote_final',
+    'analytics.analytics_panel', 'analytics.analytics_committee',
+    'analytics.analytics_export'] -%}
   {%- set is_gestao = request.endpoint in gestao_endpoints -%}
   {%- set is_simulacao = request.endpoint in simulacao_endpoints -%}
   {%- if is_gestao and is_admin -%}
@@ -592,9 +606,33 @@
           </a>
         </li>
         <li>
+          <a href="{{ url_for('speaker.speaker_queue_panel') }}"
+             class="{{ 'active' if 'speaker' in (request.endpoint or '') }}">
+            <span class="nav-icon">📋</span> Fila de Oradores
+          </a>
+        </li>
+        <li>
           <a href="{{ url_for('admin.cronometro_panel') }}"
              class="{{ 'active' if 'cronometro' in (request.endpoint or '') }}">
             <span class="nav-icon">⏱️</span> Cronômetro
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('motion.motions_panel') }}"
+             class="{{ 'active' if 'motion' in (request.endpoint or '') }}">
+            <span class="nav-icon">📋</span> Moções
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('resolution.resolutions_panel') }}"
+             class="{{ 'active' if 'resolution' in (request.endpoint or '') }}">
+            <span class="nav-icon">📜</span> Resoluções
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('analytics.analytics_panel') }}"
+             class="{{ 'active' if 'analytics' in (request.endpoint or '') }}">
+            <span class="nav-icon">📊</span> Analytics
           </a>
         </li>
       </ul>

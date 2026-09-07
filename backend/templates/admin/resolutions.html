@@ -1,0 +1,153 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Resoluções{% endblock %}
+
+{% block page_title %}📜 Resoluções{% endblock %}
+
+{% block topbar_actions %}
+  <button class="btn btn-navy btn-sm" onclick="controlScreen('show')">📺 Exibir no Telão</button>
+  <button class="btn btn-danger btn-sm" onclick="controlScreen('hide')">✖ Ocultar Telão</button>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom:16px;">
+  <div class="form-group" style="margin-bottom:0;min-width:250px;">
+    <label for="committee-filter">Filtrar por Comitê</label>
+    <select id="committee-filter" onchange="filterCommittee(this.value)">
+      <option value="all" {% if committee_filter == 'all' %}selected{% endif %}>Todos os Comitês</option>
+      {% for c in available_committees %}
+      <option value="{{ c }}" {% if committee_filter == c %}selected{% endif %}>{{ c.upper() }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-draft">0</span>
+    <span class="stat-tile-label">Rascunhos</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-submitted" style="color:var(--gold);">0</span>
+    <span class="stat-tile-label">Submetidas</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-voting" style="color:var(--green);">0</span>
+    <span class="stat-tile-label">Em Votação</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-passed" style="color:var(--navy);">0</span>
+    <span class="stat-tile-label">Aprovadas</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Todas as Resoluções</h3>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Comitê</th>
+          <th>Proponente</th>
+          <th>Emendas</th>
+          <th>Status</th>
+          <th style="text-align:right;">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in resolutions %}
+        <tr>
+          <td>
+            <a href="{{ url_for('resolution.resolution_detail', id=r.id) }}" style="font-weight:700;color:var(--navy);">
+              {{ r.title }}
+            </a>
+          </td>
+          <td><span class="badge badge-oficial">{{ r.committee.upper() }}</span></td>
+          <td>
+            {{ r.proposer.country_flag if r.proposer else '🌍' }}
+            {{ r.proposer.country if r.proposer else '?' }}
+          </td>
+          <td>
+            <span class="badge">{{ r.amendments|length }}</span>
+            {% set pending_amendments = r.pending_amendments()|length %}
+            {% if pending_amendments > 0 %}
+              <span class="badge" style="background:rgba(183,148,65,.1);color:var(--gold);">{{ pending_amendments }} pendente(s)</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if r.status == 'draft' %}
+              <span class="badge" style="background:rgba(138,144,170,.15);color:var(--slate);">Rascunho</span>
+            {% elif r.status == 'submitted' %}
+              <span class="badge" style="background:rgba(183,148,65,.15);color:var(--gold);">Submetida</span>
+            {% elif r.status == 'voting' %}
+              <span class="badge" style="background:rgba(30,123,69,.15);color:var(--green);">Em Votação</span>
+            {% elif r.status == 'passed' %}
+              <span class="badge" style="background:rgba(30,123,69,.25);color:var(--green);">✓ Aprovada</span>
+            {% elif r.status == 'rejected' %}
+              <span class="badge" style="background:rgba(192,57,43,.15);color:var(--red);">✗ Rejeitada</span>
+            {% endif %}
+          </td>
+          <td style="text-align:right;white-space:nowrap;">
+            <a href="{{ url_for('resolution.resolution_detail', id=r.id) }}" class="btn btn-sm btn-ghost">Ver</a>
+            {% if r.status == 'submitted' %}
+              <button class="btn btn-sm btn-primary" onclick="approveSubmission({{ r.id }})">▶ Votar</button>
+              <button class="btn btn-sm btn-danger" onclick="rejectSubmission({{ r.id }})">✗ Rejeitar</button>
+            {% elif r.status == 'voting' %}
+              <button class="btn btn-sm btn-primary" onclick="voteFinal({{ r.id }}, 'passed')">✓ Aprovar</button>
+              <button class="btn btn-sm btn-danger" onclick="voteFinal({{ r.id }}, 'rejected')">✗ Rejeitar</button>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" style="text-align:center;padding:32px;color:var(--muted);">
+            Nenhuma resolução encontrada. Estudantes criam pelo portal.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  function filterCommittee(val) {
+    window.location.href = "{{ url_for('resolution.resolutions_panel') }}?committee=" + val;
+  }
+
+  function approveSubmission(id) {
+    fetch("{{ url_for('resolution.resolution_approve_submission', id=0) }}".replace('/0/', '/' + id + '/'), {
+      method: 'POST', headers: {'Content-Type': 'application/json'}
+    }).then(r => r.json()).then(d => { if (d.status === 'success') location.reload(); else alert(d.message); });
+  }
+
+  function rejectSubmission(id) {
+    if (!confirm('Rejeitar esta submissão?')) return;
+    fetch("{{ url_for('resolution.resolution_reject_submission', id=0) }}".replace('/0/', '/' + id + '/'), {
+      method: 'POST', headers: {'Content-Type': 'application/json'}
+    }).then(r => r.json()).then(d => { if (d.status === 'success') location.reload(); else alert(d.message); });
+  }
+
+  function voteFinal(id, decision) {
+    const msg = decision === 'passed' ? 'Aprovar esta resolução?' : 'Rejeitar esta resolução?';
+    if (!confirm(msg)) return;
+    fetch("{{ url_for('resolution.resolution_vote_final', id=0) }}".replace('/0/', '/' + id + '/'), {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ decision: decision })
+    }).then(r => r.json()).then(d => { if (d.status === 'success') location.reload(); else alert(d.message); });
+  }
+
+  function controlScreen(action) {
+    const committee = document.getElementById('committee-filter').value;
+    fetch("{{ url_for('resolution.resolution_telao') }}", {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ action: action, committee: committee })
+    }).then(r => r.json()).then(d => {
+      if (d.status === 'success') alert(action === 'show' ? '📺 Resoluções enviadas ao Telão!' : '🔕 Ocultado do Telão.');
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,154 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ resolution.title }}{% endblock %}
+
+{% block page_title %}📜 {{ resolution.title }}{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+  <div>
+    {# ═══════ INFO ═══════ #}
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <h3 class="card-title">Informações</h3>
+        <div>
+          {% if resolution.status == 'draft' %}
+            <span class="badge" style="background:rgba(138,144,170,.15);color:var(--slate);">Rascunho</span>
+          {% elif resolution.status == 'submitted' %}
+            <span class="badge" style="background:rgba(183,148,65,.15);color:var(--gold);">Submetida</span>
+          {% elif resolution.status == 'voting' %}
+            <span class="badge" style="background:rgba(30,123,69,.15);color:var(--green);">Em Votação</span>
+          {% elif resolution.status == 'passed' %}
+            <span class="badge" style="background:rgba(30,123,69,.25);color:var(--green);">✓ Aprovada</span>
+          {% elif resolution.status == 'rejected' %}
+            <span class="badge" style="background:rgba(192,57,43,.15);color:var(--red);">✗ Rejeitada</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;">
+          <div><strong>Comitê:</strong> {{ resolution.committee.upper() }}</div>
+          <div><strong>Proponente:</strong> {{ resolution.proposer.country if resolution.proposer else '?' }}</div>
+          <div><strong>Co-sponsors:</strong> {{ resolution.co_sponsor_ids()|length }}</div>
+          <div><strong>Emendas:</strong> {{ resolution.amendments|length }}</div>
+          <div><strong>Criada:</strong> {{ resolution.created_at.strftime('%d/%m/%H:%M') if resolution.created_at else '—' }}</div>
+          <div><strong>Submetida:</strong> {{ resolution.submitted_at.strftime('%d/%m/%H:%M') if resolution.submitted_at else '—' }}</div>
+        </div>
+      </div>
+    </div>
+
+    {# ═══════ PREAMBULATÓRIO ═══════ #}
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <h3 class="card-title">Cláusulas Preambulatórias</h3>
+      </div>
+      <div class="card-body">
+        {% set clauses = resolution.preambulatory_clauses() %}
+        {% if clauses %}
+          {% for clause in clauses %}
+          <div style="padding:8px 12px;margin-bottom:6px;border-radius:4px;background:rgba(16,30,76,.03);border-left:3px solid var(--gold);font-size:13px;font-style:italic;">
+            {{ clause }}
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="color:var(--muted);font-size:13px;">Nenhuma cláusula preambulatória.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    {# ═══════ OPERATIVO ═══════ #}
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <h3 class="card-title">Cláusulas Operativas</h3>
+      </div>
+      <div class="card-body">
+        {% set clauses = resolution.operative_clauses() %}
+        {% if clauses %}
+          {% for clause in clauses %}
+          <div style="padding:8px 12px;margin-bottom:6px;border-radius:4px;background:rgba(16,30,76,.03);border-left:3px solid var(--green);font-size:13px;">
+            <strong>{{ loop.index }}.</strong> {{ clause }}
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="color:var(--muted);font-size:13px;">Nenhuma cláusula operativa.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div>
+    {# ═══════ EMENDAS ═══════ #}
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <h3 class="card-title">Emendas</h3>
+      </div>
+      <div class="card-body" style="padding:0;">
+        {% for a in resolution.amendments %}
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+              {% if a.amendment_type == 'friendly' %}color:var(--green){% else %}color:var(--red){% endif %}">
+              {{ a.amendment_type }}
+            </span>
+            <span style="font-size:11px;color:var(--muted);">
+              {{ a.target_section }} #{{ a.target_index + 1 }}
+            </span>
+            <span style="margin-left:auto;font-size:11px;
+              {% if a.status == 'pending' %}color:var(--gold){% elif a.status == 'accepted' %}color:var(--green){% else %}color:var(--red){% endif %}">
+              {{ a.status }}
+            </span>
+          </div>
+          {% if a.original_text %}
+          <div style="font-size:11px;color:var(--muted);text-decoration:line-through;margin-bottom:4px;">
+            {{ a.original_text }}
+          </div>
+          {% endif %}
+          <div style="font-size:13px;font-weight:600;">
+            → {{ a.proposed_text }}
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;">
+            Por: {{ a.proposer.country if a.proposer else '?' }}
+          </div>
+          {% if a.status == 'pending' and resolution.status in ('draft', 'submitted') %}
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button class="btn btn-sm btn-primary" onclick="decideAmendment({{ resolution.id }}, {{ a.id }}, 'accepted')">✓ Aceitar</button>
+            <button class="btn btn-sm btn-danger" onclick="decideAmendment({{ resolution.id }}, {{ a.id }}, 'rejected')">✗ Rejeitar</button>
+          </div>
+          {% endif %}
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">
+          Nenhuma emenda registrada.
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# ═══════ CO-SPONSORS ═══════ #}
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Co-sponsors</h3>
+      </div>
+      <div class="card-body">
+        {% set cs_ids = resolution.co_sponsor_ids() %}
+        {% if cs_ids %}
+          {% for cid in cs_ids %}
+          <span class="badge" style="margin-right:4px;">Delegação #{{ cid }}</span>
+          {% endfor %}
+        {% else %}
+          <p style="color:var(--muted);font-size:13px;">Nenhum co-sponsor ainda.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function decideAmendment(resId, amendId, decision) {
+    fetch("{{ url_for('resolution.resolution_detail', id=resolution.id) }}/amenda/" + amendId + "/decidir", {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ decision: decision })
+    }).then(r => r.json()).then(d => { if (d.status === 'success') location.reload(); else alert(d.message); });
+  }
+</script>
+{% endblock %}

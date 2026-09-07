@@ -303,6 +303,125 @@
     #screenFlash{position:fixed;inset:0;z-index:9999;background:var(--red-l);
                  opacity:0;pointer-events:none;transition:opacity .08s}
 
+    /* ── SPEAKER QUEUE SCREEN ─────────────────────────────────── */
+    #speakerQueueScreen{position:absolute;inset:0;display:none;flex-direction:column}
+    .sq-header{padding:18px 36px 14px;border-bottom:1px solid rgba(255,255,255,.06);
+               display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+               background:rgba(6,13,32,.6)}
+    .sq-header-left{display:flex;align-items:center;gap:14px}
+    .sq-title-badge{font-family:'DM Mono',monospace;font-size:9px;font-weight:700;
+                    letter-spacing:.18em;text-transform:uppercase;color:var(--gold);
+                    display:flex;align-items:center;gap:8px}
+    .sq-title-text{font-family:'Playfair Display',serif;font-size:clamp(18px,2.2vw,26px);
+                   font-weight:700;color:var(--white);line-height:1.2}
+    .sq-active-card{padding:24px 36px;border-bottom:1px solid rgba(30,123,69,.2);
+                    background:linear-gradient(135deg,rgba(30,123,69,.08) 0%,transparent 100%);
+                    display:flex;align-items:center;gap:20px;flex-shrink:0}
+    .sq-active-label{font-family:'DM Mono',monospace;font-size:9px;font-weight:700;
+                     letter-spacing:.16em;text-transform:uppercase;color:var(--green-l);
+                     display:flex;align-items:center;gap:8px}
+    .sq-active-label .live-dot{background:var(--green-l)}
+    .sq-active-country{font-family:'Playfair Display',serif;font-size:clamp(24px,3vw,36px);
+                       font-weight:700;color:var(--white);display:flex;align-items:center;gap:14px}
+    .sq-active-topic{font-size:14px;color:var(--muted);margin-top:4px}
+    .sq-active-timer{font-family:'DM Mono',monospace;font-size:clamp(32px,5vw,56px);
+                     font-weight:700;color:var(--green-l);margin-left:auto;letter-spacing:.04em}
+
+    .sq-list{flex:1;overflow-y:auto;padding:16px 36px;scrollbar-width:none}
+    .sq-list::-webkit-scrollbar{display:none}
+    .sq-list-title{font-family:'DM Mono',monospace;font-size:9px;font-weight:700;
+                   letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+                   margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .sq-item{display:flex;align-items:center;gap:14px;padding:10px 14px;
+             border-radius:8px;margin-bottom:6px;
+             background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+             animation:itemIn .4s cubic-bezier(.22,1,.36,1) both}
+    .sq-item-pos{font-family:'DM Mono',monospace;font-size:13px;font-weight:700;
+                 color:var(--gold);min-width:28px;text-align:center}
+    .sq-item-flag{height:24px;border-radius:3px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+    .sq-item-flag-emoji{font-size:22px;flex-shrink:0}
+    .sq-item-country{font-size:14px;font-weight:600;color:var(--white);flex:1;
+                     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sq-item-topic{font-size:11px;color:var(--muted);max-width:200px;
+                   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sq-item-time{font-family:'DM Mono',monospace;font-size:12px;color:var(--slate);
+                  padding:3px 8px;border:1px solid rgba(255,255,255,.1);border-radius:4px}
+
+    /* ── MOTION QUEUE SCREEN ─────────────────────────────────── */
+    #motionScreen{position:absolute;inset:0;display:none;flex-direction:column}
+    .mo-header{padding:18px 36px 14px;border-bottom:1px solid rgba(255,255,255,.06);
+               display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+               background:rgba(6,13,32,.6)}
+    .mo-header-left{display:flex;align-items:center;gap:14px}
+    .mo-title-badge{font-family:'DM Mono',monospace;font-size:9px;font-weight:700;
+                    letter-spacing:.18em;text-transform:uppercase;color:var(--gold);
+                    display:flex;align-items:center;gap:8px}
+    .mo-title-text{font-family:'Playfair Display',serif;font-size:clamp(18px,2.2vw,26px);
+                   font-weight:700;color:var(--white);line-height:1.2}
+    .mo-active-card{padding:24px 36px;border-bottom:1px solid rgba(201,168,76,.2);
+                    background:linear-gradient(135deg,rgba(201,168,76,.08) 0%,transparent 100%);
+                    display:flex;align-items:center;gap:20px;flex-shrink:0}
+    .mo-active-type{font-family:'DM Mono',monospace;font-size:9px;font-weight:700;
+                    letter-spacing:.16em;text-transform:uppercase;color:var(--gold);
+                    display:flex;align-items:center;gap:8px}
+    .mo-active-topic{font-family:'Playfair Display',serif;font-size:clamp(20px,3vw,32px);
+                     font-weight:700;color:var(--white);margin-top:6px}
+    .mo-active-meta{font-size:13px;color:var(--muted);margin-top:4px}
+    .mo-active-timer{font-family:'DM Mono',monospace;font-size:clamp(28px,4vw,48px);
+                     font-weight:700;color:var(--gold);margin-left:auto;letter-spacing:.04em}
+
+    .mo-list{flex:1;overflow-y:auto;padding:20px 36px;scrollbar-width:none}
+    .mo-list::-webkit-scrollbar{display:none}
+    .mo-list-title{font-family:'DM Mono',monospace;font-size:9px;font-weight:700;
+                   letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+                   margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .mo-item{display:flex;align-items:center;gap:14px;padding:12px 16px;
+             border-radius:8px;margin-bottom:8px;
+             background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+             animation:itemIn .4s cubic-bezier(.22,1,.36,1) both}
+    .mo-item-type{font-size:22px;flex-shrink:0}
+    .mo-item-info{flex:1;min-width:0}
+    .mo-item-topic{font-size:15px;font-weight:600;color:var(--white);
+                   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .mo-item-meta{font-size:11px;color:var(--muted);margin-top:2px;
+                  display:flex;align-items:center;gap:8px}
+    .mo-item-status{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;
+                    padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.08em}
+    .mo-status-pending{background:rgba(183,148,65,.12);color:var(--gold)}
+    .mo-status-approved{background:rgba(30,123,69,.12);color:var(--green-l)}
+
+    /* ── RESOLUTION SCREEN ─────────────────────────────────── */
+    #resolutionScreen{position:absolute;inset:0;display:none;flex-direction:column}
+    .rs-header{padding:18px 36px 14px;border-bottom:1px solid rgba(255,255,255,.06);
+               display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+               background:rgba(6,13,32,.6)}
+    .rs-title-badge{font-family:'DM Mono',monospace;font-size:9px;font-weight:700;
+                    letter-spacing:.18em;text-transform:uppercase;color:var(--gold);
+                    display:flex;align-items:center;gap:8px}
+    .rs-title-text{font-family:'Playfair Display',serif;font-size:clamp(18px,2.2vw,26px);
+                   font-weight:700;color:var(--white);line-height:1.2}
+    .rs-status{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;
+               padding:5px 14px;border-radius:20px;text-transform:uppercase;letter-spacing:.1em}
+    .rs-status-voting{background:rgba(30,123,69,.15);color:var(--green-l);border:1px solid rgba(30,123,69,.3)}
+    .rs-status-submitted{background:rgba(183,148,65,.15);color:var(--gold);border:1px solid rgba(183,148,65,.3)}
+
+    .rs-body{flex:1;overflow-y:auto;padding:24px 36px;scrollbar-width:none;display:flex;flex-direction:column;gap:20px}
+    .rs-body::-webkit-scrollbar{display:none}
+
+    .rs-section-title{font-family:'DM Mono',monospace;font-size:9px;font-weight:700;
+                      letter-spacing:.16em;text-transform:uppercase;color:var(--gold);
+                      margin-bottom:8px;display:flex;align-items:center;gap:8px}
+    .rs-clause{padding:10px 14px;border-radius:6px;font-size:14px;line-height:1.5;
+               background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .rs-clause-preambulatory{border-left:3px solid var(--gold);font-style:italic;color:rgba(255,255,255,.7)}
+    .rs-clause-operative{border-left:3px solid var(--green-l);color:var(--white)}
+    .rs-clause-num{font-family:'DM Mono',monospace;font-weight:700;color:var(--gold);margin-right:8px}
+
+    .rs-proposer{display:flex;align-items:center;gap:10px;padding:12px 16px;
+                 border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .rs-proposer-flag{height:28px;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+    .rs-proposer-flag-emoji{font-size:26px}
+
     /* TICKER */
     .t-ticker{height:36px;flex-shrink:0;background:rgba(6,13,32,.9);
               border-top:1px solid var(--border);display:flex;align-items:center;overflow:hidden}
@@ -486,9 +605,90 @@
         <div class="ch-col-body" id="chListAusente"></div>
       </div>
     </div>
-</div>
+  </div>
 
-<div class="t-ticker" style="display: none;">
+  <!-- SPEAKER QUEUE SCREEN -->
+  <div id="speakerQueueScreen">
+    <div class="sq-header">
+      <div class="sq-header-left">
+        <div>
+          <div class="sq-title-badge"><span class="live-dot"></span> Fila de Oradores</div>
+          <div class="sq-title-text" id="sqCommittee">—</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="text-align:center;">
+          <div style="font-family:'Playfair Display',serif;font-size:34px;font-weight:900;color:var(--gold);" id="sqCountQueue">0</div>
+          <div style="font-family:'DM Mono',monospace;font-size:7px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);">Na Fila</div>
+        </div>
+      </div>
+    </div>
+    <div class="sq-active-card" id="sqActiveCard" style="display:none;">
+      <div style="flex:1;">
+        <div class="sq-active-label"><span class="live-dot"></span> Falando Agora</div>
+        <div class="sq-active-country" id="sqActiveCountry">—</div>
+        <div class="sq-active-topic" id="sqActiveTopic"></div>
+      </div>
+      <div class="sq-active-timer" id="sqActiveTimer">--:--</div>
+    </div>
+    <div class="sq-list" id="sqList">
+      <div class="sq-list-title">Próximos Oradores</div>
+    </div>
+  </div>
+
+  <!-- MOTION QUEUE SCREEN -->
+  <div id="motionScreen">
+    <div class="mo-header">
+      <div class="mo-header-left">
+        <div>
+          <div class="mo-title-badge"><span class="live-dot"></span> Fila de Moções</div>
+          <div class="mo-title-text" id="moCommittee">—</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="text-align:center;">
+          <div style="font-family:'Playfair Display',serif;font-size:34px;font-weight:900;color:var(--gold);" id="moCountPending">0</div>
+          <div style="font-family:'DM Mono',monospace;font-size:7px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);">Pendentes</div>
+        </div>
+      </div>
+    </div>
+    <div class="mo-active-card" id="moActiveCard" style="display:none;">
+      <div style="flex:1;">
+        <div class="mo-active-type" id="moActiveType">▶ EM ANDAMENTO</div>
+        <div class="mo-active-topic" id="moActiveTopic">—</div>
+        <div class="mo-active-meta" id="moActiveMeta"></div>
+      </div>
+      <div class="mo-active-timer" id="moActiveTimer">--:--</div>
+    </div>
+    <div class="mo-list" id="moList">
+      <div class="mo-list-title">📋 Fila Pendente</div>
+    </div>
+  </div>
+
+  <!-- RESOLUTION SCREEN -->
+  <div id="resolutionScreen">
+    <div class="rs-header">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div>
+          <div class="rs-title-badge"><span class="live-dot"></span> Resolução</div>
+          <div class="rs-title-text" id="rsTitle">—</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div class="rs-status rs-status-submitted" id="rsStatus">SUBMETIDA</div>
+        <div class="rs-proposer" id="rsProposer" style="display:none;">
+          <img class="rs-proposer-flag" id="rsProposerFlag" src="" onerror="this.style.display='none'">
+          <span class="rs-proposer-flag-emoji" id="rsProposerEmoji" style="display:none;"></span>
+          <span style="font-size:13px;font-weight:600;color:var(--white);" id="rsProposerCountry">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="rs-body" id="rsBody">
+      <div style="text-align:center;padding:40px;color:var(--muted);">Aguardando resolução...</div>
+    </div>
+  </div>
+
+  <div class="t-ticker" style="display: none;">
   <div class="t-ticker-label">
     <span style="width:5px;height:5px;border-radius:50%;background:var(--navy-d);animation:pulseGold 1.5s infinite;display:inline-block"></span>
     SWDL News
@@ -605,8 +805,7 @@
   socket.on('oradores_show', (data) => {
     console.log('[ORADORES] show via WS', JSON.stringify(data));
     try {
-      // Esconde todas as telas
-      ['idleScreen','voteScreen','resultScreen','chamadaScreen','oradoresScreen','speechScreen'].forEach(function(s) {
+      ['idleScreen','voteScreen','resultScreen','chamadaScreen','speakerQueueScreen','oradoresScreen','speechScreen'].forEach(function(s) {
         var e = document.getElementById(s);
         if (e) e.style.display = 'none';
       });
@@ -676,11 +875,359 @@
     resetSpeech();
   });
 
-  function show(id){['idleScreen','voteScreen','resultScreen','chamadaScreen','speechScreen','oradoresScreen'].forEach(s=>{const el=document.getElementById(s);if(el)el.style.display=s===id?'flex':'none';});var ov=document.getElementById('oradores-overlay');if(ov&&id!=='idleScreen')ov.remove();}
+  function show(id){['idleScreen','voteScreen','resultScreen','chamadaScreen','speechScreen','speakerQueueScreen','motionScreen','resolutionScreen','oradoresScreen'].forEach(s=>{const el=document.getElementById(s);if(el)el.style.display=s===id?'flex':'none';});var ov=document.getElementById('oradores-overlay');if(ov&&id!=='idleScreen')ov.remove();}
   function buildTicker(items){document.getElementById('tickerInner').innerHTML=[...items,...items].map(t=>`<span class="t-ticker-item">${t}</span><span class="t-ticker-sep"> ◆ </span>`).join('');}
 
-  // ══════ CHAMADA (Lista de Presença) Ocultada (Sprint 2) ══════
-  // socket.on('chamada_show', ...);
+  // ══════ CHAMADA (Lista de Presença) ══════
+  socket.on('chamada_show', function(data) {
+    console.log('[CHAMADA] show via WS', data);
+    show('chamadaScreen');
+    var committee = data.committee || 'Geral';
+    document.getElementById('chCommittee').textContent = 'Chamada — ' + committee.toUpperCase();
+    var presentes = [], votantes = [], ausentes = [];
+    if (data.delegations) {
+      data.delegations.forEach(function(d) {
+        if (d.status === 'votante') votantes.push(d);
+        else if (d.status === 'presente') presentes.push(d);
+        else ausentes.push(d);
+      });
+    }
+    renderChamadaColumn('chListPresente', 'chColPresente', presentes);
+    renderChamadaColumn('chListVotante', 'chColVotante', votantes);
+    renderChamadaColumn('chListAusente', 'chColAusente', ausentes);
+    document.getElementById('chCntPresente').textContent = presentes.length;
+    document.getElementById('chCntVotante').textContent = votantes.length;
+    document.getElementById('chCntAusente').textContent = ausentes.length;
+  });
+
+  socket.on('chamada_hide', function() {
+    console.log('[CHAMADA] hide via WS');
+    show('idleScreen');
+  });
+
+  socket.on('chamada_update', function(data) {
+    console.log('[CHAMADA] update via WS', data);
+    // Re-fetch full chamada state
+    fetch('/api/telao/estado').then(function(r){return r.json();}).then(function(d){
+      if (d.chamada) {
+        socket.emit('join_telao', {});
+      }
+    });
+  });
+
+  function renderChamadaColumn(listId, countId, items) {
+    var list = document.getElementById(listId);
+    var cnt = document.getElementById(countId);
+    if (!list) return;
+    list.innerHTML = '';
+    items.forEach(function(d) {
+      var item = document.createElement('div');
+      item.className = 'ch-country-item';
+      var flag = '';
+      if (d.flag_url && d.flag_url.trim()) flag = '<img class="ch-flag-img" src="' + d.flag_url + '" onerror="this.style.display=\'none\'">';
+      else if (d.flag) flag = '<span class="ch-flag-emoji">' + d.flag + '</span>';
+      else flag = '<span class="ch-flag-emoji">🌍</span>';
+      item.innerHTML = flag + '<span class="ch-country-name">' + (d.country || '?') + '</span>';
+      list.appendChild(item);
+    });
+    if (cnt) cnt.textContent = items.length;
+  }
+
+  // ══════ FILA DE ORADORES (Speaker Queue) ══════
+  var sqActiveEntry = null;
+
+  socket.on('speaker_queue_show', function(data) {
+    console.log('[SPEAKER_QUEUE] show via WS', data);
+    show('speakerQueueScreen');
+    renderSpeakerQueue(data);
+  });
+
+  socket.on('speaker_queue_hide', function() {
+    console.log('[SPEAKER_QUEUE] hide via WS');
+    show('idleScreen');
+  });
+
+  socket.on('speaker_queue_display', function(data) {
+    console.log('[SPEAKER_QUEUE] display via WS', data);
+    var ov = document.getElementById('oradores-overlay');
+    if (ov) return; // oradores overlay takes priority
+    renderSpeakerQueue(data);
+  });
+
+  socket.on('speaker_started', function(data) {
+    console.log('[SPEAKER_QUEUE] started via WS', data);
+    sqActiveEntry = data;
+    var ov = document.getElementById('oradores-overlay');
+    if (!ov && document.getElementById('speakerQueueScreen').style.display === 'flex') {
+      updateActiveSpeakerDisplay(data);
+    }
+  });
+
+  socket.on('speaker_ended', function(data) {
+    console.log('[SPEAKER_QUEUE] ended via WS', data);
+    sqActiveEntry = null;
+  });
+
+  function renderSpeakerQueue(data) {
+    var committee = data.committee || 'all';
+    document.getElementById('sqCommittee').textContent =
+      committee === 'all' ? 'Todos os Comitês' : committee.toUpperCase();
+
+    var active = data.active;
+    var queue = data.queue || [];
+
+    // Update active card
+    if (active) {
+      sqActiveEntry = active;
+      updateActiveSpeakerDisplay(active);
+    } else {
+      sqActiveEntry = null;
+      document.getElementById('sqActiveCard').style.display = 'none';
+    }
+
+    // Update queue list
+    var list = document.getElementById('sqList');
+    list.innerHTML = '<div class="sq-list-title">Próximos Oradores</div>';
+    document.getElementById('sqCountQueue').textContent = queue.length;
+
+    queue.forEach(function(entry) {
+      var item = document.createElement('div');
+      item.className = 'sq-item';
+      var flag = '';
+      if (entry.flag_url && entry.flag_url.trim()) flag = '<img class="sq-item-flag" src="' + entry.flag_url + '" onerror="this.style.display=\'none\'">';
+      else if (entry.flag) flag = '<span class="sq-item-flag-emoji">' + entry.flag + '</span>';
+      else flag = '<span class="sq-item-flag-emoji">🌍</span>';
+
+      item.innerHTML =
+        '<span class="sq-item-pos">' + entry.position + '</span>' +
+        flag +
+        '<span class="sq-item-country">' + (entry.country || '?') + '</span>' +
+        (entry.topic ? '<span class="sq-item-topic">' + entry.topic + '</span>' : '') +
+        '<span class="sq-item-time">' + entry.speaking_time + 's</span>';
+      list.appendChild(item);
+    });
+
+    if (queue.length === 0) {
+      var empty = document.createElement('div');
+      empty.style.cssText = 'text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:14px;';
+      empty.textContent = 'Nenhum orador na fila';
+      list.appendChild(empty);
+    }
+  }
+
+  function updateActiveSpeakerDisplay(entry) {
+    var card = document.getElementById('sqActiveCard');
+    card.style.display = 'flex';
+    var countryEl = document.getElementById('sqActiveCountry');
+    var flag = '';
+    if (entry.flag_url && entry.flag_url.trim()) flag = '<img src="' + entry.flag_url + '" style="height:40px;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.4)" onerror="this.style.display=\'none\'">';
+    else if (entry.flag) flag = '<span style="font-size:40px">' + entry.flag + '</span>';
+    else flag = '<span style="font-size:40px">🌍</span>';
+    countryEl.innerHTML = flag + '<span>' + (entry.country || '?') + '</span>';
+    document.getElementById('sqActiveTopic').textContent = entry.topic || '';
+  }
+
+  // ══════ FILA DE MOÇÕES (Motion Queue) ══════
+  socket.on('motion_queue_show', function(data) {
+    console.log('[MOTION] queue show via WS', data);
+    show('motionScreen');
+    renderMotionQueue(data);
+  });
+
+  socket.on('motion_queue_hide', function() {
+    console.log('[MOTION] queue hide via WS');
+    show('idleScreen');
+  });
+
+  socket.on('motion_queue_display', function(data) {
+    console.log('[MOTION] queue display via WS', data);
+    renderMotionQueue(data);
+  });
+
+  socket.on('motion_activated', function(data) {
+    console.log('[MOTION] activated via WS', data);
+    renderMotionActive(data);
+  });
+
+  socket.on('motion_completed', function(data) {
+    console.log('[MOTION] completed via WS', data);
+    document.getElementById('moActiveCard').style.display = 'none';
+  });
+
+  function renderMotionQueue(data) {
+    var committee = data.committee || 'all';
+    document.getElementById('moCommittee').textContent =
+      committee === 'all' ? 'Todos os Comitês' : committee.toUpperCase();
+
+    var active = data.active;
+    var pending = data.pending || [];
+
+    if (active) {
+      renderMotionActive(active);
+    } else {
+      document.getElementById('moActiveCard').style.display = 'none';
+    }
+
+    var list = document.getElementById('moList');
+    list.innerHTML = '<div class="mo-list-title">📋 Fila Pendente</div>';
+    document.getElementById('moCountPending').textContent = pending.length;
+
+    pending.forEach(function(m) {
+      var item = document.createElement('div');
+      item.className = 'mo-item';
+      var proposerFlag = '';
+      if (m.proposer_flag_url && m.proposer_flag_url.trim())
+        proposerFlag = '<img src="' + m.proposer_flag_url + '" style="height:20px;border-radius:3px;box-shadow:0 1px 6px rgba(0,0,0,.3)" onerror="this.style.display=\'none\'">';
+      else if (m.proposer_flag)
+        proposerFlag = '<span style="font-size:18px">' + m.proposer_flag + '</span>';
+      else
+        proposerFlag = '<span style="font-size:18px">🌍</span>';
+
+      item.innerHTML =
+        '<span class="mo-item-type">' + m.type_icon + '</span>' +
+        '<div class="mo-item-info">' +
+          '<div class="mo-item-topic">' + m.topic + '</div>' +
+          '<div class="mo-item-meta">' +
+            proposerFlag +
+            '<span>' + m.proposer_country + '</span>' +
+            '<span>·</span>' +
+            '<span>' + (m.total_time > 0 ? Math.floor(m.total_time / 60) + 'min' : 'Voto') + '</span>' +
+            (m.seconded_by_country ? '<span>· Secondada por ' + m.seconded_by_country + '</span>' : '') +
+          '</div>' +
+        '</div>' +
+        '<span class="mo-item-status mo-status-pending">' + m.type_label + '</span>';
+      list.appendChild(item);
+    });
+
+    if (pending.length === 0) {
+      var empty = document.createElement('div');
+      empty.style.cssText = 'text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:14px;';
+      empty.textContent = 'Nenhuma moção pendente';
+      list.appendChild(empty);
+    }
+  }
+
+  function renderMotionActive(m) {
+    var card = document.getElementById('moActiveCard');
+    card.style.display = 'flex';
+    document.getElementById('moActiveType').innerHTML = '▶ ' + m.type_icon + ' ' + m.type_label.toUpperCase() + ' — EM ANDAMENTO';
+    document.getElementById('moActiveTopic').textContent = m.topic;
+    document.getElementById('moActiveMeta').textContent =
+      'Proposta por: ' + m.proposer_country + ' · Total: ' + Math.floor(m.total_time / 60) + 'min · Orador: ' + m.speaking_time + 's';
+  }
+
+  // ══════ RESOLUÇÕES ══════
+  socket.on('resolution_display', function(data) {
+    console.log('[RESOLUTION] display via WS', data);
+    if (data.active) {
+      show('resolutionScreen');
+      renderResolution(data.active);
+    } else if (data.submitted && data.submitted.length > 0) {
+      show('resolutionScreen');
+      renderResolution(data.submitted[0]);
+    }
+  });
+
+  socket.on('resolution_voting', function(data) {
+    console.log('[RESOLUTION] voting via WS', data);
+    show('resolutionScreen');
+    renderResolution(data);
+  });
+
+  socket.on('resolution_completed', function(data) {
+    console.log('[RESOLUTION] completed via WS', data);
+    show('resolutionScreen');
+    renderResolutionCompleted(data);
+  });
+
+  socket.on('resolution_hide', function() {
+    console.log('[RESOLUTION] hide via WS');
+    show('idleScreen');
+  });
+
+  function renderResolution(res) {
+    document.getElementById('rsTitle').textContent = res.title;
+    var statusEl = document.getElementById('rsStatus');
+    if (res.status === 'voting') {
+      statusEl.textContent = 'EM VOTAÇÃO';
+      statusEl.className = 'rs-status rs-status-voting';
+    } else {
+      statusEl.textContent = 'SUBMETIDA';
+      statusEl.className = 'rs-status rs-status-submitted';
+    }
+
+    // Proposer
+    var proposerEl = document.getElementById('rsProposer');
+    proposerEl.style.display = 'flex';
+    var flagImg = document.getElementById('rsProposerFlag');
+    var flagEmoji = document.getElementById('rsProposerEmoji');
+    if (res.proposer_flag_url && res.proposer_flag_url.trim()) {
+      flagImg.src = res.proposer_flag_url;
+      flagImg.style.display = 'block';
+      flagEmoji.style.display = 'none';
+    } else {
+      flagImg.style.display = 'none';
+      flagEmoji.style.display = 'inline';
+      flagEmoji.textContent = res.proposer_flag || '🌍';
+    }
+    document.getElementById('rsProposerCountry').textContent = res.proposer_country;
+
+    // Clauses
+    var body = document.getElementById('rsBody');
+    body.innerHTML = '';
+
+    // Preambulatory
+    var preamb = (res.preambulatory || '').split('\n').filter(function(c) { return c.trim(); });
+    if (preamb.length > 0) {
+      var secTitle = document.createElement('div');
+      secTitle.className = 'rs-section-title';
+      secTitle.textContent = '📌 CLÁUSULAS PREAMBULATÓRIAS';
+      body.appendChild(secTitle);
+      preamb.forEach(function(c) {
+        var clause = document.createElement('div');
+        clause.className = 'rs-clause rs-clause-preambulatory';
+        clause.textContent = c.trim();
+        body.appendChild(clause);
+      });
+    }
+
+    // Operative
+    var oper = (res.operative || '').split('\n').filter(function(c) { return c.trim(); });
+    if (oper.length > 0) {
+      var secTitle2 = document.createElement('div');
+      secTitle2.className = 'rs-section-title';
+      secTitle2.textContent = '📋 CLÁUSULAS OPERATIVAS';
+      body.appendChild(secTitle2);
+      oper.forEach(function(c, i) {
+        var clause = document.createElement('div');
+        clause.className = 'rs-clause rs-clause-operative';
+        clause.innerHTML = '<span class="rs-clause-num">' + (i + 1) + '.</span> ' + c.trim();
+        body.appendChild(clause);
+      });
+    }
+
+    if (preamb.length === 0 && oper.length === 0) {
+      var empty = document.createElement('div');
+      empty.style.cssText = 'text-align:center;padding:40px;color:rgba(255,255,255,.3);';
+      empty.textContent = 'Nenhuma cláusula definida';
+      body.appendChild(empty);
+    }
+  }
+
+  function renderResolutionCompleted(res) {
+    document.getElementById('rsTitle').textContent = res.title;
+    var statusEl = document.getElementById('rsStatus');
+    if (res.status === 'passed') {
+      statusEl.textContent = '✓ APROVADA';
+      statusEl.className = 'rs-status rs-status-voting';
+    } else {
+      statusEl.textContent = '✗ REJEITADA';
+      statusEl.className = 'rs-status';
+      statusEl.style.background = 'rgba(192,57,43,.15)';
+      statusEl.style.color = 'var(--red-l)';
+      statusEl.style.border = '1px solid rgba(192,57,43,.3)';
+    }
+  }
 </script>
 </body>
 </html>

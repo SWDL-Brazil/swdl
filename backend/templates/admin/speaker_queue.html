@@ -1,0 +1,303 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Fila de Oradores{% endblock %}
+
+{% block page_title %}🎤 Fila de Oradores{% endblock %}
+
+{% block topbar_actions %}
+  <button class="btn btn-navy btn-sm" onclick="controlScreen('show')">📺 Exibir no Telão</button>
+  <button class="btn btn-danger btn-sm" onclick="controlScreen('hide')">✖ Ocultar Telão</button>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom: 16px;">
+  <div class="form-group" style="margin-bottom: 0; min-width: 250px;">
+    <label for="committee-filter">Filtrar por Comitê</label>
+    <select id="committee-filter" onchange="filterCommittee(this.value)">
+      <option value="all" {% if committee_filter == 'all' %}selected{% endif %}>Todos os Comitês</option>
+      {% for c in available_committees %}
+      <option value="{{ c }}" {% if committee_filter == c %}selected{% endif %}>{{ c.upper() }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-queue">0</span>
+    <span class="stat-tile-label">Na Fila</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-active" style="color: var(--green);">0</span>
+    <span class="stat-tile-label">Falando Agora</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-done" style="color: var(--gold);">0</span>
+    <span class="stat-tile-label">Concluídos Hoje</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-num" id="count-skipped" style="color: var(--red);">0</span>
+    <span class="stat-tile-label">Pulados Hoje</span>
+  </div>
+</div>
+
+{# ═══════ ORADOR ATIVO ═══════ #}
+{% if active %}
+<div class="card" style="margin-bottom:20px; border-left:4px solid var(--green);">
+  <div class="card-header" style="background:rgba(30,123,69,.04);">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:24px;">🎤</span>
+      <div>
+        <div class="card-title" style="color:var(--green);">Orador Ativo</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:2px;">
+          {{ active.delegation.country if active.delegation else '?' }} · {{ active.committee.upper() }}
+          {% if active.topic %} · {{ active.topic }}{% endif %}
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-sm btn-ghost" onclick="endCurrentSpeaker({{ active.id }})">⏹ Finalizar</button>
+      <button class="btn btn-sm btn-primary" onclick="endAndStartNext({{ active.id }})">▶ Próximo</button>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ═══════ ADICIONAR À FILA ═══════ #}
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-header">
+    <h3 class="card-title">Adicionar à Fila</h3>
+  </div>
+  <div class="card-body">
+    <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+      <div class="form-group" style="flex:1;min-width:200px;margin-bottom:0;">
+        <label for="add-delegation">Delegação (Presente & Votante)</label>
+        <select id="add-delegation">
+          <option value="">Selecione...</option>
+          {% for d in delegations %}
+          <option value="{{ d.id }}" data-committee="{{ d.committee }}">
+            {{ d.country_flag or '🌍' }} {{ d.country }} — {{ d.committee.upper() }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="width:120px;margin-bottom:0;">
+        <label for="add-time">Tempo (seg)</label>
+        <input type="number" id="add-time" value="60" min="10" max="600" class="form-control">
+      </div>
+      <div class="form-group" style="flex:1;min-width:160px;margin-bottom:0;">
+        <label for="add-topic">Tópico (opcional)</label>
+        <input type="text" id="add-topic" class="form-control" placeholder="Ex: Questão do...">
+      </div>
+      <button class="btn btn-gold" onclick="addToQueue()" style="height:38px;">➕ Adicionar</button>
+    </div>
+  </div>
+</div>
+
+{# ═══════ FILA ATUAL ═══════ #}
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-header">
+    <h3 class="card-title">Fila de Espera</h3>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-sm btn-ghost" onclick="clearQueue()">🗑 Limpar Fila</button>
+    </div>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <table class="admin-table" id="queue-table">
+      <thead>
+        <tr>
+          <th style="width:40px;">#</th>
+          <th>Bandeira</th>
+          <th>País</th>
+          <th>Comitê</th>
+          <th>Tópico</th>
+          <th style="text-align:center;">Tempo</th>
+          <th style="text-align:right;">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="queue-body">
+        {% for entry in queue %}
+        <tr id="entry-{{ entry.id }}" data-position="{{ entry.position }}" data-id="{{ entry.id }}">
+          <td><strong style="color:var(--gold);">{{ entry.position }}</strong></td>
+          <td>
+            {% if entry.delegation and entry.delegation.flag_url %}
+              <img src="{{ entry.delegation.flag_url }}" alt="" style="width:30px;height:auto;border-radius:2px;border:1px solid var(--border);">
+            {% else %}
+              <span style="font-size:20px;">{{ entry.delegation.country_flag if entry.delegation else '🌍' }}</span>
+            {% endif %}
+          </td>
+          <td><strong>{{ entry.delegation.country if entry.delegation else '?' }}</strong></td>
+          <td><span class="badge badge-oficial">{{ entry.committee.upper() }}</span></td>
+          <td style="color:var(--muted);font-size:12px;">{{ entry.topic or '—' }}</td>
+          <td style="text-align:center;">
+            <span class="badge">{{ entry.speaking_time }}s</span>
+          </td>
+          <td style="text-align:right;">
+            <button class="btn btn-sm btn-primary" onclick="startSpeaker({{ entry.id }})" title="Iniciar discurso">▶ Iniciar</button>
+            <button class="btn btn-sm btn-ghost" onclick="skipSpeaker({{ entry.id }})" title="Pular">⏭</button>
+          </td>
+        </tr>
+        {% else %}
+        <tr id="empty-row">
+          <td colspan="7" style="text-align:center;padding:32px;color:var(--muted);">
+            Nenhum orador na fila. Adicione delegações acima.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# ═══════ HISTÓRICO DE HOJE ═══════ #}
+{% if log %}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Histórico de Hoje</h3>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>País</th>
+          <th>Comitê</th>
+          <th>Tópico</th>
+          <th>Tempo</th>
+          <th>Duração Real</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in log %}
+        <tr>
+          <td>
+            {% if entry.delegation and entry.delegation.flag_url %}
+              <img src="{{ entry.delegation.flag_url }}" alt="" style="width:24px;height:auto;border-radius:2px;border:1px solid var(--border);">
+            {% else %}
+              <span style="font-size:16px;">{{ entry.delegation.country_flag if entry.delegation else '🌍' }}</span>
+            {% endif %}
+            {{ entry.delegation.country if entry.delegation else '?' }}
+          </td>
+          <td><span class="badge badge-oficial">{{ entry.committee.upper() }}</span></td>
+          <td style="color:var(--muted);font-size:12px;">{{ entry.topic or '—' }}</td>
+          <td>{{ entry.speaking_time }}s</td>
+          <td>{{ entry.duration_used }}s</td>
+          <td>
+            {% if entry.status == 'done' %}
+              <span class="badge" style="background:rgba(30,123,69,.1);color:var(--green);">✅ Concluído</span>
+            {% else %}
+              <span class="badge" style="background:rgba(192,57,43,.1);color:var(--red);">⏭ Pulado</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<script>
+  function filterCommittee(val) {
+    window.location.href = "{{ url_for('speaker.speaker_queue_panel') }}?committee=" + val;
+  }
+
+  function updateCounters() {
+    const rows = document.querySelectorAll('#queue-body tr[id^="entry-"]');
+    document.getElementById('count-queue').textContent = rows.length;
+    document.getElementById('count-done').textContent = '{{ log|selectattr("status","equalto","done")|list|length }}';
+    document.getElementById('count-skipped').textContent = '{{ log|selectattr("status","equalto","skipped")|list|length }}';
+    document.getElementById('count-active').textContent = '{{ "1" if active else "0" }}';
+  }
+
+  function addToQueue() {
+    const delegationId = document.getElementById('add-delegation').value;
+    const time = document.getElementById('add-time').value;
+    const topic = document.getElementById('add-topic').value;
+    if (!delegationId) { alert('Selecione uma delegação'); return; }
+
+    fetch("{{ url_for('speaker.speaker_queue_add') }}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ delegation_id: delegationId, speaking_time: parseInt(time), topic: topic })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'success') {
+        location.reload();
+      } else {
+        alert(data.message || 'Erro ao adicionar');
+      }
+    })
+    .catch(err => console.error(err));
+  }
+
+  function startSpeaker(id) {
+    fetch("{{ url_for('speaker.speaker_queue_start', id=0) }}".replace('/0/', '/' + id + '/'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'success') location.reload();
+      else alert(data.message || 'Erro ao iniciar');
+    });
+  }
+
+  function endCurrentSpeaker(id) {
+    fetch("{{ url_for('speaker.speaker_queue_end', id=0) }}".replace('/0/', '/' + id + '/'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => { if (data.status === 'success') location.reload(); });
+  }
+
+  function endAndStartNext(id) {
+    fetch("{{ url_for('speaker.speaker_queue_start_next', id=0) }}".replace('/0/', '/' + id + '/'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => { if (data.status === 'success') location.reload(); });
+  }
+
+  function skipSpeaker(id) {
+    if (!confirm('Pular este orador?')) return;
+    fetch("{{ url_for('speaker.speaker_queue_skip', id=0) }}".replace('/0/', '/' + id + '/'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => { if (data.status === 'success') location.reload(); });
+  }
+
+  function clearQueue() {
+    if (!confirm('Limpar toda a fila?')) return;
+    fetch("{{ url_for('speaker.speaker_queue_clear') }}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ committee: '{{ committee_filter }}' })
+    })
+    .then(r => r.json())
+    .then(data => { if (data.status === 'success') location.reload(); });
+  }
+
+  function controlScreen(action) {
+    const committee = document.getElementById('committee-filter').value;
+    fetch("{{ url_for('speaker.speaker_queue_telao') }}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: action, committee: committee })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'success') {
+        alert(action === 'show' ? '📺 Fila de oradores enviada ao Telão!' : '🔕 Ocultado do Telão.');
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", updateCounters);
+</script>
+{% endblock %}
