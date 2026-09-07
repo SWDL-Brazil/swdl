@@ -10,7 +10,6 @@ import os
 from flask import Flask
 from extensions import db, login_manager, socketio
 from config import Config
-from flask_cors import CORS
 
 def create_app():
     app = Flask(__name__)
@@ -21,8 +20,6 @@ def create_app():
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Faça login para acessar esta área.'
-    allowed_origins = os.environ.get('CORS_ORIGINS', '*').split(',')
-    CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
     socketio.init_app(app)
 
     # Handler global para capturar erros 500

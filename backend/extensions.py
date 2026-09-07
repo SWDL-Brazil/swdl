@@ -18,5 +18,5 @@ except ImportError:
 
 cors_origins = os.environ.get('CORS_ORIGINS', '*').split(',')
 socketio   = SocketIO(cors_allowed_origins=cors_origins, async_mode=async_mode,
-                      manage_session=False, logger=False, engineio_logger=False,
-                      ping_timeout=30, ping_interval=25)
+                      ping_timeout=60, ping_interval=25, logger=False, engineio_logger=False,
+                      allow_upgrades=True)
