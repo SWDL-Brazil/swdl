@@ -124,69 +124,86 @@
     window.location.href = "{{ url_for('admin.chamada_panel') }}?committee=" + val;
   }
 
-  // Atualiza as caixas de contagem de quórum na parte superior
+  // Cache de contagem para atualização instantânea
+  let counts = { total: 0, ausente: 0, presente: 0, votante: 0 };
+
   function updateQuorumCounters() {
     const rows = document.querySelectorAll('tbody tr[id]');
-    let total = rows.length;
-    let ausentes = 0;
-    let presentes = 0;
-    let votantes = 0;
-
+    counts.total = rows.length;
+    counts.ausente = 0; counts.presente = 0; counts.votante = 0;
     rows.forEach(row => {
-      const status = row.getAttribute('data-status');
-      if (status === 'presente') presentes++;
-      else if (status === 'votante') votantes++;
-      else ausentes++;
+      const s = row.getAttribute('data-status');
+      if (s === 'presente') counts.presente++;
+      else if (s === 'votante') counts.votante++;
+      else counts.ausente++;
     });
-
-    document.getElementById('count-total').innerText = total;
-    document.getElementById('count-ausente').innerText = ausentes;
-    document.getElementById('count-presente').innerText = presentes;
-    document.getElementById('count-votante').innerText = votantes;
+    renderCounters();
   }
 
-  // Faz a requisição AJAX para mudar o estado de presença do delegado
+  function renderCounters() {
+    document.getElementById('count-total').innerText = counts.total;
+    document.getElementById('count-ausente').innerText = counts.ausente;
+    document.getElementById('count-presente').innerText = counts.presente;
+    document.getElementById('count-votante').innerText = counts.votante;
+  }
+
+  // Atualização otimista — UI responde imediatamente, fetch roda em background
+  const pendingRequests = {};
+
   function setPresence(id, status) {
-    const url = `/admin/delegacoes/${id}/presenca/${status}`;
-    
-    fetch(url, {
+    if (pendingRequests[id]) return; // evita duplo clique
+
+    const row = document.getElementById(`row-${id}`);
+    const oldStatus = row.getAttribute('data-status');
+
+    // 1. Atualiza UI imediatamente (optimistic)
+    row.setAttribute('data-status', status);
+    const badgeCell = row.querySelector('.status-badge-cell');
+    if (status === 'presente') badgeCell.innerHTML = '<span class="badge badge-approved">Presente</span>';
+    else if (status === 'votante') badgeCell.innerHTML = '<span class="badge badge-votacao">Votante</span>';
+    else badgeCell.innerHTML = '<span class="badge badge-rejected">Ausente</span>';
+
+    row.querySelectorAll('[data-btn-status]').forEach(btn => {
+      const bs = btn.getAttribute('data-btn-status');
+      btn.className = 'btn btn-sm btn-ghost';
+      if (bs === status) {
+        if (status === 'ausente') btn.classList.add('btn-danger');
+        if (status === 'presente') btn.classList.add('btn-primary');
+        if (status === 'votante') btn.classList.add('btn-navy');
+      }
+    });
+
+    // Atualiza contadores instantaneamente
+    if (oldStatus !== status) {
+      if (oldStatus === 'presente') counts.presente--;
+      else if (oldStatus === 'votante') counts.votante--;
+      else counts.ausente--;
+
+      if (status === 'presente') counts.presente++;
+      else if (status === 'votante') counts.votante++;
+      else counts.ausente++;
+      renderCounters();
+    }
+
+    // 2. Envia request em background (fire & forget)
+    pendingRequests[id] = true;
+    fetch(`/admin/delegacoes/${id}/presenca/${status}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     })
-    .then(response => response.json())
+    .then(r => r.json())
     .then(data => {
-      if (data.status === 'success') {
-        const row = document.getElementById(`row-${id}`);
-        row.setAttribute('data-status', status);
-
-        // 1. Atualiza a coluna de Badge textual
-        const badgeCell = row.querySelector('.status-badge-cell');
-        if (status === 'presente') {
-          badgeCell.innerHTML = '<span class="badge badge-approved">Presente</span>';
-        } else if (status === 'votante') {
-          badgeCell.innerHTML = '<span class="badge badge-votacao">Votante</span>';
-        } else {
-          badgeCell.innerHTML = '<span class="badge badge-rejected">Ausente</span>';
-        }
-
-        // 2. Altera o estilo visual dos botões da linha correspondente
-        const buttons = row.querySelectorAll('[data-btn-status]');
-        buttons.forEach(btn => {
-          const btnStatus = btn.getAttribute('data-btn-status');
-          btn.className = 'btn btn-sm btn-ghost'; // reseta todos para ghost
-          
-          if (btnStatus === status) {
-            if (status === 'ausente') btn.classList.add('btn-danger');
-            if (status === 'presente') btn.classList.add('btn-primary');
-            if (status === 'votante') btn.classList.add('btn-navy');
-          }
-        });
-
-        // 3. Recalcula o quórum geral no topo
+      if (data.status !== 'success') {
+        // Reverte UI em caso de erro
+        row.setAttribute('data-status', oldStatus);
         updateQuorumCounters();
       }
     })
-    .catch(err => console.error("Erro ao atualizar presença:", err));
+    .catch(() => {
+      row.setAttribute('data-status', oldStatus);
+      updateQuorumCounters();
+    })
+    .finally(() => { delete pendingRequests[id]; });
   }
 
   // Controla a exibição remota do telão público
