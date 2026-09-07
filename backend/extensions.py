@@ -9,7 +9,14 @@ import os
 db            = SQLAlchemy()
 login_manager = LoginManager()
 
-# Usa gevent em produção, threading em desenvolvimento
-async_mode = 'gevent' if os.environ.get('FLASK_ENV') == 'production' else 'threading'
+# Detecta gevent automaticamente (Render não seta FLASK_ENV)
+try:
+    import gevent  # noqa
+    async_mode = 'gevent'
+except ImportError:
+    async_mode = 'threading'
+
 cors_origins = os.environ.get('CORS_ORIGINS', '*').split(',')
-socketio   = SocketIO(cors_allowed_origins=cors_origins, async_mode=async_mode)
+socketio   = SocketIO(cors_allowed_origins=cors_origins, async_mode=async_mode,
+                      manage_session=False, logger=False, engineio_logger=False,
+                      ping_timeout=30, ping_interval=25)
