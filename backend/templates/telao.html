@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SWDL — Telão</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;600;700&family=DM+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>">
   <style>
     :root {
       --navy:#0B1535; --navy-d:#060D20; --navy-m:#1d3461;
@@ -748,13 +749,33 @@
   function startVoteTimer(secs){clearInterval(voteInterval);voteTotal=secs||120;voteRem=voteTotal;renderVoteTimer();voteInterval=setInterval(()=>{if(voteRem>0){voteRem--;renderVoteTimer();}else{clearInterval(voteInterval);if(currentSession){fetch('/api/vote/'+currentSession.id+'/auto_close',{method:'POST'});showResult(currentSession);}}},1000);}
   function renderVoteTimer(){const mm=String(Math.floor(voteRem/60)).padStart(2,'0');const ss=String(voteRem%60).padStart(2,'0');document.getElementById('timerNum').textContent=`${mm}:${ss}`;const arc=document.getElementById('timerArc');arc.style.strokeDashoffset=CIRC*(1-voteRem/voteTotal);if(voteRem<=10)arc.style.stroke='var(--red-l)';else if(voteRem<=30)arc.style.stroke='#E67E22';else arc.style.stroke='var(--gold)';}
 
-  // WEBSOCKET — com debug
+  // WEBSOCKET — com reconexão e debug
   console.log('[TELAO] Pagina carregada');
-  const socket=io({ transports: ['websocket', 'polling'] });
-  socket.on('connect', () => console.log('[TELAO] Socket conectado:', socket.id));
-  socket.on('connect_error', (err) => console.error('[TELAO] Erro conexao:', err.message));
-  socket.on('disconnect', (reason) => console.log('[TELAO] Socket desconectado:', reason));
-  socket.emit('join_telao',{});
+  const socket = io({
+    transports: ['polling', 'websocket'],
+    reconnection: true,
+    reconnectionAttempts: 999,
+    reconnectionDelay: 2000,
+    reconnectionDelayMax: 30000,
+    timeout: 20000,
+  });
+  socket.on('connect', () => {
+    console.log('[TELAO] Socket conectado:', socket.id);
+    socket.emit('join_telao', {});
+  });
+  socket.on('connect_error', (err) => {
+    console.error('[TELAO] Erro conexao:', err.message);
+  });
+  socket.on('disconnect', (reason) => {
+    console.log('[TELAO] Socket desconectado:', reason);
+  });
+  socket.on('reconnect_attempt', (attempt) => {
+    console.log('[TELAO] Reconectando... tentativa', attempt);
+  });
+  socket.on('reconnect', () => {
+    console.log('[TELAO] Reconectado com sucesso');
+    socket.emit('join_telao', {});
+  });
   socket.on('vote_opened',(data)=>loadSession(data));
   socket.on('vote_update',(data)=>{if(currentSession&&data.id===currentSession.id)renderVotes(data);});
   socket.on('vote_closed',(data)=>{
@@ -763,7 +784,10 @@
 
   async function poll() {
     try {
-      const res = await fetch('/api/telao/estado');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const res = await fetch('/api/telao/estado', { signal: controller.signal });
+      clearTimeout(timeoutId);
       const data = await res.json();
       if (data.session) {
         if (!currentSession || currentSession.id !== data.session.id) {
@@ -792,7 +816,9 @@
           show('idleScreen');
         }
       }
-    } catch(e) { console.error('[TELAO] poll error', e); }
+    } catch(e) {
+      if (e.name !== 'AbortError') console.error('[TELAO] poll error', e);
+    }
   }
   poll(); setInterval(poll, 15000);
 
