@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 import os
 from flask import Flask
-from extensions import db, login_manager, socketio
+from extensions import db, login_manager, socketio, csrf
 from config import Config
 
 def create_app():
@@ -21,6 +21,7 @@ def create_app():
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Faça login para acessar esta área.'
     socketio.init_app(app)
+    csrf.init_app(app)
 
     # Handler global para capturar erros 500
     import traceback, sys

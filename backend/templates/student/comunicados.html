@@ -16,10 +16,10 @@
     {% for n in news %}
     <div class="cmp-card">
       <div style="display:flex;align-items:flex-start;gap:14px">
-        <span class="news-row-icon">{{ cat_icons.get(n.category, '📋') }}</span>
+        <span class="news-row-icon">{{ cat_icons.get(n.category_obj.slug if n.category_obj else '', '📋') }}</span>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap">
-            <span class="news-tag-badge {{ n.category }}">{{ n.category }}</span>
+            <span class="news-tag-badge {{ n.category_obj.slug if n.category_obj else 'geral' }}">{{ n.category_obj.name if n.category_obj else 'Geral' }}</span>
             {% if n.committee and n.committee != 'geral' %}
             <span class="mono text-muted">{{ n.committee }}</span>
             {% endif %}

@@ -15,14 +15,7 @@ from datetime import datetime, timezone
 resolution_bp = Blueprint('resolution', __name__)
 
 
-def moderator_required(f):
-    from functools import wraps
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if not current_user.is_authenticated or not current_user.is_moderator():
-            abort(403)
-        return f(*args, **kwargs)
-    return decorated
+from routes.admin._helpers import moderator_required, get_current_delegation
 
 
 def _emit_resolution_update(committee):
@@ -34,12 +27,13 @@ def _emit_resolution_update(committee):
 
 
 def _emit_telao_resolution(committee):
-    active = Resolution.query.filter_by(
-        committee=committee, status='voting'
-    ).first()
-    submitted = Resolution.query.filter_by(
-        committee=committee, status='submitted'
-    ).order_by(Resolution.submitted_at.desc()).all()
+    q_active = Resolution.query.filter_by(status='voting')
+    q_submitted = Resolution.query.filter_by(status='submitted')
+    if committee and committee != 'all':
+        q_active = q_active.filter_by(committee=committee)
+        q_submitted = q_submitted.filter_by(committee=committee)
+    active = q_active.first()
+    submitted = q_submitted.order_by(Resolution.submitted_at.desc()).all()
     socketio.emit('resolution_display', {
         'committee': committee,
         'active': active.to_dict() if active else None,
@@ -200,11 +194,11 @@ def student_resolutions():
     if not current_user.is_authenticated or current_user.role not in ('student', 'delegate'):
         abort(403)
 
-    student = getattr(current_user, 'student', None)
+    student = getattr(current_user, 'student_profile', None)
     if not student:
         abort(403)
 
-    delegation = Delegation.query.filter_by(user_id=current_user.id).first()
+    delegation = get_current_delegation()
     if not delegation or not delegation.committee:
         abort(403)
 
@@ -223,9 +217,13 @@ def student_resolution_create():
     if not current_user.is_authenticated or current_user.role not in ('student', 'delegate'):
         return jsonify({'status': 'error', 'message': 'Não autorizado'}), 403
 
-    delegation = Delegation.query.filter_by(user_id=current_user.id).first()
+    delegation = get_current_delegation()
     if not delegation or not delegation.committee:
         return jsonify({'status': 'error', 'message': 'Delegação não encontrada'}), 400
+
+    student = getattr(current_user, 'student_profile', None)
+    if student and student.read_only:
+        return jsonify({'status': 'error', 'message': 'Conta travada — não é possível criar resoluções'}), 403
 
     data = request.get_json(silent=True) or {}
     title = data.get('title', '').strip()
@@ -262,9 +260,13 @@ def student_resolution_edit(id):
     if not current_user.is_authenticated or current_user.role not in ('student', 'delegate'):
         return jsonify({'status': 'error', 'message': 'Não autorizado'}), 403
 
-    delegation = Delegation.query.filter_by(user_id=current_user.id).first()
+    delegation = get_current_delegation()
     if not delegation or res.proposer_id != delegation.id:
         return jsonify({'status': 'error', 'message': 'Sem permissão'}), 403
+
+    student = getattr(current_user, 'student_profile', None)
+    if student and student.read_only:
+        return jsonify({'status': 'error', 'message': 'Conta travada — não é possível editar resoluções'}), 403
 
     if res.status != 'draft':
         return jsonify({'status': 'error', 'message': 'Só pode editar resoluções em rascunho'}), 400
@@ -288,9 +290,13 @@ def student_resolution_submit(id):
     if not current_user.is_authenticated or current_user.role not in ('student', 'delegate'):
         return jsonify({'status': 'error', 'message': 'Não autorizado'}), 403
 
-    delegation = Delegation.query.filter_by(user_id=current_user.id).first()
+    delegation = get_current_delegation()
     if not delegation or res.proposer_id != delegation.id:
         return jsonify({'status': 'error', 'message': 'Sem permissão'}), 403
+
+    student = getattr(current_user, 'student_profile', None)
+    if student and student.read_only:
+        return jsonify({'status': 'error', 'message': 'Conta travada — não é possível submeter resoluções'}), 403
 
     if res.status != 'draft':
         return jsonify({'status': 'error', 'message': 'Só pode submeter resoluções em rascunho'}), 400
@@ -312,9 +318,13 @@ def student_resolution_cosponsor(id):
     if not current_user.is_authenticated or current_user.role not in ('student', 'delegate'):
         return jsonify({'status': 'error', 'message': 'Não autorizado'}), 403
 
-    delegation = Delegation.query.filter_by(user_id=current_user.id).first()
+    delegation = get_current_delegation()
     if not delegation:
         return jsonify({'status': 'error', 'message': 'Delegação não encontrada'}), 400
+
+    student = getattr(current_user, 'student_profile', None)
+    if student and student.read_only:
+        return jsonify({'status': 'error', 'message': 'Conta travada — não é possível apoiar resoluções'}), 403
 
     if delegation.id == res.proposer_id:
         return jsonify({'status': 'error', 'message': 'Não pode apoiar sua própria resolução'}), 400
@@ -332,9 +342,13 @@ def student_resolution_amend(id):
     if not current_user.is_authenticated or current_user.role not in ('student', 'delegate'):
         return jsonify({'status': 'error', 'message': 'Não autorizado'}), 403
 
-    delegation = Delegation.query.filter_by(user_id=current_user.id).first()
+    delegation = get_current_delegation()
     if not delegation:
         return jsonify({'status': 'error', 'message': 'Delegação não encontrada'}), 400
+
+    student = getattr(current_user, 'student_profile', None)
+    if student and student.read_only:
+        return jsonify({'status': 'error', 'message': 'Conta travada — não é possível emendar resoluções'}), 403
 
     if res.status not in ('draft', 'submitted'):
         return jsonify({'status': 'error', 'message': 'Não é possível emendar nesta fase'}), 400

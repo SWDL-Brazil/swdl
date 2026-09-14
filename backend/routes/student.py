@@ -1,5 +1,5 @@
 from flask import (Blueprint, render_template, redirect,
-                   url_for, flash, request, abort, jsonify, current_app, g)
+                   url_for, flash, request, abort, jsonify, current_app, g, session)
 from flask_login import login_required, current_user, logout_user
 from extensions import db
 from models.student import Student
@@ -32,7 +32,7 @@ def get_delegation(student_profile):
         return g._delegation
     g._delegation = None
     if student_profile and student_profile.delegation_id:
-        g._delegation = Delegation.query.get(student_profile.delegation_id)
+        g._delegation = db.session.get(Delegation, student_profile.delegation_id)
     return g._delegation
 
 
@@ -54,7 +54,10 @@ def inject_now():
     event_started = first_dt and now >= first_dt
     event_ended = last_dt and now > last_dt
     today_str = now.strftime("%Y-%m-%d")
-    is_event_day = AgendaItem.query.filter(AgendaItem.event_date == today_str).count() > 0
+    is_event_day = getattr(g, '_is_event_day', None)
+    if is_event_day is None:
+        is_event_day = AgendaItem.query.filter(AgendaItem.event_date == today_str).count() > 0
+        g._is_event_day = is_event_day
     return {
         'now': now,
         'is_convened': is_convened,
@@ -234,15 +237,26 @@ def documentos():
 @student_required
 def documento_download(id):
     from flask import send_file
+    student_profile = get_student()
+    delegation = get_delegation(student_profile)
     doc = Document.query.get_or_404(id)
+    # Verifica autorização por tema (theme_id None = público)
+    if doc.theme_id is not None:
+        if not delegation or delegation.theme_id != doc.theme_id:
+            flash('Você não tem acesso a este documento.', 'error')
+            return redirect(url_for('student.documentos'))
     if not os.path.isfile(doc.file_path):
         flash('Arquivo não encontrado.', 'error')
         return redirect(url_for('student.documentos'))
-    return send_file(
-        doc.file_path,
-        as_attachment=True,
-        download_name=doc.filename(),
-    )
+    try:
+        return send_file(
+            doc.file_path,
+            as_attachment=True,
+            download_name=doc.filename(),
+        )
+    except Exception:
+        flash('Erro ao enviar arquivo.', 'error')
+        return redirect(url_for('student.documentos'))
 
 
 # ── COMUNICADOS ────────────────────────────────────────────────
@@ -290,11 +304,19 @@ def _get_upload_folder():
 @student_required
 def dpo_upload():
     from models.audit_log import AuditLog
+    import time as _time
 
     student_profile = get_student()
     if check_read_only(student_profile):
         flash('O evento foi encerrado. A interface está em modo somente leitura.', 'warning')
         return redirect(url_for('student.profile'))
+
+    last_upload = session.get('dpo_last_upload', 0)
+    if _time.time() - last_upload < 60:
+        flash('Aguarde 1 minuto antes de enviar novamente.', 'warning')
+        return redirect(url_for('student.profile'))
+    session['dpo_last_upload'] = _time.time()
+
     if not student_profile or not student_profile.delegation_id:
         flash('Você precisa estar vinculado a uma delegação para enviar DPO.', 'error')
         return redirect(url_for('student.profile'))
@@ -431,6 +453,8 @@ from extensions import socketio
 
 @socketio.on('join_students')
 def on_join_students(data):
+    if not current_user.is_authenticated:
+        return
     join_room('all_students')
     open_sessions = VoteSession.query.filter_by(status='open').all()
     emit('open_sessions', [s.to_dict() for s in open_sessions])

@@ -14,14 +14,7 @@ from datetime import datetime, timezone
 motion_bp = Blueprint('motion', __name__)
 
 
-def moderator_required(f):
-    from functools import wraps
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if not current_user.is_authenticated or not current_user.is_moderator():
-            abort(403)
-        return f(*args, **kwargs)
-    return decorated
+from routes.admin._helpers import moderator_required, get_current_delegation
 
 
 def _emit_motion_update(committee):
@@ -249,11 +242,11 @@ def student_motions():
     if not current_user.is_authenticated or current_user.role not in ('student', 'delegate'):
         abort(403)
 
-    student = getattr(current_user, 'student', None)
+    student = getattr(current_user, 'student_profile', None)
     if not student:
         abort(403)
 
-    delegation = Delegation.query.filter_by(user_id=current_user.id).first()
+    delegation = get_current_delegation()
     if not delegation or not delegation.committee:
         abort(403)
 
@@ -277,9 +270,13 @@ def student_motion_create():
     if not current_user.is_authenticated or current_user.role not in ('student', 'delegate'):
         return jsonify({'status': 'error', 'message': 'Não autorizado'}), 403
 
-    delegation = Delegation.query.filter_by(user_id=current_user.id).first()
+    delegation = get_current_delegation()
     if not delegation or not delegation.committee:
         return jsonify({'status': 'error', 'message': 'Delegação não encontrada'}), 400
+
+    student = getattr(current_user, 'student_profile', None)
+    if student and student.read_only:
+        return jsonify({'status': 'error', 'message': 'Conta travada — não é possível criar moções'}), 403
 
     if delegation.presence_status == 'ausente':
         return jsonify({'status': 'error', 'message': 'Você precisa estar presente para propor moções'}), 400
@@ -335,9 +332,13 @@ def student_motion_second(id):
     if motion.status != 'pending':
         return jsonify({'status': 'error', 'message': 'Moção não está pendente'}), 400
 
-    delegation = Delegation.query.filter_by(user_id=current_user.id).first()
+    delegation = get_current_delegation()
     if not delegation:
         return jsonify({'status': 'error', 'message': 'Delegação não encontrada'}), 400
+
+    student = getattr(current_user, 'student_profile', None)
+    if student and student.read_only:
+        return jsonify({'status': 'error', 'message': 'Conta travada — não é possível secondar moções'}), 403
 
     if motion.proposer_id == delegation.id:
         return jsonify({'status': 'error', 'message': 'Não pode secondar sua própria moção'}), 400

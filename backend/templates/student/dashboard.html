@@ -100,7 +100,8 @@
     {% if is_event_day and not event_ended and not read_only %}
     <div class="debate-dpo" style="margin-top:16px;padding:16px;border-top:1px solid var(--border);background:rgba(201,168,76,.06);border-radius:0 0 12px 12px">
       <form method="POST" action="{{ url_for('student.dpo_upload') }}" enctype="multipart/form-data"
-            style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"
+            onsubmit="{% if delegation.dpo_uploaded %}if(!confirm('Já existe um DPO enviado. Deseja substituir?'))return false;{% endif %}">
         <span style="font-size:13px;font-weight:600;color:var(--navy);white-space:nowrap">📄 DPO:</span>
         <input type="file" name="dpo_file" accept=".pdf" required
                style="flex:1;min-width:150px;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:4px;background:var(--white)">

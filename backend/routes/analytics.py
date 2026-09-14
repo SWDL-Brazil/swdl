@@ -13,15 +13,7 @@ from models.resolution import Resolution
 analytics_bp = Blueprint('analytics', __name__)
 
 
-def moderator_required(f):
-    from functools import wraps
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        from flask_login import current_user
-        if not current_user.is_authenticated or not current_user.is_moderator():
-            abort(403)
-        return f(*args, **kwargs)
-    return decorated
+from routes.admin._helpers import moderator_required
 
 
 @analytics_bp.route('/admin/analytics')

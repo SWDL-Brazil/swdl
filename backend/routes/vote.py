@@ -13,18 +13,12 @@ from models.theme import Theme
 from models.speech_log import SpeechLog
 from datetime import datetime, timezone
 import os
+from config import Config
 
 vote_bp = Blueprint('vote', __name__)
 
 
-def moderator_required(f):
-    from functools import wraps
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if not current_user.is_authenticated or not current_user.is_moderator():
-            return redirect(url_for('auth.login'))
-        return f(*args, **kwargs)
-    return decorated
+from routes.admin._helpers import moderator_required, get_current_delegation
 
 
 def _broadcast_results(session_id):
@@ -144,7 +138,7 @@ def delegate_vote_page():
     if current_user.role not in ('student', 'delegate'):
         return redirect(url_for('auth.student_login'))
 
-    delegation    = Delegation.query.filter_by(user_id=current_user.id).first()
+    delegation    = get_current_delegation()
     open_sessions = VoteSession.query.filter_by(status='open').all()
 
     # Marca quais a delegação já votou (inclui parceiro)
@@ -178,7 +172,7 @@ def api_submit_vote():
     if choice not in ('favor', 'contra', 'abstencao'):
         return jsonify({'ok': False, 'error': 'Voto inválido'}), 400
 
-    delegation = Delegation.query.filter_by(user_id=current_user.id).first()
+    delegation = get_current_delegation()
     if not delegation:
         return jsonify({'ok': False, 'error': 'Delegação não encontrada'}), 404
 
@@ -262,8 +256,32 @@ def on_join_delegates(data):
 def on_join_telao(data):
     join_room('telao')
     open_sessions = VoteSession.open_with_votes()
-    if open_sessions:
-        emit('vote_opened', open_sessions[0].to_dict())
+    for s in open_sessions:
+        emit('vote_opened', s.to_dict())
+    from models.debate_timer import get_state
+    emit('debate_timer_sync', get_state())
+
+
+@socketio.on('debate_timer_start')
+def on_debate_timer_start(data):
+    from routes.admin._helpers import moderator_required as _check
+    from models.debate_timer import start
+    state = start()
+    socketio.emit('debate_timer_sync', state, room='telao')
+
+
+@socketio.on('debate_timer_pause')
+def on_debate_timer_pause(data):
+    from models.debate_timer import pause
+    state = pause()
+    socketio.emit('debate_timer_sync', state, room='telao')
+
+
+@socketio.on('debate_timer_reset')
+def on_debate_timer_reset(data):
+    from models.debate_timer import reset
+    state = reset()
+    socketio.emit('debate_timer_sync', state, room='telao')
 
 
 # ══════════════════════════════════════════════════════════════
@@ -279,8 +297,15 @@ def certificate_view(code):
     ).first()
     if not student or not student.certificate_released:
         return render_template('public/certificate_invalid.html'), 404
-    if student.certificate_url and os.path.isfile(student.certificate_url):
-        return send_file(student.certificate_url, mimetype='application/pdf')
+    if student.certificate_url:
+        from urllib.parse import urlparse
+        parsed = urlparse(student.certificate_url)
+        filename = parsed.path.rstrip('/').split('/')[-1]
+        if filename:
+            cert_dir = os.path.join(Config.UPLOAD_FOLDER, 'certificates')
+            filepath = os.path.join(cert_dir, filename)
+            if os.path.isfile(filepath):
+                return send_file(filepath, mimetype='application/pdf')
     return render_template('public/certificate_view.html', student=student)
 
 
@@ -288,7 +313,7 @@ def certificate_view(code):
 @vote_bp.route('/api/votacoes/abertas')
 @login_required
 def api_open_sessions():
-    delegation    = Delegation.query.filter_by(user_id=current_user.id).first()
+    delegation    = get_current_delegation()
     open_sessions = VoteSession.query.filter_by(status='open').all()
 
     voted_ids = set()
@@ -337,6 +362,17 @@ def api_telao_estado():
         sd['remaining_sec'] = int(remaining)
         session_data = sd
 
+        # Auto-close expirado server-side
+        if remaining <= 0:
+            session.status = 'closed'
+            session.closed_at = datetime.now(timezone.utc)
+            db.session.commit()
+            socketio.emit('vote_closed', sd, room='all_delegates')
+            socketio.emit('vote_closed', sd, room='admin')
+            socketio.emit('vote_closed', sd, room='vote_list')
+            socketio.emit('vote_closed', sd, room='telao')
+            session_data = None
+
     news    = News.query.filter_by(published=True)\
                         .order_by(News.created_at.desc()).limit(6).all()
 
@@ -357,8 +393,10 @@ def api_telao_estado():
 
 
 @vote_bp.route('/api/vote/<int:id>/auto_close', methods=['POST'])
+@login_required
+@moderator_required
 def api_auto_close(id):
-    """Fecha uma votação automaticamente quando o timer expira (chamado pelo telão)."""
+    """Fecha uma votação automaticamente quando o timer expira."""
     session = VoteSession.query.get(id)
     if not session or session.status != 'open':
         return jsonify({'ok': False, 'reason': 'not found or already closed'}), 200

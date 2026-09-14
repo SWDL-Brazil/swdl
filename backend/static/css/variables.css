@@ -1,0 +1,19 @@
+/* =============================================================
+   SWDL — Shared CSS Variables
+   Used across telao.css, admin.css, student.css
+   ============================================================= */
+:root {
+  --navy: #0B1535;
+  --navy-d: #060D20;
+  --navy-m: #1d3461;
+  --gold: #C9A84C;
+  --gold-l: #E8C86A;
+  --green: #1E7B45;
+  --green-l: #2ECC71;
+  --red: #C0392B;
+  --red-l: #E74C3C;
+  --slate: #8A90AA;
+  --white: #FFFFFF;
+  --muted: rgba(255, 255, 255, .38);
+  --border: rgba(201, 168, 76, .18);
+}

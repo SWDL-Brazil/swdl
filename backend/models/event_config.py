@@ -16,7 +16,7 @@ class EventConfig(db.Model):
         if not cfg:
             cfg = cls(inscricoes_abertas=False)
             db.session.add(cfg)
-            db.session.commit()
+            db.session.flush()
         return cfg
 
     @classmethod

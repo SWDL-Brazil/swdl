@@ -14,14 +14,7 @@ from datetime import datetime, timezone
 speaker_bp = Blueprint('speaker', __name__)
 
 
-def moderator_required(f):
-    from functools import wraps
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if not current_user.is_authenticated or not current_user.is_moderator():
-            abort(403)
-        return f(*args, **kwargs)
-    return decorated
+from routes.admin._helpers import moderator_required
 
 
 def _emit_queue_update(committee=None):

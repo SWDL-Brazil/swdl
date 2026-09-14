@@ -71,15 +71,17 @@ class Motion(db.Model):
 
     @staticmethod
     def pending_for_committee(committee):
-        return Motion.query.filter_by(
-            committee=committee, status='pending'
-        ).order_by(Motion.priority.desc(), Motion.created_at).all()
+        q = Motion.query.filter_by(status='pending')
+        if committee and committee != 'all':
+            q = q.filter_by(committee=committee)
+        return q.order_by(Motion.priority.desc(), Motion.created_at).all()
 
     @staticmethod
     def active_for_committee(committee):
-        return Motion.query.filter_by(
-            committee=committee, status='active'
-        ).first()
+        q = Motion.query.filter_by(status='active')
+        if committee and committee != 'all':
+            q = q.filter_by(committee=committee)
+        return q.first()
 
     @staticmethod
     def today_log(committee=None):
