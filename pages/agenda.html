@@ -619,30 +619,6 @@
     countdownInterval = setInterval(tick, 1000);
   }
 
-  // ── CRISIS BANNER ──────────────────────────────────────────
-  async function loadCrisisBanner() {
-    const data = await SWDL_API.status();
-    const banner = document.getElementById('crisis-banner');
-    if (!banner) return;
-    if (data && data.crisis_active && data.crisis_message) {
-      const textEl = banner.querySelector('.crisis-text');
-      if (textEl) textEl.textContent = '🚨 CRISE: ' + data.crisis_message;
-      banner.classList.add('active');
-      banner.style.display = 'flex';
-    } else {
-      banner.classList.remove('active');
-      banner.style.display = 'none';
-    }
-    document.body.classList.toggle('crisis-active', data && data.crisis_active);
-  }
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.crisis-close');
-    if (btn) {
-      document.getElementById('crisis-banner')?.classList.remove('active');
-      document.body.classList.remove('crisis-active');
-    }
-  });
-
   // ── CARREGA DADOS DO BACKEND ───────────────────────────────
   async function loadAgenda() {
     try {
@@ -664,9 +640,8 @@
   }
 
   // Carrega imediatamente e atualiza a cada 60 segundos
-  loadCrisisBanner();
   loadAgenda();
-  setInterval(() => { loadCrisisBanner(); loadAgenda(); }, 60000);
+  setInterval(loadAgenda, 60000);
 </script>
 <script src="js/i18n.js"></script>
 </body>
