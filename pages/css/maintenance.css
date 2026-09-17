@@ -32,20 +32,27 @@ nav.swdl-nav {
 /* ── OVERLAY DE MANUTENÇÃO ────────────────────────────────── */
 #maintenance-overlay {
   min-height: 72vh;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  padding: 60px 24px 80px;
+  gap: 48px;
+  padding: 60px 48px 80px;
   animation: maintenanceFadeIn .6s ease-out;
 }
 
 #maintenance-overlay .maintenance-img {
-  width: min(340px, 80%);
+  width: min(400px, 40%);
+  max-width: 400px;
   height: auto;
-  margin-bottom: 36px;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(16, 30, 76, .10);
+  flex-shrink: 0;
+}
+
+#maintenance-overlay .maintenance-text {
+  display: flex;
+  flex-direction: column;
+  max-width: 440px;
 }
 
 #maintenance-overlay h1 {
@@ -60,8 +67,26 @@ nav.swdl-nav {
 #maintenance-overlay p {
   font-size: 16px;
   color: var(--muted);
-  max-width: 480px;
   line-height: 1.7;
+}
+
+/* ── RESPONSIVO ───────────────────────────────────────────── */
+@media(max-width:768px) {
+  #maintenance-overlay {
+    flex-direction: column-reverse;
+    gap: 32px;
+    padding: 48px 24px 64px;
+  }
+
+  #maintenance-overlay .maintenance-img {
+    width: min(280px, 80%);
+    max-width: 280px;
+  }
+
+  #maintenance-overlay .maintenance-text {
+    text-align: center;
+    align-items: center;
+  }
 }
 
 @keyframes maintenanceFadeIn {
