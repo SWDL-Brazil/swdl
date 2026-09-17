@@ -205,7 +205,7 @@
       border-color: var(--gold); background: rgba(212,175,55,.06);
     }
     .formato-option:hover { border-color: var(--gold-light); }
-    .formato-icon { font-size: 22px; }
+    .formato-icon { width: 32px; height: 32px; object-fit: contain; }
     .formato-label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--navy); }
 
     .member-divider {
@@ -414,17 +414,17 @@
                 <div class="formato-selector" id="formatoSelector">
                   <label class="formato-option active" data-formato="individual">
                     <input type="radio" name="formato" value="individual" checked>
-                    <span class="formato-icon">👤</span>
+                    <img src="assent/icons/individual.svg" alt="Individual" class="formato-icon">
                     <span class="formato-label">Individual</span>
                   </label>
                   <label class="formato-option" data-formato="dupla">
                     <input type="radio" name="formato" value="dupla">
-                    <span class="formato-icon">👥</span>
+                    <img src="assent/icons/dupla.svg" alt="Dupla" class="formato-icon">
                     <span class="formato-label">Dupla</span>
                   </label>
                   <label class="formato-option" data-formato="trio">
                     <input type="radio" name="formato" value="trio">
-                    <span class="formato-icon">👨‍👩‍👦</span>
+                    <img src="assent/icons/trio.svg" alt="Trio" class="formato-icon">
                     <span class="formato-label">Trio</span>
                   </label>
                 </div>
