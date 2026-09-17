@@ -17,7 +17,10 @@ const SWDL_API = {
     const url = new URL(API_BASE + endpoint);
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
     try {
-      const res = await fetch(url.toString());
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const res = await fetch(url.toString(), { signal: controller.signal });
+      clearTimeout(timeoutId);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.json();
     } catch (err) {
@@ -29,11 +32,15 @@ const SWDL_API = {
   // ── POST genérico ─────────────────────────────────────────
   async post(endpoint, data = {}) {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       const res = await fetch(API_BASE + endpoint, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(data),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       return await res.json();
     } catch (err) {
       console.warn(`[SWDL API] POST ${endpoint} falhou:`, err.message);

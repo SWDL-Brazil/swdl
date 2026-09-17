@@ -40,8 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const emoji   = emojis[n.category] || '📋';
       const featured = i === 0 ? 'featured' : '';
       const link    = n.slug ? `${API_BASE}/noticia/${n.slug}` : '#';
+      const safeTitle = n.title ? n.title.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+      const safeExcerpt = n.excerpt ? n.excerpt.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+      const safeCommittee = n.committee ? n.committee.toUpperCase().replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
       const imgHtml = n.cover_image
-        ? `<img src="${n.cover_image}" alt="${n.title}" style="width:100%;height:100%;object-fit:cover;display:block">`
+        ? `<img src="${n.cover_image}" alt="${safeTitle}" style="width:100%;height:100%;object-fit:cover;display:block">`
         : `<div class="news-img-icon">${emoji}</div>`;
 
       return `
@@ -52,15 +55,15 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </a>
           <div class="news-card-body">
-            <span class="news-tag ${n.category}" style="background:${cat.bg}">${cat.label} — ${n.committee.toUpperCase()}</span>
+            <span class="news-tag ${n.category}" style="background:${cat.bg}">${cat.label} — ${safeCommittee}</span>
             <a href="${link}" style="text-decoration:none;color:inherit">
-              <h3>${n.title}</h3>
+              <h3>${safeTitle}</h3>
             </a>
-            ${featured && n.excerpt ? `<p>${n.excerpt}</p>` : ''}
+            ${featured && safeExcerpt ? `<p>${safeExcerpt}</p>` : ''}
             <div class="news-meta">
               <div class="news-meta-left">
                 <span class="dot" style="background:${color}"></span>
-                ${n.committee.toUpperCase()}
+                ${safeCommittee}
               </div>
               <span class="news-time">${n.time_ago}</span>
             </div>

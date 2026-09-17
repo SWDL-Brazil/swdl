@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title data-i18n="sobre.page_title">Sobre — SWDL</title>
+  <meta name="description" content="Conheça a SWDL — SESI World Diplomacy League. Nossa história, missão, valores e equipe organizadora.">
+  <meta property="og:title" content="Sobre — SWDL">
+  <meta property="og:description" content="Conheça a SWDL — história, missão, valores e equipe.">
+  <meta property="og:image" content="assent/img/image__1_-removebg-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/navbar.css">
   <link rel="stylesheet" href="css/pages.css">
@@ -371,7 +379,7 @@
           <div class="team-card-real">
             <div class="team-avatar-real">
               <span class="team-avatar-letter">G</span>
-              <img src="assent/img/equipe/santiago.jpg"Guilherme Santiago" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+              <img src="assent/img/equipe/santiago.jpg" alt="Guilherme Santiago" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
             </div>
             <div class="team-card-body-real">
               <div class="team-role-real" data-i18n="sobre.equipe_role_secretario_geral">Secretário-Geral</div>
@@ -419,7 +427,7 @@
           <div class="team-card-real">
             <div class="team-avatar-real">
               <span class="team-avatar-letter">J</span>
-              <img src="assent/img/equipe/Julia_3.png"Julia Marson" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+              <img src="assent/img/equipe/Julia_3.png" alt="Julia Marson" class="team-avatar-img" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
             </div>
             <div class="team-card-body-real">
               <div class="team-role-real" data-i18n="sobre.equipe_role_coordenadora_adm">Coordenadora Administrativa</div>
@@ -795,7 +803,7 @@
     if (!banner) return;
     if (data && data.crisis_active && data.crisis_message) {
       const textEl = banner.querySelector('.crisis-text');
-      if (textEl) textEl.innerHTML = `<strong>🚨 CRISE:</strong> ${data.crisis_message}`;
+      if (textEl) textEl.textContent = '🚨 CRISE: ' + data.crisis_message;
       banner.classList.add('active');
       banner.style.display = 'flex';
     } else {

@@ -6,6 +6,9 @@
   <title data-i18n="home.page_title">SWDL — SESI World Diplomacy League</title>
   <meta name="description" content="O maior simulado de relações internacionais do SESI. Represente nações, debata resoluções e construa acordos diplomáticos.">
   <link rel="icon" type="image/png" href="assent/img/image__1_-removebg-preview.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/navbar.css">
   <link rel="stylesheet" href="css/home.css">
@@ -90,7 +93,7 @@
         Fundação de Simulações da ONU do SESI CE-437 Hortolândia. Represente nações, estabeleça novas alianças, debata resoluções e construa acordos que moldam o mundo contemporâneo.
       </p>
       <div class="hero-btns">
-        <a href="#inscricao-strip" class="btn btn-primary" data-i18n="home.hero_btn_parte">Faça Parte →</a>
+        <a href="faca-parte.html" class="btn btn-primary" data-i18n="home.hero_btn_parte">Faça Parte →</a>
         <a href="comites.html" class="btn btn-ghost-white" data-i18n="home.hero_btn_temas">Ver Temas</a>
       </div>
       <div class="hero-stats">
@@ -402,7 +405,7 @@
     if (!banner) return;
     if (data && data.crisis_active && data.crisis_message) {
       const textEl = banner.querySelector('.crisis-text');
-      if (textEl) textEl.innerHTML = `<strong>🚨 CRISE:</strong> ${data.crisis_message}`;
+      if (textEl) textEl.textContent = '🚨 CRISE: ' + data.crisis_message;
       banner.classList.add('active');
       banner.style.display = 'flex';
     } else {

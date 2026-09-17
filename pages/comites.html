@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title data-i18n="comites.page_title">Temas — SWDL</title>
+  <meta name="description" content="Conheça os temas e comitês do SWDL 2026 — Meio Ambiente, Direitos Humanos, Desarmamento, Saúde Global e mais.">
+  <meta property="og:title" content="Temas — SWDL">
+  <meta property="og:description" content="Conheça os temas e comitês do SWDL 2026.">
+  <meta property="og:image" content="assent/img/image__1_-removebg-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/navbar.css">
   <link rel="stylesheet" href="css/pages.css">
@@ -167,37 +175,6 @@
         </div>
       </div>
 
-      <!-- Guia do Delegado Geral 
-      <div class="comite-page-card reveal" style="--card-color:#2B3E50; transition-delay:.20s">
-        <div class="comite-page-header">
-          <div class="comite-page-icon">📘</div>
-          <div>
-            <div class="comite-page-meta">Edição de 2026 · Manual Oficial</div>
-            <h3>Guia do Delegado: Instruções Gerais e Regras de Procedimento</h3>
-          </div>
-        </div>
-        <div class="comite-page-body">
-          <p>O Guia do Delegado é o seu manual de sobrevivência para esta simulação. Aqui você encontrará o funcionamento das sessões formais e informais, o modelo de Documento de Posição Oficial (DPO), critérios de avaliação e todas as ferramentas diplomáticas necessárias para liderar os debates do seu comitê.</p>
-          <div class="comite-page-topics">
-            <span class="topic-chip">Regras de Procedimento</span>
-            <span class="topic-chip">Estrutura do DPO</span>
-            <span class="topic-chip">Código de Vestimenta</span>
-            <span class="topic-chip">Oratória e Negociação</span>
-            <span class="topic-chip">Cronograma do Evento</span>
-            <span class="topic-chip">Terminologia ONU</span>
-          </div>
-          <div class="comite-page-footer">
-            <span class="comite-delegados">Leitura obrigatória para todos os participantes</span>
-            <a href="assent/PDF/Manual Oficial dos Delegados (5).pdf" 
-              class="btn btn-ghost" 
-              style="font-size:11px; padding:8px 16px" 
-              download>
-              📥 Baixar Guia Geral
-            </a>
-          </div>
-        </div>
-      </div> -->
-
             <!-- Comitê: Canábis -->
       <div class="comite-page-card reveal" style="--card-color:#27AE60; transition-delay:.40s">
         <div class="comite-page-header">
@@ -228,7 +205,7 @@
         <div class="comite-page-header">
           <div class="comite-page-icon">⚖️</div>
           <div>
-            <div class="comite-page-meta" data-i18n="comites.misoginia_edicao">Edição de 2025</div>
+            <div class="comite-page-meta" data-i18n="comites.misoginia_edicao">Edição de 2026</div>
             <h3 data-i18n="comites.misoginia_titulo">Combate à Misoginia: Direitos Humanos e Violência de Gênero</h3>
           </div>
         </div>
@@ -456,7 +433,7 @@
     if (!banner) return;
     if (data && data.crisis_active && data.crisis_message) {
       const textEl = banner.querySelector('.crisis-text');
-      if (textEl) textEl.innerHTML = `<strong>🚨 CRISE:</strong> ${data.crisis_message}`;
+      if (textEl) textEl.textContent = '🚨 CRISE: ' + data.crisis_message;
       banner.classList.add('active');
       banner.style.display = 'flex';
     } else {
