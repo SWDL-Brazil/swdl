@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const currentPage = window.location.pathname.split('/').pop() || 'index.html';
   document.querySelectorAll('.nav-links a').forEach(link => {
     const href = link.getAttribute('href');
-    if (href && currentPage.includes(href.replace('.html', ''))) {
+    if (href && (currentPage === href || currentPage === '' && href === 'index.html')) {
       link.classList.add('active');
     }
   });
@@ -77,6 +77,16 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  // ── CENTRALIZED EMAIL ─────────────────────────────────────
+  if (typeof SWDL_CONFIG !== 'undefined' && SWDL_CONFIG.email) {
+    document.querySelectorAll('a[href^="mailto:"]').forEach(el => {
+      el.href = 'mailto:' + SWDL_CONFIG.email;
+    });
+    document.querySelectorAll('[data-i18n="footer.email_link"]').forEach(el => {
+      el.textContent = SWDL_CONFIG.email;
+    });
+  }
 
   // ── CRISIS BANNER ──────────────────────────────────────────
   if (typeof SWDL_API !== 'undefined') {

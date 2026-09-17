@@ -83,18 +83,18 @@ nav.swdl-nav.scrolled {
 }
 
 /* ── CTA BUTTON ────────────────────────────────────────────── */
-.nav-cta {
-  background: var(--gold) !important;
-  color: var(--navy) !important;
-  padding: 8px 20px !important;
-  border-radius: 4px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.06em !important;
+.nav-links .nav-cta {
+  background: var(--gold);
+  color: var(--navy);
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
 }
-.nav-cta::after { display: none !important; }
-.nav-cta:hover {
-  background: var(--gold-light) !important;
-  transform: none !important;
+.nav-links .nav-cta::after { display: none; }
+.nav-links .nav-cta:hover {
+  background: var(--gold-light);
+  transform: none;
 }
 
 /* ── MOBILE HAMBURGER ──────────────────────────────────────── */
@@ -144,9 +144,9 @@ nav.swdl-nav.scrolled {
     color: var(--white);
   }
 
-  .nav-cta {
-    display: inline-block !important;
+  .nav-links .nav-cta {
+    display: inline-block;
     margin-top: 16px;
-    padding: 12px 24px !important;
+    padding: 12px 24px;
   }
 }

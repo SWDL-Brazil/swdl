@@ -10,6 +10,12 @@ const API_BASE = window.location.hostname === 'localhost' || window.location.hos
   ? 'http://127.0.0.1:5000/api'
   : 'https://swdl.onrender.com/api';
 
+// Configuração centralizada do site
+const SWDL_CONFIG = {
+  email: 'pedro.pereira63@portalsesisp.org.br',
+  siteUrl: 'https://swdl-5a3fa.web.app',
+};
+
 const SWDL_API = {
 
   // ── GET genérico ──────────────────────────────────────────

@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title data-i18n="page_404.meta_title">Página não encontrada — SWDL</title>
   <meta name="description" content="Página não encontrada no site do SWDL 2026.">
+  <meta name="theme-color" content="#101E4C">
   <meta name="robots" content="noindex, nofollow">
+  <link rel="canonical" href="https://swdl-5a3fa.web.app/404.html">
   <meta property="og:title" content="Página não encontrada — SWDL">
   <meta property="og:description" content="Página não encontrada no site do SWDL 2026.">
   <meta property="og:image" content="assent/img/image__1_-removebg-preview.png">
@@ -13,9 +15,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap">
-  <link rel="stylesheet" href="css/variables.css">
-  <link rel="stylesheet" href="css/navbar.css">
-  <link rel="stylesheet" href="css/footer.css">
+  <link rel="stylesheet" href="css/variables.min.css">
+  <link rel="stylesheet" href="css/navbar.min.css">
+  <link rel="stylesheet" href="css/footer.min.css">
   <link rel="icon" type="image/png" href="assent/img/image__1_-removebg-preview.png">
   <style>
     body { background: var(--navy-dark); min-height: 100vh; display: flex; flex-direction: column; }
@@ -163,7 +165,7 @@
       .error-links { gap: 16px; }
     }
   </style>
-  <link rel="stylesheet" href="css/maintenance.css">
+  <link rel="stylesheet" href="css/maintenance.min.css">
 </head>
 <body>
 
@@ -201,8 +203,7 @@
 
 <nav class="swdl-nav">
   <a href="index.html" class="nav-logo">
-    <div class="nav-logo-badge">SW</div>
-    <div class="nav-logo-text" data-i18n="nav.brand">SESI World<br><span>Diplomacy League</span></div>
+    <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
   </a>
   <ul class="nav-links">
     <li><a href="index.html" data-i18n="nav.home">Home</a></li>
@@ -212,7 +213,7 @@
     <li><a href="sobre.html" data-i18n="nav.sobre">Sobre</a></li>
     <li><a href="faca-parte.html" class="nav-cta" data-i18n="nav.faca_parte">Faça Parte</a></li>
   </ul>
-  <button class="nav-hamburger"><span></span><span></span><span></span></button>
+  <button class="nav-hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
 </nav>
 
 <div class="error-hero">
@@ -285,6 +286,7 @@
         <h5 data-i18n="footer.links_title">Links Rápidos</h5>
         <ul>
           <li><a href="sobre.html" data-i18n="footer.sobre_link">Sobre</a></li>
+          <li><a href="noticias.html" data-i18n="footer.noticias_link">Notícias</a></li>
           <li><a href="agenda.html" data-i18n="footer.agenda_link">Agenda</a></li>
           <li><a href="comites.html" data-i18n="footer.comites_link">Recursos</a></li>
           <li><a href="faca-parte.html" data-i18n="footer.faca_parte_link">Faça Parte</a></li>
@@ -312,8 +314,8 @@
   </div>
 </footer>
 
-<script src="js/api.js"></script>
-<script src="js/main.js"></script>
+<script src="js/api.min.js"></script>
+<script src="js/main.min.js"></script>
 <script src="js/i18n.js"></script>
 </body>
 </html>

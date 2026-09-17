@@ -228,6 +228,7 @@ const SWDL_I18N = {
     'sobre.hero_label': { 'pt-BR': 'A Liga', 'en': 'The League' },
     'sobre.hero_title': { 'pt-BR': 'Sobre a SWDL', 'en': 'About SWDL' },
     'sobre.hero_subtitle': { 'pt-BR': 'Conheça nossa história, missão e valores', 'en': 'Learn about our history, mission and values' },
+    'sobre.hero_bg': { 'pt-BR': 'SOBRE', 'en': 'ABOUT' },
     'sobre.missao_title': { 'pt-BR': 'Missão', 'en': 'Mission', 'es': 'Misión', 'fr': 'Mission', 'de': 'Mission', 'it': 'Missione', 'nl': 'Missie' },
     'sobre.missao_text': { 'pt-BR': 'Formar jovens líderes capacitados para enfrentar os desafios globais contemporâneos através de simulações realísticas da ONU, desenvolvendo habilidades diplomáticas, de negociação e pensamento crítico.', 'en': 'To train young leaders capable of facing contemporary global challenges through realistic UN simulations, developing diplomatic, negotiation and critical thinking skills.' },
     'sobre.visao_title': { 'pt-BR': 'Visão', 'en': 'Vision', 'es': 'Visión', 'fr': 'Vision', 'de': 'Vision', 'it': 'Visione', 'nl': 'Visie' },

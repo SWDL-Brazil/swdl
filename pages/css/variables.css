@@ -198,14 +198,8 @@ h1, h2, h3, h4, h5 {
 .news-tag.imprensa { background: var(--green); }
 .news-tag.votacao  { background: var(--navy); }
 
-/* ── TICKER ────────────────────────────────────────────────── */
-.ticker-bar {
-  background: var(--navy);
-  height: 40px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-}
+/* Ticker styles defined in pages.css */
+
 .ticker-label {
   background: var(--gold);
   color: var(--navy);
@@ -221,35 +215,8 @@ h1, h2, h3, h4, h5 {
   white-space: nowrap;
   flex-shrink: 0;
 }
-.ticker-track {
-  overflow: hidden;
-  flex: 1;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
-}
-.ticker-inner {
-  display: flex;
-  animation: ticker-scroll 45s linear infinite;
-  white-space: nowrap;
-}
-.ticker-item {
-  font-size: 12px;
-  color: var(--slate);
-  padding: 0 40px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.ticker-item .sep { color: var(--gold); font-size: 9px; }
-.ticker-item strong { color: var(--white); }
 
-@keyframes ticker-scroll {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
+/* Ticker track/inner/item styles defined in pages.css */
 
 /* ── COMITE DOTS (cores por comitê) ────────────────────────── */
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }

@@ -9,15 +9,16 @@
   <meta property="og:description" content="Últimas notícias do SWDL 2026 — cobertura ao vivo dos debates, crises e resoluções.">
   <meta property="og:image" content="assent/img/image__1_-removebg-preview.png">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <meta name="theme-color" content="#101E4C">
+  <link rel="canonical" href="https://swdl-5a3fa.web.app/noticias.html">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap">
-  <link rel="stylesheet" href="css/variables.css">
-  <link rel="stylesheet" href="css/navbar.css">
-  <link rel="stylesheet" href="css/pages.css">
-  <link rel="stylesheet" href="css/footer.css">
+  <link rel="stylesheet" href="css/variables.min.css">
+  <link rel="stylesheet" href="css/navbar.min.css">
+  <link rel="stylesheet" href="css/pages.min.css">
+  <link rel="stylesheet" href="css/footer.min.css">
   <link rel="icon" type="image/png" href="assent/img/image__1_-removebg-preview.png">
-  <link rel="stylesheet" href="css/maintenance.css">
+  <link rel="stylesheet" href="css/maintenance.min.css">
 </head>
 <body>
 
@@ -60,7 +61,7 @@
 </div>
 
 <nav class="swdl-nav">
-  <button class="news-nav-toggle" id="newsNavToggle" aria-label="Categorias">
+  <button class="news-nav-toggle" id="newsNavToggle" aria-label="Categorias" aria-expanded="false" aria-controls="newsCatPanel">
     <span></span><span></span><span></span>
   </button>
   <a href="index.html" class="nav-logo">
@@ -175,8 +176,8 @@
   </div>
 </footer>
 
-<script src="js/api.js"></script>
-<script src="js/main.js"></script>
+<script src="js/api.min.js"></script>
+<script src="js/main.min.js"></script>
 <script>
   const committeeColors = {
     cs:'#C0392B', mma:'#1E7B45', dhr:'#8E44AD',

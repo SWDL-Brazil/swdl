@@ -270,19 +270,8 @@
   display: flex; gap: 8px; flex-wrap: wrap;
 }
 
-.filter-btn {
-  font-family: 'DM Mono', monospace;
-  font-size: 10px; font-weight: 500;
-  letter-spacing: 0.09em; text-transform: uppercase;
-  padding: 7px 16px; border-radius: 2px;
-  border: 1px solid var(--border);
-  color: var(--navy);
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.filter-btn.active,
-.filter-btn:hover            { background: var(--navy); color: var(--white); border-color: var(--navy); }
+/* Filter button base defined in pages.css */
+
 .filter-btn[data-cat="crise"].active   { background: var(--red);   border-color: var(--red); }
 .filter-btn[data-cat="oficial"].active { background: var(--blue);  border-color: var(--blue); }
 .filter-btn[data-cat="imprensa"].active{ background: var(--green); border-color: var(--green); }
@@ -656,7 +645,9 @@
   cursor: pointer;
   transition: flex 0.45s cubic-bezier(0.4,0,0.2,1);
 }
-.galeria-item:hover { flex: 2.6; }
+.galeria-item:hover,
+.galeria-item:focus,
+.galeria-item:focus-within { flex: 2.6; }
 
 .galeria-item-bg {
   position: absolute; inset: 0;
@@ -672,7 +663,9 @@
   opacity: 0;
   transition: opacity 0.3s;
 }
-.galeria-item:hover .galeria-item-overlay { opacity: 1; }
+.galeria-item:hover .galeria-item-overlay,
+.galeria-item:focus .galeria-item-overlay,
+.galeria-item:focus-within .galeria-item-overlay { opacity: 1; }
 .galeria-item-overlay span { font-size: 14px; font-weight: 600; color: var(--white); }
 .galeria-item-overlay small { font-size: 11px; color: var(--slate); margin-top: 2px; display: block; }
 
