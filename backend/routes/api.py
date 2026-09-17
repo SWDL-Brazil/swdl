@@ -114,10 +114,14 @@ def api_agenda_now():
 def api_inscricao():
     data = request.get_json(silent=True) or request.form
 
-    required = ('name', 'email')
+    required = ('name', 'email', 'phone', 'instagram')
     for field in required:
         if not data.get(field):
             return jsonify({'ok': False, 'error': f'Campo {field} obrigatório.'}), 400
+
+    # Confirmação de termos
+    if not data.get('accept_terms'):
+        return jsonify({'ok': False, 'error': 'Você precisa aceitar os Termos de Uso e a Política de Privacidade.'}), 400
 
     # Valida formato
     formato = data.get('formato', 'individual')
@@ -137,6 +141,11 @@ def api_inscricao():
         return jsonify({'ok': False, 'error': 'Dupla requer exatamente 1 membro adicional.'}), 400
     if formato == 'trio' and len(members_data) != 2:
         return jsonify({'ok': False, 'error': 'Trio requer exatamente 2 membros adicionais.'}), 400
+
+    # Valida membros obrigatórios
+    for m in members_data:
+        if not m.get('name') or not m.get('email') or not m.get('phone') or not m.get('instagram'):
+            return jsonify({'ok': False, 'error': 'Todos os membros devem informar nome, email, telefone e Instagram.'}), 400
 
     # Valida emails duplicados
     all_emails = [data['email'].lower().strip()]

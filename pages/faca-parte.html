@@ -446,8 +446,8 @@
                   <span class="email-error" style="display:none;font-size:11px;color:#C0392B;margin-top:2px">✕ Apenas e-mail @portalsesisp.org.br é permitido</span>
                 </div>
                 <div class="form-group">
-                  <label>Telefone</label>
-                  <input type="tel" name="phone" placeholder="(00) 00000-0000">
+                  <label>Telefone *</label>
+                  <input type="tel" name="phone" placeholder="(00) 00000-0000" required>
                 </div>
               </div>
               <div class="form-row">
@@ -464,9 +464,9 @@
                     <option>3° Ano EM</option>
                   </select>
                 </div>
-                <div class="form-group">
-                  <label>Instagram</label>
-                  <input type="text" name="instagram" placeholder="@seuusuario">
+          <div class="form-group">
+            <label>Instagram *</label>
+            <input type="text" name="instagram" placeholder="@seuusuario" required>
                 </div>
               </div>
               <div class="form-group">
@@ -488,6 +488,13 @@
                   <span>Membros do Grupo</span>
                 </div>
                 <div id="membersFields"></div>
+              </div>
+
+              <div style="margin:16px 0;padding:12px;background:var(--offwhite);border-radius:6px;font-size:13px">
+                <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+                  <input type="checkbox" id="acceptTerms" required style="margin-top:3px;width:16px;height:16px;accent-color:var(--gold)">
+                  <span>Li e concordo com os <a href="termos.html" target="_blank" style="color:var(--navy);font-weight:600;text-decoration:underline">Termos de Uso</a> e com a <a href="privacidade.html" target="_blank" style="color:var(--navy);font-weight:600;text-decoration:underline">Política de Privacidade</a> da SWDL. *</span>
+                </label>
               </div>
 
               <button type="submit" class="btn-form-fp" id="btnDelegado" disabled>Inscrições fechadas 🔒</button>
@@ -601,6 +608,12 @@
               <div class="form-group">
                 <label data-i18n="faca_parte.voluntario_form_label_disponibilidade">Disponibilidade *</label>
                 <textarea name="availability" placeholder="Ex: disponível nas tardes de quarta e sábados..." data-i18n-placeholder="faca_parte.voluntario_form_placeholder_disponibilidade" required></textarea>
+              </div>
+              <div style="margin:16px 0;padding:12px;background:var(--offwhite);border-radius:6px;font-size:13px">
+                <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+                  <input type="checkbox" id="acceptTermsVol" required style="margin-top:3px;width:16px;height:16px;accent-color:var(--gold)">
+                  <span>Li e concordo com os <a href="termos.html" target="_blank" style="color:var(--navy);font-weight:600;text-decoration:underline">Termos de Uso</a> e com a <a href="privacidade.html" target="_blank" style="color:var(--navy);font-weight:600;text-decoration:underline">Política de Privacidade</a> da SWDL. *</span>
+                </label>
               </div>
               <button type="submit" class="btn-form-fp" data-i18n="faca_parte.voluntario_form_btn_submit">Quero Ser Voluntário →</button>
               <p class="form-note" data-i18n="faca_parte.voluntario_form_note">🔒 Dados usados apenas para o processo de seleção</p>
@@ -725,6 +738,7 @@
     }
   })();
 
+  const formDelegado = document.getElementById('formDelegado');
   // ── FORMATO SELECTOR ────────────────────────────────────────
   const formatoSelector = document.getElementById('formatoSelector');
   const formatoHint     = document.getElementById('formatoHint');
@@ -756,7 +770,7 @@
           </div>
           <div class="form-group">
             <label>Telefone</label>
-            <input type="tel" name="member_phone_${idx}" placeholder="(00) 00000-0000">
+            <input type="tel" name="member_phone_${idx}" placeholder="(00) 00000-0000" required>
           </div>
         </div>
         <div class="form-row">
@@ -774,8 +788,8 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Instagram</label>
-            <input type="text" name="member_instagram_${idx}" placeholder="@usuario">
+            <label>Instagram *</label>
+            <input type="text" name="member_instagram_${idx}" placeholder="@usuario" required>
           </div>
         </div>
       </div>`;
@@ -829,7 +843,6 @@
   }
 
   // ── FORM DELEGADO ──────────────────────────────────────────
-  const formDelegado = document.getElementById('formDelegado');
   if (formDelegado) {
     formDelegado.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -880,6 +893,7 @@
         type:       'delegate',
         formato:    formato,
         members:    members,
+        accept_terms: document.getElementById('acceptTerms').checked,
       };
 
       try {
@@ -926,6 +940,7 @@
         motivation: fd.get('motivation') || '',
         interests:   interests,
         type:        'volunteer',
+        accept_terms: document.getElementById('acceptTermsVol').checked,
       };
 
       try {
