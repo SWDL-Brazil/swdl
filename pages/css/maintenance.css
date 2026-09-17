@@ -3,23 +3,35 @@
    Esconde conteúdo principal e exibe mensagem de atualização
    ============================================================ */
 
-/* ── ESCONDE CONTEÚDO PRINCIPAL ──────────────────────────── */
-.page-main,
-.news-main,
-#hero,
-.page-hero,
-.page-hero-bg,
-main,
-.page-main ~ *,
-#crisis-banner,
-#crisis-banner + * {
+/* ── ESCONDE TUDO NO BODY, EXCETO NAV, OVERLAY E FOOTER ─── */
+body > * {
   display: none !important;
+}
+
+/* ── REEXIBE O QUE DEVE FICAR VISÍVEL ────────────────────── */
+body > .swdl-nav,
+body > nav.swdl-nav,
+body > #maintenance-overlay,
+body > footer,
+body > .swdl-footer {
+  display: flex !important;
+}
+
+footer.swdl-footer {
+  display: flex !important;
+}
+
+nav.swdl-nav {
+  display: flex !important;
+}
+
+#maintenance-overlay {
+  display: flex !important;
 }
 
 /* ── OVERLAY DE MANUTENÇÃO ────────────────────────────────── */
 #maintenance-overlay {
   min-height: 72vh;
-  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
