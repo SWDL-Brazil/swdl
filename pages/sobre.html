@@ -188,8 +188,31 @@
   <div class="maintenance-text">
     <h1>Site em Atualização</h1>
     <p>Estamos melhorando a experiência para você. Volte em breve!</p>
+    <div class="maintenance-countdown">
+      <div class="cd-unit"><span class="cd-num" id="cd-h">04</span><span class="cd-label">horas</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num" id="cd-m">00</span><span class="cd-label">min</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num" id="cd-s">00</span><span class="cd-label">seg</span></div>
+    </div>
+    <p class="maintenance-estimate">Tempo estimado de atualização</p>
   </div>
 </div>
+<script>
+(function(){
+  var end=new Date();end.setHours(20,0,0,0);
+  function tick(){
+    var d=Math.max(0,Math.floor((end-Date.now())/1000));
+    var h=Math.floor(d/3600);d%=3600;
+    var m=Math.floor(d/60);var s=d%60;
+    document.getElementById('cd-h').textContent=String(h).padStart(2,'0');
+    document.getElementById('cd-m').textContent=String(m).padStart(2,'0');
+    document.getElementById('cd-s').textContent=String(s).padStart(2,'0');
+    if(d>0)requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
 
 <div id="crisis-banner">
   <div class="crisis-pulse"></div>

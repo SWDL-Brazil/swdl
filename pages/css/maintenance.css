@@ -68,6 +68,56 @@ nav.swdl-nav {
   line-height: 1.7;
 }
 
+/* ── COUNTDOWN ────────────────────────────────────────────── */
+.maintenance-countdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+}
+
+.cd-unit {
+  background: var(--navy);
+  border-radius: 6px;
+  padding: 14px 20px;
+  text-align: center;
+  min-width: 68px;
+}
+
+.cd-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--gold);
+  display: block;
+  line-height: 1;
+}
+
+.cd-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--slate);
+  display: block;
+  margin-top: 5px;
+}
+
+.cd-sep {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--navy);
+  opacity: .25;
+  padding-bottom: 18px;
+}
+
+.maintenance-estimate {
+  font-size: 12px !important;
+  color: var(--muted) !important;
+  margin-top: 12px !important;
+  opacity: .6;
+}
+
 /* ── RESPONSIVO ───────────────────────────────────────────── */
 @media(max-width:768px) {
   #maintenance-overlay {
@@ -84,6 +134,19 @@ nav.swdl-nav {
   #maintenance-overlay .maintenance-text {
     text-align: center;
     align-items: center;
+  }
+
+  .maintenance-countdown {
+    justify-content: center;
+  }
+
+  .cd-unit {
+    padding: 10px 14px;
+    min-width: 56px;
+  }
+
+  .cd-num {
+    font-size: 24px;
   }
 }
 
