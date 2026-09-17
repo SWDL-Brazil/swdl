@@ -61,6 +61,7 @@ def create_app():
         # Importar models para garantir que o SQLAlchemy os conheça
         from models.user import User
         from models.inscription import Inscription
+        from models.inscription_member import InscriptionMember
         from models.delegation import Delegation
         from models.news import News
         from models.agenda import AgendaItem
@@ -112,6 +113,7 @@ def _run_migrations(app):
         from models.user import User
         from models.delegation import Delegation
         from models.inscription import Inscription
+        from models.inscription_member import InscriptionMember
         from models.news import News, slugify
         from models.student import Student
         from models.document import Document
@@ -133,6 +135,7 @@ def _run_migrations(app):
             User.__tablename__: User,
             Delegation.__tablename__: Delegation,
             Inscription.__tablename__: Inscription,
+            InscriptionMember.__tablename__: InscriptionMember,
             News.__tablename__: News,
             Student.__tablename__: Student,
             Document.__tablename__: Document,

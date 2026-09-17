@@ -9,6 +9,7 @@ from models.theme        import Theme
 from models.agenda       import AgendaItem
 from models.vote         import VoteSession
 from models.inscription  import Inscription
+from models.inscription_member import InscriptionMember
 from models.event_config import EventConfig
 from models.urgent_alert import UrgentAlert
 import urllib.request, json as _json
@@ -118,6 +119,38 @@ def api_inscricao():
         if not data.get(field):
             return jsonify({'ok': False, 'error': f'Campo {field} obrigatório.'}), 400
 
+    # Valida formato
+    formato = data.get('formato', 'individual')
+    if formato not in ('individual', 'dupla', 'trio'):
+        return jsonify({'ok': False, 'error': 'Formato inválido.'}), 400
+
+    # Valida membros
+    members_data = data.get('members', [])
+    if isinstance(members_data, str):
+        import json as _json2
+        try:
+            members_data = _json2.loads(members_data)
+        except Exception:
+            members_data = []
+
+    if formato == 'dupla' and len(members_data) != 1:
+        return jsonify({'ok': False, 'error': 'Dupla requer exatamente 1 membro adicional.'}), 400
+    if formato == 'trio' and len(members_data) != 2:
+        return jsonify({'ok': False, 'error': 'Trio requer exatamente 2 membros adicionais.'}), 400
+
+    # Valida emails duplicados
+    all_emails = [data['email'].lower().strip()]
+    for m in members_data:
+        email = m.get('email', '').lower().strip()
+        if email:
+            all_emails.append(email)
+    if len(set(all_emails)) != len(all_emails):
+        return jsonify({'ok': False, 'error': 'Emails duplicados entre os membros do grupo.'}), 400
+
+    # Verifica se inscrições estão abertas
+    if not EventConfig.get_inscricoes_abertas():
+        return jsonify({'ok': False, 'error': 'Inscrições estão fechadas no momento.'}), 403
+
     ins = Inscription(
         name         = data['name'],
         email        = data['email'],
@@ -128,10 +161,26 @@ def api_inscricao():
         motivation   = data.get('motivation', ''),
         interests    = data.get('interests', ''),
         type         = data.get('type', 'delegate'),
+        instagram    = data.get('instagram', ''),
+        formato      = formato,
     )
     db.session.add(ins)
+    db.session.flush()
+
+    # Cria membros adicionais (dupla/trio)
+    for m in members_data:
+        member = InscriptionMember(
+            inscription_id = ins.id,
+            name   = m.get('name', ''),
+            email  = m.get('email', ''),
+            grade  = m.get('grade', ''),
+            instagram = m.get('instagram', ''),
+            phone  = m.get('phone', ''),
+        )
+        db.session.add(member)
+
     db.session.commit()
-    return jsonify({'ok': True, 'id': ins.id}), 201
+    return jsonify({'ok': True, 'id': ins.id, 'formato': formato}), 201
 
 
 # ── STATUS DO EVENTO (crisis banner) ──────────────────────────

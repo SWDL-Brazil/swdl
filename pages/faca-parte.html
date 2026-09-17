@@ -186,8 +186,38 @@
       transition: background .2s, transform .2s;
     }
     .btn-form-fp:hover { background: var(--gold-light); transform: translateY(-1px); }
+    .btn-form-fp:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
     .form-note { text-align: center; font-size: 11px; color: var(--muted); margin-top: 10px; }
+
+    /* ── FORMATO SELECTOR ──────────────────────────────────── */
+    .formato-selector {
+      display: flex; gap: 8px;
+    }
+    .formato-option {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      gap: 4px; padding: 12px 8px; border: 2px solid var(--border);
+      border-radius: 6px; cursor: pointer; transition: all .2s;
+      text-align: center; background: var(--white);
+    }
+    .formato-option input[type="radio"] { display: none; }
+    .formato-option.active {
+      border-color: var(--gold); background: rgba(212,175,55,.06);
+    }
+    .formato-option:hover { border-color: var(--gold-light); }
+    .formato-icon { font-size: 22px; }
+    .formato-label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--navy); }
+
+    .member-divider {
+      border-top: 2px solid var(--border); margin: 20px 0 16px;
+      position: relative;
+    }
+    .member-divider span {
+      position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+      background: var(--white); padding: 0 12px;
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--navy);
+    }
 
     /* ── SUCCESS STATE ─────────────────────────────────────── */
     .form-success-fp {
@@ -376,51 +406,91 @@
             <div class="fp-form-sub" data-i18n="faca_parte.form_sub">Formulário de Inscrição — Delegado</div>
 
             <form id="formDelegado">
+
+              <!-- Seletor de formato -->
               <div class="form-group">
-                <label data-i18n="faca_parte.form_label_nome">Nome Completo *</label>
-                <input type="text" name="name" placeholder="Seu nome completo" data-i18n-placeholder="faca_parte.form_placeholder_nome" required>
+                <label>Formato da Inscrição *</label>
+                <div class="formato-selector" id="formatoSelector">
+                  <label class="formato-option active" data-formato="individual">
+                    <input type="radio" name="formato" value="individual" checked>
+                    <span class="formato-icon">👤</span>
+                    <span class="formato-label">Individual</span>
+                  </label>
+                  <label class="formato-option" data-formato="dupla">
+                    <input type="radio" name="formato" value="dupla">
+                    <span class="formato-icon">👥</span>
+                    <span class="formato-label">Dupla</span>
+                  </label>
+                  <label class="formato-option" data-formato="trio">
+                    <input type="radio" name="formato" value="trio">
+                    <span class="formato-icon">👨‍👩‍👦</span>
+                    <span class="formato-label">Trio</span>
+                  </label>
+                </div>
+                <div id="formatoHint" style="font-size:11px;color:var(--muted);margin-top:4px">Inscreva-se sozinho</div>
+              </div>
+
+              <!-- Dados do inscrito principal -->
+              <div class="form-group">
+                <label>Seu Nome Completo *</label>
+                <input type="text" name="name" placeholder="Seu nome completo" required>
               </div>
               <div class="form-row">
                 <div class="form-group">
-                  <label data-i18n="faca_parte.form_label_email">E-mail educacional *</label>
-                  <input type="email" name="email" placeholder="seunome@portalsesisp.org.br" data-i18n-placeholder="faca_parte.form_placeholder_email" required
+                  <label>Seu E-mail educacional *</label>
+                  <input type="email" name="email" placeholder="seunome@portalsesisp.org.br" required
                          pattern=".+@portalsesisp\.org\.br$"
                          oninput="validateEmail(this)">
-                  <span class="email-hint" style="font-size:11px;color:var(--muted)" data-i18n="faca_parte.form_email_hint">Use seu e-mail @portalsesisp.org.br</span>
-                  <span class="email-error" style="display:none;font-size:11px;color:#C0392B;margin-top:2px" data-i18n="faca_parte.form_email_error">✕ Apenas e-mail @portalsesisp.org.br é permitido</span>
+                  <span class="email-hint" style="font-size:11px;color:var(--muted)">Use seu e-mail @portalsesisp.org.br</span>
+                  <span class="email-error" style="display:none;font-size:11px;color:#C0392B;margin-top:2px">✕ Apenas e-mail @portalsesisp.org.br é permitido</span>
                 </div>
                 <div class="form-group">
-                  <label data-i18n="faca_parte.form_label_telefone">Telefone</label>
-                  <input type="tel" name="phone" placeholder="(00) 00000-0000" data-i18n-placeholder="faca_parte.form_placeholder_telefone">
+                  <label>Telefone</label>
+                  <input type="tel" name="phone" placeholder="(00) 00000-0000">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Série / Ano *</label>
+                  <select name="grade" required>
+                    <option value="">Selecione sua série</option>
+                    <option>6° Ano</option>
+                    <option>7° Ano</option>
+                    <option>8° Ano</option>
+                    <option>9° Ano</option>
+                    <option>1° Ano EM</option>
+                    <option>2° Ano EM</option>
+                    <option>3° Ano EM</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Instagram</label>
+                  <input type="text" name="instagram" placeholder="@seuusuario">
                 </div>
               </div>
               <div class="form-group">
-                <label data-i18n="faca_parte.form_label_serie">Série / Ano *</label>
-                <select name="grade" required>
-                  <option value="" data-i18n="faca_parte.form_option_serie_default">Selecione sua série</option>
-                  <option data-i18n="faca_parte.form_option_6ano">6° Ano</option>
-                  <option data-i18n="faca_parte.form_option_7ano">7° Ano</option>
-                  <option data-i18n="faca_parte.form_option_8ano">8° Ano</option>
-                  <option data-i18n="faca_parte.form_option_9ano">9° Ano</option>
-                  <option data-i18n="faca_parte.form_option_1em">1° Ano EM</option>
-                  <option data-i18n="faca_parte.form_option_2em">2° Ano EM</option>
-                  <option data-i18n="faca_parte.form_option_3em">3° Ano EM</option>
-                </select>
+                <label>Experiência Anterior</label>
+                <input type="text" name="experience" placeholder="Ex: participei de um MUN na escola X...">
               </div>
               <div class="form-group">
-                <label data-i18n="faca_parte.form_label_experiencia">Experiência Anterior</label>
-                <input type="text" name="experience" placeholder="Ex: participei de um MUN na escola X..." data-i18n-placeholder="faca_parte.form_placeholder_experiencia">
+                <label>Por que deseja participar? *</label>
+                <textarea name="motivation" placeholder="Conte brevemente sua motivação..." required></textarea>
               </div>
               <div class="form-group">
-                <label data-i18n="faca_parte.form_label_motivacao">Por que deseja participar? *</label>
-                <textarea name="motivation" placeholder="Conte brevemente sua motivação..." data-i18n-placeholder="faca_parte.form_placeholder_motivacao" required></textarea>
+                <label>Temas de Interesse</label>
+                <input type="text" name="interests" placeholder="Ex: Segurança Internacional, Direitos Humanos, Meio Ambiente...">
               </div>
-              <div class="form-group">
-                <label data-i18n="faca_parte.form_label_interesses">Temas de Interesse</label>
-                <input type="text" name="interests" placeholder="Ex: Segurança Internacional, Direitos Humanos, Meio Ambiente..." data-i18n-placeholder="faca_parte.form_placeholder_interesses">
+
+              <!-- Membros extras (dupla/trio) -->
+              <div id="membersContainer" style="display:none">
+                <div class="member-divider" id="memberDivider" style="display:none">
+                  <span>Membros do Grupo</span>
+                </div>
+                <div id="membersFields"></div>
               </div>
-              <button type="submit" class="btn-form-fp" id="btnDelegado" data-i18n="faca_parte.form_btn_submit">Inscrições fechadas🔒</button>
-              <p class="form-note" data-i18n="faca_parte.form_note">🔒 Dados usados apenas para o processo de seleção</p>
+
+              <button type="submit" class="btn-form-fp" id="btnDelegado" disabled>Inscrições fechadas 🔒</button>
+              <p class="form-note">🔒 Dados usados apenas para o processo de seleção</p>
             </form>
 
             <div class="form-success-fp" id="successDelegado">
@@ -638,8 +708,8 @@
     const cfg = await SWDL_API.config();
     const overlay = document.getElementById('inscricoesOverlay');
     const btnDel  = document.getElementById('btnDelegado');
-      if (!cfg) return;
-      if (cfg.inscricoes_abertas) {
+    if (!cfg) return;
+    if (cfg.inscricoes_abertas) {
       overlay.classList.remove('active');
       if (btnDel) {
         btnDel.textContent = 'Enviar Inscrição →';
@@ -653,6 +723,82 @@
       }
     }
   })();
+
+  // ── FORMATO SELECTOR ────────────────────────────────────────
+  const formatoSelector = document.getElementById('formatoSelector');
+  const formatoHint     = document.getElementById('formatoHint');
+  const membersFields   = document.getElementById('membersFields');
+  const formatoInput    = formDelegado.querySelector('input[name="formato"]');
+  const hintMap = {
+    individual: 'Inscreva-se sozinho',
+    dupla:      'Cadastre você + 1 colega de equipe',
+    trio:       'Cadastre você + 2 colegas de equipe',
+  };
+  function memberHTML(idx) {
+    return `
+      <div class="member-card" style="border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px;background:var(--offwhite)">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--navy);margin-bottom:12px">
+          Membro ${idx}
+        </div>
+        <div class="form-group">
+          <label>Nome completo *</label>
+          <input type="text" name="member_name_${idx}" placeholder="Nome do colega" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>E-mail educacional *</label>
+            <input type="email" name="member_email_${idx}" placeholder="colega@portalsesisp.org.br" required
+                   pattern=".+@portalsesisp\\.org\\.br$"
+                   oninput="validateEmail(this)">
+            <span class="email-hint" style="font-size:11px;color:var(--muted)">E-mail @portalsesisp.org.br</span>
+            <span class="email-error" style="display:none;font-size:11px;color:#C0392B;margin-top:2px">✕ Apenas e-mail @portalsesisp.org.br</span>
+          </div>
+          <div class="form-group">
+            <label>Telefone</label>
+            <input type="tel" name="member_phone_${idx}" placeholder="(00) 00000-0000">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Série / Ano *</label>
+            <select name="member_grade_${idx}" required>
+              <option value="">Selecione</option>
+              <option>6° Ano</option>
+              <option>7° Ano</option>
+              <option>8° Ano</option>
+              <option>9° Ano</option>
+              <option>1° Ano EM</option>
+              <option>2° Ano EM</option>
+              <option>3° Ano EM</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Instagram</label>
+            <input type="text" name="member_instagram_${idx}" placeholder="@usuario">
+          </div>
+        </div>
+      </div>`;
+  }
+  function updateFormato() {
+    const val = formatoInput.value;
+    formatoHint.textContent = hintMap[val] || '';
+    formatoSelector.querySelectorAll('.formato-option').forEach(o => {
+      o.classList.toggle('active', o.dataset.formato === val);
+    });
+    if (val === 'individual') {
+      membersFields.innerHTML = '';
+    } else {
+      const n = val === 'dupla' ? 1 : 2;
+      membersFields.innerHTML = Array.from({length: n}, (_, i) => memberHTML(i + 1)).join('');
+    }
+  }
+  formatoSelector.querySelectorAll('.formato-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      formatoInput.value = opt.dataset.formato;
+      updateFormato();
+    });
+  });
+  updateFormato();
 
   // ── TAB SWITCHING ─────────────────────────────────────────
   document.querySelectorAll('.fp-tab').forEach(tab => {
@@ -685,27 +831,54 @@
   const formDelegado = document.getElementById('formDelegado');
   if (formDelegado) {
     formDelegado.addEventListener('submit', async (e) => {
+      e.preventDefault();
       const emailInput = formDelegado.querySelector('input[name="email"]');
       if (emailInput && !emailInput.validity.valid) {
-        e.preventDefault();
         validateEmail(emailInput);
         emailInput.focus();
         return;
       }
-      e.preventDefault();
+      // Validar emails dos membros
+      const memberEmails = formDelegado.querySelectorAll('input[type="email"][name^="member_email"]');
+      for (const me of memberEmails) {
+        if (!me.validity.valid) {
+          validateEmail(me);
+          me.focus();
+          return;
+        }
+      }
+
       const btn = document.getElementById('btnDelegado');
       btn.textContent = 'Enviando...';
       btn.disabled    = true;
 
-      const fd = new FormData(formDelegado);
+      const fd      = new FormData(formDelegado);
+      const formato = fd.get('formato') || 'individual';
+
+      const members = [];
+      const n = formato === 'trio' ? 2 : formato === 'dupla' ? 1 : 0;
+      for (let i = 1; i <= n; i++) {
+        const mName      = fd.get(`member_name_${i}`);
+        const mEmail     = fd.get(`member_email_${i}`);
+        const mPhone     = fd.get(`member_phone_${i}`) || '';
+        const mGrade     = fd.get(`member_grade_${i}`) || '';
+        const mInstagram = fd.get(`member_instagram_${i}`) || '';
+        if (mName && mEmail) {
+          members.push({name: mName, email: mEmail, phone: mPhone, grade: mGrade, instagram: mInstagram});
+        }
+      }
+
       const payload = {
         name:       fd.get('name'),
         email:      fd.get('email'),
         phone:      fd.get('phone') || '',
+        instagram:  fd.get('instagram') || '',
         grade:      fd.get('grade') || '',
         motivation: fd.get('motivation') || '',
         interests:  fd.get('interests') || '',
         type:       'delegate',
+        formato:    formato,
+        members:    members,
       };
 
       try {

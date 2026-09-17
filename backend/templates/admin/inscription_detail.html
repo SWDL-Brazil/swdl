@@ -9,11 +9,20 @@
 {% block content %}
 <div class="grid-2" style="align-items:start">
 
-  <!-- Dados -->
+  <!-- Dados do inscrito principal -->
   <div class="card">
     <div class="card-header">
       <span class="card-title">Dados do Candidato</span>
-      <span class="badge badge-{{ ins.status }}">{{ ins.status }}</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        {% if ins.formato == 'trio' %}
+        <span class="badge" style="background:#8E44AD;color:#fff">Trio</span>
+        {% elif ins.formato == 'dupla' %}
+        <span class="badge" style="background:var(--green);color:#fff">Dupla</span>
+        {% else %}
+        <span class="badge badge-next">Individual</span>
+        {% endif %}
+        <span class="badge badge-{{ ins.status }}">{{ ins.status }}</span>
+      </div>
     </div>
     <div class="card-body">
       <table style="width:100%;border-collapse:collapse;font-size:14px">
@@ -21,10 +30,9 @@
           ('Nome',     ins.name),
           ('E-mail',   ins.email),
           ('Telefone', ins.phone or '—'),
-          ('Escola',   ins.school or '—'),
+          ('Instagram', ins.instagram or '—'),
           ('Série',    ins.grade or '—'),
           ('Tipo',     ins.type),
-          ('Parceiro', ins.partner_name or '—'),
           ('Interesses', ins.interests or '—'),
           ('Enviado em', ins.submitted_at.strftime('%d/%m/%Y às %H:%M')),
         ] %}
@@ -55,15 +63,22 @@
     </div>
   </div>
 
-  <!-- Ações -->
+  <!-- Ações + Membros -->
   <div>
+    <!-- Painel de ações -->
     {% if ins.status == 'pending' %}
     <div class="card" style="margin-bottom:16px">
       <div class="card-header"><span class="card-title">Decisão</span></div>
       <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+        {% if ins.extra_members %}
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">
+          Ao aprovar, <strong>{{ ins.extra_members|length + 1 }} contas</strong> serão criadas automaticamente
+          ({{ ins.name }}{% for m in ins.extra_members %} + {{ m.name }}{% endfor %}).
+        </div>
+        {% endif %}
         <form method="POST" action="{{ url_for('admin.inscription_approve', id=ins.id) }}">
           <button class="btn btn-primary" type="submit" style="width:100%">
-            ✓ Aprovar Inscrição
+            ✓ Aprovar Inscrição{% if ins.extra_members %} ({{ ins.extra_members|length + 1 }} contas){% endif %}
           </button>
         </form>
         <form method="POST" action="{{ url_for('admin.inscription_reject', id=ins.id) }}">
@@ -74,7 +89,7 @@
       </div>
     </div>
     {% elif ins.status == 'approved' %}
-    <div class="card" style="border-left:4px solid var(--green)">
+    <div class="card" style="border-left:4px solid var(--green);margin-bottom:16px">
       <div class="card-body">
         <div style="color:var(--green);font-weight:700;margin-bottom:4px">✓ Aprovado</div>
         <div class="text-muted">
@@ -120,9 +135,56 @@
       </div>
     </div>
     {% else %}
-    <div class="card" style="border-left:4px solid var(--red)">
+    <div class="card" style="border-left:4px solid var(--red);margin-bottom:16px">
       <div class="card-body">
         <div style="color:var(--red);font-weight:700">✕ Rejeitado</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Membros do grupo -->
+    {% if ins.extra_members %}
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Membros do Grupo</span>
+        <span class="badge" style="background:var(--offwhite);color:var(--text)">{{ ins.extra_members|length + 1 }} pessoas</span>
+      </div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
+        <!-- Inscrito principal -->
+        <div style="padding:12px;background:var(--offwhite);border-radius:6px;border-left:3px solid var(--gold)">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;
+                      text-transform:uppercase;color:var(--gold);margin-bottom:6px">
+            Inscrito Principal
+          </div>
+          <div style="font-weight:600">{{ ins.name }}</div>
+          <div style="font-size:12px;color:var(--muted)">{{ ins.email }}</div>
+          {% if ins.phone or ins.instagram or ins.grade %}
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">
+            {% if ins.grade %}{{ ins.grade }}{% endif %}
+            {% if ins.phone %} · {{ ins.phone }}{% endif %}
+            {% if ins.instagram %} · {{ ins.instagram }}{% endif %}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Membros adicionais -->
+        {% for m in ins.extra_members %}
+        <div style="padding:12px;background:var(--offwhite);border-radius:6px;border-left:3px solid var(--navy)">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;
+                      text-transform:uppercase;color:var(--muted);margin-bottom:6px">
+            Membro {{ loop.index }}
+          </div>
+          <div style="font-weight:600">{{ m.name }}</div>
+          <div style="font-size:12px;color:var(--muted)">{{ m.email }}</div>
+          {% if m.phone or m.instagram or m.grade %}
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">
+            {% if m.grade %}{{ m.grade }}{% endif %}
+            {% if m.phone %} · {{ m.phone }}{% endif %}
+            {% if m.instagram %} · {{ m.instagram }}{% endif %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
       </div>
     </div>
     {% endif %}

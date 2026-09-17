@@ -23,8 +23,20 @@ class Inscription(db.Model):
     reviewed_at   = db.Column(db.DateTime)
     reviewed_by   = db.Column(db.Integer, db.ForeignKey('users.id'))
 
+    # Campos novos — inscrição em grupo
+    instagram     = db.Column(db.String(100))
+    formato       = db.Column(db.String(20), default='individual')  # individual / dupla / trio
+
     # Se aprovado, gera uma delegação
     delegation    = db.relationship('Delegation', backref='inscription', uselist=False)
+
+    # Membros adicionais (dupla/trio)
+    extra_members = db.relationship('InscriptionMember', backref='inscription',
+                                    cascade='all, delete-orphan', lazy=True)
+
+    def member_count(self):
+        """Número total de participantes (inscrito + membros extras)."""
+        return 1 + len(self.extra_members)
 
     def __repr__(self):
         return f'<Inscription {self.name} [{self.status}]>'

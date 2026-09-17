@@ -5,13 +5,31 @@
 {% block content %}
 
 <!-- Filter tabs -->
-<div style="display:flex;gap:6px;margin-bottom:20px">
+<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
   {% for s, label in [('all','Todas'),('pending','Pendentes'),('approved','Aprovadas'),('rejected','Rejeitadas')] %}
-  <a href="{{ url_for('admin.inscriptions_list', status=s) }}"
+  <a href="{{ url_for('admin.inscriptions_list', status=s, formato=formato_filter) }}"
      class="btn {{ 'btn-navy' if status_filter == s else 'btn-ghost' }} btn-sm">
     {{ label }}
   </a>
   {% endfor %}
+  <span style="margin-left:12px;border-left:1px solid var(--border);padding-left:12px"></span>
+  {% for f, label in [('all','Todos'),('individual','Individual'),('dupla','Dupla'),('trio','Trio')] %}
+  <a href="{{ url_for('admin.inscriptions_list', status=status_filter, formato=f) }}"
+     class="btn {{ 'btn-navy' if formato_filter == f else 'btn-ghost' }} btn-sm">
+    {{ label }}
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Contadores -->
+<div style="display:flex;gap:16px;margin-bottom:20px">
+  <div style="font-size:13px;color:var(--muted)">
+    <strong style="color:var(--text)">{{ inscriptions|length }}</strong> inscrição(ões)
+    {% set pending_count = inscriptions|selectattr('status','equalto','pending')|list|length %}
+    {% if pending_count > 0 %}
+    · <span style="color:var(--gold);font-weight:600">{{ pending_count }} pendente(s)</span>
+    {% endif %}
+  </div>
 </div>
 
 <div class="card">
@@ -20,10 +38,9 @@
       <thead>
         <tr>
           <th>#</th>
-          <th>Nome</th>
-          <th>E-mail</th>
-          <th>Série</th>
-          <th>Tipo</th>
+          <th>Inscrito</th>
+          <th>Formato</th>
+          <th>Membros</th>
           <th>Status</th>
           <th>Enviado</th>
           <th>Ações</th>
@@ -33,12 +50,44 @@
         {% for ins in inscriptions %}
         <tr>
           <td class="text-muted">{{ ins.id }}</td>
-          <td style="font-weight:600">{{ ins.name }}</td>
-          <td class="text-muted">{{ ins.email }}</td>
-          <td class="text-muted">{{ ins.grade or '—' }}</td>
-          <td><span class="badge badge-next">{{ ins.type }}</span></td>
-          <td><span class="badge badge-{{ ins.status }}">{{ ins.status }}</span></td>
-          <td class="text-muted">{{ ins.submitted_at.strftime('%d/%m %H:%M') }}</td>
+          <td>
+            <div style="font-weight:600">{{ ins.name }}</div>
+            <div style="font-size:11px;color:var(--muted)">{{ ins.email }}</div>
+            {% if ins.grade %}
+            <div style="font-size:11px;color:var(--muted)">{{ ins.grade }}</div>
+            {% endif %}
+          </td>
+          <td>
+            {% if ins.formato == 'trio' %}
+            <span class="badge" style="background:#8E44AD;color:#fff">Trio</span>
+            {% elif ins.formato == 'dupla' %}
+            <span class="badge" style="background:var(--green);color:#fff">Dupla</span>
+            {% else %}
+            <span class="badge badge-next">Individual</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if ins.extra_members %}
+              {% for m in ins.extra_members %}
+              <div style="font-size:12px">
+                <span style="font-weight:500">{{ m.name }}</span>
+                <span style="color:var(--muted)">· {{ m.email }}</span>
+              </div>
+              {% endfor %}
+            {% else %}
+              <span style="color:var(--muted);font-size:12px">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if ins.status == 'pending' %}
+            <span class="badge" style="background:var(--gold);color:var(--navy)">Pendente</span>
+            {% elif ins.status == 'approved' %}
+            <span class="badge" style="background:var(--green);color:#fff">Aprovado</span>
+            {% else %}
+            <span class="badge" style="background:var(--red);color:#fff">Rejeitado</span>
+            {% endif %}
+          </td>
+          <td class="text-muted" style="font-size:12px">{{ ins.submitted_at.strftime('%d/%m %H:%M') }}</td>
           <td>
             <div style="display:flex;gap:4px;flex-wrap:wrap">
               <a href="{{ url_for('admin.inscription_detail', id=ins.id) }}"
@@ -56,7 +105,7 @@
         </tr>
         {% else %}
         <tr>
-          <td colspan="8" style="text-align:center;color:var(--muted);padding:32px">
+          <td colspan="7" style="text-align:center;color:var(--muted);padding:32px">
             Nenhuma inscrição encontrada.
           </td>
         </tr>
