@@ -60,15 +60,20 @@
           </td>
           <td>
             <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+              <a href="{{ url_for('admin.student_edit', id=s.id) }}"
+                 class="btn btn-ghost btn-sm" title="Editar">✏️</a>
               {% if s.delegation %}
                 <a href="{{ url_for('admin.student_assign', id=s.id) }}"
-                   class="btn btn-navy btn-sm">Reatribuir</a>
+                   class="btn btn-navy btn-sm">Designar</a>
               {% else %}
                 <a href="{{ url_for('admin.student_assign', id=s.id) }}"
                    class="btn btn-primary btn-sm">🌍 Designar</a>
               {% endif %}
-              <a href="{{ url_for('admin.student_assign', id=s.id) }}"
-                 class="btn btn-ghost btn-sm">👤 Ver</a>
+              <form method="POST" action="{{ url_for('admin.student_delete', id=s.id) }}"
+                    style="display:inline"
+                    onsubmit="return confirm('Deletar {{ s.name }}? Esta acao nao pode ser desfeita.')">
+                <button type="submit" class="btn btn-danger btn-sm" title="Deletar">🗑️</button>
+              </form>
             </div>
           </td>
         </tr>

@@ -1,6 +1,6 @@
 """SWDL Admin — shared helpers, decorators, context processor, and utility routes."""
 from flask import (Blueprint, render_template, redirect, url_for,
-                   flash, request, abort, jsonify, send_file, current_app)
+                   flash, request, abort, jsonify, send_file, current_app, session)
 from flask_login import login_required, current_user
 from extensions import db, socketio
 from models.news         import News
@@ -55,6 +55,9 @@ def get_current_delegation():
 def inject_globals():
     try:
         phase, _, _ = get_agenda_status()
+        override = session.get('phase_override')
+        if override in ('pre', 'during', 'post'):
+            phase = override
         active_invoke = EventConfig.get_invoke()
         active_alerts = UrgentAlert.query.filter_by(active=True).order_by(UrgentAlert.created_at.desc()).all()
         return dict(event_phase=phase or 'pre', active_invoke=active_invoke,
@@ -65,6 +68,24 @@ def inject_globals():
         current_app.logger.error('Context processor error', exc_info=True)
         db.session.rollback()
         return dict(event_phase='pre', active_invoke=None, active_alerts=[])
+
+
+@admin_bp.route('/phase/set/<phase>', methods=['POST'])
+@login_required
+@admin_required
+def phase_set(phase):
+    """Override manual da fase (pre/during/post). Limpa o override com 'auto'."""
+    if phase == 'auto':
+        session.pop('phase_override', None)
+        flash('🔄 Fase voltou ao calculo automatico (agenda).', 'success')
+    elif phase in ('pre', 'during', 'post'):
+        session['phase_override'] = phase
+        labels = {'pre': '🟢 PRE-EVENTO', 'during': '🔴 DURANTE A SIMULACAO', 'post': '🔵 POS-EVENTO'}
+        flash(f'Fase alterada para {labels[phase]}', 'success')
+    else:
+        flash('Fase invalida.', 'error')
+        return redirect(url_for('admin.dashboard'))
+    return redirect(request.referrer or url_for('admin.dashboard'))
 
 
 @admin_bp.route('/uploads/<path:filename>')

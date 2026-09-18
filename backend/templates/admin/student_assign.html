@@ -4,22 +4,49 @@
 
 {% block topbar_actions %}
   <a href="{{ url_for('admin.students_list') }}" class="btn btn-ghost">← Alunos</a>
+  <a href="{{ url_for('admin.student_edit', id=student.id) }}" class="btn btn-ghost">✏️ Editar</a>
 {% endblock %}
 
 {% block content %}
-<div style="max-width:540px">
+<div style="max-width:600px">
 
   <div style="background:rgba(16,30,76,.04);border:1px solid var(--border);
               border-radius:4px;padding:14px 18px;margin-bottom:24px;
               font-size:13px;color:var(--muted);display:flex;gap:10px;align-items:flex-start">
     <span style="font-size:16px;flex-shrink:0">🌍</span>
     <div>
-      <strong>Etapa 2 de 2:</strong> atribua país, tema e formato (individual, dupla, trio ou grupo) para
+      <strong>Etapa 2 de 2:</strong> atribua pais, tema e formato para
       <strong style="color:var(--navy)">{{ student.name }}</strong>.
       <br>
       ID Global: <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--navy)">{{ student.global_id[:16] }}...</span>
     </div>
   </div>
+
+  {% if student.delegation %}
+  <div class="card" style="margin-bottom:16px;border-left:3px solid var(--green)">
+    <div class="card-body" style="padding:14px 18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div>
+          <span style="font-size:13px;font-weight:600;color:var(--navy)">
+            {{ student.delegation.country_flag }} {{ student.delegation.country or 'Sem pais' }}
+          </span>
+          {% if student.delegation.committee %}
+            <span class="badge badge-next" style="margin-left:8px">{{ student.delegation.committee.upper() }}</span>
+          {% endif %}
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">
+            {{ student.delegation.group_label() }} — {{ student.delegation.member_names()|join(', ') or 'Sem membros' }}
+          </div>
+        </div>
+        <form method="POST" action="{{ url_for('admin.student_unassign', id=student.id) }}"
+              onsubmit="return confirm('Remover {{ student.name }} da delegacao?')">
+          <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--orange);border:1px solid var(--orange)">
+            ↩️ Desdesignar
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 
   <div class="card">
     <div class="card-header">
@@ -30,7 +57,7 @@
       <form method="POST">
 
         <div class="form-group">
-          <label>País *</label>
+          <label>Pais *</label>
           <div style="display:flex;gap:8px">
             <input type="text" name="country" id="countryInput" required
                    value="{{ student.delegation.country if student.delegation else '' }}"
@@ -43,7 +70,7 @@
             </button>
           </div>
           <div style="font-size:11px;color:var(--muted);margin-top:4px">
-            Digite o país em português
+            Digite o pais em portugues
           </div>
         </div>
 
@@ -59,7 +86,7 @@
 
         <div id="flagError"
              style="display:none;font-size:12px;color:var(--red);margin-bottom:12px">
-          País não encontrado. Tente em português.
+          Pais nao encontrado. Tente em portugues.
         </div>
 
         <div class="form-group">
@@ -88,7 +115,7 @@
           <div style="display:flex;gap:8px">
             <input type="text" name="members" id="membersInput"
                    value="{{ (student.delegation.members or student.delegation.pair_name) if student.delegation else '' }}"
-                   placeholder="Separe por vírgula: Maria, João" style="flex:1">
+                   placeholder="Separe por virgula: Maria, Joao" style="flex:1">
             <select id="memberSelect" style="flex:1">
               <option value="">➕ Conta existente...</option>
               {% set tomados = student.delegation.member_names() if student.delegation else [] %}
@@ -108,7 +135,7 @@
           </div>
           <div id="membersPreview" style="font-size:12px;margin-top:4px"></div>
           <div style="font-size:11px;color:var(--muted);margin-top:4px">
-            Alunos vinculados já contam. O formato (individual, dupla, trio ou grupo) é definido automaticamente.
+            Alunos vinculados ja contam. O formato (individual, dupla, trio ou grupo) e definido automaticamente.
           </div>
         </div>
 
@@ -116,15 +143,15 @@
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
             <input type="checkbox" name="flag_animation" value="1"
                    {{ 'checked' if student.delegation and student.delegation.flag_animation else '' }}>
-            <span>🎬 Animação da bandeira no telão</span>
+            <span>🎬 Animacao da bandeira no telao</span>
           </label>
           <div style="font-size:11px;color:var(--muted);margin-left:24px">
-            Quando ativado, a bandeira do país terá uma animação de destaque no telão durante votações.
+            Quando ativado, a bandeira do pais tera uma animacao de destaque no telao durante votacoes.
           </div>
         </div>
 
         <div class="form-group" style="margin-top:4px">
-          <label>👥 Entrar na mesma delegação <span style="font-size:11px;color:var(--muted)">(opcional)</span></label>
+          <label>👥 Entrar na mesma delegacao <span style="font-size:11px;color:var(--muted)">(opcional)</span></label>
           <div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:4px;padding:4px">
             {% set deleg_id_atual = student.delegation.id if student.delegation else None %}
             {% for s in joinable_students %}
@@ -134,7 +161,7 @@
                      style="width:16px;height:16px;accent-color:var(--gold)">
               <span style="font-weight:500">{{ s.name }}</span>
               {% if s.delegation and s.delegation.id != deleg_id_atual %}
-                <span style="font-size:10px;color:var(--orange)">já em {{ s.delegation.country or 'outra delegação' }}</span>
+                <span style="font-size:10px;color:var(--orange)">ja em {{ s.delegation.country or 'outra delegacao' }}</span>
               {% endif %}
               <span style="font-size:11px;color:var(--muted);margin-left:auto">{{ s.email }}</span>
             </label>
@@ -145,13 +172,13 @@
             {% endfor %}
           </div>
           <div style="font-size:11px;color:var(--muted);margin-top:4px">
-            Os marcados receberão o mesmo país/tema e formarão o mesmo grupo desta designação.
-            Quem já estiver em outra delegação será movido para esta.
+            Os marcados receberao o mesmo pais/tema e formarao o mesmo grupo desta designacao.
+            Quem ja estiver em outra delegacao sera movido para esta.
           </div>
         </div>
 
         <div style="display:flex;gap:8px;margin-top:8px">
-          <button type="submit" class="btn btn-primary">🌍 Confirmar Designação</button>
+          <button type="submit" class="btn btn-primary">🌍 Confirmar Designacao</button>
           <a href="{{ url_for('admin.students_list') }}" class="btn btn-ghost">Cancelar</a>
         </div>
 

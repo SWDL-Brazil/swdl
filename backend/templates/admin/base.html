@@ -16,7 +16,7 @@
 
   <!-- ── SIDEBAR ──────────────────────────────────────────── -->
   {%- set gestao_endpoints = ['admin.dashboard', 'admin.students_list', 'admin.student_assign',
-    'admin.delegate_create', 'admin.delegations_list', 'admin.delegation_assign',
+    'admin.student_edit', 'admin.delegate_create', 'admin.delegations_list', 'admin.delegation_assign',
     'admin.delegation_create_credentials', 'admin.delegation_delete',
     'admin.inscriptions_list', 'admin.inscription_detail', 'admin.inscription_approve',
     'admin.inscription_reject', 'admin.news_list', 'admin.news_create', 'admin.news_edit',
@@ -57,7 +57,9 @@
 
   <aside class="sidebar" id="sidebar" data-phase="{{ event_phase }}">
     <div class="sidebar-logo">
-      <div class="sidebar-logo-badge" id="sidebarLogo" onclick="document.getElementById('sidebar').scrollTo({top:0,behavior:'smooth'})">SW</div>
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="SWDL"
+           class="sidebar-logo-img"
+           onclick="document.getElementById('sidebar').scrollTo({top:0,behavior:'smooth'})">
       <div class="sidebar-logo-text">
         SWDL Admin<br><span>Painel de Controle</span>
       </div>
@@ -75,32 +77,20 @@
         <span class="context-chevron">▾</span>
       </button>
       <div class="context-dropdown" id="contextDropdown">
-        <a href="{{ url_for('admin.dashboard') }}" class="context-option {{ 'active' if event_phase != 'during' }}">
+        <a href="{{ url_for('admin.phase_set', phase='auto') }}" class="context-option {{ 'active' if event_phase != 'during' }}"
+           data-phase="auto">
           <span class="context-dot dot-pre"></span>
-          <span>Pré/Pós-Evento</span>
+          <span>Pré/Pós-Evento (Automático)</span>
         </a>
-        <button type="button" class="context-option context-option-during {{ 'disabled' if event_phase == 'during' }}" id="switchToDuring">
-          <span class="context-dot dot-during"></span>
-          <span>Durante a Simulação</span>
-        </button>
+        <form method="POST" action="{{ url_for('admin.phase_set', phase='during') }}" style="margin:0">
+          <button type="submit" class="context-option context-option-during {{ 'disabled' if event_phase == 'during' }}">
+            <span class="context-dot dot-during"></span>
+            <span>Durante a Simulação</span>
+          </button>
+        </form>
       </div>
     </div>
 
-    <!-- ═══ MODAL DE CONFIRMAÇÃO ═══════════════════════════ -->
-    <div class="modal-overlay" id="confirmModal">
-      <div class="modal-box">
-        <div class="modal-icon">🔴</div>
-        <div class="modal-title">Entrar no modo Durante a Simulação?</div>
-        <div class="modal-desc">
-          A interface mudará para controles de operação da sessão ao vivo.
-          Painéis de chamada, votações e oradores ficarão em destaque.
-        </div>
-        <div class="modal-actions">
-          <button class="btn btn-ghost" id="modalCancel">Cancelar</button>
-          <a href="{{ url_for('admin.director_dashboard') if not is_admin else url_for('admin.chamada_panel') }}" class="btn btn-danger" id="modalConfirm">Entrar</a>
-        </div>
-      </div>
-    </div>
 
     <div style="flex:1;overflow-y:auto;padding-bottom:8px">
 
@@ -188,7 +178,7 @@
       <div class="sidebar-section">👥 Pessoas</div>
       <ul class="sidebar-nav">
         <li><a href="{{ url_for('admin.students_list') }}"
-               class="{{ 'active' if request.endpoint in ('admin.students_list', 'admin.student_assign') }}">
+               class="{{ 'active' if request.endpoint in ('admin.students_list', 'admin.student_assign', 'admin.student_edit') }}">
           <span class="nav-icon">🎓</span> Alunos
         </a></li>
         <li><a href="{{ url_for('admin.delegate_create') }}"
@@ -356,10 +346,6 @@ function toggleSidebar() {
 (function() {
   var btn = document.getElementById('contextSwitcherBtn');
   var dd = document.getElementById('contextDropdown');
-  var modal = document.getElementById('confirmModal');
-  var switchBtn = document.getElementById('switchToDuring');
-  var cancelBtn = document.getElementById('modalCancel');
-  var phase = document.body.getAttribute('data-phase');
 
   if (btn && dd) {
     btn.addEventListener('click', function(e) {
@@ -367,29 +353,9 @@ function toggleSidebar() {
       dd.classList.toggle('open');
     });
     document.addEventListener('click', function(e) {
-      if (!dd.contains(e.target) && e.target !== btn) {
+      if (!dd.contains(e.target) && e.target !== btn && !dd.contains(e.target)) {
         dd.classList.remove('open');
       }
-    });
-  }
-
-  if (switchBtn) {
-    switchBtn.addEventListener('click', function() {
-      dd.classList.remove('open');
-      if (phase === 'during') return;
-      modal.classList.add('open');
-    });
-  }
-
-  if (cancelBtn) {
-    cancelBtn.addEventListener('click', function() {
-      modal.classList.remove('open');
-    });
-  }
-
-  if (modal) {
-    modal.addEventListener('click', function(e) {
-      if (e.target === modal) modal.classList.remove('open');
     });
   }
 })();
