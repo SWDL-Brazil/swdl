@@ -344,6 +344,35 @@
 <main class="page-main alt">
   <div class="container">
 
+    <!-- CRONOMETRO INSCRICOES -->
+    <div id="inscricoes-countdown" style="background:linear-gradient(135deg,var(--navy),#1a2744);border-radius:8px;padding:28px 24px;margin-bottom:32px;text-align:center;color:#fff">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Próximo Debate</div>
+      <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:4px">A Escravidão do Passado ao Racismo do Presente</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:16px">As inscrições fecham em:</div>
+      <div style="display:flex;justify-content:center;gap:16px;margin-bottom:12px">
+        <div style="text-align:center">
+          <div id="cd-dias" style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;line-height:1">--</div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5)">dias</div>
+        </div>
+        <div style="font-size:36px;font-weight:700;color:var(--gold);line-height:1">:</div>
+        <div style="text-align:center">
+          <div id="cd-horas" style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;line-height:1">--</div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5)">horas</div>
+        </div>
+        <div style="font-size:36px;font-weight:700;color:var(--gold);line-height:1">:</div>
+        <div style="text-align:center">
+          <div id="cd-mins" style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;line-height:1">--</div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5)">min</div>
+        </div>
+        <div style="font-size:36px;font-weight:700;color:var(--gold);line-height:1">:</div>
+        <div style="text-align:center">
+          <div id="cd-secs" style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;line-height:1">--</div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5)">seg</div>
+        </div>
+      </div>
+      <div id="cd-status" style="font-size:12px;color:rgba(255,255,255,.5)"></div>
+    </div>
+
     <!-- TABS -->
     <div class="fp-tabs reveal">
       <button class="fp-tab active" data-panel="delegado" data-i18n="faca_parte.tab_delegado">🌍 Torne-se Delegado</button>
@@ -997,6 +1026,34 @@
       }
     });
   }
+
+  // ── CRONOMETRO INSCRICOES ──────────────────────────────────
+  (function() {
+    const deadline = new Date('2026-09-30T23:59:00-03:00');
+    function tick() {
+      const now  = new Date();
+      const diff = Math.max(0, Math.floor((deadline - now) / 1000));
+      if (diff <= 0) {
+        document.getElementById('cd-dias').textContent  = '00';
+        document.getElementById('cd-horas').textContent = '00';
+        document.getElementById('cd-mins').textContent  = '00';
+        document.getElementById('cd-secs').textContent  = '00';
+        document.getElementById('cd-status').textContent = 'Inscrições encerradas!';
+        document.getElementById('cd-status').style.color = '#C0392B';
+        return;
+      }
+      const d  = Math.floor(diff / 86400);
+      const h  = Math.floor((diff % 86400) / 3600);
+      const m  = Math.floor((diff % 3600) / 60);
+      const s  = diff % 60;
+      document.getElementById('cd-dias').textContent  = String(d).padStart(2, '0');
+      document.getElementById('cd-horas').textContent = String(h).padStart(2, '0');
+      document.getElementById('cd-mins').textContent  = String(m).padStart(2, '0');
+      document.getElementById('cd-secs').textContent  = String(s).padStart(2, '0');
+      requestAnimationFrame(tick);
+    }
+    tick();
+  })();
 </script>
 <script src="js/i18n.js"></script>
 </body>
