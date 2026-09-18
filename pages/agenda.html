@@ -339,9 +339,20 @@
     }
   }
 
-  // Carrega imediatamente e atualiza a cada 60 segundos
-  loadAgenda();
-  setInterval(loadAgenda, 60000);
+  // Carrega quando a API estiver disponível
+  function initAgenda() {
+    if (typeof SWDL_API !== 'undefined') {
+      loadAgenda();
+      setInterval(loadAgenda, 60000);
+    } else {
+      setTimeout(initAgenda, 100);
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAgenda);
+  } else {
+    initAgenda();
+  }
 </script>
 <script src="js/i18n.js" defer></script>
 </body>

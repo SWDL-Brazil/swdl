@@ -1,6 +1,6 @@
 """SWDL Admin — shared helpers, decorators, context processor, and utility routes."""
 from flask import (Blueprint, render_template, redirect, url_for,
-                   flash, request, abort, jsonify, send_file, current_app, session)
+                   flash, request, abort, jsonify, send_file, current_app)
 from flask_login import login_required, current_user
 from extensions import db, socketio
 from models.news         import News
@@ -55,7 +55,7 @@ def get_current_delegation():
 def inject_globals():
     try:
         phase, _, _ = get_agenda_status()
-        override = session.get('phase_override')
+        override = EventConfig.get_phase_override()
         if override in ('pre', 'during', 'post'):
             phase = override
         active_invoke = EventConfig.get_invoke()
@@ -76,10 +76,10 @@ def inject_globals():
 def phase_set(phase):
     """Override manual da fase (pre/during/post). Limpa o override com 'auto'."""
     if phase == 'auto':
-        session.pop('phase_override', None)
+        EventConfig.set_phase_override(None)
         flash('🔄 Fase voltou ao calculo automatico (agenda).', 'success')
     elif phase in ('pre', 'during', 'post'):
-        session['phase_override'] = phase
+        EventConfig.set_phase_override(phase)
         labels = {'pre': '🟢 PRE-EVENTO', 'during': '🔴 DURANTE A SIMULACAO', 'post': '🔵 POS-EVENTO'}
         flash(f'Fase alterada para {labels[phase]}', 'success')
     else:

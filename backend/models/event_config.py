@@ -9,6 +9,7 @@ class EventConfig(db.Model):
     invoke_active      = db.Column(db.Boolean, default=False)
     invoke_label       = db.Column(db.String(100), default='')
     invoke_at          = db.Column(db.DateTime, nullable=True)
+    phase_override     = db.Column(db.String(20), nullable=True, default=None)
 
     @classmethod
     def _ensure(cls):
@@ -61,4 +62,15 @@ class EventConfig(db.Model):
         cfg.invoke_label = ''
         cfg.invoke_active = False
         cfg.invoke_at = None
+        db.session.commit()
+
+    @classmethod
+    def get_phase_override(cls):
+        cfg = cls._ensure()
+        return cfg.phase_override
+
+    @classmethod
+    def set_phase_override(cls, value):
+        cfg = cls._ensure()
+        cfg.phase_override = value
         db.session.commit()

@@ -396,17 +396,23 @@
   }
 
   // ── INIT ───────────────────────────────────────────────────
-  (async function init() {
-    setupCatPanel();
-    await loadCategorias();
-    await Promise.all([loadTicker(), loadNoticias()]);
-
-    // Recarregar a cada 60s
-    setInterval(() => {
-      loadTicker();
-      loadNoticias();
-    }, 60000);
-  })();
+  function initNoticias() {
+    if (typeof SWDL_API !== 'undefined') {
+      (async function() {
+        setupCatPanel();
+        await loadCategorias();
+        await Promise.all([loadTicker(), loadNoticias()]);
+        setInterval(() => { loadTicker(); loadNoticias(); }, 60000);
+      })();
+    } else {
+      setTimeout(initNoticias, 100);
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNoticias);
+  } else {
+    initNoticias();
+  }
 </script>
 <script src="js/i18n.js" defer></script>
 </body>

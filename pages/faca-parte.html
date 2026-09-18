@@ -496,7 +496,7 @@
   }
 
   // ── VERIFICAR STATUS DAS INSCRIÇÕES ────────────────────────
-  (async function checkInscricoes() {
+  async function checkInscricoes() {
     const cfg = await SWDL_API.config();
     const overlay = document.getElementById('inscricoesOverlay');
     const btnDel  = document.getElementById('btnDelegado');
@@ -514,7 +514,20 @@
         btnDel.disabled = true;
       }
     }
-  })();
+  }
+
+  function initFacaParte() {
+    if (typeof SWDL_API !== 'undefined') {
+      checkInscricoes();
+    } else {
+      setTimeout(initFacaParte, 100);
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFacaParte);
+  } else {
+    initFacaParte();
+  }
 
   const formDelegado = document.getElementById('formDelegado');
   // ── FORMATO SELECTOR ────────────────────────────────────────
