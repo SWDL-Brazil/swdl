@@ -13,10 +13,11 @@ from models.inscription_member import InscriptionMember
 from models.event_config import EventConfig
 from models.urgent_alert import UrgentAlert
 import urllib.request, json as _json
-from extensions import db
+from extensions import db, csrf
 from datetime import datetime
 
 api_bp = Blueprint('api', __name__)
+csrf.exempt(api_bp)
 
 
 # ── NOTÍCIAS ───────────────────────────────────────────────────
