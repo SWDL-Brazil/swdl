@@ -11,6 +11,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#101E4C">
   <link rel="canonical" href="https://swdl-5a3fa.web.app/noticias.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="css/variables.min.css">
@@ -24,7 +25,7 @@
 
 <!-- ── MAINTENANCE ──────────────────────────────────────────── -->
 <div id="maintenance-overlay">
-  <img src="assent/img/vecteezy_the-team-is-designing-the-app-and-launching-it-on-a-rocket_ (2).png" alt="Site em atualização" class="maintenance-img">
+  <img loading="lazy" src="assent/img/vecteezy_the-team-is-designing-the-app-and-launching-it-on-a-rocket_ (2).png" alt="Site em atualização" class="maintenance-img">
   <div class="maintenance-text">
     <h1>Site em Atualização</h1>
     <p>Estamos melhorando a experiência para você. Volte em breve!</p>
@@ -142,7 +143,7 @@
       <div>
         <div class="nav-logo" style="display:inline-flex">
           <a href="index.html" class="nav-logo">
-            <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
+            <img loading="lazy" src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
           </a>
         </div>
         <p class="footer-brand-desc" data-i18n="footer.brand_desc">A liga que transforma alunos em diplomatas.<br>SESI CE-437, Hortolândia.</p>
@@ -176,8 +177,8 @@
   </div>
 </footer>
 
-<script src="js/api.min.js"></script>
-<script src="js/main.min.js"></script>
+<script src="js/api.min.js" defer></script>
+<script src="js/main.min.js" defer></script>
 <script>
   const committeeColors = {
     cs:'#C0392B', mma:'#1E7B45', dhr:'#8E44AD',
@@ -271,7 +272,7 @@
     el.innerHTML = `
       <a href="${link}" style="text-decoration:none;color:inherit">
         ${n.image_url
-          ? `<div class="lead-img"><img src="${n.image_url}" alt="${n.title}"></div>`
+          ? `<div class="lead-img"><img loading="lazy" src="${n.image_url}" alt="${n.title}"></div>`
           : `<div class="lead-img" style="background:linear-gradient(135deg,${color},var(--navy));display:flex;align-items:center;justify-content:center;font-size:48px">${n.category_icon || '📰'}</div>`}
         <div class="lead-body">
           <div class="lead-category" style="background:${color}">${n.category_icon || ''} ${n.category}</div>
@@ -299,7 +300,7 @@
       return `
         <article class="grid-card">
           <a href="${link}" style="text-decoration:none;color:inherit">
-            ${n.image_url ? `<div class="grid-card-img"><img src="${n.image_url}" alt="${n.title}"></div>` : ''}
+            ${n.image_url ? `<div class="grid-card-img"><img loading="lazy" src="${n.image_url}" alt="${n.title}"></div>` : ''}
             <div class="grid-card-body">
               <div class="grid-card-tags">
                 <span class="grid-tag" style="background:${catBg}">${n.category_icon || ''} ${n.category}</span>
@@ -407,6 +408,6 @@
     }, 60000);
   })();
 </script>
-<script src="js/i18n.js"></script>
+<script src="js/i18n.js" defer></script>
 </body>
 </html>

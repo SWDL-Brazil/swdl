@@ -1,5 +1,8 @@
 {% extends "admin/base.html" %}
-{% block title %}Votações<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+{% block title %}Votações{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
 <script>
   const socket = io();
   socket.emit('join_vote_list', {});

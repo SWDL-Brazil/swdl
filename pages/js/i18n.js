@@ -490,7 +490,7 @@ const SWDL_I18N = {
     'faca_parte.form_btn_submit': { 'pt-BR': 'Inscrições fechadas🔒', 'en': 'Registrations closed🔒' },
     'faca_parte.form_note': { 'pt-BR': '🔒 Dados usados apenas para o processo de seleção', 'en': '🔒 Data used only for the selection process' },
     'faca_parte.form_success_title': { 'pt-BR': 'Inscrição Enviada!', 'en': 'Registration Sent!' },
-    'faca_parte.form_success_desc': { 'pt-BR': 'Nossa equipe entrará em contato em até 3 dias úteis.<br>Fique atento ao seu e-mail!', 'en': 'Our team will contact you within 3 business days.<br>Check your email!' },
+    'faca_parte.form_success_desc': { 'pt-BR': 'Responderemos após o fim do período de inscrições.<br>Fique atento ao seu e-mail!', 'en': 'We will respond after the registration period ends.<br>Check your email!' },
 
     // Volunteer
     'faca_parte.voluntario_title': { 'pt-BR': 'Seja Voluntário / Staff', 'en': 'Be a Volunteer / Staff' },
@@ -537,7 +537,7 @@ const SWDL_I18N = {
     'faca_parte.voluntario_form_btn_submit': { 'pt-BR': 'Quero Ser Voluntário →', 'en': 'I Want to Volunteer →' },
     'faca_parte.voluntario_form_note': { 'pt-BR': '🔒 Dados usados apenas para o processo de seleção', 'en': '🔒 Data used only for the selection process' },
     'faca_parte.voluntario_form_success_title': { 'pt-BR': 'Interesse Registrado!', 'en': 'Interest Registered!' },
-    'faca_parte.voluntario_form_success_desc': { 'pt-BR': 'Nossa equipe entrará em contato em até 3 dias úteis.<br>Obrigado por querer fazer parte da SWDL!', 'en': 'Our team will contact you within 3 business days.<br>Thank you for wanting to be part of SWDL!' },
+    'faca_parte.voluntario_form_success_desc': { 'pt-BR': 'Responderemos após o fim do período de inscrições.<br>Obrigado por querer fazer parte da SWDL!', 'en': 'We will respond after the registration period ends.<br>Thank you for wanting to be part of SWDL!' },
 
     // Steps
     'faca_parte.steps_label': { 'pt-BR': 'O que vem a seguir', 'en': 'What\'s next' },
@@ -545,7 +545,7 @@ const SWDL_I18N = {
     'faca_parte.step_1_title': { 'pt-BR': 'Envie sua Inscrição', 'en': 'Submit your Application' },
     'faca_parte.step_1_desc': { 'pt-BR': 'Preencha o formulário acima com suas informações e motivações', 'en': 'Fill out the form above with your information and motivations' },
     'faca_parte.step_2_title': { 'pt-BR': 'Aguarde o Contato', 'en': 'Wait for Contact' },
-    'faca_parte.step_2_desc': { 'pt-BR': 'Nossa equipe entrará em contato em até 3 dias úteis', 'en': 'Our team will contact you within 3 business days' },
+    'faca_parte.step_2_desc': { 'pt-BR': 'Responderemos após o fim do período de inscrições', 'en': 'We will respond after the registration period ends' },
     'faca_parte.step_3_title': { 'pt-BR': 'Participe da Preparação', 'en': 'Join Preparation' },
     'faca_parte.step_3_desc': { 'pt-BR': 'Compareça aos workshops e sessões de preparação', 'en': 'Attend workshops and preparation sessions' },
     'faca_parte.step_4_title': { 'pt-BR': 'Debate e Aprenda', 'en': 'Debate and Learn' },

@@ -11,6 +11,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#101E4C">
   <link rel="canonical" href="https://swdl-5a3fa.web.app/faca-parte.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="css/variables.min.css">
@@ -18,269 +19,14 @@
   <link rel="stylesheet" href="css/pages.min.css">
   <link rel="stylesheet" href="css/footer.min.css">
   <link rel="icon" type="image/png" href="assent/img/image__1_-removebg-preview.png">
-  <style>
-    /* ── BLUR OVERLAY ──────────────────────────────────────── */
-    .form-blur-wrap { position: relative; }
-    .form-blur-overlay {
-      position: absolute; inset: 0; z-index: 10;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background: rgba(255,255,255,.55); backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      border-radius: 4px; text-align: center; padding: 40px 24px;
-      opacity: 0; pointer-events: none; transition: opacity .4s;
-    }
-    .form-blur-overlay.active { opacity: 1; pointer-events: all; }
-    .form-blur-overlay .blur-icon { font-size: 48px; margin-bottom: 12px; }
-    .form-blur-overlay .blur-icon-svg { width: 48px; height: 48px; margin-bottom: 12px; color: var(--white); }
-    .form-blur-overlay .blur-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 20px; font-weight: 700; color: var(--navy); margin-bottom: 6px;
-    }
-    .form-blur-overlay .blur-desc {
-      font-size: 13px; color: var(--muted); max-width: 320px; line-height: 1.6;
-    }
-    .fp-form-card { position: relative; }
-
-    /* ── TABS ─────────────────────────────────────────────── */
-    .fp-tabs {
-      display: flex; gap: 0;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      overflow: hidden;
-      margin-bottom: 56px;
-      max-width: 480px;
-    }
-    .fp-tab {
-      flex: 1; padding: 14px 24px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px; font-weight: 600;
-      letter-spacing: .04em; text-transform: uppercase;
-      background: var(--white); color: var(--muted);
-      border: none; cursor: pointer;
-      transition: background .2s, color .2s;
-      border-right: 1px solid var(--border);
-    }
-    .fp-tab:last-child { border-right: none; }
-    .fp-tab.active { background: var(--navy); color: var(--white); }
-    .fp-tab:not(.active):hover { background: var(--offwhite2); color: var(--navy); }
-
-    /* ── SECTION PANELS ───────────────────────────────────── */
-    .fp-panel { display: none; }
-    .fp-panel.active { display: block; }
-
-    /* ── LAYOUT ───────────────────────────────────────────── */
-    .fp-grid {
-      display: grid; grid-template-columns: 1fr 1.1fr;
-      gap: 72px; align-items: start;
-    }
-
-    /* ── LEFT INFO SIDE ───────────────────────────────────── */
-    .fp-info-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 28px; font-weight: 700;
-      color: var(--navy); margin-bottom: 10px;
-    }
-
-    .fp-info-sub { font-size: 14px; color: var(--muted); line-height: 1.65; margin-bottom: 32px; }
-
-    /* Why list */
-    .why-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px; }
-    .why-item {
-      display: flex; align-items: flex-start; gap: 12px;
-      font-size: 13px; color: var(--text); line-height: 1.5;
-    }
-    .why-dot {
-      width: 20px; height: 20px; border-radius: 50%;
-      background: rgba(183,148,65,.15); border: 1px solid rgba(183,148,65,.4);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; margin-top: 1px;
-      font-size: 10px; color: var(--gold); font-weight: 700;
-    }
-
-    /* Requisitos grid */
-    .req-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
-    }
-    .req-card {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: 3px; padding: 18px 16px;
-      border-left: 3px solid var(--gold);
-    }
-    .req-icon { width: 18px; height: 18px; margin-bottom: 6px; display: block; color: var(--navy); }
-    .req-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
-    .req-desc  { font-size: 12px; color: var(--muted); line-height: 1.45; }
-
-    /* Volunteer roles */
-    .vol-roles { display: flex; flex-direction: column; gap: 14px; margin-bottom: 36px; }
-    .vol-role-card {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: 3px; padding: 20px 18px;
-      display: flex; align-items: flex-start; gap: 14px;
-      transition: border-color .2s;
-    }
-    .vol-role-card:hover { border-color: var(--gold); }
-    .vol-role-icon {
-      font-size: 22px; flex-shrink: 0;
-      width: 44px; height: 44px; border-radius: 8px;
-      background: rgba(16,30,76,.05);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .vol-role-icon-svg {
-      flex-shrink: 0;
-      width: 22px; height: 22px;
-      color: var(--navy);
-    }
-    .vol-role-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
-    .vol-role-desc  { font-size: 12px; color: var(--muted); line-height: 1.5; }
-
-    /* ── FORM CARD ─────────────────────────────────────────── */
-    .fp-form-card {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: 4px; padding: 40px;
-      box-shadow: 0 8px 36px rgba(16,30,76,.07);
-      position: sticky; top: 88px;
-    }
-
-    .fp-form-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 4px;
-    }
-    .fp-form-sub { font-size: 13px; color: var(--muted); margin-bottom: 26px; }
-
-    .form-group { margin-bottom: 16px; }
-    .form-group label {
-      display: block; font-size: 10px; font-weight: 600;
-      letter-spacing: .09em; text-transform: uppercase;
-      color: var(--navy); margin-bottom: 5px;
-    }
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%; padding: 11px 14px;
-      border: 1px solid rgba(16,30,76,.18); border-radius: 3px;
-      font-family: 'DM Sans', sans-serif; font-size: 14px;
-      color: var(--text); background: var(--white);
-      outline: none; appearance: none;
-      transition: border-color .2s, box-shadow .2s;
-    }
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(183,148,65,.10);
-    }
-    .form-group textarea { resize: vertical; min-height: 80px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-    /* Checkbox group */
-    .checkbox-group { display: flex; flex-direction: column; gap: 8px; }
-    .checkbox-item {
-      display: flex; align-items: center; gap: 10px;
-      font-size: 13px; color: var(--text); cursor: pointer;
-    }
-    .checkbox-item input[type="checkbox"] {
-      width: 16px; height: 16px; padding: 0; border-radius: 3px;
-      accent-color: var(--navy); cursor: pointer; flex-shrink: 0;
-    }
-
-    .btn-form-fp {
-      width: 100%; background: var(--gold); color: var(--navy);
-      font-family: 'DM Sans', sans-serif; font-weight: 700;
-      font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
-      padding: 14px; border: none; border-radius: 3px;
-      cursor: pointer; margin-top: 8px;
-      transition: background .2s, transform .2s;
-    }
-    .btn-form-fp:hover { background: var(--gold-light); transform: translateY(-1px); }
-    .btn-form-fp:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-
-    .form-note { text-align: center; font-size: 11px; color: var(--muted); margin-top: 10px; }
-
-    /* ── FORMATO SELECTOR ──────────────────────────────────── */
-    .formato-selector {
-      display: flex; gap: 8px;
-    }
-    .formato-option {
-      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 6px; padding: 16px 8px; border: 2px solid var(--border);
-      border-radius: 6px; cursor: pointer; transition: all .2s;
-      text-align: center; background: var(--white);
-    }
-    .formato-option input[type="radio"] { display: none; }
-    .formato-option.active {
-      border-color: var(--gold); background: rgba(212,175,55,.06);
-    }
-    .formato-option:hover { border-color: var(--gold-light); }
-    .formato-icon { display: block; width: 40px; height: 40px; margin: 0 auto; object-fit: contain; }
-    .formato-label { display: block; width: 100%; text-align: center; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--navy); }
-
-    .member-divider {
-      border-top: 2px solid var(--border); margin: 20px 0 16px;
-      position: relative;
-    }
-    .member-divider span {
-      position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-      background: var(--white); padding: 0 12px;
-      font-size: 11px; font-weight: 700; letter-spacing: .08em;
-      text-transform: uppercase; color: var(--navy);
-    }
-
-    /* ── SUCCESS STATE ─────────────────────────────────────── */
-    .form-success-fp {
-      display: none; text-align: center; padding: 32px 16px;
-    }
-    .form-success-fp .suc-emoji { font-size: 44px; margin-bottom: 14px; }
-    .form-success-fp h3 {
-      font-family: 'Playfair Display', serif;
-      font-size: 22px; color: var(--navy); margin-bottom: 8px;
-    }
-    .form-success-fp p { font-size: 14px; color: var(--muted); line-height: 1.6; }
-
-    /* ── NEXT STEPS STRIP ──────────────────────────────────── */
-    .steps-strip {
-      background: var(--navy); border-radius: 4px;
-      padding: 56px 48px; margin-top: 80px;
-    }
-    .steps-strip .section-label { color: var(--gold); }
-    .steps-strip h2 { color: var(--white); margin-bottom: 40px; }
-
-    .steps-grid {
-      display: grid; grid-template-columns: repeat(4,1fr); gap: 24px;
-    }
-    .step-card {
-      display: flex; flex-direction: column; align-items: flex-start;
-      gap: 12px;
-    }
-    .step-num {
-      width: 44px; height: 44px; border-radius: 50%;
-      background: var(--gold); color: var(--navy);
-      font-family: 'Playfair Display', serif;
-      font-size: 20px; font-weight: 900;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .step-title { font-size: 15px; font-weight: 700; color: var(--white); }
-    .step-desc  { font-size: 13px; color: var(--slate); line-height: 1.55; }
-
-    @media(max-width:900px){
-      .fp-grid { grid-template-columns:1fr; }
-      .fp-form-card { position:static; }
-      .steps-grid { grid-template-columns: 1fr 1fr; }
-      .steps-strip { padding:40px 24px; }
-    }
-    @media(max-width:540px){
-      .req-grid { grid-template-columns:1fr; }
-      .form-row { grid-template-columns:1fr; }
-      .steps-grid { grid-template-columns:1fr; }
-    }
-  </style>
+  <link rel="stylesheet" href="css/faca-parte-page.css">
   <!-- <link rel="stylesheet" href="css/maintenance.min.css"> -->
 </head>
 <body>
 
 <!-- ── MAINTENANCE (descomentar para reativar) ────────────────
 <div id="maintenance-overlay">
-  <img src="assent/img/vecteezy_the-team-is-designing-the-app-and-launching-it-on-a-rocket_ (2).png" alt="Site em atualização" class="maintenance-img">
+  <img loading="lazy" src="assent/img/vecteezy_the-team-is-designing-the-app-and-launching-it-on-a-rocket_ (2).png" alt="Site em atualização" class="maintenance-img">
   <div class="maintenance-text">
     <h1>Site em Atualização</h1>
     <p>Estamos melhorando a experiência para você. Volte em breve!</p>
@@ -309,7 +55,7 @@
   tick();
 })();
 </script>
-───────────────────────────────────────────────────────────── -->
+──────────────────────────────────────────────────────────── -->
 
 <div id="crisis-banner">
   <div class="crisis-pulse"></div>
@@ -353,7 +99,7 @@
     <!-- CRONOMETRO INSCRICOES -->
     <div id="inscricoes-countdown" style="background:linear-gradient(135deg,var(--navy),#1a2744);border-radius:8px;padding:28px 24px;margin-bottom:32px;text-align:center;color:#fff">
       <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Próximo Debate</div>
-      <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:4px">A Escravidão do Passado ao Racismo do Presente</div>
+      <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:4px">A Escravidão do Passado ao Racismo do Presente<br>Desafiando o Futuro</div>
       <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:16px">As inscrições fecham em:</div>
       <div style="display:flex;justify-content:center;gap:16px;margin-bottom:12px">
         <div style="text-align:center">
@@ -408,22 +154,22 @@
           <div class="section-label" style="margin-bottom:14px" data-i18n="faca_parte.delegado_req_label">Requisitos para Participar</div>
           <div class="req-grid">
             <div class="req-card">
-              <img src="assent/icons/school.svg" alt="" class="req-icon">
+              <img loading="lazy" src="assent/icons/school.svg" alt="" class="req-icon">
               <div class="req-title" data-i18n="faca_parte.delegado_req_escola_title">Série Escolar</div>
               <div class="req-desc" data-i18n="faca_parte.delegado_req_escola_desc">Estudantes a partir do 6° ano do SESI CE-437</div>
             </div>
             <div class="req-card">
-              <img src="assent/icons/calendar.svg" alt="" class="req-icon">
+              <img loading="lazy" src="assent/icons/calendar.svg" alt="" class="req-icon">
               <div class="req-title" data-i18n="faca_parte.delegado_req_disponibilidade_title">Disponibilidade</div>
               <div class="req-desc" data-i18n="faca_parte.delegado_req_disponibilidade_desc">Participação nos dias de debate e preparação prévia</div>
             </div>
             <div class="req-card">
-              <img src="assent/icons/books.svg" alt="" class="req-icon">
+              <img loading="lazy" src="assent/icons/books.svg" alt="" class="req-icon">
               <div class="req-title" data-i18n="faca_parte.delegado_req_comprometimento_title">Comprometimento</div>
               <div class="req-desc" data-i18n="faca_parte.delegado_req_comprometimento_desc">Estudo do país representado e dos temas em debate</div>
             </div>
             <div class="req-card">
-              <img src="assent/icons/handshake.svg" alt="" class="req-icon">
+              <img loading="lazy" src="assent/icons/handshake.svg" alt="" class="req-icon">
               <div class="req-title" data-i18n="faca_parte.delegado_req_equipe_title">Trabalho em Equipe</div>
               <div class="req-desc" data-i18n="faca_parte.delegado_req_equipe_desc">Colaboração com outros delegados e respeito às regras</div>
             </div>
@@ -434,7 +180,7 @@
         <div class="reveal" style="transition-delay:.1s">
           <div class="fp-form-card form-blur-wrap">
             <div class="form-blur-overlay" id="inscricoesOverlay">
-              <img src="assent/icons/lock.svg" alt="" class="blur-icon-svg">
+              <img loading="lazy" src="assent/icons/lock.svg" alt="" class="blur-icon-svg">
               <div class="blur-title" data-i18n="faca_parte.form_blur_title">Inscrições Fechadas</div>
               <div class="blur-desc" data-i18n="faca_parte.form_blur_desc">As inscrições para delegados estão encerradas no momento.<br>Fique atento aos próximos eventos!</div>
             </div>
@@ -449,17 +195,17 @@
                 <div class="formato-selector" id="formatoSelector">
                   <label class="formato-option active" data-formato="individual">
                     <input type="radio" name="formato" value="individual" checked>
-                    <img src="assent/icons/individual.svg" alt="Individual" class="formato-icon">
+                    <img loading="lazy" src="assent/icons/individual.svg" alt="Individual" class="formato-icon">
                     <span class="formato-label">Individual</span>
                   </label>
                   <label class="formato-option" data-formato="dupla">
                     <input type="radio" name="formato" value="dupla">
-                    <img src="assent/icons/dupla.svg" alt="Dupla" class="formato-icon">
+                    <img loading="lazy" src="assent/icons/dupla.svg" alt="Dupla" class="formato-icon">
                     <span class="formato-label">Dupla</span>
                   </label>
                   <label class="formato-option" data-formato="trio">
                     <input type="radio" name="formato" value="trio">
-                    <img src="assent/icons/trio.svg" alt="Trio" class="formato-icon">
+                    <img loading="lazy" src="assent/icons/trio.svg" alt="Trio" class="formato-icon">
                     <span class="formato-label">Trio</span>
                   </label>
                 </div>
@@ -529,14 +275,14 @@
                 </label>
               </div>
 
-                <button type="submit" class="btn-form-fp" id="btnDelegado" disabled>Inscrições fechadas <img src="assent/icons/lock.svg" alt="" style="width:14px;height:14px;vertical-align:middle"></button>
-              <p class="form-note"><img src="assent/icons/lock.svg" alt="" style="width:12px;height:12px;vertical-align:middle"> Dados usados apenas para o processo de seleção</p>
+                <button type="submit" class="btn-form-fp" id="btnDelegado" disabled>Inscrições fechadas <img loading="lazy" src="assent/icons/lock.svg" alt="" style="width:14px;height:14px;vertical-align:middle"></button>
+              <p class="form-note"><img loading="lazy" src="assent/icons/lock.svg" alt="" style="width:12px;height:12px;vertical-align:middle"> Dados usados apenas para o processo de seleção</p>
             </form>
 
             <div class="form-success-fp" id="successDelegado">
               <div class="suc-emoji">🎉</div>
               <h3 data-i18n="faca_parte.form_success_title">Inscrição Enviada!</h3>
-              <p data-i18n="faca_parte.form_success_desc">Nossa equipe entrará em contato em até 3 dias úteis.<br>Fique atento ao seu e-mail!</p>
+              <p data-i18n="faca_parte.form_success_desc">Responderemos após o fim do período de inscrições.<br>Fique atento ao seu e-mail!</p>
             </div>
           </div>
         </div>
@@ -556,28 +302,28 @@
           <div class="section-label" style="margin-bottom:16px" data-i18n="faca_parte.voluntario_roles_label">Oportunidades de Voluntariado</div>
           <div class="vol-roles">
             <div class="vol-role-card">
-              <img src="assent/icons/microphone.svg" alt="" class="vol-role-icon-svg">
+              <img loading="lazy" src="assent/icons/microphone.svg" alt="" class="vol-role-icon-svg">
               <div>
                 <div class="vol-role-title" data-i18n="faca_parte.voluntario_role_mod_title">Moderador de Debate</div>
                 <div class="vol-role-desc" data-i18n="faca_parte.voluntario_role_mod_desc">Conduza as sessões de debate e mantenha a ordem durante as discussões dos temas.</div>
               </div>
             </div>
             <div class="vol-role-card">
-              <img src="assent/icons/camera.svg" alt="" class="vol-role-icon-svg">
+              <img loading="lazy" src="assent/icons/camera.svg" alt="" class="vol-role-icon-svg">
               <div>
                 <div class="vol-role-title" data-i18n="faca_parte.voluntario_role_midia_title">Equipe de Mídia</div>
                 <div class="vol-role-desc" data-i18n="faca_parte.voluntario_role_midia_desc">Documente os eventos através de fotos, vídeos e cobertura nas redes sociais da SWDL.</div>
               </div>
             </div>
             <div class="vol-role-card">
-              <img src="assent/icons/clipboard.svg" alt="" class="vol-role-icon-svg">
+              <img loading="lazy" src="assent/icons/clipboard.svg" alt="" class="vol-role-icon-svg">
               <div>
                 <div class="vol-role-title" data-i18n="faca_parte.voluntario_role_org_title">Organização</div>
                 <div class="vol-role-desc" data-i18n="faca_parte.voluntario_role_org_desc">Auxilie na logística, preparação de materiais e coordenação geral dos eventos.</div>
               </div>
             </div>
             <div class="vol-role-card">
-              <img src="assent/icons/star.svg" alt="" class="vol-role-icon-svg">
+              <img loading="lazy" src="assent/icons/star.svg" alt="" class="vol-role-icon-svg">
               <div>
                 <div class="vol-role-title" data-i18n="faca_parte.voluntario_role_mentor_title">Mentor</div>
                 <div class="vol-role-desc" data-i18n="faca_parte.voluntario_role_mentor_desc">Oriente novos delegados e compartilhe conhecimentos sobre diplomacia e procedimentos da ONU.</div>
@@ -648,13 +394,13 @@
                 </label>
               </div>
               <button type="submit" class="btn-form-fp" data-i18n="faca_parte.voluntario_form_btn_submit">Quero Ser Voluntário →</button>
-              <p class="form-note" data-i18n="faca_parte.voluntario_form_note"><img src="assent/icons/lock.svg" alt="" style="width:12px;height:12px;vertical-align:middle"> Dados usados apenas para o processo de seleção</p>
+              <p class="form-note" data-i18n="faca_parte.voluntario_form_note"><img loading="lazy" src="assent/icons/lock.svg" alt="" style="width:12px;height:12px;vertical-align:middle"> Dados usados apenas para o processo de seleção</p>
             </form>
 
             <div class="form-success-fp" id="successVoluntario">
               <div class="suc-emoji">🙌</div>
               <h3 data-i18n="faca_parte.voluntario_form_success_title">Interesse Registrado!</h3>
-              <p data-i18n="faca_parte.voluntario_form_success_desc">Nossa equipe entrará em contato em até 3 dias úteis.<br>Obrigado por querer fazer parte da SWDL!</p>
+              <p data-i18n="faca_parte.voluntario_form_success_desc">Responderemos após o fim do período de inscrições.<br>Obrigado por querer fazer parte da SWDL!</p>
             </div>
           </div>
         </div>
@@ -675,7 +421,7 @@
         <div class="step-card">
           <div class="step-num">2</div>
           <div class="step-title" data-i18n="faca_parte.step_2_title">Aguarde o Contato</div>
-          <div class="step-desc" data-i18n="faca_parte.step_2_desc">Nossa equipe entrará em contato em até 3 dias úteis</div>
+          <div class="step-desc" data-i18n="faca_parte.step_2_desc">Responderemos após o fim do período de inscrições</div>
         </div>
         <div class="step-card">
           <div class="step-num">3</div>
@@ -699,7 +445,7 @@
       <div>
         <div class="nav-logo" style="display:inline-flex">
           <a href="index.html" class="nav-logo">
-            <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
+            <img loading="lazy" src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
           </a>
         </div>
         <p class="footer-brand-desc" data-i18n="footer.brand_desc">A liga que transforma alunos em diplomatas.<br>SESI CE-437, Hortolândia.</p>
@@ -733,8 +479,8 @@
   </div>
 </footer>
 
-<script src="js/api.min.js"></script>
-<script src="js/main.min.js"></script>
+<script src="js/api.min.js" defer></script>
+<script src="js/main.min.js" defer></script>
 <script>
   // ── VALIDAR E-MAIL EDUCACIONAL ─────────────────────────────
   function validateEmail(input) {
@@ -764,7 +510,7 @@
     } else {
       overlay.classList.add('active');
       if (btnDel) {
-        btnDel.innerHTML = '<img src="assent/icons/lock.svg" alt="" style="width:14px;height:14px;vertical-align:middle"> Inscrições Fechadas';
+        btnDel.innerHTML = '<img loading="lazy" src="assent/icons/lock.svg" alt="" style="width:14px;height:14px;vertical-align:middle"> Inscrições Fechadas';
         btnDel.disabled = true;
       }
     }
@@ -1061,6 +807,6 @@
     tick();
   })();
 </script>
-<script src="js/i18n.js"></script>
+<script src="js/i18n.js" defer></script>
 </body>
 </html>

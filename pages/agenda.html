@@ -11,6 +11,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#101E4C">
   <link rel="canonical" href="https://swdl-5a3fa.web.app/agenda.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="css/variables.min.css">
@@ -18,318 +19,14 @@
   <link rel="stylesheet" href="css/pages.min.css">
   <link rel="stylesheet" href="css/footer.min.css">
   <link rel="icon" type="image/png" href="assent/img/image__1_-removebg-preview.png">
-  <style>
-
-    /* ── CARD "AGORA" ────────────────────────────────────── */
-    .now-card {
-      background: var(--navy);
-      border-radius: 6px;
-      padding: 32px 36px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 24px;
-      align-items: center;
-      margin-bottom: 48px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .now-card::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: radial-gradient(circle at 85% 50%, rgba(183,148,65,.12) 0%, transparent 60%);
-      pointer-events: none;
-    }
-
-    .now-card-left { position: relative; z-index: 1; }
-
-    .now-label {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-family: 'DM Mono', monospace;
-      font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 10px;
-    }
-
-    .now-pulse {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--gold);
-      animation: pulse-gold 1.4s ease-in-out infinite;
-      flex-shrink: 0;
-    }
-
-    @keyframes pulse-gold {
-      0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(183,148,65,.6); }
-      50%      { opacity:.7; box-shadow: 0 0 0 6px rgba(183,148,65,0); }
-    }
-
-    .now-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 26px; font-weight: 700;
-      color: var(--white); margin-bottom: 6px;
-    }
-
-    .now-meta {
-      display: flex; align-items: center; gap: 20px;
-      font-size: 13px; color: var(--slate);
-    }
-
-    .now-meta-item { display: flex; align-items: center; gap: 6px; }
-
-    .now-card-right {
-      text-align: right; position: relative; z-index: 1;
-    }
-
-    .now-next-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
-      color: rgba(255,255,255,.35); margin-bottom: 4px; display: block;
-    }
-
-    .now-next-title {
-      font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 2px;
-    }
-
-    .now-next-time {
-      font-family: 'DM Mono', monospace;
-      font-size: 12px; color: var(--gold);
-    }
-
-    /* countdown */
-    .now-countdown {
-      display: flex; gap: 4px; margin-top: 8px; justify-content: flex-end;
-    }
-
-    .countdown-unit {
-      background: rgba(255,255,255,.07);
-      border-radius: 4px; padding: 6px 10px; text-align: center;
-    }
-
-    .countdown-num {
-      font-family: 'Playfair Display', serif;
-      font-size: 20px; font-weight: 700;
-      color: var(--white); line-height: 1; display: block;
-    }
-
-    .countdown-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 8px; letter-spacing: .1em; text-transform: uppercase;
-      color: var(--slate); display: block; margin-top: 2px;
-    }
-
-    /* ── DAY FILTER TABS ──────────────────────────────────── */
-    .day-tabs {
-      display: flex; gap: 0;
-      border: 1px solid var(--border);
-      border-radius: 4px; overflow: hidden;
-      margin-bottom: 40px;
-      max-width: 360px;
-    }
-
-    .day-tab {
-      flex: 1; padding: 12px 20px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 12px; font-weight: 600;
-      letter-spacing: .05em; text-transform: uppercase;
-      background: var(--white); color: var(--muted);
-      border: none; border-right: 1px solid var(--border);
-      cursor: pointer; transition: background .2s, color .2s;
-    }
-    .day-tab:last-child { border-right: none; }
-    .day-tab.active { background: var(--navy); color: var(--white); }
-    .day-tab:not(.active):hover { background: var(--offwhite2); color: var(--navy); }
-
-    /* ── TIMELINE ─────────────────────────────────────────── */
-    .day-panel { display: none; }
-    .day-panel.active { display: block; }
-
-    .smart-timeline {
-      display: flex; flex-direction: column; gap: 0;
-      position: relative;
-    }
-
-    /* vertical line */
-    .smart-timeline::before {
-      content: '';
-      position: absolute;
-      left: 108px; top: 0; bottom: 0;
-      width: 1px;
-      background: var(--border);
-    }
-
-    .tl-item {
-      display: grid;
-      grid-template-columns: 120px 1fr;
-      gap: 0;
-      position: relative;
-      transition: opacity .3s;
-    }
-
-    /* past items: dimmed */
-    .tl-item.past { opacity: .45; }
-
-    /* active item: gold highlight */
-    .tl-item.now-active {
-      opacity: 1;
-    }
-
-    .tl-item.now-active .tl-body {
-      background: rgba(183,148,65,.05);
-      border-left: 3px solid var(--gold);
-      margin-left: -1px;
-    }
-
-    /* TIME COLUMN */
-    .tl-time-col {
-      padding: 24px 20px 24px 0;
-      text-align: right;
-      position: relative;
-    }
-
-    .tl-time {
-      font-family: 'DM Mono', monospace;
-      font-size: 12px; font-weight: 500;
-      color: var(--muted); line-height: 1;
-    }
-
-    .tl-item.now-active .tl-time { color: var(--gold); font-weight: 700; }
-    .tl-item.past .tl-time { color: var(--slate); }
-
-    /* dot on the line */
-    .tl-dot {
-      position: absolute;
-      right: -5px; top: 28px;
-      width: 10px; height: 10px; border-radius: 50%;
-      background: var(--offwhite);
-      border: 2px solid var(--border);
-      z-index: 1;
-    }
-
-    .tl-item.past .tl-dot {
-      background: var(--slate);
-      border-color: var(--slate);
-    }
-
-    .tl-item.now-active .tl-dot {
-      background: var(--gold);
-      border-color: var(--gold);
-      box-shadow: 0 0 0 4px rgba(183,148,65,.2);
-      width: 12px; height: 12px;
-      right: -6px; top: 27px;
-    }
-
-    /* BODY COLUMN */
-    .tl-body {
-      padding: 20px 0 20px 28px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .tl-item:last-child .tl-body { border-bottom: none; }
-
-    .tl-tag {
-      display: inline-flex; align-items: center; gap: 5px;
-      font-family: 'DM Mono', monospace;
-      font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-      padding: 3px 9px; border-radius: 2px; color: var(--white);
-      margin-bottom: 8px;
-    }
-    .tl-tag.tag-now    { background: var(--gold); color: var(--navy); }
-    .tl-tag.tag-done   { background: var(--slate); }
-    .tl-tag.tag-next   { background: var(--navy); }
-    .tl-tag.tag-break  { background: #4A5568; }
-    .tl-tag.tag-vote   { background: var(--green); }
-    .tl-tag.tag-crisis { background: var(--red); }
-    .tl-tag.tag-open   { background: var(--blue); }
-
-    .tl-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 18px; font-weight: 700;
-      color: var(--navy); margin-bottom: 5px; line-height: 1.2;
-    }
-    .tl-item.past .tl-title { color: var(--muted); }
-    .tl-item.now-active .tl-title { color: var(--navy); }
-
-    .tl-desc {
-      font-size: 13px; color: var(--muted); line-height: 1.65;
-      max-width: 640px; margin-bottom: 10px;
-    }
-
-    .tl-footer {
-      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-      margin-top: 6px;
-    }
-
-    .tl-location {
-      display: flex; align-items: center; gap: 5px;
-      font-size: 12px; color: var(--muted);
-    }
-
-    .tl-comite-badge {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
-      padding: 3px 10px; border-radius: 2px;
-      background: rgba(16,30,76,.07); color: var(--navy);
-    }
-
-    /* ── ADMIN NOTE (front-end hint) ─────────────────────── */
-    .admin-note {
-      background: rgba(183,148,65,.08);
-      border: 1px dashed rgba(183,148,65,.35);
-      border-radius: 4px;
-      padding: 14px 18px;
-      font-size: 12px; color: var(--muted);
-      margin-bottom: 32px;
-      display: flex; align-items: center; gap: 10px;
-    }
-    .admin-note strong { color: var(--navy); }
-
-    /* ── RESPONSIVE ──────────────────────────────────────── */
-    @media(max-width:768px){
-      .now-card { grid-template-columns: 1fr; }
-      .now-card-right { text-align:left; }
-      .now-countdown { justify-content: flex-start; }
-      .smart-timeline::before { left: 80px; }
-      .tl-item { grid-template-columns: 92px 1fr; }
-    }
-
-    /* ── SEPARADOR DE DATA ───────────────────────────────── */
-    .tl-date-separator {
-      display: flex; align-items: center; gap: 16px;
-      margin: 40px 0 24px;
-    }
-    .tl-date-separator:first-child { margin-top: 0; }
-    .tl-date-line {
-      flex: 1; height: 1px; background: var(--border);
-    }
-    .tl-date-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px; font-weight: 700;
-      letter-spacing: .1em; text-transform: uppercase;
-      color: var(--navy); white-space: nowrap;
-      padding: 6px 16px;
-      background: var(--offwhite2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-    }
-
-    @media(max-width:520px){
-      .now-card { padding: 24px 20px; }
-      .now-title { font-size: 20px; }
-      .smart-timeline::before { display:none; }
-      .tl-item { grid-template-columns: 1fr; }
-      .tl-time-col { padding: 16px 0 4px; text-align:left; }
-      .tl-dot { display: none; }
-      .tl-body { padding: 0 0 20px; border-left: 3px solid var(--border); padding-left: 16px; }
-      .tl-item.now-active .tl-body { margin-left:0; }
-    }
-  </style>
+  <link rel="stylesheet" href="css/agenda-page.css">
   <!-- <link rel="stylesheet" href="css/maintenance.min.css"> -->
 </head>
 <body>
 
 <!-- ── MAINTENANCE (descomentar para reativar) ────────────────
 <div id="maintenance-overlay">
-  <img src="assent/img/vecteezy_the-team-is-designing-the-app-and-launching-it-on-a-rocket_ (2).png" alt="Site em atualização" class="maintenance-img">
+  <img loading="lazy" src="assent/img/vecteezy_the-team-is-designing-the-app-and-launching-it-on-a-rocket_ (2).png" alt="Site em atualização" class="maintenance-img">
   <div class="maintenance-text">
     <h1>Site em Atualização</h1>
     <p>Estamos melhorando a experiência para você. Volte em breve!</p>
@@ -358,7 +55,7 @@
   tick();
 })();
 </script>
-───────────────────────────────────────────────────────────── -->
+──────────────────────────────────────────────────────────── -->
 
 <div id="crisis-banner">
   <div class="crisis-pulse"></div>
@@ -442,7 +139,7 @@
       <div>
         <div class="nav-logo" style="display:inline-flex">
           <a href="index.html" class="nav-logo">
-            <img src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
+            <img loading="lazy" src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
           </a>
         </div>
         <p class="footer-brand-desc" data-i18n="footer.brand_desc">A liga que transforma alunos em diplomatas.<br>SESI CE-437, Hortolândia.</p>
@@ -476,8 +173,8 @@
   </div>
 </footer>
 
-<script src="js/api.min.js"></script>
-<script src="js/main.min.js"></script>
+<script src="js/api.min.js" defer></script>
+<script src="js/main.min.js" defer></script>
 <script>
   // ── STATUS CONFIG ──────────────────────────────────────────
   const STATUS_CONFIG = {
@@ -646,6 +343,6 @@
   loadAgenda();
   setInterval(loadAgenda, 60000);
 </script>
-<script src="js/i18n.js"></script>
+<script src="js/i18n.js" defer></script>
 </body>
 </html>
