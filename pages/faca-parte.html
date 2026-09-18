@@ -196,7 +196,7 @@
     }
     .formato-option {
       flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 6px; padding: 14px 8px; border: 2px solid var(--border);
+      gap: 6px; padding: 16px 8px; border: 2px solid var(--border);
       border-radius: 6px; cursor: pointer; transition: all .2s;
       text-align: center; background: var(--white);
     }
@@ -205,8 +205,8 @@
       border-color: var(--gold); background: rgba(212,175,55,.06);
     }
     .formato-option:hover { border-color: var(--gold-light); }
-    .formato-icon { width: 40px; height: 40px; object-fit: contain; }
-    .formato-label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--navy); }
+    .formato-icon { display: block; width: 40px; height: 40px; margin: 0 auto; object-fit: contain; }
+    .formato-label { display: block; width: 100%; text-align: center; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--navy); }
 
     .member-divider {
       border-top: 2px solid var(--border); margin: 20px 0 16px;
@@ -440,10 +440,10 @@
                 <div class="form-group">
                   <label>Seu E-mail educacional *</label>
                   <input type="email" name="email" placeholder="seunome@portalsesisp.org.br" required
-                         pattern=".+@portalsesisp\.org\.br$"
+                         pattern=".+@(portalsesisp|senaisp)\.org\.br$"
                          oninput="validateEmail(this)">
-                  <span class="email-hint" style="font-size:11px;color:var(--muted)">Use seu e-mail @portalsesisp.org.br</span>
-                  <span class="email-error" style="display:none;font-size:11px;color:#C0392B;margin-top:2px">✕ Apenas e-mail @portalsesisp.org.br é permitido</span>
+                  <span class="email-hint" style="font-size:11px;color:var(--muted)">Use seu e-mail @portalsesisp.org.br ou @senaisp.edu.br</span>
+                  <span class="email-error" style="display:none;font-size:11px;color:#C0392B;margin-top:2px">✕ Apenas e-mail @portalsesisp.org.br ou @senaisp.edu.br é permitido</span>
                 </div>
                 <div class="form-group">
                   <label>Telefone *</label>
@@ -569,7 +569,7 @@
                 <div class="form-group">
                   <label data-i18n="faca_parte.voluntario_form_label_email">E-mail educacional *</label>
                   <input type="email" name="email" placeholder="seunome@portalsesisp.org.br" data-i18n-placeholder="faca_parte.voluntario_form_placeholder_email" required
-                         pattern=".+@portalsesisp\.org\.br$"
+                         pattern=".+@(portalsesisp|senaisp)\.org\.br$"
                          oninput="validateEmail(this)">
                   <span class="email-hint" style="font-size:11px;color:var(--muted)" data-i18n="faca_parte.voluntario_form_email_hint">Use seu e-mail @portalsesisp.org.br</span>
                   <span class="email-error" style="display:none;font-size:11px;color:#C0392B;margin-top:2px" data-i18n="faca_parte.voluntario_form_email_error">✕ Apenas e-mail @portalsesisp.org.br é permitido</span>
@@ -763,10 +763,10 @@
           <div class="form-group">
             <label>E-mail educacional *</label>
             <input type="email" name="member_email_${idx}" placeholder="colega@portalsesisp.org.br" required
-                   pattern=".+@portalsesisp\\.org\\.br$"
+                   pattern=".+@((portalsesisp|senaisp)\\.org\\.br)$"
                    oninput="validateEmail(this)">
-            <span class="email-hint" style="font-size:11px;color:var(--muted)">E-mail @portalsesisp.org.br</span>
-            <span class="email-error" style="display:none;font-size:11px;color:#C0392B;margin-top:2px">✕ Apenas e-mail @portalsesisp.org.br</span>
+            <span class="email-hint" style="font-size:11px;color:var(--muted)">E-mail @portalsesisp.org.br ou @senaisp.edu.br</span>
+            <span class="email-error" style="display:none;font-size:11px;color:#C0392B;margin-top:2px">✕ Apenas e-mails @portalsesisp.org.br ou @senaisp.edu.br</span>
           </div>
           <div class="form-group">
             <label>Telefone</label>
