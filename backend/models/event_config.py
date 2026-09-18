@@ -12,11 +12,15 @@ class EventConfig(db.Model):
 
     @classmethod
     def _ensure(cls):
+        from flask import g
+        if hasattr(g, '_event_config'):
+            return g._event_config
         cfg = cls.query.first()
         if not cfg:
             cfg = cls(inscricoes_abertas=False)
             db.session.add(cfg)
             db.session.flush()
+        g._event_config = cfg
         return cfg
 
     @classmethod

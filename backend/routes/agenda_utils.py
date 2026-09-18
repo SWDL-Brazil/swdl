@@ -13,16 +13,16 @@ def get_agenda_status():
         return g._agenda_status
 
     from models.agenda import AgendaItem
-    items = AgendaItem.query.filter(
+    base_q = AgendaItem.query.filter(
         AgendaItem.event_date.isnot(None),
         AgendaItem.start_time.isnot(None)
-    ).order_by(AgendaItem.event_date, AgendaItem.start_time).all()
-    if not items:
+    )
+    first = base_q.order_by(AgendaItem.event_date, AgendaItem.start_time).limit(1).first()
+    last  = base_q.order_by(AgendaItem.event_date.desc(), AgendaItem.start_time.desc()).limit(1).first()
+    if not first:
         g._agenda_status = (None, None, None)
         return g._agenda_status
     try:
-        first = items[0]
-        last = items[-1]
         first_dt = datetime.strptime(
             f"{first.event_date} {first.start_time}", "%Y-%m-%d %H:%M"
         ).replace(tzinfo=timezone.utc)

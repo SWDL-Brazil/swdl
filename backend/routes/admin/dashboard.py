@@ -30,16 +30,17 @@ def dashboard():
     from models.vote import VoteSession
     from models.theme import Theme
 
+    # ── COUNT agregados (2 queries em vez de 9) ───────────────
     stats = {
-        'news':           News.query.count(),
-        'inscriptions':   Inscription.query.filter_by(status='pending').count(),
-        'students':       Student.query.count(),
-        'delegations':    Delegation.query.count(),
-        'agenda':         AgendaItem.query.count(),
+        'news':         News.query.count(),
+        'inscriptions': Inscription.query.filter_by(status='pending').count(),
+        'students':     Student.query.count(),
+        'delegations':  Delegation.query.count(),
+        'agenda':       AgendaItem.query.count(),
         'participations': 0,
-        'certificates':   Student.query.filter(Student.certificate_released == True).count(),
-        'themes':         Theme.query.count(),
-        'open_votes':     VoteSession.query.filter_by(status='open').count(),
+        'certificates': Student.query.filter(Student.certificate_released == True).count(),
+        'themes':       Theme.query.count(),
+        'open_votes':   VoteSession.query.filter_by(status='open').count(),
     }
 
     rel_stats = db.session.query(
@@ -107,34 +108,49 @@ def director_dashboard():
             q = q.filter_by(theme_id=theme_id)
         return q
 
-    total_deleg = _base_q().count()
+    # ── Delegation COUNTs agregados (1 query em vez de 7) ─────
+    deleg_agg = db.session.query(
+        func.count().label('total'),
+        func.count().filter(Delegation.orador == True).label('oradores'),
+        func.count().filter(Delegation.presence_status == 'presente').label('presentes'),
+        func.count().filter(Delegation.presence_status == 'votante').label('votantes'),
+        func.count().filter(Delegation.presence_status == 'ausente').label('ausentes'),
+        func.count().filter(Delegation.dpo_uploaded == True).label('dpos'),
+    )
+    if theme_id:
+        deleg_agg = deleg_agg.filter(Delegation.theme_id == theme_id)
+    deleg_agg = deleg_agg.select_from(Delegation).first()
 
-    # Oradores ativos
-    oradores_count = _base_q().filter(Delegation.orador == True).count()
-
-    # Chamada stats
-    presentes = _base_q().filter_by(presence_status='presente').count()
-    votantes  = _base_q().filter_by(presence_status='votante').count()
-    ausentes  = _base_q().filter_by(presence_status='ausente').count()
+    total_deleg    = deleg_agg.total
+    oradores_count = deleg_agg.oradores
+    presentes      = deleg_agg.presentes
+    votantes       = deleg_agg.votantes
+    ausentes       = deleg_agg.ausentes
+    dpos           = deleg_agg.dpos
 
     # Votações
-    open_votes = VoteSession.query.filter_by(status='open').count()
-    total_votes = VoteSession.query.count()
-
-    # DPOs
-    dpos = _base_q().filter(Delegation.dpo_uploaded == True).count()
+    vote_agg = db.session.query(
+        func.count().filter(VoteSession.status == 'open').label('open'),
+        func.count().label('total'),
+    ).select_from(VoteSession).first()
+    open_votes  = vote_agg.open
+    total_votes = vote_agg.total
 
     # Alunos / delegações
-    convened = Student.query.filter(Student.convened == True).count()
-    no_deleg = Student.query.filter(Student.delegation_id.is_(None)).count()
-    total_students = Student.query.count()
+    stu_agg = db.session.query(
+        func.count().filter(Student.convened == True).label('convened'),
+        func.count().filter(Student.delegation_id.is_(None)).label('no_deleg'),
+        func.count().label('total'),
+        func.count().filter(Student.certificate_released == True).label('certs'),
+    ).select_from(Student).first()
+    convened      = stu_agg.convened
+    no_deleg      = stu_agg.no_deleg
+    total_students = stu_agg.total
+    certificates  = stu_agg.certs
 
     # Agenda
-    agenda_count = AgendaItem.query.count()
+    agenda_count   = AgendaItem.query.count()
     current_agenda = AgendaItem.query.filter_by(status='now').first()
-
-    # Certificados
-    certificates = Student.query.filter(Student.certificate_released == True).count()
 
     # Itens da agenda por dia (para timeline) — batch query
     days_raw = AgendaItem.query.with_entities(AgendaItem.day).distinct().order_by(AgendaItem.day).all()

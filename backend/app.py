@@ -224,6 +224,29 @@ def _run_migrations(app):
         except Exception as e:
             print(f'[MIGRATION] Erro ao gerar slugs: {e}')
 
+        # ── ÍNDICES DE PERFORMANCE ────────────────────────────
+        indexes_to_create = [
+            ('ix_votesession_status',      'vote_sessions',    'status'),
+            ('ix_news_created_at',         'news',             'created_at'),
+            ('ix_student_created_at',      'students',         'created_at'),
+            ('ix_urgent_alert_active_ts',  'urgent_alerts',    'active, created_at'),
+        ]
+        existing_indexes = set()
+        for tbl in inspector.get_table_names():
+            for idx in inspector.get_indexes(tbl):
+                existing_indexes.add(idx['name'])
+        for idx_name, table, cols in indexes_to_create:
+            if idx_name not in existing_indexes:
+                try:
+                    col_list = ', '.join(cols.split(', '))
+                    stmt = f'CREATE INDEX IF NOT EXISTS {idx_name} ON {table} ({col_list})'
+                    with db.engine.connect() as conn:
+                        conn.execute(sa.text(stmt))
+                        conn.commit()
+                    print(f'[MIGRATION] Índice {idx_name} criado.')
+                except Exception as e:
+                    print(f'[MIGRATION] Erro ao criar índice {idx_name}: {e}')
+
 
 def _seed_admin(app):
     from models.user import User
