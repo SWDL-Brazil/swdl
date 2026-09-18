@@ -431,64 +431,61 @@
                 <div id="formatoHint" style="font-size:11px;color:var(--muted);margin-top:4px">Inscreva-se sozinho</div>
               </div>
 
-              <!-- Dados do inscrito principal -->
-              <div class="form-group">
-                <label>Seu Nome Completo *</label>
-                <input type="text" name="name" placeholder="Seu nome completo" required>
-              </div>
-              <div class="form-row">
+              <!-- Dados do inscrito principal (só individual) -->
+              <div id="primaryFields">
                 <div class="form-group">
-                  <label>Seu E-mail educacional *</label>
-                  <input type="email" name="email" placeholder="seunome@portalsesisp.org.br" required
-                         pattern=".+@(portalsesisp\.org\.br|senaisp\.edu\.br)$"
-                         oninput="validateEmail(this)">
-                  <span class="email-hint" style="font-size:11px;color:var(--muted)">Use seu e-mail @portalsesisp.org.br ou @senaisp.edu.br</span>
-                  <span class="email-error" style="display:none;font-size:11px;color:#C0392B;margin-top:2px">✕ Apenas e-mail @portalsesisp.org.br ou @senaisp.edu.br é permitido</span>
+                  <label>Seu Nome Completo *</label>
+                  <input type="text" name="name" placeholder="Seu nome completo" required>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Seu E-mail educacional *</label>
+                    <input type="email" name="email" placeholder="seunome@portalsesisp.org.br" required
+                           pattern=".+@(portalsesisp\.org\.br|senaisp\.edu\.br)$"
+                           oninput="validateEmail(this)">
+                    <span class="email-hint" style="font-size:11px;color:var(--muted)">Use seu e-mail @portalsesisp.org.br ou @senaisp.edu.br</span>
+                    <span class="email-error" style="display:none;font-size:11px;color:#C0392B;margin-top:2px">✕ Apenas e-mail @portalsesisp.org.br ou @senaisp.edu.br é permitido</span>
+                  </div>
+                  <div class="form-group">
+                    <label>Telefone *</label>
+                    <input type="tel" name="phone" placeholder="(00) 00000-0000" required>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Série / Ano *</label>
+                    <select name="grade" required>
+                      <option value="">Selecione sua série</option>
+                      <option>6° Ano</option>
+                      <option>7° Ano</option>
+                      <option>8° Ano</option>
+                      <option>9° Ano</option>
+                      <option>1° Ano EM</option>
+                      <option>2° Ano EM</option>
+                      <option>3° Ano EM</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Instagram *</label>
+                    <input type="text" name="instagram" placeholder="@seuusuario" required>
+                  </div>
                 </div>
                 <div class="form-group">
-                  <label>Telefone *</label>
-                  <input type="tel" name="phone" placeholder="(00) 00000-0000" required>
+                  <label>Experiência Anterior</label>
+                  <input type="text" name="experience" placeholder="Ex: participei de um MUN na escola X...">
                 </div>
-              </div>
-              <div class="form-row">
                 <div class="form-group">
-                  <label>Série / Ano *</label>
-                  <select name="grade" required>
-                    <option value="">Selecione sua série</option>
-                    <option>6° Ano</option>
-                    <option>7° Ano</option>
-                    <option>8° Ano</option>
-                    <option>9° Ano</option>
-                    <option>1° Ano EM</option>
-                    <option>2° Ano EM</option>
-                    <option>3° Ano EM</option>
-                  </select>
+                  <label>Por que deseja participar? *</label>
+                  <textarea name="motivation" placeholder="Conte brevemente sua motivação..." required></textarea>
                 </div>
-          <div class="form-group">
-            <label>Instagram *</label>
-            <input type="text" name="instagram" placeholder="@seuusuario" required>
+                <div class="form-group">
+                  <label>Temas de Interesse</label>
+                  <input type="text" name="interests" placeholder="Ex: Segurança Internacional, Direitos Humanos, Meio Ambiente...">
                 </div>
-              </div>
-              <div class="form-group">
-                <label>Experiência Anterior</label>
-                <input type="text" name="experience" placeholder="Ex: participei de um MUN na escola X...">
-              </div>
-              <div class="form-group">
-                <label>Por que deseja participar? *</label>
-                <textarea name="motivation" placeholder="Conte brevemente sua motivação..." required></textarea>
-              </div>
-              <div class="form-group">
-                <label>Temas de Interesse</label>
-                <input type="text" name="interests" placeholder="Ex: Segurança Internacional, Direitos Humanos, Meio Ambiente...">
               </div>
 
-              <!-- Membros extras (dupla/trio) -->
-              <div id="membersContainer" style="display:none">
-                <div class="member-divider" id="memberDivider" style="display:none">
-                  <span>Membros do Grupo</span>
-                </div>
-                <div id="membersFields"></div>
-              </div>
+              <!-- Cards do grupo (dupla/trio) -->
+              <div id="groupFields" style="display:none"></div>
 
               <div style="margin:16px 0;padding:12px;background:var(--offwhite);border-radius:6px;font-size:13px">
                 <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
@@ -742,34 +739,38 @@
   // ── FORMATO SELECTOR ────────────────────────────────────────
   const formatoSelector = document.getElementById('formatoSelector');
   const formatoHint     = document.getElementById('formatoHint');
-  const membersFields   = document.getElementById('membersFields');
   const formatoInput    = formDelegado.querySelector('input[name="formato"]');
+  const primaryFields   = document.getElementById('primaryFields');
+  const groupFields     = document.getElementById('groupFields');
   const hintMap = {
     individual: 'Inscreva-se sozinho',
     dupla:      'Cadastre você + 1 colega de equipe',
     trio:       'Cadastre você + 2 colegas de equipe',
   };
-  function memberHTML(idx) {
+  function memberCard(idx, isYou) {
+    const label = isYou ? 'Participante 1 (Você)' : `Participante ${idx}`;
+    const tag   = isYou ? 'Você' : `Membro ${idx - 1}`;
+    const color = isYou ? 'var(--gold)' : 'var(--navy)';
     return `
-      <div class="member-card" style="border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px;background:var(--offwhite)">
-        <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--navy);margin-bottom:12px">
-          Membro ${idx}
+      <div class="member-card" style="border:2px solid var(--border);border-radius:8px;padding:20px;margin-bottom:16px;background:var(--white);border-left:4px solid ${color}">
+        <div style="font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${color};margin-bottom:14px">
+          ${label}
         </div>
         <div class="form-group">
           <label>Nome completo *</label>
-          <input type="text" name="member_name_${idx}" placeholder="Nome do colega" required>
+          <input type="text" name="member_name_${idx}" placeholder="${isYou ? 'Seu nome completo' : 'Nome do colega'}" required>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>E-mail educacional *</label>
-            <input type="email" name="member_email_${idx}" placeholder="colega@portalsesisp.org.br" required
+            <input type="email" name="member_email_${idx}" placeholder="email@portalsesisp.org.br" required
                    pattern=".+@(portalsesisp\\.org\\.br|senaisp\\.edu\\.br)$"
                    oninput="validateEmail(this)">
             <span class="email-hint" style="font-size:11px;color:var(--muted)">E-mail @portalsesisp.org.br ou @senaisp.edu.br</span>
-            <span class="email-error" style="display:none;font-size:11px;color:#C0392B;margin-top:2px">✕ Apenas e-mails @portalsesisp.org.br ou @senaisp.edu.br</span>
+            <span class="email-error" style="display:none;font-size:11px;color:#C0392B;margin-top:2px">✕ E-mail inválido</span>
           </div>
           <div class="form-group">
-            <label>Telefone</label>
+            <label>Telefone *</label>
             <input type="tel" name="member_phone_${idx}" placeholder="(00) 00000-0000" required>
           </div>
         </div>
@@ -792,6 +793,20 @@
             <input type="text" name="member_instagram_${idx}" placeholder="@usuario" required>
           </div>
         </div>
+        ${isYou ? `
+        <div class="form-group" style="margin-top:12px">
+          <label>Experiência Anterior</label>
+          <input type="text" name="member_experience_${idx}" placeholder="Ex: participei de um MUN na escola X...">
+        </div>
+        <div class="form-group">
+          <label>Por que deseja participar? *</label>
+          <textarea name="member_motivation_${idx}" placeholder="Conte brevemente sua motivação..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Temas de Interesse</label>
+          <input type="text" name="member_interests_${idx}" placeholder="Ex: Segurança Internacional, Direitos Humanos...">
+        </div>
+        ` : ''}
       </div>`;
   }
   function updateFormato() {
@@ -801,10 +816,18 @@
       o.classList.toggle('active', o.dataset.formato === val);
     });
     if (val === 'individual') {
-      membersFields.innerHTML = '';
+      primaryFields.style.display = '';
+      groupFields.style.display = 'none';
+      groupFields.innerHTML = '';
     } else {
-      const n = val === 'dupla' ? 1 : 2;
-      membersFields.innerHTML = Array.from({length: n}, (_, i) => memberHTML(i + 1)).join('');
+      primaryFields.style.display = 'none';
+      groupFields.style.display = '';
+      const n = val === 'dupla' ? 2 : 3;
+      let html = `<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;letter-spacing:.06em;text-transform:uppercase">Participantes do Grupo</div>`;
+      for (let i = 1; i <= n; i++) {
+        html += memberCard(i, i === 1);
+      }
+      groupFields.innerHTML = html;
     }
   }
   formatoSelector.querySelectorAll('.formato-option').forEach(opt => {
@@ -846,18 +869,13 @@
   if (formDelegado) {
     formDelegado.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const emailInput = formDelegado.querySelector('input[name="email"]');
-      if (emailInput && !emailInput.validity.valid) {
-        validateEmail(emailInput);
-        emailInput.focus();
-        return;
-      }
-      // Validar emails dos membros
-      const memberEmails = formDelegado.querySelectorAll('input[type="email"][name^="member_email"]');
-      for (const me of memberEmails) {
-        if (!me.validity.valid) {
-          validateEmail(me);
-          me.focus();
+
+      // Validar emails
+      const allEmails = formDelegado.querySelectorAll('input[type="email"]');
+      for (const em of allEmails) {
+        if (em.value && !em.validity.valid) {
+          validateEmail(em);
+          em.focus();
           return;
         }
       }
@@ -868,33 +886,53 @@
 
       const fd      = new FormData(formDelegado);
       const formato = fd.get('formato') || 'individual';
+      let payload;
 
-      const members = [];
-      const n = formato === 'trio' ? 2 : formato === 'dupla' ? 1 : 0;
-      for (let i = 1; i <= n; i++) {
-        const mName      = fd.get(`member_name_${i}`);
-        const mEmail     = fd.get(`member_email_${i}`);
-        const mPhone     = fd.get(`member_phone_${i}`) || '';
-        const mGrade     = fd.get(`member_grade_${i}`) || '';
-        const mInstagram = fd.get(`member_instagram_${i}`) || '';
-        if (mName && mEmail) {
-          members.push({name: mName, email: mEmail, phone: mPhone, grade: mGrade, instagram: mInstagram});
+      if (formato === 'individual') {
+        payload = {
+          name:       fd.get('name'),
+          email:      fd.get('email'),
+          phone:      fd.get('phone') || '',
+          instagram:  fd.get('instagram') || '',
+          grade:      fd.get('grade') || '',
+          motivation: fd.get('motivation') || '',
+          interests:  fd.get('interests') || '',
+          type:       'delegate',
+          formato:    formato,
+          members:    [],
+          accept_terms: document.getElementById('acceptTerms').checked,
+        };
+      } else {
+        // Grupo: todos os dados vêm dos cards
+        const n = formato === 'dupla' ? 2 : 3;
+        const allMembers = [];
+        for (let i = 1; i <= n; i++) {
+          allMembers.push({
+            name:      fd.get(`member_name_${i}`) || '',
+            email:     fd.get(`member_email_${i}`) || '',
+            phone:     fd.get(`member_phone_${i}`) || '',
+            grade:     fd.get(`member_grade_${i}`) || '',
+            instagram: fd.get(`member_instagram_${i}`) || '',
+            experience: fd.get(`member_experience_${i}`) || '',
+            motivation: fd.get(`member_motivation_${i}`) || '',
+            interests:  fd.get(`member_interests_${i}`) || '',
+          });
         }
+        const primary = allMembers.shift();
+        payload = {
+          name:       primary.name,
+          email:      primary.email,
+          phone:      primary.phone,
+          instagram:  primary.instagram,
+          grade:      primary.grade,
+          motivation: primary.motivation,
+          interests:  primary.interests,
+          type:       'delegate',
+          formato:    formato,
+          members:    allMembers,
+          accept_terms: document.getElementById('acceptTerms').checked,
+        };
       }
-
-      const payload = {
-        name:       fd.get('name'),
-        email:      fd.get('email'),
-        phone:      fd.get('phone') || '',
-        instagram:  fd.get('instagram') || '',
-        grade:      fd.get('grade') || '',
-        motivation: fd.get('motivation') || '',
-        interests:  fd.get('interests') || '',
-        type:       'delegate',
-        formato:    formato,
-        members:    members,
-        accept_terms: document.getElementById('acceptTerms').checked,
-      };
 
       try {
         const res  = await SWDL_API.post('/inscricao', payload);
