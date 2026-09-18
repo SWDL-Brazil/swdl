@@ -33,6 +33,7 @@
     .mv-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(16,30,76,.09); }
     .mv-card:nth-child(2) { border-top-color: var(--gold); }
     .mv-icon { font-size: 30px; margin-bottom: 14px; display: block; }
+    .mv-icon-svg { width: 30px; height: 30px; margin-bottom: 14px; display: block; color: var(--navy); }
     .mv-card h3 { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--navy); margin-bottom:12px; }
     .mv-card p  { font-size:14px; line-height:1.72; color:var(--muted); }
 
@@ -53,6 +54,7 @@
     }
     .valor-chip:hover { background: rgba(183,148,65,.15); border-color: rgba(183,148,65,.3); }
     .valor-chip-icon { font-size: 22px; margin-bottom: 8px; display: block; }
+    .valor-chip-icon-svg { width: 22px; height: 22px; margin-bottom: 8px; display: block; color: var(--white); }
     .valor-chip-text { font-size: 12px; font-weight: 600; color: var(--white); line-height: 1.3; }
 
     /* História */
@@ -113,6 +115,7 @@
     }
     .sim-card:hover::after { transform:scaleX(1); }
     .sim-card-icon { font-size:28px; margin-bottom:14px; display:block; }
+    .sim-card-icon-svg { width: 28px; height: 28px; margin-bottom: 14px; display: block; color: var(--navy); }
     .sim-card h4 { font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:var(--navy); margin-bottom:10px; }
     .sim-card p  { font-size:13px; line-height:1.6; color:var(--muted); }
 
@@ -266,12 +269,12 @@
     <!-- MISSÃO & VISÃO -->
     <div class="mv-grid reveal">
       <div class="mv-card">
-        <span class="mv-icon">🎯</span>
+        <img src="assent/icons/target.svg" alt="" class="mv-icon-svg">
         <h3 data-i18n="sobre.missao_title">Missão</h3>
         <p data-i18n="sobre.missao_text">Formar jovens líderes capacitados para enfrentar os desafios globais contemporâneos através de simulações realísticas da ONU, desenvolvendo habilidades diplomáticas, de negociação e pensamento crítico.</p>
       </div>
       <div class="mv-card">
-        <span class="mv-icon">🔭</span>
+        <img src="assent/icons/telescope.svg" alt="" class="mv-icon-svg">
         <h3 data-i18n="sobre.visao_title">Visão</h3>
         <p data-i18n="sobre.visao_text">Formar futuros membros que posteriormente ingressarão no comitê. Além disso, estabelecer parcerias com órgãos externos com a finalidade de criar um ambiente para ambos participantes internos e externos. Adicionalmente, inspirar novas gerações de líderes comprometidos com a paz, justiça e cooperação internacional.</p>
       </div>
@@ -282,11 +285,11 @@
       <div class="section-label" data-i18n="sobre.valores_label">Nossos Pilares</div>
       <h2 class="section-title light" data-i18n="sobre.valores_title">Valores</h2>
       <div class="valores-list">
-        <div class="valor-chip"><span class="valor-chip-icon">🕊️</span><div class="valor-chip-text" data-i18n="sobre.valor_diplomacia">Diplomacia e Diálogo</div></div>
-        <div class="valor-chip"><span class="valor-chip-icon">🌍</span><div class="valor-chip-text" data-i18n="sobre.valor_respeito">Respeito à Diversidade</div></div>
-        <div class="valor-chip"><span class="valor-chip-icon">📚</span><div class="valor-chip-text" data-i18n="sobre.valor_excelencia">Excelência Acadêmica</div></div>
-        <div class="valor-chip"><span class="valor-chip-icon">🤝</span><div class="valor-chip-text" data-i18n="sobre.valor_cooperacao">Cooperação Internacional</div></div>
-        <div class="valor-chip"><span class="valor-chip-icon">🌱</span><div class="valor-chip-text" data-i18n="sobre.valor_desenvolvimento">Desenvolvimento Sustentável</div></div>
+        <div class="valor-chip"><img src="assent/icons/dove.svg" alt="" class="valor-chip-icon-svg"><div class="valor-chip-text" data-i18n="sobre.valor_diplomacia">Diplomacia e Diálogo</div></div>
+        <div class="valor-chip"><img src="assent/icons/globe.svg" alt="" class="valor-chip-icon-svg"><div class="valor-chip-text" data-i18n="sobre.valor_respeito">Respeito à Diversidade</div></div>
+        <div class="valor-chip"><img src="assent/icons/books.svg" alt="" class="valor-chip-icon-svg"><div class="valor-chip-text" data-i18n="sobre.valor_excelencia">Excelência Acadêmica</div></div>
+        <div class="valor-chip"><img src="assent/icons/handshake.svg" alt="" class="valor-chip-icon-svg"><div class="valor-chip-text" data-i18n="sobre.valor_cooperacao">Cooperação Internacional</div></div>
+        <div class="valor-chip"><img src="assent/icons/leaf.svg" alt="" class="valor-chip-icon-svg"><div class="valor-chip-text" data-i18n="sobre.valor_desenvolvimento">Desenvolvimento Sustentável</div></div>
       </div>
     </div>
 
@@ -326,22 +329,22 @@
       <h2 class="section-title" data-i18n="sobre.simulacao_title">O que é uma Simulação da ONU?</h2>
       <div class="simulacao-grid">
         <div class="sim-card">
-          <span class="sim-card-icon">🗺️</span>
+          <img src="assent/icons/compass.svg" alt="" class="sim-card-icon-svg">
           <h4 data-i18n="sobre.sim_card1_title">Representação de Países</h4>
           <p data-i18n="sobre.sim_card1_text">Os participantes representam diferentes países em temas da ONU, defendendo suas posições e interesses nacionais.</p>
         </div>
         <div class="sim-card">
-          <span class="sim-card-icon">🎤</span>
+          <img src="assent/icons/microphone.svg" alt="" class="sim-card-icon-svg">
           <h4 data-i18n="sobre.sim_card2_title">Debates Realísticos</h4>
           <p data-i18n="sobre.sim_card2_text">Discussões sobre temas globais atuais seguindo os procedimentos oficiais das Nações Unidas.</p>
         </div>
         <div class="sim-card">
-          <span class="sim-card-icon">🤝</span>
+          <img src="assent/icons/handshake.svg" alt="" class="sim-card-icon-svg">
           <h4 data-i18n="sobre.sim_card3_title">Negociação e Diplomacia</h4>
           <p data-i18n="sobre.sim_card3_text">Desenvolvimento de habilidades diplomáticas através de negociações e busca por consenso entre delegações.</p>
         </div>
         <div class="sim-card">
-          <span class="sim-card-icon">📜</span>
+          <img src="assent/icons/scroll.svg" alt="" class="sim-card-icon-svg">
           <h4 data-i18n="sobre.sim_card4_title">Produção de Resoluções</h4>
           <p data-i18n="sobre.sim_card4_text">Elaboração de documentos oficiais que propõem soluções concretas para os problemas discutidos.</p>
         </div>

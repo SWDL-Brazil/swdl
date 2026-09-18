@@ -31,6 +31,7 @@
     }
     .form-blur-overlay.active { opacity: 1; pointer-events: all; }
     .form-blur-overlay .blur-icon { font-size: 48px; margin-bottom: 12px; }
+    .form-blur-overlay .blur-icon-svg { width: 48px; height: 48px; margin-bottom: 12px; color: var(--white); }
     .form-blur-overlay .blur-title {
       font-family: 'Playfair Display', serif;
       font-size: 20px; font-weight: 700; color: var(--navy); margin-bottom: 6px;
@@ -105,7 +106,7 @@
       border-radius: 3px; padding: 18px 16px;
       border-left: 3px solid var(--gold);
     }
-    .req-icon { font-size: 18px; margin-bottom: 6px; display: block; }
+    .req-icon { width: 18px; height: 18px; margin-bottom: 6px; display: block; color: var(--navy); }
     .req-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
     .req-desc  { font-size: 12px; color: var(--muted); line-height: 1.45; }
 
@@ -123,6 +124,11 @@
       width: 44px; height: 44px; border-radius: 8px;
       background: rgba(16,30,76,.05);
       display: flex; align-items: center; justify-content: center;
+    }
+    .vol-role-icon-svg {
+      flex-shrink: 0;
+      width: 22px; height: 22px;
+      color: var(--navy);
     }
     .vol-role-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
     .vol-role-desc  { font-size: 12px; color: var(--muted); line-height: 1.5; }
@@ -402,22 +408,22 @@
           <div class="section-label" style="margin-bottom:14px" data-i18n="faca_parte.delegado_req_label">Requisitos para Participar</div>
           <div class="req-grid">
             <div class="req-card">
-              <span class="req-icon">🏫</span>
+              <img src="assent/icons/school.svg" alt="" class="req-icon">
               <div class="req-title" data-i18n="faca_parte.delegado_req_escola_title">Série Escolar</div>
               <div class="req-desc" data-i18n="faca_parte.delegado_req_escola_desc">Estudantes a partir do 6° ano do SESI CE-437</div>
             </div>
             <div class="req-card">
-              <span class="req-icon">📅</span>
+              <img src="assent/icons/calendar.svg" alt="" class="req-icon">
               <div class="req-title" data-i18n="faca_parte.delegado_req_disponibilidade_title">Disponibilidade</div>
               <div class="req-desc" data-i18n="faca_parte.delegado_req_disponibilidade_desc">Participação nos dias de debate e preparação prévia</div>
             </div>
             <div class="req-card">
-              <span class="req-icon">📚</span>
+              <img src="assent/icons/books.svg" alt="" class="req-icon">
               <div class="req-title" data-i18n="faca_parte.delegado_req_comprometimento_title">Comprometimento</div>
               <div class="req-desc" data-i18n="faca_parte.delegado_req_comprometimento_desc">Estudo do país representado e dos temas em debate</div>
             </div>
             <div class="req-card">
-              <span class="req-icon">🤝</span>
+              <img src="assent/icons/handshake.svg" alt="" class="req-icon">
               <div class="req-title" data-i18n="faca_parte.delegado_req_equipe_title">Trabalho em Equipe</div>
               <div class="req-desc" data-i18n="faca_parte.delegado_req_equipe_desc">Colaboração com outros delegados e respeito às regras</div>
             </div>
@@ -428,7 +434,7 @@
         <div class="reveal" style="transition-delay:.1s">
           <div class="fp-form-card form-blur-wrap">
             <div class="form-blur-overlay" id="inscricoesOverlay">
-              <div class="blur-icon">🔒</div>
+              <img src="assent/icons/lock.svg" alt="" class="blur-icon-svg">
               <div class="blur-title" data-i18n="faca_parte.form_blur_title">Inscrições Fechadas</div>
               <div class="blur-desc" data-i18n="faca_parte.form_blur_desc">As inscrições para delegados estão encerradas no momento.<br>Fique atento aos próximos eventos!</div>
             </div>
@@ -523,8 +529,8 @@
                 </label>
               </div>
 
-              <button type="submit" class="btn-form-fp" id="btnDelegado" disabled>Inscrições fechadas 🔒</button>
-              <p class="form-note">🔒 Dados usados apenas para o processo de seleção</p>
+                <button type="submit" class="btn-form-fp" id="btnDelegado" disabled>Inscrições fechadas <img src="assent/icons/lock.svg" alt="" style="width:14px;height:14px;vertical-align:middle"></button>
+              <p class="form-note"><img src="assent/icons/lock.svg" alt="" style="width:12px;height:12px;vertical-align:middle"> Dados usados apenas para o processo de seleção</p>
             </form>
 
             <div class="form-success-fp" id="successDelegado">
@@ -550,28 +556,28 @@
           <div class="section-label" style="margin-bottom:16px" data-i18n="faca_parte.voluntario_roles_label">Oportunidades de Voluntariado</div>
           <div class="vol-roles">
             <div class="vol-role-card">
-              <div class="vol-role-icon">🎙️</div>
+              <img src="assent/icons/microphone.svg" alt="" class="vol-role-icon-svg">
               <div>
                 <div class="vol-role-title" data-i18n="faca_parte.voluntario_role_mod_title">Moderador de Debate</div>
                 <div class="vol-role-desc" data-i18n="faca_parte.voluntario_role_mod_desc">Conduza as sessões de debate e mantenha a ordem durante as discussões dos temas.</div>
               </div>
             </div>
             <div class="vol-role-card">
-              <div class="vol-role-icon">📸</div>
+              <img src="assent/icons/camera.svg" alt="" class="vol-role-icon-svg">
               <div>
                 <div class="vol-role-title" data-i18n="faca_parte.voluntario_role_midia_title">Equipe de Mídia</div>
                 <div class="vol-role-desc" data-i18n="faca_parte.voluntario_role_midia_desc">Documente os eventos através de fotos, vídeos e cobertura nas redes sociais da SWDL.</div>
               </div>
             </div>
             <div class="vol-role-card">
-              <div class="vol-role-icon">📋</div>
+              <img src="assent/icons/clipboard.svg" alt="" class="vol-role-icon-svg">
               <div>
                 <div class="vol-role-title" data-i18n="faca_parte.voluntario_role_org_title">Organização</div>
                 <div class="vol-role-desc" data-i18n="faca_parte.voluntario_role_org_desc">Auxilie na logística, preparação de materiais e coordenação geral dos eventos.</div>
               </div>
             </div>
             <div class="vol-role-card">
-              <div class="vol-role-icon">🌟</div>
+              <img src="assent/icons/star.svg" alt="" class="vol-role-icon-svg">
               <div>
                 <div class="vol-role-title" data-i18n="faca_parte.voluntario_role_mentor_title">Mentor</div>
                 <div class="vol-role-desc" data-i18n="faca_parte.voluntario_role_mentor_desc">Oriente novos delegados e compartilhe conhecimentos sobre diplomacia e procedimentos da ONU.</div>
@@ -642,7 +648,7 @@
                 </label>
               </div>
               <button type="submit" class="btn-form-fp" data-i18n="faca_parte.voluntario_form_btn_submit">Quero Ser Voluntário →</button>
-              <p class="form-note" data-i18n="faca_parte.voluntario_form_note">🔒 Dados usados apenas para o processo de seleção</p>
+              <p class="form-note" data-i18n="faca_parte.voluntario_form_note"><img src="assent/icons/lock.svg" alt="" style="width:12px;height:12px;vertical-align:middle"> Dados usados apenas para o processo de seleção</p>
             </form>
 
             <div class="form-success-fp" id="successVoluntario">
@@ -758,7 +764,7 @@
     } else {
       overlay.classList.add('active');
       if (btnDel) {
-        btnDel.textContent = '🔒 Inscrições Fechadas';
+        btnDel.innerHTML = '<img src="assent/icons/lock.svg" alt="" style="width:14px;height:14px;vertical-align:middle"> Inscrições Fechadas';
         btnDel.disabled = true;
       }
     }
