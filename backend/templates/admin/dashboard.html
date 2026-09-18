@@ -1,9 +1,9 @@
 {% extends "admin/base.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block page_title %}
-  {% if event_phase == 'pre' %}📅 Pré-Evento
-  {% elif event_phase == 'during' %}🔴 Sessão em Andamento
-  {% else %}🏁 Pós-Evento{% endif %}
+  {% if event_phase == 'pre' %}Pré-Evento
+  {% elif event_phase == 'during' %}Sessão em Andamento
+  {% else %}Pós-Evento{% endif %}
 {% endblock %}
 
 {% block topbar_actions %}
@@ -23,54 +23,26 @@
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 
-<!-- ── BANNER DE STATUS (AGENDA) ──────────────────── -->
-<div class="phase-banner {{ event_phase }}">
-  <span class="phase-banner-icon">
-    {% if event_phase == 'pre' %}📅
-    {% elif event_phase == 'during' %}🔴
-    {% else %}🏁{% endif %}
-  </span>
-  <div>
-    <strong>
-      {% if event_phase == 'pre' %}📅 Pré-Evento — Aguardando início
-      {% elif event_phase == 'during' %}🔴 Sessão em Andamento — Debate Ao Vivo
-      {% else %}🏁 Pós-Evento — Encerrado{% endif %}
-    </strong>
-    <div style="font-size:11px;margin-top:2px;opacity:.7">
-      {% if event_phase == 'pre' %}
-        Status determinado pela agenda do evento. Gerencie alunos, inscrições e materiais.
-      {% elif event_phase == 'during' %}
-        Acompanhe chamada, votações, oradores e cronômetro em tempo real.
-      {% else %}
-        Certificados compilados automaticamente. Libere e assine os certificados.
-      {% endif %}
-    </div>
+{# ═══════════════════════════════════════════════════════════
+   PRÉ / PÓS-EVENTO
+   ═══════════════════════════════════════════════════════════ #}
+{% if event_phase == 'pre' or event_phase == 'post' %}
+
+<!-- ── SAUDAÇÃO ────────────────────────────────────────── -->
+<div class="dash-greeting">
+  <div class="dash-greeting-text">
+    {% if event_phase == 'pre' %}
+      <h2>Bom trabalho! A preparação está {% if stats.students > 0 %}em andamento{% else %}começando{% endif %}.</h2>
+      <p>{% if stats.inscriptions > 0 %}Existem <strong>{{ stats.inscriptions }}</strong> inscrições pendentes de aprovação.{% else %}Nenhuma inscrição pendente no momento.{% endif %}</p>
+    {% else %}
+      <h2>Evento encerrado. Hora de fechar os registros.</h2>
+      <p>{% if stats.certificates < stats.students %}<strong>{{ stats.students - stats.certificates }}</strong> certificados ainda não foram liberados.{% else %}Todos os certificados foram liberados!{% endif %}</p>
+    {% endif %}
   </div>
-  <span style="flex:1"></span>
-  <div style="display:flex;align-items:center;gap:6px;margin-left:12px;padding:4px 12px;border-radius:4px;font-size:10px;font-weight:600;font-family:'DM Mono',monospace;letter-spacing:.04em;{{ 'background:rgba(231,76,60,.1);color:#E74C3C;border:1px solid rgba(231,76,60,.2)' if stats.read_only > 0 else 'background:rgba(46,204,113,.1);color:#2ECC71;border:1px solid rgba(46,204,113,.2)' }}">
-    <span>{{ '🔒' if stats.read_only > 0 else '🔓' }}</span>
-    {{ stats.read_only }}/{{ stats.students }} travados
-  </div>
-  {% if stats.read_only < stats.students %}
-  <form method="POST" action="{{ url_for('admin.students_lock_all') }}" style="display:inline">
-    <button class="btn btn-sm" style="background:#E74C3C;color:#fff" title="Travar todos os alunos">🔒 Travar</button>
-  </form>
-  {% else %}
-  <form method="POST" action="{{ url_for('admin.students_unlock_all') }}" style="display:inline">
-    <button class="btn btn-sm btn-ghost" title="Destravar todos os alunos">🔓 Destravar</button>
-  </form>
-  {% endif %}
-  <form method="POST" action="{{ url_for('admin.inscricoes_toggle') }}" style="display:inline">
-    <button class="btn btn-sm {{ 'btn-primary' if inscricoes_abertas else 'btn-ghost' }}" title="Abrir/fechar inscrições de delegados">
-      {{ '📋 Inscrições Abertas' if inscricoes_abertas else '🔒 Inscrições Fechadas' }}
-    </button>
-  </form>
 </div>
 
-{% if event_phase == 'pre' %}
-<!-- ════════════════ MODO PRÉ-SESSÃO ════════════════ -->
-
-<div class="mini-stats mini-stats-6">
+<!-- ── STATS ───────────────────────────────────────────── -->
+<div class="mini-stats mini-stats-5">
   <div class="mini-stat highlight">
     <span class="mini-stat-num">{{ stats.students }}</span>
     <span class="mini-stat-label">🎓 Alunos</span>
@@ -81,53 +53,115 @@
   </div>
   <div class="mini-stat highlight">
     <span class="mini-stat-num">{{ stats.inscriptions }}</span>
-    <span class="mini-stat-label">📋 Pendentes</span>
+    <span class="mini-stat-label">📋 Inscrições Pendentes</span>
   </div>
   <div class="mini-stat">
-    <span class="mini-stat-num">{{ stats.students_no_deleg }}</span>
-    <span class="mini-stat-label">⏳ S/ Delegação</span>
+    <span class="mini-stat-num">{{ stats.dpos }}</span>
+    <span class="mini-stat-label">📄 DPOs Recebidos</span>
   </div>
   <div class="mini-stat">
     <span class="mini-stat-num">{{ stats.news }}</span>
     <span class="mini-stat-label">📰 Notícias</span>
   </div>
-  <div class="mini-stat">
-    <span class="mini-stat-num">{{ stats.themes }}</span>
-    <span class="mini-stat-label">🏷️ Temas</span>
+</div>
+
+<!-- ── AÇÕES RÁPIDAS ──────────────────────────────────── -->
+<div class="card" style="margin-bottom:20px">
+  <div class="card-header">
+    <span class="card-title">⚡ Ações Rápidas</span>
+  </div>
+  <div class="card-body">
+    <div class="quick-actions">
+      <a href="{{ url_for('admin.delegate_create') }}" class="quick-action">
+        <span class="quick-action-icon">➕</span>
+        <span>Novo Aluno</span>
+      </a>
+      <a href="{{ url_for('admin.inscriptions_list') }}" class="quick-action quick-action-alert {{ 'has-items' if stats.inscriptions > 0 }}">
+        <span class="quick-action-icon">📋</span>
+        <span>Ver Inscrições</span>
+        {% if stats.inscriptions > 0 %}<span class="quick-action-badge">{{ stats.inscriptions }}</span>{% endif %}
+      </a>
+      <a href="{{ url_for('admin.convocar_page') }}" class="quick-action">
+        <span class="quick-action-icon">📢</span>
+        <span>Convocar Alunos</span>
+      </a>
+      <a href="{{ url_for('admin.dpos_list') }}" class="quick-action quick-action-alert {{ 'has-items' if stats.dpos > 0 }}">
+        <span class="quick-action-icon">📄</span>
+        <span>Ver DPOs</span>
+        {% if stats.dpos > 0 %}<span class="quick-action-badge">{{ stats.dpos }}</span>{% endif %}
+      </a>
+      <a href="{{ url_for('admin.certificates_list') }}" class="quick-action">
+        <span class="quick-action-icon">🎓</span>
+        <span>Certificados</span>
+      </a>
+      <a href="{{ url_for('admin.news_create') }}" class="quick-action">
+        <span class="quick-action-icon">📰</span>
+        <span>Nova Notícia</span>
+      </a>
+    </div>
   </div>
 </div>
 
-<div class="grid-2" style="margin-bottom:24px">
+<div class="grid-2" style="margin-bottom:20px">
+  <!-- ── PENDÊNCIAS ──────────────────────────────────── -->
   <div class="card">
     <div class="card-header">
-      <span class="card-title">📋 Checklist de Preparação</span>
+      <span class="card-title">🚨 Pendências</span>
     </div>
     <div class="card-body">
-      <ul class="checklist">
-        <li class="{{ 'done' if stats.themes > 0 else 'warn' }}">
-          {{ '✅' if stats.themes > 0 else '⚠️' }} Criar temas/debates
+      <ul class="pendency-list">
+        {% if stats.inscriptions > 0 %}
+        <li class="pendency-item pendency-warn">
+          <span class="pendency-icon">⚠️</span>
+          <div class="pendency-text">
+            <strong>{{ stats.inscriptions }} inscrições</strong> aguardando aprovação
+          </div>
+          <a href="{{ url_for('admin.inscriptions_list') }}" class="pendency-action">Revisar</a>
         </li>
-        <li class="{{ 'done' if stats.students > 0 else 'warn' }}">
-          {{ '✅' if stats.students > 0 else '⚠️' }} Cadastrar alunos
+        {% endif %}
+        {% if stats.students_no_deleg > 0 %}
+        <li class="pendency-item pendency-warn">
+          <span class="pendency-icon">⚠️</span>
+          <div class="pendency-text">
+            <strong>{{ stats.students_no_deleg }} alunos</strong> sem delegação designada
+          </div>
+          <a href="{{ url_for('admin.delegations_list') }}" class="pendency-action">Designar</a>
         </li>
-        <li class="{{ 'done' if stats.delegations == stats.students else ('warn' if stats.delegations > 0 else 'pending') }}">
-          {{ '✅' if stats.delegations == stats.students else '⚠️' if stats.delegations > 0 else '⬜' }} Designar delegações ({{ stats.delegations }}/{{ stats.students }})
+        {% endif %}
+        {% if stats.dpos > 0 and stats.dpos < stats.students %}
+        <li class="pendency-item pendency-warn">
+          <span class="pendency-icon">📄</span>
+          <div class="pendency-text">
+            <strong>{{ stats.students - stats.dpos }} DPOs</strong> ainda não recebidos
+          </div>
+          <a href="{{ url_for('admin.dpos_list') }}" class="pendency-action">Verificar</a>
         </li>
-        <li class="{{ 'done' if stats.inscriptions == 0 else 'warn' }}">
-          {{ '✅' if stats.inscriptions == 0 else '⚠️' }} Revisar inscrições pendentes ({{ stats.inscriptions }})
+        {% endif %}
+        {% if stats.agenda == 0 %}
+        <li class="pendency-item pendency-info">
+          <span class="pendency-icon">📅</span>
+          <div class="pendency-text">Nenhum item na agenda ainda</div>
+          <a href="{{ url_for('admin.agenda_create') }}" class="pendency-action">Criar</a>
         </li>
-        <li class="{{ 'done' if stats.agenda > 0 else 'pending' }}">
-          {{ '✅' if stats.agenda > 0 else '⬜' }} Montar agenda do evento
+        {% endif %}
+        {% if stats.themes == 0 %}
+        <li class="pendency-item pendency-info">
+          <span class="pendency-icon">🏷️</span>
+          <div class="pendency-text">Nenhum tema de debate cadastrado</div>
+          <a href="{{ url_for('admin.theme_create') }}" class="pendency-action">Criar</a>
         </li>
-        <li class="{{ 'done' if stats.news > 0 else 'pending' }}">
-          {{ '✅' if stats.news > 0 else '⬜' }} Publicar notícias de abertura
+        {% endif %}
+        {% if not (stats.inscriptions > 0 or stats.students_no_deleg > 0 or (stats.dpos > 0 and stats.dpos < stats.students) or stats.agenda == 0 or stats.themes == 0) %}
+        <li class="pendency-item pendency-ok">
+          <span class="pendency-icon">✅</span>
+          <div class="pendency-text">Nenhuma pendência encontrada. Tudo em ordem!</div>
         </li>
-        <li class="{{ 'done' if stats.convened > 0 else 'pending' }}">
-          {{ '✅' if stats.convened > 0 else '⬜' }} Convocar alunos para simulação
-        </li>
+        {% endif %}
       </ul>
     </div>
   </div>
+
+  <!-- ── NOTÍCIAS RECENTES ───────────────────────────── -->
   <div class="card">
     <div class="card-header">
       <span class="card-title">📰 Últimas Notícias</span>
@@ -152,196 +186,143 @@
   </div>
 </div>
 
-<div class="app-launcher">
-  <a href="{{ url_for('admin.students_list') }}" class="app-tile app-tile-gestao app-tile-highlight">
-    <div class="app-tile-icon">📋</div>
-    <div class="app-tile-title">Gestão</div>
-    <div class="app-tile-sub">Gerenciar alunos, delegações e conteúdo</div>
-    <div class="app-tile-stats">
-      <div class="app-tile-stat">
-        <span class="app-tile-stat-num">{{ stats.students }}</span>
-        <span class="app-tile-stat-label">Alunos</span>
-      </div>
-      <div class="app-tile-stat">
-        <span class="app-tile-stat-num">{{ stats.delegations }}</span>
-        <span class="app-tile-stat-label">Delegações</span>
-      </div>
-      <div class="app-tile-stat">
-        <span class="app-tile-stat-num">{{ stats.inscriptions }}</span>
-        <span class="app-tile-stat-label">Pendentes</span>
-      </div>
-    </div>
-  </a>
-  <a href="{{ url_for('admin.chamada_panel') }}" class="app-tile app-tile-simulacao" style="opacity:.6">
-    <div class="app-tile-icon">🔴</div>
-    <div class="app-tile-title">Simulação</div>
-    <div class="app-tile-sub">Disponível quando o evento iniciar</div>
-  </a>
-</div>
-
+{# ═══════════════════════════════════════════════════════════
+   DURANTE A SIMULAÇÃO
+   ═══════════════════════════════════════════════════════════ #}
 {% elif event_phase == 'during' %}
-<!-- ════════════════ MODO DURANTE SESSÃO ════════════════ -->
 
-<div class="mini-stats mini-stats-4">
-  <div class="mini-stat highlight">
-    <span class="mini-stat-num">{{ stats.presentes }}</span>
-    <span class="mini-stat-label">✅ Presentes</span>
-  </div>
-  <div class="mini-stat highlight">
-    <span class="mini-stat-num">{{ stats.ausentes }}</span>
-    <span class="mini-stat-label">❌ Ausentes</span>
-  </div>
-  <div class="mini-stat highlight">
-    <span class="mini-stat-num">{{ stats.open_votes }}</span>
-    <span class="mini-stat-label">🗳️ Votações Abertas</span>
-  </div>
-  <div class="mini-stat highlight">
-    <span class="mini-stat-num">{{ stats.oradores }}</span>
-    <span class="mini-stat-label">🎤 Oradores</span>
-  </div>
-</div>
-
+<!-- ── STATUS DA SESSÃO ───────────────────────────────── -->
 {% if current_agenda %}
-<div class="live-now-card" style="margin-bottom:20px">
-  <div class="live-now-card-icon"><span class="live-dot red"></span></div>
-  <div style="flex:1;min-width:0">
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--red);margin-bottom:2px">🔴 AGORA</div>
-    <div class="live-now-card-title">{{ current_agenda.title }}</div>
-    <div class="live-now-card-sub">
-      {{ current_agenda.start_time }}{% if current_agenda.end_time %} — {{ current_agenda.end_time }}{% endif %}
-      {% if current_agenda.location %} · 📍 {{ current_agenda.location }}{% endif %}
-      {% if current_agenda.committee %} · 🏛️ {{ current_agenda.committee }}{% endif %}
+<div class="session-status-card">
+  <div class="session-status-left">
+    <div class="session-live-badge">
+      <span class="live-dot red"></span> AO VIVO
+    </div>
+    <div class="session-info">
+      <div class="session-title">{{ current_agenda.title }}</div>
+      <div class="session-meta">
+        {{ current_agenda.start_time }}{% if current_agenda.end_time %} — {{ current_agenda.end_time }}{% endif %}
+        {% if current_agenda.location %} · 📍 {{ current_agenda.location }}{% endif %}
+        {% if current_agenda.committee %} · 🏛️ {{ current_agenda.committee }}{% endif %}
+      </div>
     </div>
   </div>
+  <a href="{{ url_for('admin.chamada_panel') }}" class="btn btn-danger btn-sm">Abrir Painel</a>
+</div>
+{% else %}
+<div class="session-status-card session-status-idle">
+  <div class="session-status-left">
+    <div class="session-live-badge idle">
+      <span class="live-dot gold"></span> AGUARDANDO
+    </div>
+    <div class="session-info">
+      <div class="session-title">Nenhuma sessão ativa</div>
+      <div class="session-meta">Inicie a chamada quando o evento começar</div>
+    </div>
+  </div>
+  <a href="{{ url_for('admin.chamada_panel') }}" class="btn btn-primary btn-sm">Abrir Chamada</a>
 </div>
 {% endif %}
 
-<div class="app-launcher">
-  <a href="{{ url_for('admin.chamada_panel') }}" class="app-tile app-tile-simulacao app-tile-highlight">
-    <div class="app-tile-icon">🔴</div>
-    <div class="app-tile-title">Simulação</div>
-    <div class="app-tile-sub">Painéis ao vivo da sessão</div>
-    <div class="app-tile-stats">
-      <div class="app-tile-stat">
-        <span class="app-tile-stat-num">📋</span>
-        <span class="app-tile-stat-label">Chamada</span>
-      </div>
-      <div class="app-tile-stat">
-        <span class="app-tile-stat-num">🗳️</span>
-        <span class="app-tile-stat-label">Votações</span>
-      </div>
-      <div class="app-tile-stat">
-        <span class="app-tile-stat-num">🎤</span>
-        <span class="app-tile-stat-label">Oradores</span>
-      </div>
-    </div>
-    <span class="app-tile-badge badge-simulacao">
-      Chamada · Votações · Oradores · Cronômetro
-    </span>
-  </a>
-  <a href="{{ url_for('admin.students_list') }}" class="app-tile app-tile-gestao" style="opacity:.6">
-    <div class="app-tile-icon">📋</div>
-    <div class="app-tile-title">Gestão</div>
-    <div class="app-tile-sub">Consultas rápidas (somente leitura)</div>
-  </a>
-</div>
-
-{% else %}
-<!-- ════════════════ MODO PÓS-SESSÃO ════════════════ -->
-
-<div class="mini-stats mini-stats-3">
-  <div class="mini-stat highlight">
-    <span class="mini-stat-num">{{ stats.students }}</span>
-    <span class="mini-stat-label">🎓 Total Alunos</span>
+<!-- ── STATS AO VIVO ──────────────────────────────────── -->
+<div class="mini-stats mini-stats-4">
+  <div class="mini-stat highlight stat-presentes">
+    <span class="mini-stat-num">{{ stats.presentes }}</span>
+    <span class="mini-stat-label">✅ Presentes</span>
   </div>
-  <div class="mini-stat highlight">
-    <span class="mini-stat-num">{{ stats.certificates }}</span>
-    <span class="mini-stat-label">🎓 Certificados Liberados</span>
+  <div class="mini-stat highlight stat-ausentes">
+    <span class="mini-stat-num">{{ stats.ausentes }}</span>
+    <span class="mini-stat-label">❌ Ausentes</span>
   </div>
-  <div class="mini-stat highlight">
-    <span class="mini-stat-num">{{ stats.students - stats.certificates }}</span>
-    <span class="mini-stat-label">⏳ Cert. Pendentes</span>
+  <div class="mini-stat highlight stat-oradores">
+    <span class="mini-stat-num">{{ stats.oradores }}</span>
+    <span class="mini-stat-label">🎤 Oradores</span>
+  </div>
+  <div class="mini-stat highlight stat-votacoes">
+    <span class="mini-stat-num">{{ stats.open_votes }}</span>
+    <span class="mini-stat-label">🗳️ Votações Abertas</span>
   </div>
 </div>
 
-<div class="grid-2" style="margin-bottom:24px">
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title">🏁 Encerramento do Evento</span>
+<!-- ── CONTROLE RÁPIDO ────────────────────────────────── -->
+<div class="card" style="margin-bottom:20px">
+  <div class="card-header">
+    <span class="card-title">⚡ Controle Rápido</span>
+  </div>
+  <div class="card-body">
+    <div class="quick-actions">
+      <a href="{{ url_for('admin.chamada_panel') }}" class="quick-action quick-action-simulacao">
+        <span class="quick-action-icon">📋</span>
+        <span>Chamada</span>
+      </a>
+      <a href="{{ url_for('speaker.speaker_queue_panel') }}" class="quick-action quick-action-simulacao">
+        <span class="quick-action-icon">👥</span>
+        <span>Fila de Oradores</span>
+      </a>
+      <a href="{{ url_for('admin.oradores_panel') }}" class="quick-action quick-action-simulacao">
+        <span class="quick-action-icon">🎤</span>
+        <span>Oradores</span>
+      </a>
+      <a href="{{ url_for('vote.vote_list') }}" class="quick-action quick-action-simulacao">
+        <span class="quick-action-icon">🗳️</span>
+        <span>Votações</span>
+      </a>
+      <a href="{{ url_for('motion.motions_panel') }}" class="quick-action quick-action-simulacao">
+        <span class="quick-action-icon">📜</span>
+        <span>Moções</span>
+      </a>
+      <a href="{{ url_for('admin.cronometro_panel') }}" class="quick-action quick-action-simulacao">
+        <span class="quick-action-icon">⏱️</span>
+        <span>Cronômetro</span>
+      </a>
+      <a href="{{ url_for('admin.invocar_page') }}" class="quick-action quick-action-simulacao">
+        <span class="quick-action-icon">📡</span>
+        <span>Invocar Alunos</span>
+      </a>
+      <a href="{{ url_for('analytics.analytics_panel') }}" class="quick-action quick-action-simulacao">
+        <span class="quick-action-icon">📊</span>
+        <span>Analytics</span>
+      </a>
     </div>
-    <div class="card-body">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">
-        O evento está em modo pós-simulação. As seguintes ações estão disponíveis:
-      </p>
-      <ul class="checklist">
-        <li class="{{ 'done' if stats.certificates == stats.students else 'warn' }}">
-          {{ '✅' if stats.certificates == stats.students else '⚠️' }} 
-          Liberar certificados ({{ stats.certificates }}/{{ stats.students }})
-        </li>
-        <li class="{{ 'done' if stats.read_only == stats.students else 'warn' }}">
-          {{ '🔒' if stats.read_only == stats.students else '🔓' }} 
-          Alunos travados ({{ stats.read_only }}/{{ stats.students }})
-        </li>
-        <li class="done">✅ Consolidar dados de participação</li>
-        <li class="done">✅ Arquivar registros do evento</li>
-      </ul>
-      <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+  </div>
+</div>
+
+{# ═══════════════════════════════════════════════════════════
+   PÓS-EVENTO (agora integrado no modo pré/pós)
+   ═══════════════════════════════════════════════════════════ #}
+{% endif %}
+
+{# check is used above, keep for pós-specific content #}
+{% if event_phase == 'post' %}
+<div class="card" style="margin-top:4px">
+  <div class="card-header">
+    <span class="card-title">🏁 Encerramento do Evento</span>
+  </div>
+  <div class="card-body">
+    <div class="grid-2">
+      <div>
+        <ul class="checklist">
+          <li class="{{ 'done' if stats.certificates == stats.students else 'warn' }}">
+            {{ '✅' if stats.certificates == stats.students else '⚠️' }} 
+            Liberar certificados ({{ stats.certificates }}/{{ stats.students }})
+          </li>
+          <li class="{{ 'done' if stats.read_only == stats.students else 'warn' }}">
+            {{ '🔒' if stats.read_only == stats.students else '🔓' }} 
+            Alunos travados ({{ stats.read_only }}/{{ stats.students }})
+          </li>
+        </ul>
+      </div>
+      <div style="text-align:right">
         <a href="{{ url_for('admin.students_list') }}" class="btn btn-navy">🎓 Gerenciar Certificados</a>
-        <a href="/admin/votacoes" class="btn btn-ghost">📊 Resultados</a>
         {% if stats.read_only < stats.students %}
         <form method="POST" action="{{ url_for('admin.students_lock_all') }}" style="display:inline">
           <button class="btn btn-sm" style="background:#E74C3C;color:#fff">🔒 Travar Alunos</button>
-        </form>
-        {% else %}
-        <form method="POST" action="{{ url_for('admin.students_unlock_all') }}" style="display:inline">
-          <button class="btn btn-sm btn-ghost">🔓 Destravar Alunos</button>
         </form>
         {% endif %}
       </div>
     </div>
   </div>
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title">📊 Resumo do Evento</span>
-    </div>
-    <div class="card-body" style="padding:0">
-      <table class="admin-table">
-        <tbody>
-          <tr><td style="font-weight:600">Total de Alunos</td><td>{{ stats.students }}</td></tr>
-          <tr><td style="font-weight:600">Delegações</td><td>{{ stats.delegations }}</td></tr>
-          <tr><td style="font-weight:600">Notícias Publicadas</td><td>{{ stats.news }}</td></tr>
-          <tr><td style="font-weight:600">Itens na Agenda</td><td>{{ stats.agenda }}</td></tr>
-          <tr><td style="font-weight:600">Certificados Liberados</td><td>{{ stats.certificates }}</td></tr>
-          <tr><td style="font-weight:600">Temas de Debate</td><td>{{ stats.themes }}</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
 </div>
-
-<div class="app-launcher">
-  <a href="{{ url_for('admin.students_list') }}" class="app-tile app-tile-gestao app-tile-highlight">
-    <div class="app-tile-icon">📋</div>
-    <div class="app-tile-title">Gestão</div>
-    <div class="app-tile-sub">Certificados e relatórios pós-evento</div>
-    <div class="app-tile-stats">
-      <div class="app-tile-stat">
-        <span class="app-tile-stat-num">{{ stats.certificates }}</span>
-        <span class="app-tile-stat-label">Certificados</span>
-      </div>
-      <div class="app-tile-stat">
-        <span class="app-tile-stat-num">{{ stats.students - stats.certificates }}</span>
-        <span class="app-tile-stat-label">Pendentes</span>
-      </div>
-    </div>
-  </a>
-  <a href="{{ url_for('admin.chamada_panel') }}" class="app-tile app-tile-simulacao" style="opacity:.5">
-    <div class="app-tile-icon">🔴</div>
-    <div class="app-tile-title">Simulação</div>
-    <div class="app-tile-sub">Evento encerrado</div>
-  </a>
-</div>
-
 {% endif %}
 
 {% endblock %}

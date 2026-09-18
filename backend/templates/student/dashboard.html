@@ -1,320 +1,262 @@
 {% extends "student/base.html" %}
-{% block title %}Meu Dashboard{% endblock %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
 
 {% if read_only %}
 <div class="read-only-banner">
-  <span>🔒</span> Evento encerrado. A interface está em modo somente leitura. Nenhuma interação pode ser realizada.
+  <span>🔒</span> Evento encerrado. A interface está em modo somente leitura.
 </div>
 {% endif %}
 
-<!-- ── WELCOME ─────────────────────────────────────────── -->
-<div class="welcome-card">
-  <div class="welcome-inner">
-    <div class="welcome-label">Portal do Aluno — SWDL {{ now.year if now is defined else '' }}</div>
-    <div class="welcome-name">Olá, <span>{{ current_user.name.split()[0] }}</span>!</div>
-    {% if student %}
-    <div class="welcome-global-id">ID Global: {{ student.global_id }}</div>
+<!-- ═══ SAUDAÇÃO ══════════════════════════════════════════ -->
+<div class="st-welcome">
+  <div class="st-welcome-inner">
+    <div class="st-welcome-label">Portal do Aluno — SWDL {{ now.year if now is defined else '' }}</div>
+    <div class="st-welcome-name">Olá, <span>{{ current_user.name.split()[0] }}</span>! 👋</div>
+    <div class="st-welcome-sub">Acompanhe sua participação no SWDL {{ now.year if now is defined else '' }}.</div>
+    {% if student and student.global_id %}
+    <div class="st-welcome-id">
+      ID Global: <span class="st-welcome-id-value">{{ student.global_id }}</span>
+      <button onclick="navigator.clipboard.writeText('{{ student.global_id }}');this.textContent='Copiado!';setTimeout(()=>this.textContent='Copiar',1500)"
+              class="st-welcome-id-copy">Copiar</button>
+    </div>
     {% endif %}
-    <div class="welcome-stats">
-      <div class="welcome-stat">
-        <strong>{{ student.participations|length if student else 0 }}</strong> Participações
+  </div>
+</div>
+
+<!-- ═══ MINHA PARTICIPAÇÃO ════════════════════════════════ -->
+<div class="st-participation-card">
+  <div class="st-participation-header">
+    <span class="st-participation-badge">👤 Minha Participação</span>
+  </div>
+  <div class="st-participation-body">
+    {% if delegation %}
+    <div class="st-participation-grid">
+      <div class="st-participation-field">
+        <div class="st-participation-label">País</div>
+        <div class="st-participation-value">
+          {% if delegation.country_flag %}{{ delegation.country_flag }} {% endif %}
+          {{ delegation.country or '—' }}
+        </div>
       </div>
-      <div class="welcome-stat">
-        <strong>{{ delegation.country if delegation else '—' }}</strong> País
+      <div class="st-participation-field">
+        <div class="st-participation-label">Comitê</div>
+        <div class="st-participation-value">{{ delegation.committee or '—' }}</div>
       </div>
-      <div class="welcome-stat">
-        <strong>{{ delegation.committee.upper() if delegation and delegation.committee else '—' }}</strong> Tema
+      <div class="st-participation-field">
+        <div class="st-participation-label">Tema</div>
+        <div class="st-participation-value">{{ delegation.theme.name if delegation.theme else '—' }}</div>
       </div>
+      <div class="st-participation-field">
+        <div class="st-participation-label">Formato</div>
+        <div class="st-participation-value">{{ delegation.group_label() }}</div>
+      </div>
+    </div>
+    {% if delegation.member_names() %}
+    <div class="st-participation-members">
+      <span class="st-participation-label">Grupo</span>
+      <span class="st-participation-members-list">{{ delegation.member_names()|join(', ') }}</span>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="st-participation-pending">
+      <span class="st-participation-pending-icon">⏳</span>
+      <div>
+        <div class="st-participation-pending-title">Aguardando Designação</div>
+        <div class="st-participation-pending-text">
+          Sua conta está ativa, mas a organização ainda não atribuiu um país, tema e formato de debate para você.
+          Assim que for designado, as funcionalidades de simulação serão liberadas.
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ═══ SUA JORNADA ═══════════════════════════════════════ -->
+<div class="st-journey">
+  <div class="st-journey-title">Sua Jornada</div>
+  <div class="st-journey-steps">
+    <div class="st-journey-step done">
+      <div class="st-journey-dot"></div>
+      <div class="st-journey-step-label">Cadastro</div>
+      <div class="st-journey-step-status">✓ Concluído</div>
+    </div>
+    <div class="st-journey-line {{ 'done' if delegation }}"></div>
+    <div class="st-journey-step {{ 'done' if delegation else 'current' }}">
+      <div class="st-journey-dot"></div>
+      <div class="st-journey-step-label">Designação</div>
+      <div class="st-journey-step-status">{{ '✓ Concluído' if delegation else '⏳ Aguardando' }}</div>
+    </div>
+    <div class="st-journey-line {{ 'done' if delegation and event_started }}"></div>
+    <div class="st-journey-step {{ 'done' if event_started else ('current' if delegation else 'locked') }}">
+      <div class="st-journey-dot"></div>
+      <div class="st-journey-step-label">Preparação</div>
+      <div class="st-journey-step-status">
+        {% if event_started %}✓ Concluído{% elif delegation %}● Atual{% else %}🔒 Bloqueada{% endif %}
+      </div>
+    </div>
+    <div class="st-journey-line {{ 'done' if event_started and not event_ended }}"></div>
+    <div class="st-journey-step {{ 'done' if event_ended else ('current' if event_started else 'locked') }}">
+      <div class="st-journey-dot"></div>
+      <div class="st-journey-step-label">Simulação</div>
+      <div class="st-journey-step-status">
+        {% if event_ended %}✓ Concluído{% elif event_started %}● Atual{% else %}🔒 Bloqueada{% endif %}
+      </div>
+    </div>
+    <div class="st-journey-line {{ 'done' if event_ended }}"></div>
+    <div class="st-journey-step {{ 'done' if event_ended else 'locked' }}">
+      <div class="st-journey-dot"></div>
+      <div class="st-journey-step-label">Pós-Evento</div>
+      <div class="st-journey-step-status">{{ '✓ Concluído' if event_ended else '🔒 Bloqueada' }}</div>
     </div>
   </div>
 </div>
 
-{% if not delegation %}
-<!-- ── SEM DESIGNAÇÃO ──────────────────────────────────── -->
-<div class="pending-card">
-  <div class="pending-card-icon">⏳</div>
-  <div class="pending-card-title">Aguardando Designação</div>
-  <div class="pending-card-text">
-    Sua conta está ativa, mas a organização ainda não atribuiu um país, tema e formato de debate
-    (individual, dupla, trio ou grupo) para você.
-    Assim que for designado, as funcionalidades de simulação serão liberadas.
+<!-- ═══ AÇÕES RÁPIDAS ════════════════════════════════════ -->
+<div class="st-quick-access">
+  <div class="st-quick-access-title">Acesso Rápido</div>
+  <div class="st-quick-grid">
+    <a href="{{ url_for('student.profile') }}" class="st-quick-card">
+      <span class="st-quick-icon">👤</span>
+      <span class="st-quick-label">Meu Perfil</span>
+    </a>
+    <a href="{{ url_for('student.documentos') }}" class="st-quick-card">
+      <span class="st-quick-icon">📁</span>
+      <span class="st-quick-label">Documentos</span>
+      <span class="st-quick-count">{{ documentos|length }}</span>
+    </a>
+    <a href="{{ url_for('student.comunicados') }}" class="st-quick-card">
+      <span class="st-quick-icon">📰</span>
+      <span class="st-quick-label">Comunicados</span>
+      {% if recent_news|length > 0 %}
+      <span class="st-quick-badge">{{ recent_news|length }}</span>
+      {% endif %}
+    </a>
+    <a href="{{ url_for('student.certificados') }}" class="st-quick-card">
+      <span class="st-quick-icon">🎓</span>
+      <span class="st-quick-label">Certificados</span>
+      <span class="st-quick-count">{{ 'Liberado' if student and student.certificate_released else 'Pendente' }}</span>
+    </a>
+    <a href="{{ url_for('student.history') }}" class="st-quick-card">
+      <span class="st-quick-icon">📜</span>
+      <span class="st-quick-label">Histórico</span>
+      <span class="st-quick-count">{{ student.participations|length if student else 0 }}</span>
+    </a>
   </div>
 </div>
-{% else %}
-<!-- ── MEU DEBATE ──────────────────────────────────────── -->
-<div class="debate-card">
-  <div class="debate-inner">
-    <div class="debate-header">
-      <span class="debate-badge">🎯 Meu Debate</span>
-      {% if event_started and not event_ended %}
-        <span class="debate-tag debate-tag-live">🔴 Ao Vivo</span>
-      {% elif not event_started %}
-        <span class="debate-tag debate-tag-pre">📅 Pré-Evento</span>
-      {% else %}
-        <span class="debate-tag debate-tag-post">🏁 Encerrado</span>
+
+<!-- ═══ DURANTE A SIMULAÇÃO ═══════════════════════════════ -->
+{% if delegation and event_started and not event_ended %}
+<div class="st-live-banner">
+  <div class="st-live-badge">
+    <span class="st-live-dot"></span> AO VIVO
+  </div>
+  <div class="st-live-info">
+    <div class="st-live-title">{{ delegation.country }} — {{ delegation.committee }}</div>
+    <div class="st-live-meta">
+      {% if delegation.theme %}Tema: {{ delegation.theme.name }} · {% endif %}
+      {{ delegation.group_label() }}
+    </div>
+  </div>
+</div>
+
+{% if current_item or next_item %}
+<div class="st-agenda-card">
+  <div class="st-agenda-header">
+    <span class="st-agenda-title">📅 Agenda da Simulação</span>
+  </div>
+  <div class="st-agenda-body">
+    {% if current_item %}
+    <div class="st-agenda-now">
+      <div class="st-agenda-now-label">
+        <span class="st-agenda-pulse"></span> Acontecendo agora
+      </div>
+      <div class="st-agenda-now-title">{{ current_item.title }}</div>
+      {% if current_item.location %}
+      <div class="st-agenda-now-location">📍 {{ current_item.location }}</div>
       {% endif %}
     </div>
-    <div class="debate-body">
-      <div class="debate-flags">
-        {% if delegation.flag_url %}
-          <img class="debate-flag" src="{{ delegation.flag_url }}" alt="{{ delegation.country }}">
-        {% elif delegation.country_flag %}
-          <span class="debate-flag-emoji">{{ delegation.country_flag }}</span>
-        {% else %}
-          <span class="debate-flag-emoji">🌍</span>
-        {% endif %}
+    {% endif %}
+    {% if next_item %}
+    <div class="st-agenda-next">
+      <div class="st-agenda-next-label">Próxima atividade</div>
+      <div class="st-agenda-next-title">{{ next_item.title }}</div>
+      <div class="st-agenda-next-meta">
+        🕐 {{ next_item.start_time }}
+        {% if next_item.location %} · 📍 {{ next_item.location }}{% endif %}
       </div>
-      <div class="debate-info">
-        <div class="debate-country">{{ delegation.country or 'País designado' }}</div>
-        <div class="debate-committee">{{ delegation.committee or 'Comitê' }}</div>
-        {% if delegation.theme %}
-          <div class="debate-theme">{{ delegation.theme.name }}</div>
-        {% endif %}
-        <div class="debate-meta">
-          <span>📅 Edição {{ delegation.edition_year or now.year }}</span>
-          {% if delegation.member_names() %}
-            <span>👥 {{ delegation.group_label() }}: {{ delegation.member_names()|join(', ') }}</span>
-          {% endif %}
-          {% if is_event_day and not event_ended %}
-            <span>📄 DPO disponível</span>
-          {% endif %}
-        </div>
-      </div>
-      <div class="debate-actions">
-        <a href="{{ url_for('student.attendance') }}" class="debate-btn {{ 'disabled' if read_only }}">
-          <span>📋</span> Presença
-        </a>
-        <a href="{{ url_for('student.voting') }}" class="debate-btn {{ 'disabled' if not is_event_day and not event_started }}">
-          <span>🗳️</span> Votação
-        </a>
-        <a href="{{ url_for('student.profile') }}" class="debate-btn {{ 'disabled' if not is_event_day or read_only }}">
-          <span>📄</span> DPO
-        </a>
-        <a href="{{ url_for('student.documentos') }}" class="debate-btn">
-          <span>📁</span> Documentos
-        </a>
-      </div>
-    </div>
-    {% if is_event_day and not event_ended and not read_only %}
-    <div class="debate-dpo" style="margin-top:16px;padding:16px;border-top:1px solid var(--border);background:rgba(201,168,76,.06);border-radius:0 0 12px 12px">
-      <form method="POST" action="{{ url_for('student.dpo_upload') }}" enctype="multipart/form-data"
-            style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"
-            onsubmit="{% if delegation.dpo_uploaded %}if(!confirm('Já existe um DPO enviado. Deseja substituir?'))return false;{% endif %}">
-        <span style="font-size:13px;font-weight:600;color:var(--navy);white-space:nowrap">📄 DPO:</span>
-        <input type="file" name="dpo_file" accept=".pdf" required
-               style="flex:1;min-width:150px;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:4px;background:var(--white)">
-        <button type="submit" class="btn btn-gold btn-sm">
-          {{ '📤 Substituir' if delegation.dpo_uploaded else '📤 Enviar' }}
-        </button>
-        {% if delegation.dpo_uploaded %}
-        <span style="font-size:11px;color:var(--green)">✅ Recebido</span>
-        {% endif %}
-      </form>
     </div>
     {% endif %}
   </div>
 </div>
 {% endif %}
 
-<!-- ═══════════════════════════════════════════════════════ -->
-<!--  FASE 1: PRÉ-EVENTO                                   -->
-<!-- ═══════════════════════════════════════════════════════ -->
-<div class="phase-section">
-  <div class="phase-header">
-    <span class="phase-icon">📚</span>
-    <span class="phase-title">Preparação — Pré-Evento</span>
-    {% if not event_started %}
-      <span class="phase-tag phase-tag-active">Ativo</span>
-    {% else %}
-      <span class="phase-tag phase-tag-future">Concluído</span>
-    {% endif %}
-  </div>
-
-  <div class="quick-grid">
-    <a href="{{ url_for('student.profile') }}" class="quick-card">
-      <div class="quick-icon">👤</div>
-      <div class="quick-label">Meu Perfil</div>
-      <div class="quick-count">ID Global</div>
-    </a>
-    <a href="{{ url_for('student.documentos') }}" class="quick-card">
-      <div class="quick-icon">📁</div>
-      <div class="quick-label">Documentos</div>
-      <div class="quick-count">{{ documentos|length }} arquivo(s)</div>
-    </a>
-    <a href="{{ url_for('student.history') }}" class="quick-card">
-      <div class="quick-icon">📜</div>
-      <div class="quick-label">Meu Histórico</div>
-      <div class="quick-count">{{ student.participations|length if student else 0 }} registro(s)</div>
-    </a>
-    <a href="{{ url_for('student.comunicados') }}" class="quick-card">
-      <div class="quick-icon">📰</div>
-      <div class="quick-label">Comunicados</div>
-      <div class="quick-count">{{ recent_news|length }} novo(s)</div>
-    </a>
-  </div>
-
-  {% if documentos %}
-  <div class="card" style="margin-top: 16px;">
-    <div class="card-header">
-      <span class="card-title">📁 Documentos de Apoio</span>
-      <a href="{{ url_for('student.documentos') }}" class="btn btn-ghost btn-sm">Ver todos</a>
-    </div>
-    <div class="card-body" style="padding:0">
-      {% for doc in documentos[:4] %}
-      <div class="doc-row">
-        <span style="font-size:20px">📄</span>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:600;color:var(--navy)">{{ doc.title }}</div>
-          {% if doc.description %}
-          <div style="font-size:11px;color:var(--muted);margin-top:2px">{{ doc.description[:80] }}{% if doc.description|length > 80 %}...{% endif %}</div>
-          {% endif %}
-        </div>
-        <a href="{{ url_for('student.documento_download', id=doc.id) }}" class="btn btn-navy btn-sm">📥</a>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
-</div>
-
-{% if is_convened or delegation %}
-<!-- ═══════════════════════════════════════════════════════ -->
-<!--  FASE 2: DURANTE A SIMULAÇÃO                          -->
-<!-- ═══════════════════════════════════════════════════════ -->
-<div class="phase-section">
-  <div class="phase-header">
-    <span class="phase-icon">🔴</span>
-    <span class="phase-title">Simulação — Ao Vivo</span>
-    {% if event_started and not event_ended %}
-      <span class="phase-tag phase-tag-active">Ativo</span>
-    {% else %}
-      <span class="phase-tag phase-tag-inactive">Inativo</span>
-    {% endif %}
-  </div>
-
-  {% if event_started and not event_ended %}
-  <div class="quick-grid">
-    <a href="{{ url_for('student.attendance') }}" class="quick-card">
-      <div class="quick-icon">📋</div>
-      <div class="quick-label">Registrar Presença</div>
-      <div class="quick-count">{{ delegation.presence_status if delegation else '—' }}</div>
-    </a>
-    <a href="{{ url_for('student.voting') }}" class="quick-card">
-      <div class="quick-icon">🗳️</div>
-      <div class="quick-label">Votação</div>
-      <div class="quick-count">Aberta</div>
-    </a>
-    <a href="{{ url_for('student.comunicados') }}" class="quick-card">
-      <div class="quick-icon">📰</div>
-      <div class="quick-label">Comunicados</div>
-      <div class="quick-count">{{ recent_news|length }} novo(s)</div>
-    </a>
-    <a href="{{ url_for('student.documentos') }}" class="quick-card">
-      <div class="quick-icon">📁</div>
-      <div class="quick-label">Documentos</div>
-      <div class="quick-count">{{ documentos|length }} arquivo(s)</div>
-    </a>
-  </div>
-
-  {% if current_item or next_item %}
-  <div class="card" style="margin-top: 16px;">
-    <div class="card-header">
-      <span class="card-title">📅 Agenda da Simulação</span>
-      <a href="{{ url_for('student.comunicados') }}" class="btn btn-ghost btn-sm">Ver comunicados</a>
-    </div>
-    <div class="card-body">
-      {% if current_item %}
-        <div class="agenda-now">
-          <div class="agenda-now-label">
-            <span class="pulse-dot"></span> Acontecendo agora
-          </div>
-          <div class="agenda-now-title">{{ current_item.title }}</div>
-          {% if current_item.location %}
-          <div class="agenda-now-location">📍 {{ current_item.location }}</div>
-          {% endif %}
-        </div>
-      {% endif %}
-      {% if next_item %}
-        <div style="padding:10px 0">
-          <div style="font-size:10px;font-weight:700;letter-spacing:.1em;
-                      text-transform:uppercase;color:var(--muted);margin-bottom:6px">
-            Próxima atividade
-          </div>
-          <div style="font-size:14px;font-weight:600;color:var(--navy)">
-            {{ next_item.title }}
-          </div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">
-            🕐 {{ next_item.start_time }}
-            {% if next_item.location %} · 📍 {{ next_item.location }}{% endif %}
-          </div>
-        </div>
-      {% else %}
-        <p class="text-muted" style="padding:4px 0">Nenhuma atividade programada no momento.</p>
-      {% endif %}
-    </div>
-  </div>
-  {% endif %}
-
-  {% else %}
-  <div class="pending-card" style="margin-bottom:0">
-    <div class="pending-card-icon">🔒</div>
-    <div class="pending-card-title">
-      {% if not event_started %}Simulação ainda não iniciada
-      {% else %}Simulação encerrada{% endif %}
-    </div>
-    <div class="pending-card-text">
-      {% if not event_started %}
-        As funcionalidades de presença e votação estarão disponíveis quando a simulação começar.
-      {% else %}
-        A simulação foi encerrada. Consulte a seção de Pós-Evento para certificados e histórico.
-      {% endif %}
-    </div>
-  </div>
-  {% endif %}
+<!-- Quick actions during simulation -->
+<div class="st-sim-actions">
+  <a href="{{ url_for('student.attendance') }}" class="st-sim-btn">
+    <span class="st-sim-btn-icon">📋</span>
+    <span class="st-sim-btn-label">Registrar Presença</span>
+    <span class="st-sim-btn-status">{{ delegation.presence_status if delegation else '—' }}</span>
+  </a>
+  <a href="{{ url_for('student.voting') }}" class="st-sim-btn">
+    <span class="st-sim-btn-icon">🗳️</span>
+    <span class="st-sim-btn-label">Votação</span>
+    <span class="st-sim-btn-status">Aberta</span>
+  </a>
+  <a href="{{ url_for('student.documentos') }}" class="st-sim-btn">
+    <span class="st-sim-btn-icon">📁</span>
+    <span class="st-sim-btn-label">Documentos</span>
+    <span class="st-sim-btn-status">{{ documentos|length }} arquivo(s)</span>
+  </a>
+  <a href="{{ url_for('student.comunicados') }}" class="st-sim-btn">
+    <span class="st-sim-btn-icon">📰</span>
+    <span class="st-sim-btn-label">Comunicados</span>
+    <span class="st-sim-btn-status">{{ recent_news|length }} novo(s)</span>
+  </a>
 </div>
 {% endif %}
 
-<!-- ═══════════════════════════════════════════════════════ -->
-<!--  FASE 3: PÓS-EVENTO                                   -->
-<!-- ═══════════════════════════════════════════════════════ -->
-<div class="phase-section">
-  <div class="phase-header">
-    <span class="phase-icon">🏁</span>
-    <span class="phase-title">Pós-Evento</span>
-    {% if event_ended or read_only %}
-      <span class="phase-tag phase-tag-active">Ativo</span>
-    {% elif not event_started %}
-      <span class="phase-tag phase-tag-future">Futuro</span>
-    {% else %}
-      <span class="phase-tag phase-tag-inactive">Em Breve</span>
-    {% endif %}
+<!-- ═══ ÚLTIMOS COMUNICADOS ══════════════════════════════ -->
+{% if recent_news %}
+<div class="st-card">
+  <div class="st-card-header">
+    <span class="st-card-title">📰 Comunicados Recentes</span>
+    <a href="{{ url_for('student.comunicados') }}" class="st-card-link">Ver todos →</a>
   </div>
-
-  <div class="quick-grid">
-    <a href="{{ url_for('student.certificados') }}" class="quick-card {{ 'disabled' if not student or not student.certificate_released }}">
-      <div class="quick-icon">🎓</div>
-      <div class="quick-label">Certificados</div>
-      <div class="quick-count">{{ 'Liberado' if student and student.certificate_released else 'Pendente' }}</div>
-    </a>
-    <a href="{{ url_for('student.history') }}" class="quick-card">
-      <div class="quick-icon">📜</div>
-      <div class="quick-label">Histórico</div>
-      <div class="quick-count">{{ student.participations|length if student else 0 }} edição(ões)</div>
-    </a>
-    <a href="{{ url_for('student.profile') }}" class="quick-card">
-      <div class="quick-icon">👤</div>
-      <div class="quick-label">Meu Perfil</div>
-      <div class="quick-count">ID Global</div>
-    </a>
-    <a href="{{ url_for('student.comunicados') }}" class="quick-card">
-      <div class="quick-icon">📰</div>
-      <div class="quick-label">Comunicados</div>
-      <div class="quick-count">Arquivo</div>
-    </a>
+  <div class="st-card-body" style="padding:0">
+    {% for n in recent_news[:3] %}
+    <div class="st-news-row">
+      <span class="st-news-icon">📢</span>
+      <div class="st-news-content">
+        <div class="st-news-title">{{ n.title }}</div>
+        {% if n.created_at %}
+        <div class="st-news-time">{{ n.created_at.strftime('%d/%m/%H:%M') }}</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
   </div>
 </div>
+{% endif %}
+
+<!-- ═══ PÓS-EVENTO: CERTIFICADO ══════════════════════════ -->
+{% if event_ended or read_only %}
+<div class="st-card st-cert-highlight">
+  <div class="st-card-body" style="text-align:center;padding:28px">
+    <div style="font-size:40px;margin-bottom:8px">🎓</div>
+    <div class="st-card-title" style="margin-bottom:4px">Seu Certificado</div>
+    {% if student and student.certificate_released %}
+    <div style="font-size:13px;color:var(--green);margin-bottom:12px">✅ Disponível para download</div>
+    <a href="{{ url_for('student.certificados') }}" class="st-btn st-btn-gold">Ver Certificado</a>
+    {% else %}
+    <div style="font-size:13px;color:var(--muted)">Pendente de liberação pela organização.</div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
 
 {% endblock %}
 
@@ -326,14 +268,12 @@
   sio.on('invoke_session', (data) => { if (data.url) window.location.href = data.url; });
   sio.on('vote_opened', (data) => {
     const toast = document.createElement('div');
-    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:8500;background:var(--navy);color:white;border-radius:6px;padding:14px 20px;box-shadow:0 8px 32px rgba(0,0,0,.3);border:1px solid rgba(183,148,65,.3);font-size:13px;cursor:pointer;animation:toastIn .3s ease forwards';
-    toast.innerHTML = '<strong>🗳️ ' + data.title + '</strong><br><span style="font-size:11px;color:rgba(255,255,255,.6)">Nova votação aberta!</span>';
+    toast.className = 'st-toast';
+    toast.innerHTML = '<strong>🗳️ ' + data.title + '</strong><br><span>Nova votação aberta!</span>';
     toast.onclick = () => { window.location.href = '{{ url_for("student.voting") }}'; };
     document.body.appendChild(toast);
     setTimeout(() => {
-      toast.style.transition = 'opacity .3s,transform .3s';
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateY(10px)';
+      toast.classList.add('st-toast-hide');
       setTimeout(() => toast.remove(), 300);
     }, 6000);
   });

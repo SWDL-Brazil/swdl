@@ -11,69 +11,145 @@
 </head>
 <body>
 
-  {% set all_nav = [
-    ('student.dashboard',    '🏠', 'Dashboard'),
-    ('student.history',      '📜', 'Histórico'),
-    ('student.attendance',   '📋', 'Presença'),
-    ('student.voting',       '🗳️', 'Votação'),
-    ('motion.student_motions',        '📝', 'Moções'),
-    ('resolution.student_resolutions','📋', 'Resoluções'),
-    ('student.documentos',   '📁', 'Documentos'),
-    ('student.comunicados',  '📰', 'Comunicados'),
-    ('student.certificados', '🎓', 'Certificados'),
-    ('student.profile',      '👤', 'Perfil'),
-  ] %}
+  <!-- ═══ SIDEBAR ══════════════════════════════════════════ -->
+  <aside class="st-sidebar" id="stSidebar">
+    <div class="st-sidebar-logo">
+      <div class="st-sidebar-logo-badge">SW</div>
+      <div class="st-sidebar-logo-text">
+        SWDL<br>
+        <span>Portal do Aluno</span>
+      </div>
+    </div>
 
-  {% set nav_items = all_nav %}
+    <nav class="st-sidebar-nav" style="flex:1;overflow-y:auto;padding-bottom:8px">
 
-  <header class="st-topbar">
-    <div class="st-topbar-left">
-      <a href="/" class="st-logo-link">
-        <div class="st-logo-badge">SW</div>
-        <div class="st-logo-text">
-          SWDL <span>Portal do Aluno</span>
-        </div>
-      </a>
-      <ul class="st-topbar-nav">
-        {% for endpoint, icon, label in nav_items %}
+      <!-- 🏠 Dashboard -->
+      <div class="st-nav-section">Início</div>
+      <ul class="st-nav-list">
         <li>
-          <a href="{{ url_for(endpoint) }}"
-             class="{{ 'active' if request.endpoint == endpoint }}">
-            {{ icon }} {{ label }}
+          <a href="{{ url_for('student.dashboard') }}"
+             class="{{ 'active' if request.endpoint == 'student.dashboard' }}">
+            <span class="st-nav-icon">🏠</span> Dashboard
           </a>
         </li>
-        {% endfor %}
       </ul>
-    </div>
 
-    <div class="st-topbar-right">
-      <div class="st-user-chip">
-        <div class="st-avatar">{{ current_user.name[0].upper() if current_user.name else '?' }}</div>
-        <div class="st-user-name">{{ current_user.name.split()[0] if current_user.name else 'Aluno' }}</div>
-      </div>
-      <a href="{{ url_for('auth.student_logout') }}" class="st-logout">Sair →</a>
-      <button class="st-hamburger" onclick="document.querySelector('.st-topbar-nav').classList.toggle('open')" aria-label="Menu">
+      <!-- 📚 PARTICIPAÇÃO -->
+      <div class="st-nav-section">Participação</div>
+      <ul class="st-nav-list">
+        <li>
+          <a href="{{ url_for('student.attendance') }}"
+             class="{{ 'active' if request.endpoint == 'student.attendance' }}">
+            <span class="st-nav-icon">📋</span> Presença
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('student.voting') }}"
+             class="{{ 'active' if request.endpoint == 'student.voting' }}">
+            <span class="st-nav-icon">🗳️</span> Votação
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('motion.student_motions') }}"
+             class="{{ 'active' if request.endpoint == 'motion.student_motions' }}">
+            <span class="st-nav-icon">📝</span> Moções
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('resolution.student_resolutions') }}"
+             class="{{ 'active' if request.endpoint == 'resolution.student_resolutions' }}">
+            <span class="st-nav-icon">📜</span> Resoluções
+          </a>
+        </li>
+      </ul>
+
+      <!-- 📁 RECURSOS -->
+      <div class="st-nav-section">Recursos</div>
+      <ul class="st-nav-list">
+        <li>
+          <a href="{{ url_for('student.documentos') }}"
+             class="{{ 'active' if request.endpoint == 'student.documentos' }}">
+            <span class="st-nav-icon">📁</span> Documentos
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('student.comunicados') }}"
+             class="{{ 'active' if request.endpoint == 'student.comunicados' }}">
+            <span class="st-nav-icon">📰</span> Comunicados
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('student.certificados') }}"
+             class="{{ 'active' if request.endpoint == 'student.certificados' }}">
+            <span class="st-nav-icon">🎓</span> Certificados
+          </a>
+        </li>
+      </ul>
+
+      <!-- 📜 HISTÓRICO -->
+      <div class="st-nav-section">Registro</div>
+      <ul class="st-nav-list">
+        <li>
+          <a href="{{ url_for('student.history') }}"
+             class="{{ 'active' if request.endpoint == 'student.history' }}">
+            <span class="st-nav-icon">📜</span> Histórico
+          </a>
+        </li>
+      </ul>
+
+    </nav>
+
+    <!-- Footer: User + Logout -->
+    <div class="st-sidebar-footer">
+      <a href="{{ url_for('student.profile') }}" class="st-sidebar-user {{ 'active' if request.endpoint == 'student.profile' }}">
+        <div class="st-sidebar-avatar">{{ current_user.name[0].upper() if current_user.name else '?' }}</div>
+        <div class="st-sidebar-user-info">
+          <div class="st-sidebar-user-name">{{ current_user.name if current_user.name else 'Aluno' }}</div>
+          <div class="st-sidebar-user-role">Perfil</div>
+        </div>
+      </a>
+      <a href="{{ url_for('auth.student_logout') }}" class="st-sidebar-logout">← Sair</a>
+    </div>
+  </aside>
+
+  <!-- ═══ SIDEBAR OVERLAY (mobile) ════════════════════════ -->
+  <div class="st-sidebar-overlay" id="stSidebarOverlay" onclick="toggleStSidebar()"></div>
+
+  <!-- ═══ MAIN CONTENT ════════════════════════════════════ -->
+  <main class="st-main">
+    <div class="st-topbar">
+      <button class="st-hamburger" id="stHamburger" onclick="toggleStSidebar()" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
+      <div class="st-topbar-title">
+        {% block page_title %}{% endblock %}
+      </div>
+      <div class="st-topbar-right">
+        {% block topbar_actions %}{% endblock %}
+      </div>
     </div>
-  </header>
 
-  <main class="st-main">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="flash-list">
-          {% for category, message in messages %}
-            <div class="flash {{ category }}">{{ message }}</div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
+    <div class="st-body">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-list">
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
 
-    {% block content %}{% endblock %}
+      {% block content %}{% endblock %}
+    </div>
   </main>
 
   {% block extra_scripts %}{% endblock %}
   <script>
+  function toggleStSidebar() {
+    document.getElementById('stSidebar').classList.toggle('collapsed');
+    document.getElementById('stHamburger').classList.toggle('active');
+  }
   (function() {
     var csrfToken = document.querySelector('meta[name="csrf-token"]');
     if (csrfToken) {

@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=optional" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 </head>
-<body>
+<body data-phase="{{ event_phase }}">
 <div class="admin-wrap">
 
   <!-- ── SIDEBAR ──────────────────────────────────────────── -->
@@ -30,7 +30,7 @@
     'admin.certificates_list', 'admin.certificates_generate_codes', 'admin.certificate_upload',
     'admin.certificate_remove_pdf', 'admin.certificate_release',
     'admin.certificates_release_all', 'admin.certificate_revoke',
-    'admin.certificate_sign',     'admin.certificates_sign_all', 'admin.certificate_unsign',
+    'admin.certificate_sign', 'admin.certificates_sign_all', 'admin.certificate_unsign',
     'admin.notifications_config', 'admin.test_email_config'] -%}
   {%- set simulacao_endpoints = ['admin.chamada_panel', 'admin.set_presence',
     'admin.chamada_control_screen', 'admin.oradores_panel', 'admin.oradores_toggle',
@@ -54,17 +54,8 @@
     'resolution.resolution_telao', 'resolution.resolution_vote_final',
     'analytics.analytics_panel', 'analytics.analytics_committee',
     'analytics.analytics_export'] -%}
-  {%- set is_gestao = request.endpoint in gestao_endpoints -%}
-  {%- set is_simulacao = request.endpoint in simulacao_endpoints -%}
-  {%- if is_gestao and is_admin -%}
-    {%- set active_app = 'gestao' -%}
-  {%- elif is_simulacao -%}
-    {%- set active_app = 'simulacao' -%}
-  {%- else -%}
-    {%- set active_app = 'gestao' if is_admin else 'simulacao' -%}
-  {%- endif -%}
 
-  <aside class="sidebar" id="sidebar">
+  <aside class="sidebar" id="sidebar" data-phase="{{ event_phase }}">
     <div class="sidebar-logo">
       <div class="sidebar-logo-badge" id="sidebarLogo" onclick="document.getElementById('sidebar').scrollTo({top:0,behavior:'smooth'})">SW</div>
       <div class="sidebar-logo-text">
@@ -72,229 +63,216 @@
       </div>
     </div>
 
-    <!-- ── APP SWITCHER ─────────────────────────────────── -->
-    <div class="app-switcher">
-      {% if is_admin %}
-      <a href="{{ url_for('admin.dashboard') }}"
-         class="app-btn {{ 'active' if active_app == 'gestao' }}">
-        <span class="app-btn-icon">📋</span>
-        <div>
-          <div style="font-weight:700;font-size:13px">Gestão</div>
-          <div style="font-size:9px;color:rgba(255,255,255,.3);font-weight:400">Pré e Pós-Evento</div>
-        </div>
-      </a>
-      {% endif %}
-      <a href="{{ url_for('admin.director_dashboard') if not is_admin else url_for('admin.chamada_panel') }}"
-         class="app-btn {{ 'active' if active_app == 'simulacao' }}">
-        <span class="app-btn-icon">🔴</span>
-        <div>
-          <div style="font-weight:700;font-size:13px">Simulação</div>
-          <div style="font-size:9px;color:rgba(255,255,255,.3);font-weight:400">Durante o Evento</div>
-        </div>
-      </a>
+    <!-- ═══ CONTEXT SWITCHER ═══════════════════════════════ -->
+    <div class="context-switcher">
+      <button class="context-switcher-btn {{ 'active-during' if event_phase == 'during' }}" id="contextSwitcherBtn" type="button">
+        <span class="context-dot {{ 'dot-during' if event_phase == 'during' else 'dot-pre' }}"></span>
+        <span class="context-label">
+          {% if event_phase == 'during' %}🔴 DURANTE A SIMULAÇÃO
+          {% elif event_phase == 'pre' %}🟢 PRÉ-EVENTO
+          {% else %}🔵 PÓS-EVENTO{% endif %}
+        </span>
+        <span class="context-chevron">▾</span>
+      </button>
+      <div class="context-dropdown" id="contextDropdown">
+        <a href="{{ url_for('admin.dashboard') }}" class="context-option {{ 'active' if event_phase != 'during' }}">
+          <span class="context-dot dot-pre"></span>
+          <span>Pré/Pós-Evento</span>
+        </a>
+        <button type="button" class="context-option context-option-during {{ 'disabled' if event_phase == 'during' }}" id="switchToDuring">
+          <span class="context-dot dot-during"></span>
+          <span>Durante a Simulação</span>
+        </button>
+      </div>
     </div>
 
-    <div class="sidebar-divider"></div>
-
-    <!-- ── APP: GESTÃO (só admin) ───────────────────────── -->
-    {% if is_admin %}
-    <div class="sidebar-phase-label">📋 PRÉ / PÓS-EVENTO</div>
-    <div class="sidebar-group" id="app-gestao">
-      <div class="sidebar-section">Dashboard</div>
-      <ul class="sidebar-nav">
-        <li>
-          <a href="{{ url_for('admin.dashboard') }}"
-             class="{{ 'active' if request.endpoint == 'admin.dashboard' }}">
-            <span class="nav-icon">🏠</span> Visão Geral
-          </a>
-        </li>
-      </ul>
-
-      <div class="sidebar-section">Alunos</div>
-      <ul class="sidebar-nav">
-        <li>
-          <a href="{{ url_for('admin.students_list') }}"
-             class="{{ 'active' if request.endpoint in ('admin.students_list', 'admin.student_assign') }}">
-            <span class="nav-icon">🎓</span> Alunos
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('admin.delegate_create') }}"
-             class="{{ 'active' if request.endpoint == 'admin.delegate_create' }}">
-            <span class="nav-icon">➕</span> Novo Aluno
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('admin.delegations_list') }}"
-             class="{{ 'active' if 'delegation' in (request.endpoint or '') }}">
-            <span class="nav-icon">🌍</span> Delegações
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('admin.inscriptions_list') }}"
-             class="{{ 'active' if 'inscription' in (request.endpoint or '') }}">
-            <span class="nav-icon">📋</span> Inscrições
-          </a>
-        </li>
-      </ul>
-
-      <div class="sidebar-section">Conteúdo</div>
-      <ul class="sidebar-nav">
-        <li>
-          <a href="{{ url_for('admin.news_list') }}"
-             class="{{ 'active' if request.endpoint and 'news_' in request.endpoint }}">
-            <span class="nav-icon">📰</span> Notícias
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('admin.categories_list') }}"
-             class="{{ 'active' if request.endpoint and 'categor' in request.endpoint }}">
-            <span class="nav-icon">🏷️</span> Categorias
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('admin.agenda_list') }}"
-             class="{{ 'active' if 'agenda' in (request.endpoint or '') }}">
-            <span class="nav-icon">📅</span> Agenda
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('admin.documentos_list') }}"
-             class="{{ 'active' if 'documento' in (request.endpoint or '') }}">
-            <span class="nav-icon">📁</span> Documentos
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('admin.alerts_list') }}"
-             class="{{ 'active' if request.endpoint and 'alert' in request.endpoint }}">
-            <span class="nav-icon">🚨</span> Alertas Ticker
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('admin.themes_list') }}"
-             class="{{ 'active' if 'theme' in (request.endpoint or '') }}">
-            <span class="nav-icon">🏷️</span> Temas
-          </a>
-        </li>
-      </ul>
-
-      <div class="sidebar-section">Simulação</div>
-      <ul class="sidebar-nav">
-        <li>
-          <a href="{{ url_for('admin.convocar_page') }}"
-             class="{{ 'active' if 'convocar' in (request.endpoint or '') }}">
-            <span class="nav-icon">📢</span> Convocar Alunos
-          </a>
-        </li>
-      </ul>
-
-      <div class="sidebar-section">Certificados</div>
-      <ul class="sidebar-nav">
-        <li>
-          <a href="{{ url_for('admin.certificates_list') }}"
-             class="{{ 'active' if request.endpoint == 'admin.certificates_list' or 'certificate_release' in (request.endpoint or '') or 'certificate_sign' in (request.endpoint or '') or 'certificates_generate' in (request.endpoint or '') or 'certificate_upload' in (request.endpoint or '') }}">
-            <span class="nav-icon">&#127891;</span> Certificados
-          </a>
-        </li>
-      </ul>
-
-      <div class="sidebar-section">Relatórios</div>
-      <ul class="sidebar-nav">
-        <li>
-          <a href="{{ url_for('admin.dpos_list') }}"
-             class="{{ 'active' if 'dpo' in (request.endpoint or '') }}">
-            <span class="nav-icon">📄</span> DPOs Recebidos
-          </a>
-        </li>
-      </ul>
-
-      <div class="sidebar-section">Sistema</div>
-      <ul class="sidebar-nav">
-        <li>
-          <a href="{{ url_for('admin.notifications_config') }}"
-             class="{{ 'active' if 'notific' in (request.endpoint or '') }}">
-            <span class="nav-icon">🔔</span> Notificações
-          </a>
-        </li>
-      </ul>
+    <!-- ═══ MODAL DE CONFIRMAÇÃO ═══════════════════════════ -->
+    <div class="modal-overlay" id="confirmModal">
+      <div class="modal-box">
+        <div class="modal-icon">🔴</div>
+        <div class="modal-title">Entrar no modo Durante a Simulação?</div>
+        <div class="modal-desc">
+          A interface mudará para controles de operação da sessão ao vivo.
+          Painéis de chamada, votações e oradores ficarão em destaque.
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" id="modalCancel">Cancelar</button>
+          <a href="{{ url_for('admin.director_dashboard') if not is_admin else url_for('admin.chamada_panel') }}" class="btn btn-danger" id="modalConfirm">Entrar</a>
+        </div>
+      </div>
     </div>
+
+    <div style="flex:1;overflow-y:auto;padding-bottom:8px">
+
+    {% if event_phase == 'during' %}
+    {# ═══════════════════════════════════════════════════════
+       MODO DURANTE A SIMULAÇÃO — menu vermelho/escuro
+       ═══════════════════════════════════════════════════════ #}
+
+      <div class="sidebar-section">📋 Sessão</div>
+      <ul class="sidebar-nav">
+        <li><a href="{{ url_for('admin.chamada_panel') }}"
+               class="{{ 'active' if 'chamada' in (request.endpoint or '') }}">
+          <span class="nav-icon">📋</span> Chamada
+        </a></li>
+        <li><a href="{{ url_for('admin.cronometro_panel') }}"
+               class="{{ 'active' if 'cronometro' in (request.endpoint or '') }}">
+          <span class="nav-icon">⏱️</span> Cronômetro
+        </a></li>
+        <li><a href="{{ url_for('admin.invocar_page') }}"
+               class="{{ 'active' if request.endpoint in ('admin.invocar_page', 'admin.invocar_sessao') }}">
+          <span class="nav-icon">📡</span> Invocar Alunos
+        </a></li>
+      </ul>
+
+      <div class="sidebar-section">🎤 Plenário</div>
+      <ul class="sidebar-nav">
+        <li><a href="{{ url_for('speaker.speaker_queue_panel') }}"
+               class="{{ 'active' if 'speaker' in (request.endpoint or '') }}">
+          <span class="nav-icon">📋</span> Fila de Oradores
+        </a></li>
+        <li><a href="{{ url_for('admin.oradores_panel') }}"
+               class="{{ 'active' if 'oradores' in (request.endpoint or '') }}">
+          <span class="nav-icon">🎤</span> Oradores
+        </a></li>
+        <li><a href="{{ url_for('motion.motions_panel') }}"
+               class="{{ 'active' if 'motion' in (request.endpoint or '') }}">
+          <span class="nav-icon">📜</span> Moções
+        </a></li>
+        <li><a href="{{ url_for('vote.vote_list') }}"
+               class="{{ 'active' if 'vote' in (request.endpoint or '') }}">
+          <span class="nav-icon">🗳️</span> Votações
+        </a></li>
+        <li><a href="{{ url_for('resolution.resolutions_panel') }}"
+               class="{{ 'active' if 'resolution' in (request.endpoint or '') }}">
+          <span class="nav-icon">📑</span> Resoluções
+        </a></li>
+      </ul>
+
+      <div class="sidebar-section">📊 Analytics</div>
+      <ul class="sidebar-nav">
+        <li><a href="{{ url_for('analytics.analytics_panel') }}"
+               class="{{ 'active' if 'analytics' in (request.endpoint or '') }}">
+          <span class="nav-icon">📊</span> Analytics
+        </a></li>
+      </ul>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-section">🔗 Outros</div>
+      <ul class="sidebar-nav">
+        <li><a href="/" target="_blank">
+          <span class="nav-icon">🌐</span> Ver Site
+        </a></li>
+        {% if is_admin %}
+        <li><a href="{{ url_for('admin.notifications_config') }}"
+               class="{{ 'active' if 'notific' in (request.endpoint or '') }}">
+          <span class="nav-icon">⚙️</span> Configurações
+        </a></li>
+        {% endif %}
+      </ul>
+
+    {% else %}
+    {# ═══════════════════════════════════════════════════════
+       MODO PRÉ/PÓS-EVENTO — menu azul/claro
+       ═══════════════════════════════════════════════════════ #}
+
+      <div class="sidebar-section">🏠 Início</div>
+      <ul class="sidebar-nav">
+        <li><a href="{{ url_for('admin.dashboard') }}"
+               class="{{ 'active' if request.endpoint == 'admin.dashboard' }}">
+          <span class="nav-icon">🏠</span> Dashboard
+        </a></li>
+      </ul>
+
+      <div class="sidebar-section">👥 Pessoas</div>
+      <ul class="sidebar-nav">
+        <li><a href="{{ url_for('admin.students_list') }}"
+               class="{{ 'active' if request.endpoint in ('admin.students_list', 'admin.student_assign') }}">
+          <span class="nav-icon">🎓</span> Alunos
+        </a></li>
+        <li><a href="{{ url_for('admin.delegate_create') }}"
+               class="{{ 'active' if request.endpoint == 'admin.delegate_create' }}">
+          <span class="nav-icon">➕</span> Novo Aluno
+        </a></li>
+        <li><a href="{{ url_for('admin.delegations_list') }}"
+               class="{{ 'active' if 'delegation' in (request.endpoint or '') }}">
+          <span class="nav-icon">🌍</span> Delegações
+        </a></li>
+        <li><a href="{{ url_for('admin.inscriptions_list') }}"
+               class="{{ 'active' if 'inscription' in (request.endpoint or '') }}">
+          <span class="nav-icon">📋</span> Inscrições
+        </a></li>
+      </ul>
+
+      <div class="sidebar-section">📰 Conteúdo</div>
+      <ul class="sidebar-nav">
+        <li><a href="{{ url_for('admin.news_list') }}"
+               class="{{ 'active' if request.endpoint and 'news_' in request.endpoint }}">
+          <span class="nav-icon">📰</span> Notícias
+        </a></li>
+        <li><a href="{{ url_for('admin.categories_list') }}"
+               class="{{ 'active' if request.endpoint and 'categor' in request.endpoint }}">
+          <span class="nav-icon">🏷️</span> Categorias
+        </a></li>
+        <li><a href="{{ url_for('admin.agenda_list') }}"
+               class="{{ 'active' if 'agenda' in (request.endpoint or '') }}">
+          <span class="nav-icon">📅</span> Agenda
+        </a></li>
+        <li><a href="{{ url_for('admin.documentos_list') }}"
+               class="{{ 'active' if 'documento' in (request.endpoint or '') }}">
+          <span class="nav-icon">📁</span> Documentos
+        </a></li>
+        <li><a href="{{ url_for('admin.themes_list') }}"
+               class="{{ 'active' if 'theme' in (request.endpoint or '') }}">
+          <span class="nav-icon">🏷️</span> Temas
+        </a></li>
+        <li><a href="{{ url_for('admin.alerts_list') }}"
+               class="{{ 'active' if request.endpoint and 'alert' in request.endpoint }}">
+          <span class="nav-icon">🚨</span> Alertas Ticker
+        </a></li>
+      </ul>
+
+      <div class="sidebar-section">🎓 Pré-Simulação</div>
+      <ul class="sidebar-nav">
+        <li><a href="{{ url_for('admin.convocar_page') }}"
+               class="{{ 'active' if 'convocar' in (request.endpoint or '') }}">
+          <span class="nav-icon">📢</span> Convocar Alunos
+        </a></li>
+        <li><a href="{{ url_for('admin.certificates_list') }}"
+               class="{{ 'active' if request.endpoint == 'admin.certificates_list' or 'certificate_release' in (request.endpoint or '') or 'certificate_sign' in (request.endpoint or '') or 'certificates_generate' in (request.endpoint or '') or 'certificate_upload' in (request.endpoint or '') }}">
+          <span class="nav-icon">🎓</span> Certificados
+        </a></li>
+      </ul>
+
+      <div class="sidebar-section">📄 Relatórios</div>
+      <ul class="sidebar-nav">
+        <li><a href="{{ url_for('admin.dpos_list') }}"
+               class="{{ 'active' if 'dpo' in (request.endpoint or '') }}">
+          <span class="nav-icon">📄</span> DPOs Recebidos
+        </a></li>
+      </ul>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-section">⚙️ Sistema</div>
+      <ul class="sidebar-nav">
+        <li><a href="{{ url_for('admin.notifications_config') }}"
+               class="{{ 'active' if 'notific' in (request.endpoint or '') }}">
+          <span class="nav-icon">🔔</span> Notificações
+        </a></li>
+      </ul>
+
+      <div class="sidebar-section">🔗 Site</div>
+      <ul class="sidebar-nav">
+        <li><a href="/" target="_blank">
+          <span class="nav-icon">🌐</span> Ver Site
+        </a></li>
+      </ul>
+
     {% endif %}
 
-    <div class="sidebar-phase-label">🔴 DURANTE A SIMULAÇÃO</div>
-    <!-- ── APP: SIMULAÇÃO ───────────────────────────────── -->
-    <div class="sidebar-group" id="app-simulacao">
-      <div class="sidebar-section">Sessão</div>
-      <ul class="sidebar-nav">
-        <li>
-          <a href="{{ url_for('admin.chamada_panel') }}"
-             class="{{ 'active' if 'chamada' in (request.endpoint or '') }}">
-            <span class="nav-icon">📋</span> Chamada
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('vote.vote_list') }}"
-             class="{{ 'active' if 'vote' in (request.endpoint or '') }}">
-            <span class="nav-icon">🗳️</span> Votações
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('admin.oradores_panel') }}"
-             class="{{ 'active' if 'oradores' in (request.endpoint or '') }}">
-            <span class="nav-icon">🎤</span> Oradores
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('speaker.speaker_queue_panel') }}"
-             class="{{ 'active' if 'speaker' in (request.endpoint or '') }}">
-            <span class="nav-icon">📋</span> Fila de Oradores
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('admin.cronometro_panel') }}"
-             class="{{ 'active' if 'cronometro' in (request.endpoint or '') }}">
-            <span class="nav-icon">⏱️</span> Cronômetro
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('motion.motions_panel') }}"
-             class="{{ 'active' if 'motion' in (request.endpoint or '') }}">
-            <span class="nav-icon">📋</span> Moções
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('resolution.resolutions_panel') }}"
-             class="{{ 'active' if 'resolution' in (request.endpoint or '') }}">
-            <span class="nav-icon">📜</span> Resoluções
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('analytics.analytics_panel') }}"
-             class="{{ 'active' if 'analytics' in (request.endpoint or '') }}">
-            <span class="nav-icon">📊</span> Analytics
-          </a>
-        </li>
-      </ul>
-
-      <div class="sidebar-section">Controle</div>
-      <ul class="sidebar-nav">
-        <li>
-          <a href="{{ url_for('admin.invocar_page') }}"
-             class="{{ 'active' if request.endpoint in ('admin.invocar_page', 'admin.invocar_sessao') }}">
-            <span class="nav-icon">📡</span> Invocar Alunos
-          </a>
-        </li>
-      </ul>
     </div>
-
-    <div class="sidebar-divider"></div>
-
-    <ul class="sidebar-nav">
-      <li>
-        <a href="/" target="_blank">
-          <span class="nav-icon">🔗</span> Ver Site
-        </a>
-      </li>
-    </ul>
 
     {% if active_invoke %}
     <div style="margin:0 12px 8px;padding:10px 12px;border-radius:4px;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.25)">
@@ -373,11 +351,53 @@ function toggleSidebar() {
   document.getElementById('sidebar').classList.toggle('collapsed');
   document.getElementById('hamburgerBtn').classList.toggle('active');
 }
+
+// ── Context Switcher ──
+(function() {
+  var btn = document.getElementById('contextSwitcherBtn');
+  var dd = document.getElementById('contextDropdown');
+  var modal = document.getElementById('confirmModal');
+  var switchBtn = document.getElementById('switchToDuring');
+  var cancelBtn = document.getElementById('modalCancel');
+  var phase = document.body.getAttribute('data-phase');
+
+  if (btn && dd) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      dd.classList.toggle('open');
+    });
+    document.addEventListener('click', function(e) {
+      if (!dd.contains(e.target) && e.target !== btn) {
+        dd.classList.remove('open');
+      }
+    });
+  }
+
+  if (switchBtn) {
+    switchBtn.addEventListener('click', function() {
+      dd.classList.remove('open');
+      if (phase === 'during') return;
+      modal.classList.add('open');
+    });
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', function() {
+      modal.classList.remove('open');
+    });
+  }
+
+  if (modal) {
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) modal.classList.remove('open');
+    });
+  }
+})();
+
 // CSRF token para fetch calls e forms
 (function() {
   var csrfToken = document.querySelector('meta[name="csrf-token"]');
   if (csrfToken) {
-    // Intercept fetch para adicionar header
     var origFetch = window.fetch;
     window.fetch = function(url, opts) {
       opts = opts || {};
@@ -389,7 +409,6 @@ function toggleSidebar() {
       }
       return origFetch.call(this, url, opts);
     };
-    // Injeta hidden input em todos os forms POST
     document.querySelectorAll('form[method="POST"], form[method="post"]').forEach(function(form) {
       if (!form.querySelector('input[name="csrf_token"]')) {
         var input = document.createElement('input');
