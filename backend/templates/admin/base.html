@@ -77,11 +77,12 @@
         <span class="context-chevron">▾</span>
       </button>
       <div class="context-dropdown" id="contextDropdown">
-        <a href="{{ url_for('admin.phase_set', phase='auto') }}" class="context-option {{ 'active' if event_phase != 'during' }}"
-           data-phase="auto">
-          <span class="context-dot dot-pre"></span>
-          <span>Pré/Pós-Evento (Automático)</span>
-        </a>
+        <form method="POST" action="{{ url_for('admin.phase_set', phase='auto') }}" style="margin:0">
+          <button type="submit" class="context-option {{ 'active' if event_phase != 'during' }}">
+            <span class="context-dot dot-pre"></span>
+            <span>Pré/Pós-Evento (Automático)</span>
+          </button>
+        </form>
         <form method="POST" action="{{ url_for('admin.phase_set', phase='during') }}" style="margin:0">
           <button type="submit" class="context-option context-option-during {{ 'disabled' if event_phase == 'during' }}">
             <span class="context-dot dot-during"></span>
