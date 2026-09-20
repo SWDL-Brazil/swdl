@@ -83,6 +83,8 @@ def create_app():
         from models.motion import Motion
         from models.resolution import Resolution, Amendment
         from models.speech_log import SpeechLog
+        from models.event_period import EventPeriod
+        from models.urgent_alert import UrgentAlert
 
         db.create_all()
         _run_migrations(app)
