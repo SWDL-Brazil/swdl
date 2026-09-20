@@ -408,12 +408,12 @@
         SWDL_API.get('/periods'),
       ]);
 
+      if (periodsData) allPeriods = periodsData;
+
       if (allItems && allItems.length) {
         allAgendaItems = allItems;
         renderTimeline(allAgendaItems);
       }
-
-      if (periodsData) allPeriods = periodsData;
 
       if (nowData) {
         updateNowCard(nowData.current, nowData.next);
