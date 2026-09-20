@@ -189,9 +189,13 @@
       onEnd: async (evt) => {
         const items = [...list.querySelectorAll('.agenda-item-row')]
           .map((el, i) => ({ id: parseInt(el.dataset.id), order: i }));
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
         await fetch('/admin/agenda/reorder', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfMeta ? csrfMeta.content : ''
+          },
           body: JSON.stringify({ items })
         });
       }
