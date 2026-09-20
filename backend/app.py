@@ -25,6 +25,11 @@ def create_app():
     csrf.init_app(app)
     CORS(app, origins=['https://swdl-5a3fa.web.app', 'https://swdl-5a3fa.firebaseapp.com'])
 
+    @app.route('/favicon.ico')
+    def favicon():
+        from flask import send_from_directory
+        return send_from_directory(app.static_folder, 'favicon.svg', mimetype='image/svg+xml')
+
     # Handler global para capturar erros 500
     import traceback, sys
     @app.errorhandler(500)
