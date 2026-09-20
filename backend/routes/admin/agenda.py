@@ -1,7 +1,8 @@
-from flask import render_template, redirect, url_for, flash, request, abort
+from flask import render_template, redirect, url_for, flash, request, abort, jsonify
 from flask_login import login_required
 from routes.admin._helpers import admin_bp, admin_required
 from models.agenda import AgendaItem
+from models.theme import Theme
 from extensions import db, socketio
 
 
@@ -36,7 +37,8 @@ def agenda_create():
         db.session.commit()
         flash('Item de agenda adicionado!', 'success')
         return redirect(url_for('admin.agenda_list'))
-    return render_template('admin/agenda_form.html', item=None)
+    themes = Theme.query.order_by(Theme.name).all()
+    return render_template('admin/agenda_form.html', item=None, themes=themes)
 
 
 @admin_bp.route('/agenda/<int:id>/editar', methods=['GET', 'POST'])
@@ -58,7 +60,8 @@ def agenda_edit(id):
         db.session.commit()
         flash('Agenda atualizada.', 'success')
         return redirect(url_for('admin.agenda_list'))
-    return render_template('admin/agenda_form.html', item=item)
+    themes = Theme.query.order_by(Theme.name).all()
+    return render_template('admin/agenda_form.html', item=item, themes=themes)
 
 
 @admin_bp.route('/agenda/<int:id>/deletar', methods=['POST'])
@@ -88,3 +91,19 @@ def agenda_set_status(id, status):
     db.session.commit()
     flash(f'Status atualizado para "{status}".', 'success')
     return redirect(url_for('admin.agenda_list'))
+
+
+@admin_bp.route('/agenda/reorder', methods=['POST'])
+@login_required
+@admin_required
+def agenda_reorder():
+    """Reordena itens da agenda via drag-and-drop (Sortable.js)."""
+    data = request.get_json()
+    if not data or 'items' not in data:
+        return jsonify({'error': 'missing items'}), 400
+    for entry in data['items']:
+        item = AgendaItem.query.get(entry.get('id'))
+        if item:
+            item.order = entry.get('order', item.order)
+    db.session.commit()
+    return jsonify({'ok': True})

@@ -8,18 +8,22 @@
 
 {% block content %}
 <style>
-  .agenda-date-group { margin-bottom: 32px; }
-  .agenda-date-header {
+  .agenda-day-group { margin-bottom: 32px; }
+  .agenda-day-header {
     display: flex; align-items: center; gap: 14px;
     margin-bottom: 12px;
   }
-  .agenda-date-badge {
+  .agenda-day-badge {
     background: var(--navy); color: var(--white);
     font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 700;
     letter-spacing: .1em; padding: 6px 14px; border-radius: 4px;
+    white-space: nowrap;
   }
-  .agenda-date-line { flex: 1; height: 1px; background: var(--border); }
-  .agenda-date-count { font-size: 12px; color: var(--muted); }
+  .agenda-day-date {
+    font-size: 12px; color: var(--muted);
+  }
+  .agenda-day-line { flex: 1; height: 1px; background: var(--border); }
+  .agenda-day-count { font-size: 12px; color: var(--muted); }
 
   .agenda-item-row {
     display: flex; align-items: center; gap: 12px;
@@ -54,36 +58,33 @@
   .no-date-group { color: var(--muted); font-size: 13px; }
 </style>
 
-<!-- Agrupar por data -->
-{% set dates = [] %}
-{% for item in items %}
-  {% if item.event_date and item.event_date not in dates %}
-    {% set _ = dates.append(item.event_date) %}
-  {% endif %}
-{% endfor %}
-{% if '' not in dates %}
-  {% set _ = dates.append('') %}
-{% endif %}
+{% set months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'] %}
 
-{% for d in dates | sort %}
-  {% set group = items | selectattr('event_date', 'equalto', d) | list %}
-  {% if group %}
-  <div class="agenda-date-group">
-    <div class="agenda-date-header">
-      {% if d %}
-        {% set parts = d.split('-') %}
-        {% set months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'] %}
-        <span class="agenda-date-badge">
-          {{ parts[2] }} {{ months[parts[1]|int - 1] }} {{ parts[0] }}
-        </span>
-      {% else %}
-        <span class="agenda-date-badge" style="background:var(--slate)">Sem data</span>
+<!-- Agrupar por dia -->
+{% set day_groups = {} %}
+{% for item in items %}
+  {% set day_num = item.day %}
+  {% if day_num not in day_groups %}
+    {% set _ = day_groups.update({day_num: []}) %}
+  {% endif %}
+  {% set _ = day_groups[day_num].append(item) %}
+{% endfor %}
+
+{% for day_num in day_groups.keys() | sort %}
+  {% set group = day_groups[day_num] %}
+  {% set first_date = group | map(attribute='event_date') | select | first %}
+  <div class="agenda-day-group">
+    <div class="agenda-day-header">
+      <span class="agenda-day-badge">Dia {{ day_num }}</span>
+      {% if first_date %}
+        {% set parts = first_date.split('-') %}
+        <span class="agenda-day-date">{{ parts[2] }} {{ months[parts[1]|int - 1] }} {{ parts[0] }}</span>
       {% endif %}
-      <div class="agenda-date-line"></div>
-      <span class="agenda-date-count">{{ group|length }} atividade{{ 's' if group|length > 1 }}</span>
+      <div class="agenda-day-line"></div>
+      <span class="agenda-day-count">{{ group|length }} atividade{{ 's' if group|length > 1 }}</span>
     </div>
 
-    <div class="sortable-list" data-date="{{ d }}">
+    <div class="sortable-list" data-day="{{ day_num }}">
       {% for item in group | sort(attribute='order') %}
       <div class="agenda-item-row" data-id="{{ item.id }}">
         <span class="drag-handle">⠿</span>
@@ -109,7 +110,6 @@
       {% endfor %}
     </div>
   </div>
-  {% endif %}
 {% endfor %}
 
 {% if not items %}

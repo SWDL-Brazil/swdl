@@ -12,6 +12,7 @@ from models.inscription  import Inscription
 from models.inscription_member import InscriptionMember
 from models.event_config import EventConfig
 from models.urgent_alert import UrgentAlert
+from datetime import datetime, date
 import urllib.request, json as _json
 from extensions import db, csrf
 from datetime import datetime
@@ -99,10 +100,35 @@ def api_agenda():
 @api_bp.route('/agenda/agora')
 def api_agenda_now():
     """Retorna a atividade atual e a próxima — usado pelo telão e card 'Agora'."""
+    # Busca por status manual 'now' OU auto-computado
     current = AgendaItem.query.filter_by(status='now').first()
-    next_items = AgendaItem.query.filter_by(status='next').order_by(
-                 AgendaItem.order).all()
-    next_item = next_items[0] if next_items else None
+    if not current:
+        today = date.today().isoformat()
+        now_str = datetime.now().strftime('%H:%M')
+        candidates = AgendaItem.query.filter_by(status='auto').filter(
+            AgendaItem.event_date == today
+        ).all()
+        for c in candidates:
+            start = c.start_time or '00:00'
+            end = c.end_time or '23:59'
+            if start <= now_str < end:
+                current = c
+                break
+
+    # Próximo: status manual 'next' OU auto-computado
+    next_item = AgendaItem.query.filter_by(status='next').order_by(
+                AgendaItem.order).first()
+    if not next_item:
+        today = date.today().isoformat()
+        now_str = datetime.now().strftime('%H:%M')
+        candidates = AgendaItem.query.filter_by(status='auto').filter(
+            AgendaItem.event_date == today
+        ).order_by(AgendaItem.order).all()
+        for c in candidates:
+            start = c.start_time or '00:00'
+            if now_str < start:
+                next_item = c
+                break
 
     return jsonify({
         'current': current.to_dict() if current else None,

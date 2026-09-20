@@ -123,6 +123,9 @@
       </div>
     </div>
 
+    <!-- ── DAY FILTER TABS ───────────────────────────────── -->
+    <div class="day-tabs" id="dayTabs" style="display:none"></div>
+
     <!-- TIMELINE ÚNICA COM SEPARADORES DE DATA -->
     <div class="smart-timeline" id="timeline-main">
       <div style="padding:40px;text-align:center;color:var(--muted);font-size:14px">
@@ -211,11 +214,64 @@
     return `${WEEKDAYS_PT[dt.getDay()]}, ${String(d).padStart(2,'0')} de ${MONTHS_PT[m-1]} de ${y}`;
   }
 
+  // Estado global da agenda
+  let allAgendaItems = [];
+  let selectedDay = null;
+
+  // ── DAY TABS ────────────────────────────────────────────────
+  function buildDayTabs(items) {
+    const tabsEl = document.getElementById('dayTabs');
+    if (!tabsEl) return;
+
+    // Coleta dias únicos
+    const daySet = new Set();
+    items.forEach(item => daySet.add(item.day || 1));
+    const days = [...daySet].sort((a, b) => a - b);
+
+    if (days.length <= 1) {
+      tabsEl.style.display = 'none';
+      return;
+    }
+
+    tabsEl.style.display = 'flex';
+    tabsEl.innerHTML = days.map(d =>
+      `<button class="day-tab" data-day="${d}">Dia ${d}</button>`
+    ).join('');
+
+    // Lê dia da URL hash (#day=2)
+    const hashMatch = location.hash.match(/day=(\d+)/);
+    const initialDay = hashMatch ? parseInt(hashMatch[1]) : days[0];
+    selectDay(initialDay);
+
+    // Click handler
+    tabsEl.querySelectorAll('.day-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const d = parseInt(btn.dataset.day);
+        selectDay(d);
+        location.hash = `day=${d}`;
+      });
+    });
+  }
+
+  function selectDay(day) {
+    selectedDay = day;
+    document.querySelectorAll('.day-tab').forEach(btn => {
+      btn.classList.toggle('active', parseInt(btn.dataset.day) === day);
+    });
+    renderTimeline(getFilteredItems());
+  }
+
+  function getFilteredItems() {
+    if (selectedDay === null) return allAgendaItems;
+    return allAgendaItems.filter(item => (item.day || 1) === selectedDay);
+  }
+
+  // ── RENDERIZA TIMELINE ──────────────────────────────────────
   function renderTimeline(items) {
     const container = document.getElementById('timeline-main');
     if (!container) return;
     if (!items.length) {
-      container.innerHTML = '<div style="padding:48px;text-align:center;color:var(--muted);font-size:14px">Nenhuma atividade cadastrada ainda.</div>';
+      container.innerHTML = '<div style="padding:48px;text-align:center;color:var(--muted);font-size:14px">Nenhuma atividade para este dia.</div>';
       return;
     }
 
@@ -328,7 +384,9 @@
       ]);
 
       if (allItems && allItems.length) {
-        renderTimeline(allItems);
+        allAgendaItems = allItems;
+        buildDayTabs(allItems);
+        renderTimeline(getFilteredItems());
       }
 
       if (nowData) {
