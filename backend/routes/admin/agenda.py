@@ -3,6 +3,7 @@ from flask_login import login_required
 from routes.admin._helpers import admin_bp, admin_required
 from models.agenda import AgendaItem
 from models.theme import Theme
+from models.event_period import EventPeriod
 from extensions import db, socketio
 
 
@@ -13,7 +14,8 @@ def agenda_list():
     items = AgendaItem.query.order_by(
         AgendaItem.event_date, AgendaItem.day, AgendaItem.order,
         AgendaItem.start_time).all()
-    return render_template('admin/agenda_list.html', items=items)
+    periods = EventPeriod.query.order_by(EventPeriod.order).all()
+    return render_template('admin/agenda_list.html', items=items, periods=periods)
 
 
 @admin_bp.route('/agenda/novo', methods=['GET', 'POST'])
@@ -32,13 +34,15 @@ def agenda_create():
             status      = request.form.get('status', 'auto'),
             committee   = request.form.get('committee', ''),
             order       = int(request.form.get('order', 0)),
+            period_id   = int(request.form['period_id']) if request.form.get('period_id') else None,
         )
         db.session.add(item)
         db.session.commit()
         flash('Item de agenda adicionado!', 'success')
         return redirect(url_for('admin.agenda_list'))
     themes = Theme.query.order_by(Theme.name).all()
-    return render_template('admin/agenda_form.html', item=None, themes=themes)
+    periods = EventPeriod.query.order_by(EventPeriod.order).all()
+    return render_template('admin/agenda_form.html', item=None, themes=themes, periods=periods)
 
 
 @admin_bp.route('/agenda/<int:id>/editar', methods=['GET', 'POST'])
@@ -57,11 +61,13 @@ def agenda_edit(id):
         item.status      = request.form.get('status', 'auto')
         item.committee   = request.form.get('committee', '')
         item.order       = int(request.form.get('order', 0))
+        item.period_id   = int(request.form['period_id']) if request.form.get('period_id') else None
         db.session.commit()
         flash('Agenda atualizada.', 'success')
         return redirect(url_for('admin.agenda_list'))
     themes = Theme.query.order_by(Theme.name).all()
-    return render_template('admin/agenda_form.html', item=item, themes=themes)
+    periods = EventPeriod.query.order_by(EventPeriod.order).all()
+    return render_template('admin/agenda_form.html', item=item, themes=themes, periods=periods)
 
 
 @admin_bp.route('/agenda/<int:id>/deletar', methods=['POST'])

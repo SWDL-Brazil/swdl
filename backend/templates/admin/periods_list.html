@@ -1,0 +1,52 @@
+{% extends "admin/base.html" %}
+{% block title %}Períodos{% endblock %}
+{% block page_title %}Períodos do Evento{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.period_create') }}" class="btn btn-primary">+ Novo Período</a>
+{% endblock %}
+
+{% block content %}
+<style>
+  .period-card {
+    display: flex; align-items: center; gap: 16px;
+    padding: 16px 20px; background: var(--white);
+    border: 1px solid var(--border); border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .period-color {
+    width: 6px; height: 40px; border-radius: 3px; flex-shrink: 0;
+  }
+  .period-info { flex: 1; }
+  .period-name { font-size: 15px; font-weight: 600; color: var(--navy); }
+  .period-dates { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .period-actions { display: flex; gap: 4px; flex-shrink: 0; }
+</style>
+
+{% for p in periods %}
+  {% set colors = {'navy': 'var(--navy)', 'gold': 'var(--gold)', 'green': 'var(--green)', 'blue': 'var(--blue)', 'red': 'var(--red)', 'slate': 'var(--slate)'} %}
+  <div class="period-card">
+    <div class="period-color" style="background:{{ colors.get(p.color, 'var(--navy)') }}"></div>
+    <div class="period-info">
+      <div class="period-name">{{ p.name }}</div>
+      <div class="period-dates">{{ p.start_date }} — {{ p.end_date }}</div>
+    </div>
+    <div class="period-actions">
+      <a href="{{ url_for('admin.period_edit', id=p.id) }}" class="btn btn-ghost btn-sm">✏️</a>
+      <form method="POST" action="{{ url_for('admin.period_delete', id=p.id) }}"
+            onsubmit="return confirm('Deletar período?')">
+        <button class="btn btn-danger btn-sm" type="submit">Del</button>
+      </form>
+    </div>
+  </div>
+{% endfor %}
+
+{% if not periods %}
+<div class="card">
+  <div class="card-body" style="text-align:center;color:var(--muted);padding:48px">
+    Nenhum período cadastrado ainda.
+    <a href="{{ url_for('admin.period_create') }}">Criar primeiro →</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

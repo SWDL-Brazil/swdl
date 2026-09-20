@@ -18,3 +18,4 @@ from models.speaker      import SpeakerEntry
 from models.motion       import Motion
 from models.resolution   import Resolution, Amendment
 from models.speech_log   import SpeechLog
+from models.event_period import EventPeriod

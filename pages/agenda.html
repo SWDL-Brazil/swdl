@@ -123,10 +123,7 @@
       </div>
     </div>
 
-    <!-- ── DAY FILTER TABS ───────────────────────────────── -->
-    <div class="day-tabs" id="dayTabs" style="display:none"></div>
-
-    <!-- TIMELINE ÚNICA COM SEPARADORES DE DATA -->
+    <!-- TIMELINE COM SEPARADORES DE PERÍODO -->
     <div class="smart-timeline" id="timeline-main">
       <div style="padding:40px;text-align:center;color:var(--muted);font-size:14px">
         <span data-i18n="agenda.loading">Carregando agenda...</span>
@@ -216,54 +213,52 @@
 
   // Estado global da agenda
   let allAgendaItems = [];
-  let selectedDay = null;
+  let allPeriods = [];
 
-  // ── DAY TABS ────────────────────────────────────────────────
-  function buildDayTabs(items) {
-    const tabsEl = document.getElementById('dayTabs');
-    if (!tabsEl) return;
+  const PERIOD_COLORS = {
+    navy:  'var(--navy)',
+    gold:  'var(--gold)',
+    green: 'var(--green)',
+    blue:  'var(--blue)',
+    red:   'var(--red)',
+    slate: 'var(--slate)',
+  };
 
-    // Coleta dias únicos
-    const daySet = new Set();
-    items.forEach(item => daySet.add(item.day || 1));
-    const days = [...daySet].sort((a, b) => a - b);
-
-    if (days.length <= 1) {
-      tabsEl.style.display = 'none';
-      return;
-    }
-
-    tabsEl.style.display = 'flex';
-    tabsEl.innerHTML = days.map(d =>
-      `<button class="day-tab" data-day="${d}">Dia ${d}</button>`
-    ).join('');
-
-    // Lê dia da URL hash (#day=2)
-    const hashMatch = location.hash.match(/day=(\d+)/);
-    const initialDay = hashMatch ? parseInt(hashMatch[1]) : days[0];
-    selectDay(initialDay);
-
-    // Click handler
-    tabsEl.querySelectorAll('.day-tab').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const d = parseInt(btn.dataset.day);
-        selectDay(d);
-        location.hash = `day=${d}`;
-      });
-    });
-  }
-
-  function selectDay(day) {
-    selectedDay = day;
-    document.querySelectorAll('.day-tab').forEach(btn => {
-      btn.classList.toggle('active', parseInt(btn.dataset.day) === day);
-    });
-    renderTimeline(getFilteredItems());
-  }
-
-  function getFilteredItems() {
-    if (selectedDay === null) return allAgendaItems;
-    return allAgendaItems.filter(item => (item.day || 1) === selectedDay);
+  // Injeta CSS dos separadores de período
+  if (!document.getElementById('period-separator-style')) {
+    const ps = document.createElement('style');
+    ps.id = 'period-separator-style';
+    ps.textContent = `
+      .tl-period-separator {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 28px 0 8px;
+      }
+      .tl-period-badge {
+        flex-shrink: 0;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #fff;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+      }
+      .tl-period-dates {
+        flex-shrink: 0;
+        font-size: 12px;
+        color: var(--muted, #94a3b8);
+        white-space: nowrap;
+      }
+      .tl-period-line {
+        flex: 1;
+        height: 2px;
+        border-radius: 1px;
+        opacity: 0.35;
+      }
+    `;
+    document.head.appendChild(ps);
   }
 
   // ── RENDERIZA TIMELINE ──────────────────────────────────────
@@ -275,47 +270,76 @@
       return;
     }
 
-    // Agrupa por data
-    const groups = {};
+    // Agrupa por período (period_id)
+    const periodGroups = {};
     items.forEach(item => {
-      const key = item.event_date || 'sem-data';
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(item);
+      const pid = item.period_id || 'sem-periodo';
+      if (!periodGroups[pid]) periodGroups[pid] = [];
+      periodGroups[pid].push(item);
     });
 
-    const sortedDates = Object.keys(groups).sort();
+    const periodOrder = Object.keys(periodGroups);
     let html = '';
 
-    sortedDates.forEach(dateKey => {
-      const dateItems = groups[dateKey];
-      const dateLabel = formatDate(dateKey !== 'sem-data' ? dateKey : '');
+    periodOrder.forEach(pid => {
+      const periodItems = periodGroups[pid];
+      const period = allPeriods.find(p => p.id === pid);
+      const periodName = period ? period.name : 'Sem Período';
+      const colorKey = period ? (period.color || 'slate') : 'slate';
+      const color = PERIOD_COLORS[colorKey] || PERIOD_COLORS.slate;
+      const dateRange = period
+        ? `${period.start_date || ''} — ${period.end_date || ''}`
+        : '';
 
       html += `
-        <div class="tl-date-separator">
-          <div class="tl-date-line"></div>
-          <span class="tl-date-label">${dateKey !== 'sem-data' ? dateLabel : 'Sem data definida'}</span>
-          <div class="tl-date-line"></div>
+        <div class="tl-period-separator">
+          <div class="tl-period-line" style="background:${color}"></div>
+          <span class="tl-period-badge" style="background:${color}">${periodName}</span>
+          <span class="tl-period-dates">${dateRange}</span>
+          <div class="tl-period-line" style="background:${color}"></div>
         </div>`;
 
-      dateItems.forEach(item => {
-        const cfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.next;
+      // Agrupa por data DENTRO do período
+      const dateGroups = {};
+      periodItems.forEach(item => {
+        const key = item.event_date || 'sem-data';
+        if (!dateGroups[key]) dateGroups[key] = [];
+        dateGroups[key].push(item);
+      });
+
+      const sortedDates = Object.keys(dateGroups).sort();
+
+      sortedDates.forEach(dateKey => {
+        const dateItems = dateGroups[dateKey];
+        const dateLabel = formatDate(dateKey !== 'sem-data' ? dateKey : '');
+
         html += `
-          <div class="tl-item ${cfg.cls}">
-            <div class="tl-time-col">
-              <span class="tl-time">${item.start_time}</span>
-              <div class="tl-dot"></div>
-            </div>
-            <div class="tl-body">
-              <span class="tl-tag ${cfg.tagCls}">${cfg.tag}</span>
-              <div class="tl-title">${item.title}</div>
-              ${item.description ? `<div class="tl-desc">${item.description}</div>` : ''}
-              <div class="tl-footer">
-                ${item.location  ? `<span class="tl-location">📍 ${item.location}</span>` : ''}
-                ${item.committee ? `<span class="tl-committee">${item.committee}</span>` : ''}
-                ${item.end_time  ? `<span class="tl-location">⏳ Até ${item.end_time}</span>` : ''}
-              </div>
-            </div>
+          <div class="tl-date-separator">
+            <div class="tl-date-line"></div>
+            <span class="tl-date-label">${dateKey !== 'sem-data' ? dateLabel : 'Sem data definida'}</span>
+            <div class="tl-date-line"></div>
           </div>`;
+
+        dateItems.forEach(item => {
+          const cfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.next;
+          html += `
+            <div class="tl-item ${cfg.cls}">
+              <div class="tl-time-col">
+                <span class="tl-time">${item.start_time}</span>
+                <div class="tl-dot"></div>
+              </div>
+              <div class="tl-body">
+                <span class="tl-tag ${cfg.tagCls}">${cfg.tag}</span>
+                <div class="tl-title">${item.title}</div>
+                ${item.description ? `<div class="tl-desc">${item.description}</div>` : ''}
+                <div class="tl-footer">
+                  ${item.location  ? `<span class="tl-location">📍 ${item.location}</span>` : ''}
+                  ${item.committee ? `<span class="tl-committee">${item.committee}</span>` : ''}
+                  ${item.end_time  ? `<span class="tl-location">⏳ Até ${item.end_time}</span>` : ''}
+                </div>
+              </div>
+            </div>`;
+        });
       });
     });
 
@@ -378,16 +402,18 @@
   // ── CARREGA DADOS DO BACKEND ───────────────────────────────
   async function loadAgenda() {
     try {
-      const [allItems, nowData] = await Promise.all([
+      const [allItems, nowData, periodsData] = await Promise.all([
         SWDL_API.get('/agenda'),
         SWDL_API.get('/agenda/agora'),
+        SWDL_API.get('/periods'),
       ]);
 
       if (allItems && allItems.length) {
         allAgendaItems = allItems;
-        buildDayTabs(allItems);
-        renderTimeline(getFilteredItems());
+        renderTimeline(allAgendaItems);
       }
+
+      if (periodsData) allPeriods = periodsData;
 
       if (nowData) {
         updateNowCard(nowData.current, nowData.next);

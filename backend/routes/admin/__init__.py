@@ -21,3 +21,4 @@ import routes.admin.documents       # noqa: F401
 import routes.admin.invocation      # noqa: F401
 import routes.admin.certificates    # noqa: F401
 import routes.admin.notifications   # noqa: F401
+import routes.admin.periods         # noqa: F401

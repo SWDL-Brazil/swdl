@@ -209,6 +209,10 @@
                class="{{ 'active' if 'agenda' in (request.endpoint or '') }}">
           <span class="nav-icon">📅</span> Agenda
         </a></li>
+        <li><a href="{{ url_for('admin.periods_list') }}"
+               class="{{ 'active' if 'period' in (request.endpoint or '') }}">
+          <span class="nav-icon">📆</span> Períodos
+        </a></li>
         <li><a href="{{ url_for('admin.documentos_list') }}"
                class="{{ 'active' if 'documento' in (request.endpoint or '') }}">
           <span class="nav-icon">📁</span> Documentos

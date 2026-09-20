@@ -1,4 +1,4 @@
-{% extends "admin/base.html" %}
+﻿{% extends "admin/base.html" %}
 {% block title %}Agenda{% endblock %}
 {% block page_title %}Agenda do Evento{% endblock %}
 
@@ -8,28 +8,40 @@
 
 {% block content %}
 <style>
-  .agenda-day-group { margin-bottom: 32px; }
-  .agenda-day-header {
+  .agenda-period-group { margin-bottom: 36px; }
+  .agenda-period-header {
     display: flex; align-items: center; gap: 14px;
     margin-bottom: 12px;
   }
-  .agenda-day-badge {
-    background: var(--navy); color: var(--white);
+  .agenda-period-badge {
     font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 700;
     letter-spacing: .1em; padding: 6px 14px; border-radius: 4px;
-    white-space: nowrap;
+    white-space: nowrap; color: var(--white);
   }
-  .agenda-day-date {
-    font-size: 12px; color: var(--muted);
+  .agenda-period-dates { font-size: 12px; color: var(--muted); }
+  .agenda-period-line { flex: 1; height: 1px; background: var(--border); }
+  .agenda-period-count { font-size: 12px; color: var(--muted); }
+
+  .agenda-day-group { margin-left: 16px; margin-bottom: 24px; }
+  .agenda-day-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 10px;
   }
+  .agenda-day-badge {
+    background: var(--offwhite2);
+    font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700;
+    letter-spacing: .1em; padding: 4px 12px; border-radius: 4px;
+    white-space: nowrap; color: var(--navy);
+  }
+  .agenda-day-date { font-size: 11px; color: var(--muted); }
   .agenda-day-line { flex: 1; height: 1px; background: var(--border); }
-  .agenda-day-count { font-size: 12px; color: var(--muted); }
+  .agenda-day-count { font-size: 11px; color: var(--muted); }
 
   .agenda-item-row {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 16px; background: var(--white);
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; background: var(--white);
     border: 1px solid var(--border); border-radius: 6px;
-    margin-bottom: 6px; cursor: grab; transition: box-shadow .2s, transform .2s;
+    margin-bottom: 5px; cursor: grab; transition: box-shadow .2s, transform .2s;
   }
   .agenda-item-row:active { cursor: grabbing; }
   .agenda-item-row.sortable-ghost {
@@ -41,74 +53,119 @@
   }
 
   .drag-handle {
-    color: var(--border); cursor: grab; font-size: 16px;
+    color: var(--border); cursor: grab; font-size: 14px;
     flex-shrink: 0; padding: 0 4px;
   }
   .drag-handle:hover { color: var(--slate); }
 
   .item-time {
-    font-family: 'DM Mono', monospace; font-size: 12px;
+    font-family: 'DM Mono', monospace; font-size: 11px;
     font-weight: 700; color: var(--navy);
-    min-width: 80px; flex-shrink: 0;
+    min-width: 72px; flex-shrink: 0;
   }
-  .item-title { font-size: 14px; font-weight: 600; color: var(--navy); flex: 1; }
-  .item-meta  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .item-title { font-size: 13px; font-weight: 600; color: var(--navy); flex: 1; }
+  .item-meta  { font-size: 11px; color: var(--muted); margin-top: 2px; }
   .item-actions { display: flex; gap: 4px; flex-shrink: 0; }
 
-  .no-date-group { color: var(--muted); font-size: 13px; }
+  .no-period-group { margin-bottom: 36px; }
 </style>
 
 {% set months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'] %}
 
-<!-- Agrupar por dia -->
-{% set day_groups = {} %}
+{% set period_colors = {
+  'navy': '#101E4C',
+  'gold': '#B79441',
+  'green': '#38A169',
+  'blue': '#3182CE',
+  'red': '#E53E3E',
+  'slate': '#718096'
+} %}
+
+{% set ns = namespace(period_ids=[]) %}
 {% for item in items %}
-  {% set day_num = item.day %}
-  {% if day_num not in day_groups %}
-    {% set _ = day_groups.update({day_num: []}) %}
+  {% set pid = item.period_id if item.period_id else 0 %}
+  {% if pid not in ns.period_ids %}
+    {% set ns.period_ids = ns.period_ids + [pid] %}
   {% endif %}
-  {% set _ = day_groups[day_num].append(item) %}
 {% endfor %}
 
-{% for day_num in day_groups.keys() | sort %}
-  {% set group = day_groups[day_num] %}
-  {% set first_date = group | map(attribute='event_date') | select | first %}
-  <div class="agenda-day-group">
-    <div class="agenda-day-header">
-      <span class="agenda-day-badge">Dia {{ day_num }}</span>
-      {% if first_date %}
-        {% set parts = first_date.split('-') %}
-        <span class="agenda-day-date">{{ parts[2] }} {{ months[parts[1]|int - 1] }} {{ parts[0] }}</span>
+{% for pid in ns.period_ids | sort %}
+  {% set period = periods | selectattr('id', 'equalto', pid) | first if pid != 0 else none %}
+
+  {% set ns_items = namespace(filtered=[]) %}
+  {% for item in items %}
+    {% set item_pid = item.period_id if item.period_id else 0 %}
+    {% if item_pid == pid %}
+      {% set ns_items.filtered = ns_items.filtered + [item] %}
+    {% endif %}
+  {% endfor %}
+
+  <div class="agenda-period-group">
+    <div class="agenda-period-header">
+      <span class="agenda-period-badge"
+            style="background: {{ period_colors[period.color] if period and period.color in period_colors else '#718096' }}">
+        {{ period.name if period else 'Sem Periodo' }}
+      </span>
+      {% if period and period.start_date %}
+        <span class="agenda-period-dates">
+          {{ period.start_date.strftime('%d %b %Y') }}
+          {% if period.end_date %} &ndash; {{ period.end_date.strftime('%d %b %Y') }}{% endif %}
+        </span>
       {% endif %}
-      <div class="agenda-day-line"></div>
-      <span class="agenda-day-count">{{ group|length }} atividade{{ 's' if group|length > 1 }}</span>
+      <div class="agenda-period-line"></div>
+      <span class="agenda-period-count">{{ ns_items.filtered | length }} atividade{{ 's' if ns_items.filtered | length != 1 }}</span>
     </div>
 
-    <div class="sortable-list" data-day="{{ day_num }}">
-      {% for item in group | sort(attribute='order') %}
-      <div class="agenda-item-row" data-id="{{ item.id }}">
-        <span class="drag-handle">⠿</span>
-        <div class="item-time">
-          {{ item.start_time }}{% if item.end_time %} – {{ item.end_time }}{% endif %}
+    {% set day_groups = {} %}
+    {% for item in ns_items.filtered %}
+      {% set day_num = item.day %}
+      {% if day_num not in day_groups %}
+        {% set _ = day_groups.update({day_num: []}) %}
+      {% endif %}
+      {% set _ = day_groups[day_num].append(item) %}
+    {% endfor %}
+
+    {% for day_num in day_groups.keys() | sort %}
+      {% set group = day_groups[day_num] %}
+      {% set first_date = group | map(attribute='event_date') | select | first %}
+      <div class="agenda-day-group">
+        <div class="agenda-day-header">
+          <span class="agenda-day-badge">Dia {{ day_num }}</span>
+          {% if first_date %}
+            {% set parts = first_date.split('-') %}
+            <span class="agenda-day-date">{{ parts[2] }} {{ months[parts[1]|int - 1] }} {{ parts[0] }}</span>
+          {% endif %}
+          <div class="agenda-day-line"></div>
+          <span class="agenda-day-count">{{ group|length }} atividade{{ 's' if group|length > 1 }}</span>
         </div>
-        <div style="flex:1;min-width:0">
-          <div class="item-title">{{ item.title }}</div>
-          <div class="item-meta">
-            {% if item.location %}📍 {{ item.location }}{% endif %}
-            {% if item.committee %} · {{ item.committee }}{% endif %}
-            {% if item.status != 'auto' %} · <strong>{{ item.status }}</strong>{% endif %}
+
+        <div class="sortable-list" data-day="{{ day_num }}" data-period="{{ pid }}">
+          {% for item in group | sort(attribute='order') %}
+          <div class="agenda-item-row" data-id="{{ item.id }}">
+            <span class="drag-handle">&#x2807;</span>
+            <div class="item-time">
+              {{ item.start_time }}{% if item.end_time %} &ndash; {{ item.end_time }}{% endif %}
+            </div>
+            <div style="flex:1;min-width:0">
+              <div class="item-title">{{ item.title }}</div>
+              <div class="item-meta">
+                {% if item.location %}{{ item.location }}{% endif %}
+                {% if item.committee %} &middot; {{ item.committee }}{% endif %}
+                {% if item.status != 'auto' %} &middot; <strong>{{ item.status }}</strong>{% endif %}
+              </div>
+            </div>
+            <div class="item-actions">
+              <a href="{{ url_for('admin.agenda_edit', id=item.id) }}" class="btn btn-ghost btn-sm">Edit</a>
+              <form method="POST" action="{{ url_for('admin.agenda_delete', id=item.id) }}"
+                    onsubmit="return confirm('Deletar?')">
+                <button class="btn btn-danger btn-sm" type="submit">Del</button>
+              </form>
+            </div>
           </div>
-        </div>
-        <div class="item-actions">
-          <a href="{{ url_for('admin.agenda_edit', id=item.id) }}" class="btn btn-ghost btn-sm">✏️</a>
-          <form method="POST" action="{{ url_for('admin.agenda_delete', id=item.id) }}"
-                onsubmit="return confirm('Deletar?')">
-            <button class="btn btn-danger btn-sm" type="submit">Del</button>
-          </form>
+          {% endfor %}
         </div>
       </div>
-      {% endfor %}
-    </div>
+    {% endfor %}
   </div>
 {% endfor %}
 
@@ -116,7 +173,7 @@
 <div class="card">
   <div class="card-body" style="text-align:center;color:var(--muted);padding:48px">
     Nenhuma atividade cadastrada ainda.
-    <a href="{{ url_for('admin.agenda_create') }}">Criar primeira →</a>
+    <a href="{{ url_for('admin.agenda_create') }}">Criar primeira &rarr;</a>
   </div>
 </div>
 {% endif %}

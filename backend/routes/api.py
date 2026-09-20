@@ -12,6 +12,7 @@ from models.inscription  import Inscription
 from models.inscription_member import InscriptionMember
 from models.event_config import EventConfig
 from models.urgent_alert import UrgentAlert
+from models.event_period import EventPeriod
 from datetime import datetime, date
 import urllib.request, json as _json
 from extensions import db, csrf
@@ -134,6 +135,14 @@ def api_agenda_now():
         'current': current.to_dict() if current else None,
         'next':    next_item.to_dict() if next_item else None,
     })
+
+
+# ── PERÍODOS ───────────────────────────────────────────────────
+@api_bp.route('/periods')
+def api_periods():
+    """Retorna todos os períodos do evento, ordenados por data."""
+    periods = EventPeriod.query.order_by(EventPeriod.order, EventPeriod.start_date).all()
+    return jsonify([p.to_dict() for p in periods])
 
 
 # ── INSCRIÇÃO (POST público) ───────────────────────────────────

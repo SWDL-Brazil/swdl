@@ -19,6 +19,7 @@ class AgendaItem(db.Model):
     committee   = db.Column(db.String(60))
     order       = db.Column(db.Integer, default=0, index=True)
     day         = db.Column(db.Integer, default=1, index=True)
+    period_id   = db.Column(db.Integer, db.ForeignKey('event_periods.id'), nullable=True, index=True)
 
     __table_args__ = (
         db.Index('ix_agenda_date_time', 'event_date', 'start_time'),
@@ -62,4 +63,6 @@ class AgendaItem(db.Model):
             'status':      status,
             'committee':   self.committee or '',
             'order':       self.order,
+            'period_id':   self.period_id,
+            'period_name': self.period.name if self.period else '',
         }
