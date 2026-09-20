@@ -1,3 +1,4 @@
+import logging
 from flask import render_template, redirect, url_for, flash, request, abort, jsonify
 from flask_login import login_required
 from routes.admin._helpers import admin_bp, admin_required
@@ -5,6 +6,8 @@ from models.agenda import AgendaItem
 from models.theme import Theme
 from models.event_period import EventPeriod
 from extensions import db, socketio
+
+logger = logging.getLogger(__name__)
 
 
 @admin_bp.route('/agenda')
@@ -23,23 +26,30 @@ def agenda_list():
 @admin_required
 def agenda_create():
     if request.method == 'POST':
-        item = AgendaItem(
-            day         = int(request.form.get('day', 1)),
-            event_date  = request.form.get('event_date', ''),
-            start_time  = request.form['start_time'],
-            end_time    = request.form.get('end_time', ''),
-            title       = request.form['title'],
-            description = request.form.get('description', ''),
-            location    = request.form.get('location', ''),
-            status      = request.form.get('status', 'auto'),
-            committee   = request.form.get('committee', ''),
-            order       = int(request.form.get('order', 0)),
-            period_id   = int(request.form['period_id']) if request.form.get('period_id') else None,
-        )
-        db.session.add(item)
-        db.session.commit()
-        flash('Item de agenda adicionado!', 'success')
-        return redirect(url_for('admin.agenda_list'))
+        try:
+            period_id_raw = request.form.get('period_id', '')
+            item = AgendaItem(
+                day         = int(request.form.get('day', 1)),
+                event_date  = request.form.get('event_date', ''),
+                start_time  = request.form['start_time'],
+                end_time    = request.form.get('end_time', ''),
+                title       = request.form['title'],
+                description = request.form.get('description', ''),
+                location    = request.form.get('location', ''),
+                status      = request.form.get('status', 'auto'),
+                committee   = request.form.get('committee', ''),
+                order       = int(request.form.get('order', 0)),
+                period_id   = int(period_id_raw) if period_id_raw else None,
+            )
+            db.session.add(item)
+            db.session.commit()
+            flash('Item de agenda adicionado!', 'success')
+            return redirect(url_for('admin.agenda_list'))
+        except Exception as e:
+            db.session.rollback()
+            logger.error('Erro ao criar item de agenda: %s', e, exc_info=True)
+            flash(f'Erro ao salvar: {e}', 'error')
+            return redirect(url_for('admin.agenda_create'))
     themes = Theme.query.order_by(Theme.name).all()
     periods = EventPeriod.query.order_by(EventPeriod.order).all()
     return render_template('admin/agenda_form.html', item=None, themes=themes, periods=periods)
@@ -51,20 +61,27 @@ def agenda_create():
 def agenda_edit(id):
     item = AgendaItem.query.get_or_404(id)
     if request.method == 'POST':
-        item.day         = int(request.form.get('day', 1))
-        item.event_date  = request.form.get('event_date', '')
-        item.start_time  = request.form['start_time']
-        item.end_time    = request.form.get('end_time', '')
-        item.title       = request.form['title']
-        item.description = request.form.get('description', '')
-        item.location    = request.form.get('location', '')
-        item.status      = request.form.get('status', 'auto')
-        item.committee   = request.form.get('committee', '')
-        item.order       = int(request.form.get('order', 0))
-        item.period_id   = int(request.form['period_id']) if request.form.get('period_id') else None
-        db.session.commit()
-        flash('Agenda atualizada.', 'success')
-        return redirect(url_for('admin.agenda_list'))
+        try:
+            period_id_raw = request.form.get('period_id', '')
+            item.day         = int(request.form.get('day', 1))
+            item.event_date  = request.form.get('event_date', '')
+            item.start_time  = request.form['start_time']
+            item.end_time    = request.form.get('end_time', '')
+            item.title       = request.form['title']
+            item.description = request.form.get('description', '')
+            item.location    = request.form.get('location', '')
+            item.status      = request.form.get('status', 'auto')
+            item.committee   = request.form.get('committee', '')
+            item.order       = int(request.form.get('order', 0))
+            item.period_id   = int(period_id_raw) if period_id_raw else None
+            db.session.commit()
+            flash('Agenda atualizada.', 'success')
+            return redirect(url_for('admin.agenda_list'))
+        except Exception as e:
+            db.session.rollback()
+            logger.error('Erro ao editar item de agenda: %s', e, exc_info=True)
+            flash(f'Erro ao salvar: {e}', 'error')
+            return redirect(url_for('admin.agenda_edit', id=id))
     themes = Theme.query.order_by(Theme.name).all()
     periods = EventPeriod.query.order_by(EventPeriod.order).all()
     return render_template('admin/agenda_form.html', item=item, themes=themes, periods=periods)
