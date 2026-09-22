@@ -9,61 +9,112 @@
 {% block content %}
 <div class="grid-2" style="align-items:start">
 
-  <!-- Dados do inscrito principal -->
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title">Dados do Candidato</span>
-      <div style="display:flex;gap:6px;align-items:center">
-        {% if ins.formato == 'trio' %}
-        <span class="badge" style="background:#8E44AD;color:#fff">Trio</span>
-        {% elif ins.formato == 'dupla' %}
-        <span class="badge" style="background:var(--green);color:#fff">Dupla</span>
-        {% else %}
-        <span class="badge badge-next">Individual</span>
-        {% endif %}
-        <span class="badge badge-{{ ins.status }}">{{ ins.status }}</span>
-      </div>
-    </div>
-    <div class="card-body">
-      <table style="width:100%;border-collapse:collapse;font-size:14px">
-        {% for label, value in [
-          ('Nome',     ins.name),
-          ('E-mail',   ins.email),
-          ('Telefone', ins.phone or '—'),
-          ('Instagram', ins.instagram or '—'),
-          ('Série',    ins.grade or '—'),
-          ('Tipo',     ins.type),
-          ('Interesses', ins.interests or '—'),
-          ('Enviado em', ins.submitted_at.strftime('%d/%m/%Y às %H:%M')),
-        ] %}
-        <tr>
-          <td style="padding:10px 0;border-bottom:1px solid var(--border);
-                     font-size:10px;font-weight:700;letter-spacing:.08em;
-                     text-transform:uppercase;color:var(--muted);width:130px">
-            {{ label }}
-          </td>
-          <td style="padding:10px 0;border-bottom:1px solid var(--border);
-                     font-weight:400">
-            {{ value }}
-          </td>
-        </tr>
-        {% endfor %}
-      </table>
+  <!-- ═══ COLUNA ESQUERDA: Dados de cada candidato ═══ -->
+  <div style="display:flex;flex-direction:column;gap:16px">
 
-      <div style="margin-top:20px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:.08em;
-                    text-transform:uppercase;color:var(--muted);margin-bottom:8px">
-          Motivação
+    <!-- Dados do inscrito principal -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Dados do Candidato — {{ ins.name }}</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          {% if ins.formato == 'trio' %}
+          <span class="badge" style="background:#8E44AD;color:#fff">Trio</span>
+          {% elif ins.formato == 'dupla' %}
+          <span class="badge" style="background:var(--green);color:#fff">Dupla</span>
+          {% else %}
+          <span class="badge badge-next">Individual</span>
+          {% endif %}
+          <span class="badge badge-{{ ins.status }}">{{ ins.status }}</span>
         </div>
-        <div style="font-size:14px;line-height:1.7;color:var(--text);
-                    background:var(--offwhite);padding:14px;border-radius:4px">
-          {{ ins.motivation or '(não informada)' }}
+      </div>
+      <div class="card-body">
+        <table style="width:100%;border-collapse:collapse;font-size:14px">
+          {% for label, value in [
+            ('Nome',      ins.name),
+            ('E-mail',    ins.email),
+            ('Telefone',  ins.phone or '—'),
+            ('Instagram', ins.instagram or '—'),
+            ('Série',     ins.grade or '—'),
+            ('Tipo',      ins.type),
+            ('Interesses', ins.interests or '—'),
+            ('Enviado em', ins.submitted_at.strftime('%d/%m/%Y às %H:%M')),
+          ] %}
+          <tr>
+            <td style="padding:10px 0;border-bottom:1px solid var(--border);
+                       font-size:10px;font-weight:700;letter-spacing:.08em;
+                       text-transform:uppercase;color:var(--muted);width:130px">
+              {{ label }}
+            </td>
+            <td style="padding:10px 0;border-bottom:1px solid var(--border);
+                       font-weight:400">
+              {{ value }}
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
+
+        <div style="margin-top:20px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;
+                      text-transform:uppercase;color:var(--muted);margin-bottom:8px">
+            Motivação
+          </div>
+          <div style="font-size:14px;line-height:1.7;color:var(--text);
+                      background:var(--offwhite);padding:14px;border-radius:4px">
+            {{ ins.motivation or '(não informada)' }}
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- Dados de cada membro extra -->
+    {% for m in ins.extra_members %}
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Dados do Candidato — {{ m.name }}</span>
+        <span class="badge" style="background:var(--offwhite);color:var(--text)">Membro {{ loop.index }}</span>
+      </div>
+      <div class="card-body">
+        <table style="width:100%;border-collapse:collapse;font-size:14px">
+          {% for label, value in [
+            ('Nome',      m.name),
+            ('E-mail',    m.email),
+            ('Telefone',  m.phone or '—'),
+            ('Instagram', m.instagram or '—'),
+            ('Série',     m.grade or '—'),
+            ('Experiência', m.experience or '—'),
+            ('Interesses', m.interests or '—'),
+          ] %}
+          <tr>
+            <td style="padding:10px 0;border-bottom:1px solid var(--border);
+                       font-size:10px;font-weight:700;letter-spacing:.08em;
+                       text-transform:uppercase;color:var(--muted);width:130px">
+              {{ label }}
+            </td>
+            <td style="padding:10px 0;border-bottom:1px solid var(--border);
+                       font-weight:400">
+              {{ value }}
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
+
+        <div style="margin-top:20px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;
+                      text-transform:uppercase;color:var(--muted);margin-bottom:8px">
+            Motivação
+          </div>
+          <div style="font-size:14px;line-height:1.7;color:var(--text);
+                      background:var(--offwhite);padding:14px;border-radius:4px">
+            {{ m.motivation or '(não informada)' }}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
   </div>
 
-  <!-- Ações + Membros -->
+  <!-- ═══ COLUNA DIREITA: Ações + Resumo ═══ -->
   <div>
     <!-- Painel de ações -->
     {% if ins.status == 'pending' %}
@@ -142,99 +193,24 @@
     </div>
     {% endif %}
 
-    <!-- Membros do grupo -->
+    <!-- Resumo do grupo (lista simples) -->
     {% if ins.extra_members %}
     <div class="card">
       <div class="card-header">
         <span class="card-title">Membros do Grupo</span>
         <span class="badge" style="background:var(--offwhite);color:var(--text)">{{ ins.extra_members|length + 1 }} pessoas</span>
       </div>
-      <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
-        <!-- Inscrito principal -->
-        <div style="padding:14px;background:var(--offwhite);border-radius:6px;border-left:3px solid var(--gold)">
-          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;
-                      text-transform:uppercase;color:var(--gold);margin-bottom:8px">
-            Inscrito Principal
-          </div>
-          <table style="width:100%;border-collapse:collapse;font-size:13px">
-            {% for label, value in [
-              ('Nome',      ins.name),
-              ('E-mail',    ins.email),
-              ('Telefone',  ins.phone or '—'),
-              ('Instagram', ins.instagram or '—'),
-              ('Série',     ins.grade or '—'),
-            ] %}
-            <tr>
-              <td style="padding:6px 0;border-bottom:1px solid var(--border);
-                         font-size:10px;font-weight:700;letter-spacing:.08em;
-                         text-transform:uppercase;color:var(--muted);width:100px;vertical-align:top">
-                {{ label }}
-              </td>
-              <td style="padding:6px 0;border-bottom:1px solid var(--border);font-weight:400">
-                {{ value }}
-              </td>
-            </tr>
-            {% endfor %}
-          </table>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;
+                    background:var(--offwhite);border-radius:4px;border-left:3px solid var(--gold)">
+          <div style="font-weight:600;font-size:13px">{{ ins.name }}</div>
+          <div style="font-size:11px;color:var(--muted);margin-left:auto">Principal</div>
         </div>
-
-        <!-- Membros adicionais -->
         {% for m in ins.extra_members %}
-        <div style="padding:14px;background:var(--offwhite);border-radius:6px;border-left:3px solid var(--navy)">
-          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;
-                      text-transform:uppercase;color:var(--muted);margin-bottom:8px">
-            Membro {{ loop.index }}
-          </div>
-          <table style="width:100%;border-collapse:collapse;font-size:13px">
-            {% for label, value in [
-              ('Nome',      m.name),
-              ('E-mail',    m.email),
-              ('Telefone',  m.phone or '—'),
-              ('Instagram', m.instagram or '—'),
-              ('Série',     m.grade or '—'),
-            ] %}
-            <tr>
-              <td style="padding:6px 0;border-bottom:1px solid var(--border);
-                         font-size:10px;font-weight:700;letter-spacing:.08em;
-                         text-transform:uppercase;color:var(--muted);width:100px;vertical-align:top">
-                {{ label }}
-              </td>
-              <td style="padding:6px 0;border-bottom:1px solid var(--border);font-weight:400">
-                {{ value }}
-              </td>
-            </tr>
-            {% endfor %}
-          </table>
-          {% if m.motivation %}
-          <div style="margin-top:10px">
-            <div style="font-size:10px;font-weight:700;letter-spacing:.08em;
-                        text-transform:uppercase;color:var(--muted);margin-bottom:4px">
-              Motivação
-            </div>
-            <div style="font-size:13px;line-height:1.6;color:var(--text);
-                        background:var(--white);padding:10px;border-radius:4px">
-              {{ m.motivation }}
-            </div>
-          </div>
-          {% endif %}
-          {% if m.experience %}
-          <div style="margin-top:8px">
-            <div style="font-size:10px;font-weight:700;letter-spacing:.08em;
-                        text-transform:uppercase;color:var(--muted);margin-bottom:4px">
-              Experiência Anterior
-            </div>
-            <div style="font-size:13px;color:var(--text)">{{ m.experience }}</div>
-          </div>
-          {% endif %}
-          {% if m.interests %}
-          <div style="margin-top:8px">
-            <div style="font-size:10px;font-weight:700;letter-spacing:.08em;
-                        text-transform:uppercase;color:var(--muted);margin-bottom:4px">
-              Temas de Interesse
-            </div>
-            <div style="font-size:13px;color:var(--text)">{{ m.interests }}</div>
-          </div>
-          {% endif %}
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;
+                    background:var(--offwhite);border-radius:4px;border-left:3px solid var(--navy)">
+          <div style="font-weight:600;font-size:13px">{{ m.name }}</div>
+          <div style="font-size:11px;color:var(--muted);margin-left:auto">Membro {{ loop.index }}</div>
         </div>
         {% endfor %}
       </div>
