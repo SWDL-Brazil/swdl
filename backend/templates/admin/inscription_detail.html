@@ -151,40 +151,62 @@
       </div>
       <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
         <!-- Inscrito principal -->
-        <div style="padding:12px;background:var(--offwhite);border-radius:6px;border-left:3px solid var(--gold)">
+        <div style="padding:14px;background:var(--offwhite);border-radius:6px;border-left:3px solid var(--gold)">
           <div style="font-size:11px;font-weight:700;letter-spacing:.08em;
-                      text-transform:uppercase;color:var(--gold);margin-bottom:6px">
+                      text-transform:uppercase;color:var(--gold);margin-bottom:8px">
             Inscrito Principal
           </div>
-          <div style="font-weight:600">{{ ins.name }}</div>
-          <div style="font-size:12px;color:var(--muted)">{{ ins.email }}</div>
-          {% if ins.phone or ins.instagram or ins.grade %}
-          <div style="font-size:12px;color:var(--muted);margin-top:4px">
-            {% if ins.grade %}{{ ins.grade }}{% endif %}
-            {% if ins.phone %} · {{ ins.phone }}{% endif %}
-            {% if ins.instagram %} · {{ ins.instagram }}{% endif %}
-          </div>
-          {% endif %}
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            {% for label, value in [
+              ('Nome',      ins.name),
+              ('E-mail',    ins.email),
+              ('Telefone',  ins.phone or '—'),
+              ('Instagram', ins.instagram or '—'),
+              ('Série',     ins.grade or '—'),
+            ] %}
+            <tr>
+              <td style="padding:6px 0;border-bottom:1px solid var(--border);
+                         font-size:10px;font-weight:700;letter-spacing:.08em;
+                         text-transform:uppercase;color:var(--muted);width:100px;vertical-align:top">
+                {{ label }}
+              </td>
+              <td style="padding:6px 0;border-bottom:1px solid var(--border);font-weight:400">
+                {{ value }}
+              </td>
+            </tr>
+            {% endfor %}
+          </table>
         </div>
 
         <!-- Membros adicionais -->
         {% for m in ins.extra_members %}
-        <div style="padding:12px;background:var(--offwhite);border-radius:6px;border-left:3px solid var(--navy)">
+        <div style="padding:14px;background:var(--offwhite);border-radius:6px;border-left:3px solid var(--navy)">
           <div style="font-size:11px;font-weight:700;letter-spacing:.08em;
-                      text-transform:uppercase;color:var(--muted);margin-bottom:6px">
+                      text-transform:uppercase;color:var(--muted);margin-bottom:8px">
             Membro {{ loop.index }}
           </div>
-          <div style="font-weight:600">{{ m.name }}</div>
-          <div style="font-size:12px;color:var(--muted)">{{ m.email }}</div>
-          {% if m.phone or m.instagram or m.grade %}
-          <div style="font-size:12px;color:var(--muted);margin-top:4px">
-            {% if m.grade %}{{ m.grade }}{% endif %}
-            {% if m.phone %} · {{ m.phone }}{% endif %}
-            {% if m.instagram %} · {{ m.instagram }}{% endif %}
-          </div>
-          {% endif %}
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            {% for label, value in [
+              ('Nome',      m.name),
+              ('E-mail',    m.email),
+              ('Telefone',  m.phone or '—'),
+              ('Instagram', m.instagram or '—'),
+              ('Série',     m.grade or '—'),
+            ] %}
+            <tr>
+              <td style="padding:6px 0;border-bottom:1px solid var(--border);
+                         font-size:10px;font-weight:700;letter-spacing:.08em;
+                         text-transform:uppercase;color:var(--muted);width:100px;vertical-align:top">
+                {{ label }}
+              </td>
+              <td style="padding:6px 0;border-bottom:1px solid var(--border);font-weight:400">
+                {{ value }}
+              </td>
+            </tr>
+            {% endfor %}
+          </table>
           {% if m.motivation %}
-          <div style="margin-top:8px">
+          <div style="margin-top:10px">
             <div style="font-size:10px;font-weight:700;letter-spacing:.08em;
                         text-transform:uppercase;color:var(--muted);margin-bottom:4px">
               Motivação
