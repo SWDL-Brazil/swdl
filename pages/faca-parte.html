@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Faça Parte — SWDL</title>
   <meta name="description" content="Inscreva-se no SWDL 2026 como delegado ou voluntário. Desenvolva habilidades diplomáticas e represente um país.">
   <meta property="og:title" content="Faça Parte — SWDL">
@@ -14,12 +14,45 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap">
+  <style>
+    :root{--navy:#101E4C;--gold:#B79441;--gold-light:#D4B060;--slate:#B1B5CB;--offwhite:#F7F5F0;--white:#FFF;--text:#1a1a2e;--muted:#6B6F85;--border:rgba(16,30,76,.1)}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth;font-size:16px}
+    body{font-family:'DM Sans',sans-serif;background:var(--offwhite);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+    nav.swdl-nav{position:fixed;top:0;left:0;right:0;z-index:100;height:68px;display:flex;align-items:center;justify-content:space-between;padding:env(safe-area-inset-top,0px) 48px 0;background:rgba(16,30,76,.97);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(183,148,65,.22)}
+    .nav-logo{display:flex;align-items:center;text-decoration:none}
+    .nav-logo-img{height:60px;width:auto;display:block}
+    .nav-links{display:flex;align-items:center;gap:28px;list-style:none}
+    .nav-links a{text-decoration:none;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);padding-bottom:2px}
+    .nav-links a.active{color:var(--white)}
+    .nav-links .nav-cta{background:var(--gold);color:var(--navy);padding:8px 20px;border-radius:4px;font-weight:700}
+    .nav-hamburger{display:none;background:none;border:none;cursor:pointer;padding:8px}
+    .btn{display:inline-flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;border-radius:4px;transition:all .2s;cursor:pointer;border:none}
+    .btn-primary{background:var(--gold);color:var(--navy);padding:14px 32px}
+    .btn-ghost{background:transparent;color:var(--navy);border:1px solid var(--border);padding:14px 32px}
+    .btn-navy{background:var(--navy);color:var(--white);padding:14px 32px}
+    .container{width:100%;max-width:1120px;margin:0 auto;padding:0 24px}
+    .section-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  </style>
   <link rel="stylesheet" href="css/variables.min.css">
   <link rel="stylesheet" href="css/navbar.min.css">
   <link rel="stylesheet" href="css/pages.min.css">
   <link rel="stylesheet" href="css/footer.min.css">
   <link rel="icon" type="image/png" href="assent/img/image__1_-removebg-preview.png">
   <link rel="stylesheet" href="css/faca-parte-page.css">
+  <style>
+    #inscricoes-countdown {
+      background: var(--navy); border: none;
+      padding: 48px 40px; text-align: center;
+      position: static !important;
+    }
+    #inscricoes-countdown .fp-hero-stat-label { color: var(--gold); }
+    #inscricoes-countdown .fp-hero-desc { color: var(--white); }
+    #inscricoes-countdown .fp-hero-sub { color: var(--slate); }
+    #inscricoes-countdown .countdown-label { color: rgba(255,255,255,.5); }
+    #inscricoes-countdown .countdown-sep { color: var(--gold); }
+    #inscricoes-countdown .countdown-num { color: var(--white); }
+  </style>
   <!-- <link rel="stylesheet" href="css/maintenance.min.css"> -->
 </head>
 <body>
@@ -97,32 +130,32 @@
   <div class="container">
 
     <!-- CRONOMETRO INSCRICOES -->
-    <div id="inscricoes-countdown" style="background:linear-gradient(135deg,var(--navy),#1a2744);border-radius:8px;padding:28px 24px;margin-bottom:32px;text-align:center;color:#fff">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Próximo Debate</div>
-      <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:4px">A Escravidão do Passado ao Racismo do Presente<br>Desafiando o Futuro</div>
-      <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:16px">As inscrições fecham em:</div>
-      <div style="display:flex;justify-content:center;gap:16px;margin-bottom:12px">
-        <div style="text-align:center">
-          <div id="cd-dias" style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;line-height:1">--</div>
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5)">dias</div>
+    <div id="inscricoes-countdown" class="fp-form-card mb-32">
+      <div class="fp-hero-stat-label">Próximo Debate</div>
+      <div class="fp-hero-desc">A Escravidão do Passado ao Racismo do Presente<br>Desafiando o Futuro</div>
+      <div class="fp-hero-sub">As inscrições fecham em:</div>
+      <div class="countdown-row">
+        <div class="text-center">
+          <div id="cd-dias" class="countdown-num">--</div>
+          <div class="countdown-label">dias</div>
         </div>
-        <div style="font-size:36px;font-weight:700;color:var(--gold);line-height:1">:</div>
-        <div style="text-align:center">
-          <div id="cd-horas" style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;line-height:1">--</div>
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5)">horas</div>
+        <div class="countdown-sep">:</div>
+        <div class="text-center">
+          <div id="cd-horas" class="countdown-num">--</div>
+          <div class="countdown-label">horas</div>
         </div>
-        <div style="font-size:36px;font-weight:700;color:var(--gold);line-height:1">:</div>
-        <div style="text-align:center">
-          <div id="cd-mins" style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;line-height:1">--</div>
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5)">min</div>
+        <div class="countdown-sep">:</div>
+        <div class="text-center">
+          <div id="cd-mins" class="countdown-num">--</div>
+          <div class="countdown-label">min</div>
         </div>
-        <div style="font-size:36px;font-weight:700;color:var(--gold);line-height:1">:</div>
-        <div style="text-align:center">
-          <div id="cd-secs" style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;line-height:1">--</div>
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5)">seg</div>
+        <div class="countdown-sep">:</div>
+        <div class="text-center">
+          <div id="cd-secs" class="countdown-num">--</div>
+          <div class="countdown-label">seg</div>
         </div>
       </div>
-      <div id="cd-status" style="font-size:12px;color:rgba(255,255,255,.5)"></div>
+      <div id="cd-status" class="fp-hero-footer"></div>
     </div>
 
     <!-- TABS -->
@@ -140,7 +173,7 @@
           <div class="fp-info-title" data-i18n="faca_parte.delegado_title">Torne-se um Delegado</div>
           <p class="fp-info-sub" data-i18n="faca_parte.delegado_desc">Represente um país e participe dos debates mais importantes do mundo. Desenvolva oratória, diplomacia e visão global em uma experiência única.</p>
 
-          <div class="section-label" style="margin-bottom:14px" data-i18n="faca_parte.delegado_why_label">Por que ser um Delegado SWDL?</div>
+          <div class="section-label mb-14" data-i18n="faca_parte.delegado_why_label">Por que ser um Delegado SWDL?</div>
           <div class="why-list">
             <div class="why-item"><div class="why-dot">✓</div><span data-i18n="faca_parte.delegado_why_1">Desenvolva habilidades de oratória e argumentação</span></div>
             <div class="why-item"><div class="why-dot">✓</div><span data-i18n="faca_parte.delegado_why_2">Aprenda sobre questões globais contemporâneas</span></div>
@@ -151,7 +184,7 @@
             <div class="why-item"><div class="why-dot">✓</div><span data-i18n="faca_parte.delegado_why_7">Faça networking com jovens interessados em política internacional</span></div>
           </div>
 
-          <div class="section-label" style="margin-bottom:14px" data-i18n="faca_parte.delegado_req_label">Requisitos para Participar</div>
+          <div class="section-label mb-14" data-i18n="faca_parte.delegado_req_label">Requisitos para Participar</div>
           <div class="req-grid">
             <div class="req-card">
               <img loading="lazy" src="assent/icons/school.svg" alt="" class="req-icon">
@@ -413,22 +446,22 @@
       <div class="section-label" data-i18n="faca_parte.steps_label">O que vem a seguir</div>
       <h2 class="section-title light" data-i18n="faca_parte.steps_title">Próximos Passos</h2>
       <div class="steps-grid">
-        <div class="step-card">
+        <div class="step-card" style="--i:0">
           <div class="step-num">1</div>
           <div class="step-title" data-i18n="faca_parte.step_1_title">Envie sua Inscrição</div>
           <div class="step-desc" data-i18n="faca_parte.step_1_desc">Preencha o formulário acima com suas informações e motivações</div>
         </div>
-        <div class="step-card">
+        <div class="step-card" style="--i:1">
           <div class="step-num">2</div>
           <div class="step-title" data-i18n="faca_parte.step_2_title">Aguarde o Contato</div>
           <div class="step-desc" data-i18n="faca_parte.step_2_desc">Responderemos após o fim do período de inscrições</div>
         </div>
-        <div class="step-card">
+        <div class="step-card" style="--i:2">
           <div class="step-num">3</div>
           <div class="step-title" data-i18n="faca_parte.step_3_title">Participe da Preparação</div>
           <div class="step-desc" data-i18n="faca_parte.step_3_desc">Compareça aos workshops e sessões de preparação</div>
         </div>
-        <div class="step-card">
+        <div class="step-card" style="--i:3">
           <div class="step-num">4</div>
           <div class="step-title" data-i18n="faca_parte.step_4_title">Debate e Aprenda</div>
           <div class="step-desc" data-i18n="faca_parte.step_4_desc">Participe dos debates e desenvolva suas habilidades diplomáticas</div>
@@ -443,7 +476,7 @@
   <div class="container">
     <div class="footer-main">
       <div>
-        <div class="nav-logo" style="display:inline-flex">
+        <div class="nav-logo footer-logo">
           <a href="index.html" class="nav-logo">
             <img loading="lazy" src="assent/img/image__1_-removebg-preview.png" alt="SESI World Diplomacy League" class="nav-logo-img">
           </a>
@@ -471,9 +504,9 @@
     <div class="footer-langs"></div>
     <div class="footer-bottom">
       <p class="footer-copy" data-i18n="footer.copyright">© 2026 SESI World Diplomacy League — Desenvolvido por <strong>Pedro Bonazzi</strong></p>
-            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
-          <a href="privacidade.html" style="font-size:12px;color:rgba(255,255,255,.35)" data-i18n="footer.privacy_link">Política de Privacidade</a>
-          <a href="termos.html" style="font-size:12px;color:rgba(255,255,255,.35)" data-i18n="footer.terms_link">Termos de Uso</a>
+            <div class="footer-legal">
+          <a href="privacidade.html" data-i18n="footer.privacy_link" class="footer-legal-link">Política de Privacidade</a>
+          <a href="termos.html" data-i18n="footer.terms_link" class="footer-legal-link">Termos de Uso</a>
         </div>
     </div>
   </div>
@@ -613,9 +646,19 @@
       primaryFields.style.display = '';
       groupFields.style.display = 'none';
       groupFields.innerHTML = '';
+      primaryFields.querySelectorAll('input, select, textarea').forEach(el => {
+        el.removeAttribute('disabled');
+        if (el.dataset.origRequired === 'true') el.setAttribute('required', '');
+        if (el.dataset.origRequired === 'false') el.removeAttribute('required');
+      });
     } else {
       primaryFields.style.display = 'none';
       groupFields.style.display = '';
+      primaryFields.querySelectorAll('input, select, textarea').forEach(el => {
+        if (!el.dataset.origRequired) el.dataset.origRequired = el.hasAttribute('required') ? 'true' : 'false';
+        el.setAttribute('disabled', 'disabled');
+        el.removeAttribute('required');
+      });
       const n = val === 'dupla' ? 2 : 3;
       let html = `<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;letter-spacing:.06em;text-transform:uppercase">Participantes do Grupo</div>`;
       for (let i = 1; i <= n; i++) {
