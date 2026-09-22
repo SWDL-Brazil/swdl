@@ -620,7 +620,6 @@
             <input type="text" name="member_instagram_${idx}" placeholder="@usuario" required>
           </div>
         </div>
-        ${isYou ? `
         <div class="form-group" style="margin-top:12px">
           <label>Experiência Anterior</label>
           <input type="text" name="member_experience_${idx}" placeholder="Ex: participei de um MUN na escola X...">
@@ -633,7 +632,6 @@
           <label>Temas de Interesse</label>
           <input type="text" name="member_interests_${idx}" placeholder="Ex: Segurança Internacional, Direitos Humanos...">
         </div>
-        ` : ''}
       </div>`;
   }
   function updateFormato() {

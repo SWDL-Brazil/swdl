@@ -221,6 +221,9 @@ def api_inscricao():
             grade  = m.get('grade', ''),
             instagram = m.get('instagram', ''),
             phone  = m.get('phone', ''),
+            motivation = m.get('motivation', ''),
+            interests  = m.get('interests', ''),
+            experience = m.get('experience', ''),
         )
         db.session.add(member)
 

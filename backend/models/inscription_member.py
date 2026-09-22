@@ -17,6 +17,9 @@ class InscriptionMember(db.Model):
     grade           = db.Column(db.String(30))
     instagram       = db.Column(db.String(100))
     phone           = db.Column(db.String(30))
+    motivation      = db.Column(db.Text)
+    interests       = db.Column(db.String(300))
+    experience      = db.Column(db.String(300))
     created_at      = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __repr__(self):

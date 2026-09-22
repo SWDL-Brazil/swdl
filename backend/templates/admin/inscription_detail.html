@@ -183,6 +183,36 @@
             {% if m.instagram %} · {{ m.instagram }}{% endif %}
           </div>
           {% endif %}
+          {% if m.motivation %}
+          <div style="margin-top:8px">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.08em;
+                        text-transform:uppercase;color:var(--muted);margin-bottom:4px">
+              Motivação
+            </div>
+            <div style="font-size:13px;line-height:1.6;color:var(--text);
+                        background:var(--white);padding:10px;border-radius:4px">
+              {{ m.motivation }}
+            </div>
+          </div>
+          {% endif %}
+          {% if m.experience %}
+          <div style="margin-top:8px">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.08em;
+                        text-transform:uppercase;color:var(--muted);margin-bottom:4px">
+              Experiência Anterior
+            </div>
+            <div style="font-size:13px;color:var(--text)">{{ m.experience }}</div>
+          </div>
+          {% endif %}
+          {% if m.interests %}
+          <div style="margin-top:8px">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.08em;
+                        text-transform:uppercase;color:var(--muted);margin-bottom:4px">
+              Temas de Interesse
+            </div>
+            <div style="font-size:13px;color:var(--text)">{{ m.interests }}</div>
+          </div>
+          {% endif %}
         </div>
         {% endfor %}
       </div>
