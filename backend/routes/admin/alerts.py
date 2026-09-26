@@ -4,6 +4,7 @@ from flask_login import login_required, current_user
 from routes.admin._helpers import admin_bp, admin_required
 from models.urgent_alert import UrgentAlert
 from extensions import db
+from perf_cache import cache_clear
 
 
 @admin_bp.route('/alertas')
@@ -25,6 +26,7 @@ def alert_create():
     alert = UrgentAlert(message=message, active=True, created_by=current_user.id)
     db.session.add(alert)
     db.session.commit()
+    cache_clear('alert_messages')
     flash('🚨 Alerta urgente ativado!', 'success')
     return redirect(url_for('admin.alerts_list'))
 
@@ -36,6 +38,7 @@ def alert_toggle(id):
     alert = UrgentAlert.query.get_or_404(id)
     alert.active = not alert.active
     db.session.commit()
+    cache_clear('alert_messages')
     flash(f'Alerta {"ativado" if alert.active else "desativado"}.', 'info')
     return redirect(url_for('admin.alerts_list'))
 
@@ -47,5 +50,6 @@ def alert_delete(id):
     alert = UrgentAlert.query.get_or_404(id)
     db.session.delete(alert)
     db.session.commit()
+    cache_clear('alert_messages')
     flash('Alerta removido.', 'info')
     return redirect(url_for('admin.alerts_list'))

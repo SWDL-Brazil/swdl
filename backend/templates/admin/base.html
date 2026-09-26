@@ -318,7 +318,7 @@
           <span class="alert-banner-icon">🚨</span>
           <span class="alert-banner-text">
             {% for a in active_alerts %}
-              {{ a.message }}{% if not loop.last %} &nbsp;|&nbsp; {% endif %}
+              {{ a }}{% if not loop.last %} &nbsp;|&nbsp; {% endif %}
             {% endfor %}
           </span>
           <span class="alert-banner-count">{{ active_alerts|length }} alerta(s)</span>

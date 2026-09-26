@@ -51,15 +51,66 @@ def get_current_delegation():
     return Delegation.query.filter_by(user_id=current_user.id).first()
 
 
+def delegation_options():
+    """Eager loading padrão das listagens de delegação.
+
+    Evita N+1: o template chama member_names()/group_label(), que leem
+    delegation.students e delegation.inscription — cada um = 1 query extra
+    por linha (~180ms de latência em produção).
+    """
+    from sqlalchemy.orm import joinedload, selectinload
+    return (
+        selectinload(Delegation.students),
+        joinedload(Delegation.inscription),
+        joinedload(Delegation.theme),
+    )
+
+
+# ── Cache de processo para o context processor ──────────────────
+# Em produção cada query custa ~180ms de latência (medido na Fase 0) e o
+# context processor roda em TODA tela do admin. TTL curto + invalidação
+# nos pontos de escrita mantém o painel sempre coerente.
+_GLOBALS_TTL = 10.0
+
+
+def _cached_phase_override():
+    from perf_cache import cache_get, cache_set
+    v = cache_get('phase_override')
+    if v is None:
+        v = EventConfig.get_phase_override() or ''
+        cache_set('phase_override', v, ttl=_GLOBALS_TTL)
+    return v or None
+
+
+def _cached_invoke():
+    from perf_cache import cache_get, cache_set
+    v = cache_get('active_invoke')
+    if v is None:
+        v = EventConfig.get_invoke() or ''
+        cache_set('active_invoke', v, ttl=_GLOBALS_TTL)
+    return v or None
+
+
+def _cached_alert_messages():
+    from perf_cache import cache_get, cache_set
+    v = cache_get('alert_messages')
+    if v is None:
+        rows = UrgentAlert.query.filter_by(active=True)\
+            .order_by(UrgentAlert.created_at.desc()).all()
+        v = [a.message for a in rows]
+        cache_set('alert_messages', v, ttl=_GLOBALS_TTL)
+    return v
+
+
 @admin_bp.context_processor
 def inject_globals():
     try:
         phase, _, _ = get_agenda_status()
-        override = EventConfig.get_phase_override()
+        override = _cached_phase_override()
         if override in ('pre', 'during', 'post'):
             phase = override
-        active_invoke = EventConfig.get_invoke()
-        active_alerts = UrgentAlert.query.filter_by(active=True).order_by(UrgentAlert.created_at.desc()).all()
+        active_invoke = _cached_invoke()
+        active_alerts = _cached_alert_messages()
         return dict(event_phase=phase or 'pre', active_invoke=active_invoke,
                     active_alerts=active_alerts,
                     is_admin=current_user.is_admin() if current_user.is_authenticated else False)

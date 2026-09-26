@@ -3,14 +3,24 @@
 # =============================================================
 from datetime import datetime, timezone
 
+# TTL do cache de processo: a fase muda com o tempo (e não a cada request).
+# Cada query paga ~180ms de latência em produção — ver Fase 0.
+_CACHE_TTL = 10.0
+
 
 def get_agenda_status():
     """Retorna (phase, first_dt, last_dt) baseado nos itens de agenda.
     phase: 'pre', 'during', 'post' ou None.
-    Memoizado por request via flask.g."""
+    Memoizado por request (flask.g) e por processo (perf_cache)."""
     from flask import g
     if hasattr(g, '_agenda_status'):
         return g._agenda_status
+
+    from perf_cache import cache_get, cache_set
+    cached = cache_get('agenda_status', ttl=_CACHE_TTL)
+    if cached is not None:
+        g._agenda_status = cached
+        return cached
 
     from models.agenda import AgendaItem
     base_q = AgendaItem.query.filter(
@@ -21,6 +31,7 @@ def get_agenda_status():
     last  = base_q.order_by(AgendaItem.event_date.desc(), AgendaItem.start_time.desc()).limit(1).first()
     if not first:
         g._agenda_status = (None, None, None)
+        cache_set('agenda_status', g._agenda_status, ttl=_CACHE_TTL)
         return g._agenda_status
     try:
         first_dt = datetime.strptime(
@@ -39,6 +50,7 @@ def get_agenda_status():
             g._agenda_status = ('during', first_dt, last_dt)
     except (ValueError, TypeError):
         g._agenda_status = (None, None, None)
+    cache_set('agenda_status', g._agenda_status, ttl=_CACHE_TTL)
     return g._agenda_status
 
 

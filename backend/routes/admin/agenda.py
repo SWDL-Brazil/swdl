@@ -6,6 +6,7 @@ from models.agenda import AgendaItem
 from models.theme import Theme
 from models.event_period import EventPeriod
 from extensions import db, socketio
+from perf_cache import cache_clear
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,7 @@ def agenda_create():
             )
             db.session.add(item)
             db.session.commit()
+            cache_clear('agenda_status')
             flash('Item de agenda adicionado!', 'success')
             return redirect(url_for('admin.agenda_list'))
         except Exception as e:
@@ -75,6 +77,7 @@ def agenda_edit(id):
             item.order       = int(request.form.get('order', 0))
             item.period_id   = int(period_id_raw) if period_id_raw else None
             db.session.commit()
+            cache_clear('agenda_status')
             flash('Agenda atualizada.', 'success')
             return redirect(url_for('admin.agenda_list'))
         except Exception as e:
@@ -94,6 +97,7 @@ def agenda_delete(id):
     item = AgendaItem.query.get_or_404(id)
     db.session.delete(item)
     db.session.commit()
+    cache_clear('agenda_status')
     flash('Item removido.', 'info')
     return redirect(url_for('admin.agenda_list'))
 
@@ -112,6 +116,7 @@ def agenda_set_status(id, status):
     item = AgendaItem.query.get_or_404(id)
     item.status = status
     db.session.commit()
+    cache_clear('agenda_status')
     flash(f'Status atualizado para "{status}".', 'success')
     return redirect(url_for('admin.agenda_list'))
 
@@ -129,4 +134,5 @@ def agenda_reorder():
         if item:
             item.order = entry.get('order', item.order)
     db.session.commit()
+    cache_clear('agenda_status')
     return jsonify({'ok': True})

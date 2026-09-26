@@ -14,7 +14,11 @@ from datetime import datetime, timezone
 @admin_required
 def convocar_page():
     """Lista alunos prontos para serem convocados à simulação."""
-    students = Student.query.order_by(Student.created_at.desc()).all()
+    from sqlalchemy.orm import joinedload, selectinload
+    # Eager: template lê s.delegation.theme de cada linha (N+1)
+    students = Student.query.options(
+        selectinload(Student.delegation).options(joinedload(Delegation.theme))
+    ).order_by(Student.created_at.desc()).all()
     themes = Theme.query.all()
     return render_template('admin/convocar.html', students=students, themes=themes)
 

@@ -1,6 +1,6 @@
 from flask import render_template, redirect, url_for, flash, send_file
 from flask_login import login_required
-from routes.admin._helpers import admin_bp, moderator_required, admin_required
+from routes.admin._helpers import admin_bp, moderator_required, admin_required, delegation_options
 from models.delegation import Delegation
 from models.participation import ParticipationHistory
 from extensions import db
@@ -13,7 +13,8 @@ from datetime import datetime, timezone
 @moderator_required
 def dpos_list():
     """Lista todos os DPOs enviados pelos delegados."""
-    dpos = Delegation.query.filter(Delegation.dpo_uploaded == True)\
+    dpos = Delegation.query.options(*delegation_options())\
+        .filter(Delegation.dpo_uploaded == True)\
         .order_by(Delegation.id.desc()).all()
     return render_template('admin/dpos_list.html', dpos=dpos)
 

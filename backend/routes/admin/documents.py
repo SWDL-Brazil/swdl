@@ -4,6 +4,7 @@ from routes.admin._helpers import admin_bp, admin_required
 from models.document import Document
 from models.theme import Theme
 from extensions import db
+from sqlalchemy.orm import joinedload
 import os
 from datetime import datetime, timezone
 
@@ -13,7 +14,9 @@ from datetime import datetime, timezone
 @admin_required
 def documentos_list():
     """Lista todos os documentos enviados."""
-    documentos = Document.query.order_by(Document.created_at.desc()).all()
+    documentos = Document.query.options(
+        joinedload(Document.theme)
+    ).order_by(Document.created_at.desc()).all()
     themes = Theme.query.order_by(Theme.name).all()
     return render_template('admin/documentos_list.html', documentos=documentos, available_themes=themes)
 

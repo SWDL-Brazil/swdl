@@ -17,9 +17,11 @@ from datetime import datetime, timezone
 @login_required
 @admin_required
 def inscriptions_list():
+    from sqlalchemy.orm import selectinload
     status_filter = request.args.get('status', 'all')
     formato_filter = request.args.get('formato', 'all')
-    q = Inscription.query
+    # selectinload: evita 1 query por inscrição ao ler extra_members no template
+    q = Inscription.query.options(selectinload(Inscription.extra_members))
     if status_filter != 'all':
         q = q.filter_by(status=status_filter)
     if formato_filter != 'all':

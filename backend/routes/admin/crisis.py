@@ -4,6 +4,7 @@ from routes.admin._helpers import admin_bp, admin_required
 from models.event_config import EventConfig
 from models.urgent_alert import UrgentAlert
 from extensions import db, socketio
+from perf_cache import cache_clear
 
 
 @admin_bp.route('/crise/ativar', methods=['POST'])
@@ -14,6 +15,7 @@ def crisis_activate():
     alert = UrgentAlert(message=message, active=True, created_by=current_user.id)
     db.session.add(alert)
     db.session.commit()
+    cache_clear('alert_messages')
     socketio.emit('urgent_alert', alert.to_dict(), namespace='/')
     flash(f'Banner de crise ativado: "{message}"', 'warning')
     return redirect(url_for('admin.dashboard'))
@@ -25,6 +27,7 @@ def crisis_activate():
 def crisis_deactivate():
     UrgentAlert.query.filter_by(active=True).update({'active': False})
     db.session.commit()
+    cache_clear('alert_messages')
     socketio.emit('urgent_alert_hide', {}, namespace='/')
     flash('Banner de crise desativado.', 'info')
     return redirect(url_for('admin.dashboard'))

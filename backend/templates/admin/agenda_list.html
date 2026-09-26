@@ -108,8 +108,8 @@
       </span>
       {% if period and period.start_date %}
         <span class="agenda-period-dates">
-          {{ period.start_date.strftime('%d %b %Y') }}
-          {% if period.end_date %} &ndash; {{ period.end_date.strftime('%d %b %Y') }}{% endif %}
+          {% if period.start_date is string %}{{ period.start_date }}{% else %}{{ period.start_date.strftime('%d %b %Y') }}{% endif %}
+          {% if period.end_date %} &ndash; {% if period.end_date is string %}{{ period.end_date }}{% else %}{{ period.end_date.strftime('%d %b %Y') }}{% endif %}{% endif %}
         </span>
       {% endif %}
       <div class="agenda-period-line"></div>

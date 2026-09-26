@@ -1,6 +1,6 @@
 from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required
-from routes.admin._helpers import admin_bp, moderator_required
+from routes.admin._helpers import admin_bp, moderator_required, delegation_options
 from models.delegation import Delegation
 from extensions import db, socketio
 
@@ -18,7 +18,7 @@ def chamada_panel():
     ).distinct().all()
     available_committees = sorted([c[0] for c in committees_query])
 
-    q = Delegation.query
+    q = Delegation.query.options(*delegation_options())
     if committee_filter != 'all':
         q = q.filter_by(committee=committee_filter)
     delegations = q.order_by(Delegation.country).all()

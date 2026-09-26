@@ -12,10 +12,18 @@ from models.event_config import EventConfig
 from models.urgent_alert import UrgentAlert
 from models.news import News
 from routes.agenda_utils import get_agenda_status
-from sqlalchemy import func
+from sqlalchemy import func, select
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timezone
 from extensions import db
+
+
+def _cnt(model, *conds):
+    """Subquery de COUNT — várias contagens em 1 único round-trip ao banco."""
+    s = select(func.count()).select_from(model)
+    for c in conds:
+        s = s.where(c)
+    return s.scalar_subquery()
 
 
 @admin_bp.route('/')
@@ -30,38 +38,45 @@ def dashboard():
     from models.vote import VoteSession
     from models.theme import Theme
 
-    # ── COUNT agregados (2 queries em vez de 9) ───────────────
+    # ── Todos os COUNTs em 1 query (era 11 queries = ~2s de latência) ──
+    row = db.session.execute(
+        select(
+            _cnt(News).label('news'),
+            _cnt(Inscription, Inscription.status == 'pending').label('inscriptions'),
+            _cnt(Student).label('students'),
+            _cnt(Delegation).label('delegations'),
+            _cnt(AgendaItem).label('agenda'),
+            _cnt(Student, Student.certificate_released == True).label('certificates'),
+            _cnt(Theme).label('themes'),
+            _cnt(VoteSession, VoteSession.status == 'open').label('open_votes'),
+            _cnt(Delegation, Delegation.presence_status.in_(['presente', 'votante'])).label('presentes'),
+            _cnt(Delegation, Delegation.presence_status == 'ausente').label('ausentes'),
+            _cnt(Delegation, Delegation.orador == True).label('oradores'),
+            _cnt(Delegation, Delegation.dpo_uploaded == True).label('dpos'),
+            _cnt(Student, Student.delegation_id.is_(None)).label('no_deleg'),
+            _cnt(Student, Student.convened == True).label('convened'),
+            _cnt(Student, Student.read_only == True).label('read_only'),
+        )
+    ).one()
+
     stats = {
-        'news':         News.query.count(),
-        'inscriptions': Inscription.query.filter_by(status='pending').count(),
-        'students':     Student.query.count(),
-        'delegations':  Delegation.query.count(),
-        'agenda':       AgendaItem.query.count(),
+        'news':         row.news,
+        'inscriptions': row.inscriptions,
+        'students':     row.students,
+        'delegations':  row.delegations,
+        'agenda':       row.agenda,
         'participations': 0,
-        'certificates': Student.query.filter(Student.certificate_released == True).count(),
-        'themes':       Theme.query.count(),
-        'open_votes':   VoteSession.query.filter_by(status='open').count(),
+        'certificates': row.certificates,
+        'themes':       row.themes,
+        'open_votes':   row.open_votes,
+        'presentes':    row.presentes,
+        'ausentes':     row.ausentes,
+        'oradores':     row.oradores,
+        'dpos':         row.dpos,
+        'students_no_deleg': row.no_deleg,
+        'convened':     row.convened,
+        'read_only':    row.read_only,
     }
-
-    rel_stats = db.session.query(
-        func.count().filter(Delegation.presence_status.in_(['presente', 'votante'])).label('presentes'),
-        func.count().filter(Delegation.presence_status == 'ausente').label('ausentes'),
-        func.count().filter(Delegation.orador == True).label('oradores'),
-        func.count().filter(Delegation.dpo_uploaded == True).label('dpos'),
-    ).select_from(Delegation).first()
-    stats['presentes'] = rel_stats.presentes
-    stats['ausentes']  = rel_stats.ausentes
-    stats['oradores']  = rel_stats.oradores
-    stats['dpos']      = rel_stats.dpos
-
-    stu_stats = db.session.query(
-        func.count().filter(Student.delegation_id.is_(None)).label('no_deleg'),
-        func.count().filter(Student.convened == True).label('convened'),
-        func.count().filter(Student.read_only == True).label('read_only'),
-    ).select_from(Student).first()
-    stats['students_no_deleg'] = stu_stats.no_deleg
-    stats['convened']          = stu_stats.convened
-    stats['read_only']         = stu_stats.read_only
     recent_students      = Student.query.order_by(Student.created_at.desc()).limit(5).all()
     recent_news          = News.query.order_by(News.created_at.desc()).limit(5).all()
     pending_inscriptions = Inscription.query.filter_by(status='pending').order_by(
@@ -102,54 +117,40 @@ def director_dashboard():
     else:
         theme_id = None
 
-    def _base_q():
-        q = Delegation.query
-        if theme_id:
-            q = q.filter_by(theme_id=theme_id)
-        return q
+    # ── Todos os agregados em 1 query (era 4 = ~720ms de latência) ──
+    deleg_conds = (Delegation.theme_id == theme_id,) if theme_id else ()
+    agg = db.session.execute(
+        select(
+            _cnt(Delegation, *deleg_conds).label('total'),
+            _cnt(Delegation, *deleg_conds, Delegation.orador == True).label('oradores'),
+            _cnt(Delegation, *deleg_conds, Delegation.presence_status == 'presente').label('presentes'),
+            _cnt(Delegation, *deleg_conds, Delegation.presence_status == 'votante').label('votantes'),
+            _cnt(Delegation, *deleg_conds, Delegation.presence_status == 'ausente').label('ausentes'),
+            _cnt(Delegation, *deleg_conds, Delegation.dpo_uploaded == True).label('dpos'),
+            _cnt(VoteSession, VoteSession.status == 'open').label('open_votes'),
+            _cnt(VoteSession).label('total_votes'),
+            _cnt(Student, Student.convened == True).label('convened'),
+            _cnt(Student, Student.delegation_id.is_(None)).label('no_deleg'),
+            _cnt(Student).label('total_students'),
+            _cnt(Student, Student.certificate_released == True).label('certificates'),
+            _cnt(AgendaItem).label('agenda_count'),
+        )
+    ).one()
 
-    # ── Delegation COUNTs agregados (1 query em vez de 7) ─────
-    deleg_agg = db.session.query(
-        func.count().label('total'),
-        func.count().filter(Delegation.orador == True).label('oradores'),
-        func.count().filter(Delegation.presence_status == 'presente').label('presentes'),
-        func.count().filter(Delegation.presence_status == 'votante').label('votantes'),
-        func.count().filter(Delegation.presence_status == 'ausente').label('ausentes'),
-        func.count().filter(Delegation.dpo_uploaded == True).label('dpos'),
-    )
-    if theme_id:
-        deleg_agg = deleg_agg.filter(Delegation.theme_id == theme_id)
-    deleg_agg = deleg_agg.select_from(Delegation).first()
+    total_deleg    = agg.total
+    oradores_count = agg.oradores
+    presentes      = agg.presentes
+    votantes       = agg.votantes
+    ausentes       = agg.ausentes
+    dpos           = agg.dpos
+    open_votes     = agg.open_votes
+    total_votes    = agg.total_votes
+    convened       = agg.convened
+    no_deleg       = agg.no_deleg
+    total_students = agg.total_students
+    certificates   = agg.certificates
+    agenda_count   = agg.agenda_count
 
-    total_deleg    = deleg_agg.total
-    oradores_count = deleg_agg.oradores
-    presentes      = deleg_agg.presentes
-    votantes       = deleg_agg.votantes
-    ausentes       = deleg_agg.ausentes
-    dpos           = deleg_agg.dpos
-
-    # Votações
-    vote_agg = db.session.query(
-        func.count().filter(VoteSession.status == 'open').label('open'),
-        func.count().label('total'),
-    ).select_from(VoteSession).first()
-    open_votes  = vote_agg.open
-    total_votes = vote_agg.total
-
-    # Alunos / delegações
-    stu_agg = db.session.query(
-        func.count().filter(Student.convened == True).label('convened'),
-        func.count().filter(Student.delegation_id.is_(None)).label('no_deleg'),
-        func.count().label('total'),
-        func.count().filter(Student.certificate_released == True).label('certs'),
-    ).select_from(Student).first()
-    convened      = stu_agg.convened
-    no_deleg      = stu_agg.no_deleg
-    total_students = stu_agg.total
-    certificates  = stu_agg.certs
-
-    # Agenda
-    agenda_count   = AgendaItem.query.count()
     current_agenda = AgendaItem.query.filter_by(status='now').first()
 
     # Itens da agenda por dia (para timeline) — batch query
@@ -163,7 +164,6 @@ def director_dashboard():
         agenda_items_by_day = dict(day_counts)
 
     # Stats por tema — batch GROUP BY (1 query em vez de 6*N)
-    from sqlalchemy import func
     theme_rows = db.session.query(
         Delegation.theme_id,
         func.count().label('total'),

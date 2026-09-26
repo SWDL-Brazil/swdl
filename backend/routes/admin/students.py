@@ -86,9 +86,13 @@ def delegate_create():
 @admin_required
 def students_list():
     """Lista todos os alunos cadastrados com status da designação."""
-    from sqlalchemy.orm import joinedload
+    from sqlalchemy.orm import joinedload, selectinload
+    # Eager: template chama s.delegation.member_names() por linha (N+1)
     students = Student.query.options(
-        joinedload(Student.delegation)
+        selectinload(Student.delegation).options(
+            selectinload(Delegation.students),
+            joinedload(Delegation.inscription),
+        )
     ).order_by(Student.created_at.desc()).all()
     return render_template('admin/students_list.html', students=students)
 
@@ -98,6 +102,7 @@ def students_list():
 @admin_required
 def student_assign(id):
     """Step 2: atribui país, tema e formato (individual, dupla, trio ou grupo) a um aluno existente."""
+    from sqlalchemy.orm import selectinload
     student = Student.query.get_or_404(id)
 
     if request.method == 'POST':
@@ -113,7 +118,7 @@ def student_assign(id):
             joinable = Student.query.filter(Student.id != student.id).order_by(Student.name).all()
             return render_template('admin/student_assign.html', student=student,
                                    available_themes=themes,
-                                   all_students=Student.query.order_by(Student.name).all(),
+                                   all_students=Student.query.options(selectinload(Student.delegation)).order_by(Student.name).all(),
                                    joinable_students=joinable)
 
         extra_ids = request.form.getlist('extra_ids', type=int)
@@ -193,7 +198,7 @@ def student_assign(id):
     joinable = Student.query.filter(Student.id != student.id).order_by(Student.name).all()
     return render_template('admin/student_assign.html', student=student,
                            available_themes=themes,
-                           all_students=Student.query.order_by(Student.name).all(),
+                           all_students=Student.query.options(selectinload(Student.delegation)).order_by(Student.name).all(),
                            joinable_students=joinable)
 
 
