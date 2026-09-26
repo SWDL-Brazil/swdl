@@ -12,6 +12,62 @@ from flask_cors import CORS
 from extensions import db, login_manager, socketio, csrf
 from config import Config
 
+
+# ── Instrumentação de performance (Fase 0) ───────────────────────
+_perf_queries_registered = False
+
+
+def _count_query(conn, cursor, statement, parameters, context, executemany):
+    """Conta queries SQL executadas dentro da request atual."""
+    try:
+        from flask import g, has_request_context
+        if has_request_context():
+            g._perf_queries = getattr(g, '_perf_queries', 0) + 1
+    except Exception:
+        pass
+
+
+def _setup_perf(app):
+    """Headers X-Request-Time / X-Query-Count + log de requests lentas.
+
+    - Todo request expõe o custo no header (visível no DevTools → Network).
+    - Requests com tempo >= PERF_SLOW_MS (default 300) viram warning no
+      stdout, aparecendo no Render → Logs como "SLOW ...".
+    """
+    global _perf_queries_registered
+    if not _perf_queries_registered:
+        from sqlalchemy import event
+        from sqlalchemy.engine import Engine
+        event.listen(Engine, 'before_cursor_execute', _count_query)
+        _perf_queries_registered = True
+
+    slow_ms = float(os.environ.get('PERF_SLOW_MS', '300'))
+
+    @app.before_request
+    def _perf_start():
+        import time
+        from flask import g
+        g._perf_t0 = time.perf_counter()
+        g._perf_queries = 0
+
+    @app.after_request
+    def _perf_end(response):
+        import time
+        from flask import g, request
+        t0 = getattr(g, '_perf_t0', None)
+        if t0 is None:
+            return response
+        elapsed_ms = (time.perf_counter() - t0) * 1000.0
+        queries = getattr(g, '_perf_queries', 0)
+        response.headers['X-Request-Time'] = f'{elapsed_ms:.0f}ms'
+        response.headers['X-Query-Count'] = str(queries)
+        if elapsed_ms >= slow_ms:
+            logger.warning('SLOW %.0fms queries=%d %s %s status=%s',
+                           elapsed_ms, queries, request.method,
+                           request.path, response.status_code)
+        return response
+
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -23,7 +79,17 @@ def create_app():
     login_manager.login_message = 'Faça login para acessar esta área.'
     socketio.init_app(app)
     csrf.init_app(app)
-    CORS(app, origins=['https://swdl-5a3fa.web.app', 'https://swdl-5a3fa.firebaseapp.com'])
+    CORS(app, origins=[
+        'https://swdl-5a3fa.web.app',
+        'https://swdl-5a3fa.firebaseapp.com',
+        'https://swdl.vercel.app',
+        'https://swdl-git-*.vercel.app',
+        'http://localhost:3000',
+        'http://localhost:3001',
+    ])
+
+    # Instrumentação de performance (headers + log de SLOW)
+    _setup_perf(app)
 
     @app.route('/favicon.ico')
     def favicon():
