@@ -7,6 +7,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 import os
+import time
 from flask import Flask
 from flask_cors import CORS
 from extensions import db, login_manager, socketio, csrf
@@ -18,52 +19,80 @@ _perf_queries_registered = False
 
 
 def _count_query(conn, cursor, statement, parameters, context, executemany):
-    """Conta queries SQL executadas dentro da request atual."""
+    """Conta a query e marca o início da medição do tempo dela."""
     try:
         from flask import g, has_request_context
         if has_request_context():
             g._perf_queries = getattr(g, '_perf_queries', 0) + 1
+            g._perf_q_t0 = time.perf_counter()
+    except Exception:
+        pass
+
+
+def _finish_query(conn, cursor, statement, parameters, context, executemany):
+    """Acumula o tempo de banco (soma das queries) da request atual."""
+    try:
+        from flask import g, has_request_context
+        t0 = getattr(g, '_perf_q_t0', None) if has_request_context() else None
+        if t0:
+            g._perf_q_ms = getattr(g, '_perf_q_ms', 0.0) + (time.perf_counter() - t0) * 1000.0
+            g._perf_q_t0 = None
     except Exception:
         pass
 
 
 def _setup_perf(app):
-    """Headers X-Request-Time / X-Query-Count + log de requests lentas.
+    """Headers de performance + log de requests lentas.
 
-    - Todo request expõe o custo no header (visível no DevTools → Network).
-    - Requests com tempo >= PERF_SLOW_MS (default 300) viram warning no
-      stdout, aparecendo no Render → Logs como "SLOW ...".
+    - X-Request-Time  : tempo total de processamento no servidor
+    - X-Query-Count   : nº de queries SQL
+    - X-Query-Time    : tempo somado dentro do banco (se ~X-Request-Time,
+                        a lentidão é rede/DB; se menor, é app/template)
+    - Requests >= PERF_SLOW_MS (default 300) viram warning "SLOW ..." no
+      stdout, aparecendo no Render -> Logs.
     """
     global _perf_queries_registered
     if not _perf_queries_registered:
         from sqlalchemy import event
         from sqlalchemy.engine import Engine
         event.listen(Engine, 'before_cursor_execute', _count_query)
+        event.listen(Engine, 'after_cursor_execute', _finish_query)
         _perf_queries_registered = True
 
     slow_ms = float(os.environ.get('PERF_SLOW_MS', '300'))
 
+    # Loga o alvo do banco (sem senha) para diagnosticar latência/região.
+    try:
+        from sqlalchemy.engine.url import make_url
+        u = make_url(app.config.get('SQLALCHEMY_DATABASE_URI', ''))
+        logger.info('DB target: driver=%s host=%s port=%s db=%s query=%s',
+                    u.drivername, u.host, u.port, u.database, u.query)
+    except Exception:
+        pass
+
     @app.before_request
     def _perf_start():
-        import time
         from flask import g
         g._perf_t0 = time.perf_counter()
         g._perf_queries = 0
+        g._perf_q_ms = 0.0
+        g._perf_q_t0 = None
 
     @app.after_request
     def _perf_end(response):
-        import time
         from flask import g, request
         t0 = getattr(g, '_perf_t0', None)
         if t0 is None:
             return response
         elapsed_ms = (time.perf_counter() - t0) * 1000.0
         queries = getattr(g, '_perf_queries', 0)
+        query_ms = getattr(g, '_perf_q_ms', 0.0)
         response.headers['X-Request-Time'] = f'{elapsed_ms:.0f}ms'
         response.headers['X-Query-Count'] = str(queries)
+        response.headers['X-Query-Time'] = f'{query_ms:.0f}ms'
         if elapsed_ms >= slow_ms:
-            logger.warning('SLOW %.0fms queries=%d %s %s status=%s',
-                           elapsed_ms, queries, request.method,
+            logger.warning('SLOW %.0fms db=%.0fms queries=%d %s %s status=%s',
+                           elapsed_ms, query_ms, queries, request.method,
                            request.path, response.status_code)
         return response
 

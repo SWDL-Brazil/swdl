@@ -108,11 +108,11 @@ def measure(opener, url, timeout):
     except urllib.error.HTTPError as exc:
         elapsed = (time.perf_counter() - t0) * 1000
         return dict(status=exc.code, ttfb=elapsed, total=elapsed,
-                    srv='-', nq='-', size=0)
+                    srv='-', qtime='-', nq='-', size=0)
     except urllib.error.URLError as exc:
         elapsed = (time.perf_counter() - t0) * 1000
         return dict(status='ERR', ttfb=elapsed, total=elapsed,
-                    srv='-', nq='-', size=0, err=str(exc.reason))
+                    srv='-', qtime='-', nq='-', size=0, err=str(exc.reason))
 
     ttfb = (time.perf_counter() - t0) * 1000
     body = resp.read()
@@ -123,6 +123,7 @@ def measure(opener, url, timeout):
         total=total,
         srv=resp.headers.get('X-Request-Time') or '-',
         nq=resp.headers.get('X-Query-Count') or '-',
+        qtime=resp.headers.get('X-Query-Time') or '-',
         size=len(body),
     )
 
@@ -131,7 +132,7 @@ def fmt(result):
     if result.get('err'):
         return f"{result['status']:<6} {result['ttfb']:7.0f} {result['total']:7.0f}  erro: {result['err']}"
     return (f"{str(result['status']):<6} {result['ttfb']:7.0f} {result['total']:7.0f} "
-            f"{result['srv']:>10} {result['nq']:>6} {result['size']:8d}")
+            f"{result['srv']:>10} {result['qtime']:>9} {result['nq']:>6} {result['size']:8d}")
 
 
 def main():
@@ -163,7 +164,7 @@ def main():
     opener = login(base, args.email, args.password, args.timeout)
 
     header = (f"{'rota':<18} {'pass':>4} {'status':>6} {'TTFB':>7} {'total':>7} "
-              f"{'srv':>10} {'queries':>6} {'bytes':>8}")
+              f"{'srv':>10} {'db':>9} {'queries':>6} {'bytes':>8}")
     print(header)
     print('-' * len(header))
 
@@ -197,10 +198,10 @@ def main():
 
     print('''
 interpretacao:
-  * TTFB ~ total ~ X-Request-Time  -> tempo quase todo no servidor (queries/logica)
-  * TTFB baixo + total alto        -> download de assets (css/js/png)
-  * pass 1 muito mais lento        -> cold start da instancia Render
-  * queries altas (X-Query-Count)  -> N+1; mirar em eager loading + paginação''')
+  * srv ~ db (coluna db)     -> tempo todo dentro do banco (latencia/rede do DB)
+  * srv >> db                -> tempo no app (N+1, template, logica)
+  * TTFB baixo + total alto  -> download de assets (css/js/png)
+  * pass 1 muito mais lento  -> cold start da instancia Render''')
 
 
 if __name__ == '__main__':
