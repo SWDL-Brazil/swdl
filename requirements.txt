@@ -1,3 +1,6 @@
+# ATENÇÃO: este é o requirements que o Render instala no build (render.yaml
+# roda `pip install -r requirements.txt` na raiz). Mantenha em sincronia com
+# backend/requirements.txt (usado em desenvolvimento local).
 flask
 flask-login
 flask-sqlalchemy
@@ -9,6 +12,9 @@ gunicorn
 gevent
 gevent-websocket
 psycopg2-binary
+# SQLAlchemy 2.1+ trocou o dialeto postgres:// para psycopg3 e quebra o build
+# (só temos psycopg2-binary). Manter <2.1 ate migrar para psycopg.
+sqlalchemy<2.1
 pypdf
 reportlab
 packaging
