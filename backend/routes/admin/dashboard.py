@@ -77,8 +77,10 @@ def dashboard():
         'read_only':    row.read_only,
     }
     recent_news          = News.query.order_by(News.created_at.desc()).limit(5).all()
-    current_agenda       = AgendaItem.query.filter_by(status='now').first()
     event_phase, _, _     = get_agenda_status()
+    # Só o template de "sessão em andamento" usa current_agenda — 1 query a menos
+    current_agenda       = (AgendaItem.query.filter_by(status='now').first()
+                            if event_phase == 'during' else None)
 
     return render_template('admin/dashboard.html',
                            stats=stats,
@@ -142,15 +144,12 @@ def director_dashboard():
 
     current_agenda = AgendaItem.query.filter_by(status='now').first()
 
-    # Itens da agenda por dia (para timeline) — batch query
-    days_raw = AgendaItem.query.with_entities(AgendaItem.day).distinct().order_by(AgendaItem.day).all()
-    days_agenda = [d[0] for d in days_raw]
-    agenda_items_by_day = {}
-    if days_agenda:
-        day_counts = db.session.query(
-            AgendaItem.day, db.func.count()
-        ).filter(AgendaItem.day.in_(days_agenda)).group_by(AgendaItem.day).all()
-        agenda_items_by_day = dict(day_counts)
+    # Itens da agenda por dia (para timeline) — 1 query serve para os dois
+    day_counts = db.session.query(
+        AgendaItem.day, db.func.count()
+    ).group_by(AgendaItem.day).order_by(AgendaItem.day).all()
+    days_agenda = [d[0] for d in day_counts]
+    agenda_items_by_day = dict(day_counts)
 
     # Stats por tema — batch GROUP BY (1 query em vez de 6*N)
     theme_rows = db.session.query(
