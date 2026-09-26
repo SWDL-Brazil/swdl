@@ -145,8 +145,17 @@ def main():
     parser.add_argument('--email', default=os.environ.get('ADMIN_EMAIL', 'admin@swdl.com'))
     parser.add_argument('--password', default=os.environ.get('ADMIN_PASSWORD', 'swdl2025'))
     parser.add_argument('--runs', type=int, default=2, help='passes por rota (default 2)')
+    parser.add_argument('--only', default='', help='rota unica (substring do nome, ex: dashboard)')
     parser.add_argument('--timeout', type=float, default=90.0)
     args = parser.parse_args()
+
+    routes = ROUTES
+    if args.only:
+        routes = [r for r in ROUTES if args.only in r[0]]
+        if not routes:
+            print(f"rota '{args.only}' nao encontrada. opcoes: "
+                  + ', '.join(r[0] for r in ROUTES), file=sys.stderr)
+            sys.exit(2)
 
     base = args.base.rstrip('/')
     print(f'base: {base}  |  email: {args.email}  |  passes: {args.runs}\n')
@@ -160,7 +169,7 @@ def main():
 
     all_srv = []
     summary = {}
-    for name, path in ROUTES:
+    for name, path in routes:
         for run in range(1, args.runs + 1):
             res = measure(opener, base + path, args.timeout)
             print(f'{name:<18} {run:>4} {fmt(res)}')
