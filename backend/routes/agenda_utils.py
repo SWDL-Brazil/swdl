@@ -4,8 +4,9 @@
 from datetime import datetime, timezone
 
 # TTL do cache de processo: a fase muda com o tempo (e não a cada request).
-# Cada query paga ~180ms de latência em produção — ver Fase 0.
-_CACHE_TTL = 10.0
+# Cada query paga ~180-200ms de latência em produção — ver Fase 0.
+# Invalidação: agenda.py limpa 'agenda_status' a cada escrita de item.
+_CACHE_TTL = 60.0
 
 
 def get_agenda_status():
@@ -22,25 +23,28 @@ def get_agenda_status():
         g._agenda_status = cached
         return cached
 
+    from extensions import db
     from models.agenda import AgendaItem
-    base_q = AgendaItem.query.filter(
-        AgendaItem.event_date.isnot(None),
-        AgendaItem.start_time.isnot(None)
-    )
-    first = base_q.order_by(AgendaItem.event_date, AgendaItem.start_time).limit(1).first()
-    last  = base_q.order_by(AgendaItem.event_date.desc(), AgendaItem.start_time.desc()).limit(1).first()
-    if not first:
+    from sqlalchemy import func, select
+
+    # 1 única query: min(data+início) e max(data+fim) via agregados.
+    # Antes eram 2 round-trips (cada um ~180ms de latência em produção).
+    start_key = AgendaItem.event_date + ' ' + AgendaItem.start_time
+    end_key   = AgendaItem.event_date + ' ' + func.coalesce(AgendaItem.end_time, '23:59')
+    first_s, last_s = db.session.execute(
+        select(func.min(start_key), func.max(end_key)).where(
+            AgendaItem.event_date.isnot(None),
+            AgendaItem.start_time.isnot(None),
+        )
+    ).one()
+
+    if not first_s:
         g._agenda_status = (None, None, None)
         cache_set('agenda_status', g._agenda_status, ttl=_CACHE_TTL)
         return g._agenda_status
     try:
-        first_dt = datetime.strptime(
-            f"{first.event_date} {first.start_time}", "%Y-%m-%d %H:%M"
-        ).replace(tzinfo=timezone.utc)
-        last_end = last.end_time or '23:59'
-        last_dt = datetime.strptime(
-            f"{last.event_date} {last_end}", "%Y-%m-%d %H:%M"
-        ).replace(tzinfo=timezone.utc)
+        first_dt = datetime.strptime(first_s, "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+        last_dt  = datetime.strptime(last_s,  "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
         now = datetime.now(timezone.utc)
         if now < first_dt:
             g._agenda_status = ('pre', first_dt, last_dt)

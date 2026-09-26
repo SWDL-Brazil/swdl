@@ -8,7 +8,6 @@ from models.delegation import Delegation
 from models.user import User
 from models.student import Student
 from models.document import Document
-from models.event_config import EventConfig
 from models.urgent_alert import UrgentAlert
 from models.news import News
 from routes.agenda_utils import get_agenda_status
@@ -77,25 +76,15 @@ def dashboard():
         'convened':     row.convened,
         'read_only':    row.read_only,
     }
-    recent_students      = Student.query.order_by(Student.created_at.desc()).limit(5).all()
     recent_news          = News.query.order_by(News.created_at.desc()).limit(5).all()
-    pending_inscriptions = Inscription.query.filter_by(status='pending').order_by(
-                           Inscription.submitted_at.desc()).limit(5).all()
     current_agenda       = AgendaItem.query.filter_by(status='now').first()
     event_phase, _, _     = get_agenda_status()
-    days_agenda          = AgendaItem.query.with_entities(AgendaItem.day).distinct().order_by(AgendaItem.day).all()
-
-    inscricoes_abertas = EventConfig.get_inscricoes_abertas()
 
     return render_template('admin/dashboard.html',
                            stats=stats,
                            recent_news=recent_news,
-                           recent_students=recent_students,
-                           pending_inscriptions=pending_inscriptions,
                            current_agenda=current_agenda,
-                           event_phase=event_phase,
-                           days_agenda=[d[0] for d in days_agenda],
-                           inscricoes_abertas=inscricoes_abertas)
+                           event_phase=event_phase)
 
 
 @admin_bp.route('/diretor')

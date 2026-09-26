@@ -25,13 +25,31 @@ class EventConfig(db.Model):
         return cfg
 
     @classmethod
-    def get_inscricoes_abertas(cls):
+    def get_state(cls):
+        """Estado completo (phase/invoke/inscrições) em 1 única query.
+
+        Tabela de linha única lida em TODA tela do admin via context processor.
+        Cache de processo: 1 query a cada TTL, 0 nas requests seguintes.
+        """
         from perf_cache import cache_get, cache_set
-        v = cache_get('inscricoes_abertas', ttl=15.0)
-        if v is None:
-            v = bool(cls._ensure().inscricoes_abertas)
-            cache_set('inscricoes_abertas', v, ttl=15.0)
-        return v
+        st = cache_get('event_config_state', ttl=60.0)
+        if st is None:
+            cfg = cls._ensure()
+            st = {
+                'phase_override': cfg.phase_override or '',
+                'inscricoes_abertas': bool(cfg.inscricoes_abertas),
+                'invoke': ({
+                    'url': cfg.invoke_url,
+                    'label': cfg.invoke_label or cfg.invoke_url,
+                    'at': cfg.invoke_at,
+                } if cfg.invoke_active and cfg.invoke_url else None),
+            }
+            cache_set('event_config_state', st, ttl=60.0)
+        return st
+
+    @classmethod
+    def get_inscricoes_abertas(cls):
+        return cls.get_state()['inscricoes_abertas']
 
     @classmethod
     def set_inscricoes_abertas(cls, value):
@@ -39,18 +57,12 @@ class EventConfig(db.Model):
         cfg = cls._ensure()
         cfg.inscricoes_abertas = value
         db.session.commit()
+        cache_clear('event_config_state')
         cache_clear('inscricoes_abertas')
 
     @classmethod
     def get_invoke(cls):
-        cfg = cls._ensure()
-        if cfg.invoke_active and cfg.invoke_url:
-            return {
-                'url': cfg.invoke_url,
-                'label': cfg.invoke_label or cfg.invoke_url,
-                'at': cfg.invoke_at,
-            }
-        return None
+        return cls.get_state()['invoke']
 
     @classmethod
     def set_invoke(cls, url, label=''):
@@ -62,6 +74,7 @@ class EventConfig(db.Model):
         cfg.invoke_active = True
         cfg.invoke_at = datetime.now(timezone.utc)
         db.session.commit()
+        cache_clear('event_config_state')
         cache_clear('active_invoke')
 
     @classmethod
@@ -73,12 +86,12 @@ class EventConfig(db.Model):
         cfg.invoke_active = False
         cfg.invoke_at = None
         db.session.commit()
+        cache_clear('event_config_state')
         cache_clear('active_invoke')
 
     @classmethod
     def get_phase_override(cls):
-        cfg = cls._ensure()
-        return cfg.phase_override
+        return cls.get_state()['phase_override'] or None
 
     @classmethod
     def set_phase_override(cls, value):
@@ -86,4 +99,5 @@ class EventConfig(db.Model):
         cfg = cls._ensure()
         cfg.phase_override = value
         db.session.commit()
+        cache_clear('event_config_state')
         cache_clear('phase_override')

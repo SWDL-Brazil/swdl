@@ -70,25 +70,15 @@ def delegation_options():
 # Em produção cada query custa ~180ms de latência (medido na Fase 0) e o
 # context processor roda em TODA tela do admin. TTL curto + invalidação
 # nos pontos de escrita mantém o painel sempre coerente.
-_GLOBALS_TTL = 10.0
+_GLOBALS_TTL = 60.0
 
 
 def _cached_phase_override():
-    from perf_cache import cache_get, cache_set
-    v = cache_get('phase_override')
-    if v is None:
-        v = EventConfig.get_phase_override() or ''
-        cache_set('phase_override', v, ttl=_GLOBALS_TTL)
-    return v or None
+    return EventConfig.get_state()['phase_override'] or None
 
 
 def _cached_invoke():
-    from perf_cache import cache_get, cache_set
-    v = cache_get('active_invoke')
-    if v is None:
-        v = EventConfig.get_invoke() or ''
-        cache_set('active_invoke', v, ttl=_GLOBALS_TTL)
-    return v or None
+    return EventConfig.get_state()['invoke']
 
 
 def _cached_alert_messages():
