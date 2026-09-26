@@ -108,11 +108,12 @@ def measure(opener, url, timeout):
     except urllib.error.HTTPError as exc:
         elapsed = (time.perf_counter() - t0) * 1000
         return dict(status=exc.code, ttfb=elapsed, total=elapsed,
-                    srv='-', qtime='-', nq='-', size=0)
+                    srv='-', qtime='-', nq='-', size=0, newconns='-', slowest='')
     except urllib.error.URLError as exc:
         elapsed = (time.perf_counter() - t0) * 1000
         return dict(status='ERR', ttfb=elapsed, total=elapsed,
-                    srv='-', qtime='-', nq='-', size=0, err=str(exc.reason))
+                    srv='-', qtime='-', nq='-', size=0, newconns='-', slowest='',
+                    err=str(exc.reason))
 
     ttfb = (time.perf_counter() - t0) * 1000
     body = resp.read()
@@ -124,15 +125,20 @@ def measure(opener, url, timeout):
         srv=resp.headers.get('X-Request-Time') or '-',
         nq=resp.headers.get('X-Query-Count') or '-',
         qtime=resp.headers.get('X-Query-Time') or '-',
+        newconns=resp.headers.get('X-New-Conns') or '-',
+        slowest=(resp.headers.get('X-Slowest') or '').replace('\n', ' ')[:90],
+        pool=resp.headers.get('X-Pool') or '',
         size=len(body),
     )
 
 
 def fmt(result):
     if result.get('err'):
-        return f"{result['status']:<6} {result['ttfb']:7.0f} {result['total']:7.0f}  erro: {result['err']}"
+        return (f"{result['status']:<6} {result['ttfb']:7.0f} {result['total']:7.0f}  "
+                f"erro: {result['err']}")
     return (f"{str(result['status']):<6} {result['ttfb']:7.0f} {result['total']:7.0f} "
-            f"{result['srv']:>10} {result['qtime']:>9} {result['nq']:>6} {result['size']:8d}")
+            f"{result['srv']:>10} {result['qtime']:>9} {result['nq']:>6} "
+            f"{result.get('newconns', '-'):>4} {result['size']:8d}")
 
 
 def main():
@@ -164,7 +170,7 @@ def main():
     opener = login(base, args.email, args.password, args.timeout)
 
     header = (f"{'rota':<18} {'pass':>4} {'status':>6} {'TTFB':>7} {'total':>7} "
-              f"{'srv':>10} {'db':>9} {'queries':>6} {'bytes':>8}")
+              f"{'srv':>10} {'db':>9} {'queries':>6} {'conn':>4} {'bytes':>8}")
     print(header)
     print('-' * len(header))
 
@@ -187,6 +193,14 @@ def main():
     print('-' * len(header))
     for name, res in summary.items():
         print(f'{name:<18} {"":>4} {fmt(res)}')
+
+    print('\n── statement mais lento por rota (header X-Slowest) ──')
+    for name, res in summary.items():
+        if res.get('slowest'):
+            print(f'{name:<18} srv={res.get("srv", "-"):>9}  {res["slowest"]}')
+    pools = sorted({res.get('pool') for res in summary.values() if res.get('pool')})
+    if pools:
+        print('\npool: ' + ' | '.join(pools))
 
     if all_srv:
         print(f"\ntempo medio do servidor (header X-Request-Time): "

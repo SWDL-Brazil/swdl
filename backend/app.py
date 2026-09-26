@@ -35,10 +35,23 @@ def _finish_query(conn, cursor, statement, parameters, context, executemany):
         from flask import g, has_request_context
         t0 = getattr(g, '_perf_q_t0', None) if has_request_context() else None
         if t0:
-            g._perf_q_ms = getattr(g, '_perf_q_ms', 0.0) + (time.perf_counter() - t0) * 1000.0
+            dt = (time.perf_counter() - t0) * 1000.0
+            g._perf_q_ms = getattr(g, '_perf_q_ms', 0.0) + dt
             g._perf_q_t0 = None
+            slow = getattr(g, '_perf_slow', None)
+            if slow is None or dt > slow[0]:
+                g._perf_slow = (dt, statement.strip().split('\n')[0][:160])
     except Exception:
         pass
+
+
+_perf_conn_total = 0
+
+
+def _count_connect(dbapi_conn, connection_record):
+    """Conta conexões físicas criadas — revela se o pool está reusando."""
+    global _perf_conn_total
+    _perf_conn_total += 1
 
 
 def _setup_perf(app):
@@ -57,6 +70,7 @@ def _setup_perf(app):
         from sqlalchemy.engine import Engine
         event.listen(Engine, 'before_cursor_execute', _count_query)
         event.listen(Engine, 'after_cursor_execute', _finish_query)
+        event.listen(Engine, 'connect', _count_connect)
         _perf_queries_registered = True
 
     slow_ms = float(os.environ.get('PERF_SLOW_MS', '300'))
@@ -77,6 +91,7 @@ def _setup_perf(app):
         g._perf_queries = 0
         g._perf_q_ms = 0.0
         g._perf_q_t0 = None
+        g._perf_conns0 = _perf_conn_total
 
     @app.after_request
     def _perf_end(response):
@@ -90,10 +105,24 @@ def _setup_perf(app):
         response.headers['X-Request-Time'] = f'{elapsed_ms:.0f}ms'
         response.headers['X-Query-Count'] = str(queries)
         response.headers['X-Query-Time'] = f'{query_ms:.0f}ms'
+        # Diagnóstico de latência: conexão física criada nesta request?
+        response.headers['X-New-Conns'] = str(_perf_conn_total - getattr(g, '_perf_conns0', _perf_conn_total))
+        try:
+            p = db.engine.pool
+            response.headers['X-Pool'] = (f'size={p.size()} checkedin={p.checkedin()} '
+                                          f'checkedout={p.checkedout()} overflow={p.overflow()} '
+                                          f'conns={_perf_conn_total}')
+        except Exception:
+            pass
+        # Statement mais lento desta request (revela qual round-trip carrega a latência)
+        slow = getattr(g, '_perf_slow', None)
+        if slow:
+            response.headers['X-Slowest'] = f'{slow[0]:.0f}ms {slow[1]}'
         if elapsed_ms >= slow_ms:
-            logger.warning('SLOW %.0fms db=%.0fms queries=%d %s %s status=%s',
-                           elapsed_ms, query_ms, queries, request.method,
-                           request.path, response.status_code)
+            logger.warning('SLOW %.0fms db=%.0fms queries=%d conns=%d %s %s status=%s',
+                           elapsed_ms, query_ms, queries,
+                           _perf_conn_total - getattr(g, '_perf_conns0', _perf_conn_total),
+                           request.method, request.path, response.status_code)
         return response
 
 
