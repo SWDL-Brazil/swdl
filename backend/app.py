@@ -87,8 +87,11 @@ def _setup_perf(app):
         u = make_url(app.config.get('SQLALCHEMY_DATABASE_URI', ''))
         logger.info('DB target: driver=%s host=%s port=%s db=%s query=%s',
                     u.drivername, u.host, u.port, u.database, u.query)
+        # Alvo sem credenciais — exposto só para admin (header X-DB)
+        app.config['PERF_DB_TARGET'] = (f'{u.drivername} host={u.host} '
+                                        f'port={u.port} db={u.database}')
     except Exception:
-        pass
+        app.config['PERF_DB_TARGET'] = 'unknown'
 
     @app.before_request
     def _perf_start():
@@ -127,6 +130,13 @@ def _setup_perf(app):
         first_stmt = getattr(g, '_perf_first_stmt', None)
         if first_stmt is not None:
             response.headers['X-Pre-Stmt'] = f'{first_stmt:.0f}ms'
+        # Qual banco? (driver/host sem senha) — só para admin logado
+        try:
+            from flask_login import current_user
+            if current_user.is_authenticated and current_user.is_admin():
+                response.headers['X-DB'] = str(app.config.get('PERF_DB_TARGET', ''))
+        except Exception:
+            pass
         if elapsed_ms >= slow_ms:
             logger.warning('SLOW %.0fms db=%.0fms queries=%d conns=%d %s %s status=%s',
                            elapsed_ms, query_ms, queries,

@@ -128,6 +128,7 @@ def measure(opener, url, timeout):
         newconns=resp.headers.get('X-New-Conns') or '-',
         pre=resp.headers.get('X-Pre-Stmt') or '-',
         slowest=(resp.headers.get('X-Slowest') or '').replace('\n', ' ')[:90],
+        dbt=(resp.headers.get('X-DB') or '').replace('\n', ' ')[:80],
         pool=resp.headers.get('X-Pool') or '',
         size=len(body),
     )
@@ -196,6 +197,9 @@ def main():
         print(f'{name:<18} {"":>4} {fmt(res)}')
 
     print('\n── statement mais lento por rota (header X-Slowest) ──')
+    dbt = next((res.get('dbt') for res in summary.values() if res.get('dbt')), '')
+    if dbt:
+        print(f'banco: {dbt}')
     for name, res in summary.items():
         if res.get('slowest'):
             print(f'{name:<18} srv={res.get("srv", "-"):>9} pre={res.get("pre", "-"):>7}  {res["slowest"]}')
