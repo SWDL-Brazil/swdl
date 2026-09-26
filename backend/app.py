@@ -25,6 +25,12 @@ def _count_query(conn, cursor, statement, parameters, context, executemany):
         if has_request_context():
             g._perf_queries = getattr(g, '_perf_queries', 0) + 1
             g._perf_q_t0 = time.perf_counter()
+            # Tempo desde o início da request até a 1ª statement: se alto,
+            # o atraso é checkout/pre-ping/conexão (fora das queries).
+            if getattr(g, '_perf_first_stmt', None) is None:
+                t_start = getattr(g, '_perf_t0', None)
+                if t_start:
+                    g._perf_first_stmt = (g._perf_q_t0 - t_start) * 1000.0
     except Exception:
         pass
 
@@ -118,6 +124,9 @@ def _setup_perf(app):
         slow = getattr(g, '_perf_slow', None)
         if slow:
             response.headers['X-Slowest'] = f'{slow[0]:.0f}ms {slow[1]}'
+        first_stmt = getattr(g, '_perf_first_stmt', None)
+        if first_stmt is not None:
+            response.headers['X-Pre-Stmt'] = f'{first_stmt:.0f}ms'
         if elapsed_ms >= slow_ms:
             logger.warning('SLOW %.0fms db=%.0fms queries=%d conns=%d %s %s status=%s',
                            elapsed_ms, query_ms, queries,

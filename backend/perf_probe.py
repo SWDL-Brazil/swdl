@@ -126,6 +126,7 @@ def measure(opener, url, timeout):
         nq=resp.headers.get('X-Query-Count') or '-',
         qtime=resp.headers.get('X-Query-Time') or '-',
         newconns=resp.headers.get('X-New-Conns') or '-',
+        pre=resp.headers.get('X-Pre-Stmt') or '-',
         slowest=(resp.headers.get('X-Slowest') or '').replace('\n', ' ')[:90],
         pool=resp.headers.get('X-Pool') or '',
         size=len(body),
@@ -197,7 +198,7 @@ def main():
     print('\n── statement mais lento por rota (header X-Slowest) ──')
     for name, res in summary.items():
         if res.get('slowest'):
-            print(f'{name:<18} srv={res.get("srv", "-"):>9}  {res["slowest"]}')
+            print(f'{name:<18} srv={res.get("srv", "-"):>9} pre={res.get("pre", "-"):>7}  {res["slowest"]}')
     pools = sorted({res.get('pool') for res in summary.values() if res.get('pool')})
     if pools:
         print('\npool: ' + ' | '.join(pools))
