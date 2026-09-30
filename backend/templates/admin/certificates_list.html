@@ -7,14 +7,6 @@
         onsubmit="return confirm('Gerar codigos para todos os elegiveis sem codigo?')">
     <button class="btn btn-navy btn-sm">Gerar Codigos</button>
   </form>
-  <form method="POST" action="{{ url_for('admin.certificates_sign_all') }}" style="display:inline"
-        onsubmit="return confirm('Assinar digitalmente todos os certificados?')">
-    <button class="btn btn-gold btn-sm">Assinar Todos</button>
-  </form>
-  <form method="POST" action="{{ url_for('admin.certificates_release_all') }}" style="display:inline"
-        onsubmit="return confirm('Liberar todos os certificados com codigo?')">
-    <button class="btn btn-primary btn-sm">Liberar Todos</button>
-  </form>
 {% endblock %}
 
 {% block content %}
@@ -43,25 +35,9 @@
     font-family:'DM Mono',monospace; font-size: 10px; font-weight: 700;
     letter-spacing: .04em;
   }
-  .badge-signed {
-    background: rgba(46,204,113,.12); color: #2ECC71;
-    border: 1px solid rgba(46,204,113,.25);
-    padding: 2px 10px; border-radius: 10px;
-    font-family:'DM Mono',monospace; font-size: 8px; font-weight: 700;
-    letter-spacing: .06em; text-transform: uppercase;
-  }
-  .badge-unsigned {
-    background: rgba(255,255,255,.06); color: var(--muted);
-    border: 1px solid rgba(255,255,255,.1);
-    padding: 2px 10px; border-radius: 10px;
-    font-family:'DM Mono',monospace; font-size: 8px; font-weight: 500;
-  }
   .upload-form { display: inline-flex; gap: 4px; align-items: center; }
   .upload-form input[type=file] { font-size: 11px; max-width: 140px; }
 </style>
-
-{% set signed_count = namespace(n=0) %}
-{% for s in students %}{% if s.digital_signature %}{% set signed_count.n = signed_count.n + 1 %}{% endif %}{% endfor %}
 
 <div class="cert-summary">
   <div class="cert-stat highlight">
@@ -77,8 +53,8 @@
     <span class="cert-stat-label">Com Codigo</span>
   </div>
   <div class="cert-stat highlight">
-    <span class="cert-stat-num">{{ released }}</span>
-    <span class="cert-stat-label">Liberados</span>
+    <span class="cert-stat-num">{{ with_pdf }}</span>
+    <span class="cert-stat-label">Com PDF</span>
   </div>
 </div>
 
@@ -93,7 +69,6 @@
           <th>Presenca</th>
           <th>Codigo</th>
           <th>PDF</th>
-          <th>Liberado</th>
           <th>Acoes</th>
         </tr>
       </thead>
@@ -132,15 +107,6 @@
             {% endif %}
           </td>
           <td>
-            {% if s.certificate_released %}
-              <span class="badge badge-approved">Sim</span>
-            {% elif s.verification_code %}
-              <span class="badge badge-pending">Nao</span>
-            {% else %}
-              <span class="text-muted">---</span>
-            {% endif %}
-          </td>
-          <td>
             <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
               {% if not s.verification_code and s._eligible %}
               <form method="POST" action="{{ url_for('admin.certificates_generate_codes') }}" style="display:inline">
@@ -161,22 +127,6 @@
                     onsubmit="return confirm('Remover PDF de {{ s.name }}?')">
                 <button class="btn btn-ghost btn-sm">Remover PDF</button>
               </form>
-              {% endif %}
-
-              {% if not s.certificate_released and s.verification_code %}
-              <form method="POST" action="{{ url_for('admin.certificate_release', id=s.id) }}" style="display:inline">
-                <button class="btn btn-primary btn-sm">Liberar</button>
-              </form>
-              {% endif %}
-
-              {% if s.certificate_released %}
-              <form method="POST" action="{{ url_for('admin.certificate_revoke', id=s.id) }}" style="display:inline"
-                    onsubmit="return confirm('Reverter liberacao de {{ s.name }}?')">
-                <button class="btn btn-ghost btn-sm">Reverter</button>
-              </form>
-              {% endif %}
-
-              {% if s.verification_code %}
               <a href="{{ url_for('vote.certificate_view', code=s.verification_code) }}"
                  target="_blank" class="btn btn-ghost btn-sm">Ver</a>
               {% endif %}
@@ -185,7 +135,7 @@
         </tr>
         {% else %}
         <tr>
-          <td colspan="8" style="text-align:center;color:var(--muted);padding:32px">
+          <td colspan="7" style="text-align:center;color:var(--muted);padding:32px">
             Nenhum aluno cadastrado ainda.
           </td>
         </tr>

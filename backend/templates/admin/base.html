@@ -15,46 +15,6 @@
 <div class="admin-wrap">
 
   <!-- ── SIDEBAR ──────────────────────────────────────────── -->
-  {%- set gestao_endpoints = ['admin.dashboard', 'admin.students_list', 'admin.student_assign',
-    'admin.student_edit', 'admin.delegate_create', 'admin.delegations_list', 'admin.delegation_assign',
-    'admin.delegation_create_credentials', 'admin.delegation_delete',
-    'admin.inscriptions_list', 'admin.inscription_detail', 'admin.inscription_approve',
-    'admin.inscription_reject', 'admin.news_list', 'admin.news_create', 'admin.news_edit',
-    'admin.news_delete', 'admin.agenda_list', 'admin.agenda_create', 'admin.agenda_edit',
-    'admin.agenda_delete', 'admin.agenda_set_status', 'admin.documentos_list',
-    'admin.documento_enviar', 'admin.documento_download', 'admin.documento_deletar',
-    'admin.themes_list', 'admin.theme_create', 'admin.theme_delete',
-    'admin.dpos_list', 'admin.dpo_download',
-    'admin.convocar_page', 'admin.convocar_toggle', 'admin.convocar_set_theme',
-    'admin.convocar_all', 'admin.convocar_uncall_all', 'admin.convocar_by_theme',
-    'admin.certificates_list', 'admin.certificates_generate_codes', 'admin.certificate_upload',
-    'admin.certificate_remove_pdf', 'admin.certificate_release',
-    'admin.certificates_release_all', 'admin.certificate_revoke',
-    'admin.certificate_sign', 'admin.certificates_sign_all', 'admin.certificate_unsign',
-    'admin.notifications_config', 'admin.test_email_config'] -%}
-  {%- set simulacao_endpoints = ['admin.chamada_panel', 'admin.set_presence',
-    'admin.chamada_control_screen', 'admin.oradores_panel', 'admin.oradores_toggle',
-    'admin.oradores_control_screen', 'admin.cronometro_panel',
-    'admin.crisis_activate', 'admin.crisis_deactivate', 'admin.invocar_sessao',
-    'vote.vote_list', 'vote.vote_create', 'vote.vote_detail', 'vote.vote_toggle',
-    'vote.vote_delete', 'vote.vote_telao', 'vote.vote_results',
-    'vote.vote_toggle_status', 'admin.invocar_page',
-    'admin.director_dashboard',
-    'speaker.speaker_queue_panel', 'speaker.speaker_queue_add',
-    'speaker.speaker_queue_reorder', 'speaker.speaker_queue_start',
-    'speaker.speaker_queue_skip', 'speaker.speaker_queue_end',
-    'speaker.speaker_queue_start_next', 'speaker.speaker_queue_clear',
-    'speaker.speaker_queue_telao',
-    'motion.motions_panel', 'motion.motion_create',
-    'motion.motion_approve', 'motion.motion_reject',
-    'motion.motion_activate', 'motion.motion_complete',
-    'motion.motion_telao',
-    'resolution.resolutions_panel', 'resolution.resolution_detail',
-    'resolution.resolution_approve_submission', 'resolution.resolution_reject_submission',
-    'resolution.resolution_telao', 'resolution.resolution_vote_final',
-    'analytics.analytics_panel', 'analytics.analytics_committee',
-    'analytics.analytics_export'] -%}
-
   <aside class="sidebar" id="sidebar" data-phase="{{ event_phase }}">
     <div class="sidebar-logo">
       <img src="{{ url_for('static', filename='logo.png') }}" alt="SWDL"
@@ -235,7 +195,7 @@
           <span class="nav-icon">📢</span> Convocar Alunos
         </a></li>
         <li><a href="{{ url_for('admin.certificates_list') }}"
-               class="{{ 'active' if request.endpoint == 'admin.certificates_list' or 'certificate_release' in (request.endpoint or '') or 'certificate_sign' in (request.endpoint or '') or 'certificates_generate' in (request.endpoint or '') or 'certificate_upload' in (request.endpoint or '') }}">
+               class="{{ 'active' if 'certificate' in (request.endpoint or '') }}">
           <span class="nav-icon">🎓</span> Certificados
         </a></li>
       </ul>

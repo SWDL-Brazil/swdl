@@ -1,7 +1,7 @@
 # SWDL — Session Summary
 
 ## Objective
-Build a complete student panel + admin backend for the SWDL Model UN platform with agenda-based auto-locking, PDF certificate template rendering, and no manual phase switching.
+Build a complete student panel + admin backend for the SWDL Model UN platform with agenda-based auto-locking, per-student certificate signing/release, and no manual phase switching.
 
 ---
 
@@ -15,17 +15,13 @@ Build a complete student panel + admin backend for the SWDL Model UN platform wi
 - Student certificates page listing released certificates
 
 ### Admin Panel
+- **Admin routes**: pacote `backend/routes/admin/` (20 submódulos, blueprint `admin_bp` em `_helpers.py`)
 - **DPO Management**: List, download, delete DPOs (resets so student can re-upload)
 - **Delegation Create Form**: Theme + Country + Student selection (1 to 4+ students)
   -- Creates Inscription, User (login), ParticipationHistory automatically
-- **Certificate Templates (PDF)**:
-  -- Admin uploads PDF (blank certificate design)
-  -- Admin positions fields via X/Y coordinates (points, bottom-left origin)
-  -- 10 placeholders: student_name, country, country_flag, committee, theme, edition_year, date, global_id, certificate_hash, digital_signature
-  -- Uses pypdf + reportlab to overlay text on PDF
-  -- Preview generates live PDF with student data
-  -- Auto-compile at event end renders per-student PDFs
-  -- `certificate_view` serves the generated PDF file
+- **Certificates (fluxo atual — o sistema de templates PDF foi REMOVIDO no commit `b7ec9fc`; liberação/assinatura manuais REMOVIDAS da admin)**:
+  -- Gerar códigos de verificação (por aluno ou em lote) → upload de PDF por aluno (libera o certificado no painel do delegado; remover PDF revoga a liberação)
+  -- `certificate_view` (`/certificado/<code>`) serve o PDF ou a página do certificado
 
 ### Infrastructure
 - `datetime.utcnow` replaced with `datetime.now(timezone.utc)` everywhere
@@ -35,7 +31,6 @@ Build a complete student panel + admin backend for the SWDL Model UN platform wi
 - Added database indexes on all frequently queried columns
 - Removed `available_themes` from context_processor (was running on every page)
 - Consolidated dashboard COUNT queries (20→3)
-- Added `pypdf` and `reportlab` to requirements
 
 ### Deploy
 - Hosted on Render via GitHub (`SWDL-Brazil/swdl.git`)
@@ -78,6 +73,20 @@ Build a complete student panel + admin backend for the SWDL Model UN platform wi
   - Fix 500 `/admin/diretor` (`UnboundLocalError` de `func` local) e fix `.strftime` em string na agenda (`agenda_list.html`).
 - **Resultado em produção** (pass 2): dashboard 3,7 s/20q → **1,29 s/4q**; inscrições 7,4 s/40q → **1,12 s/3q**; notificações 2,7 s/14q → **0,75 s/1q**; páginas comuns 1,26 s/6q → **0,93–1,12 s/2q**; diretor 500 → **1,82 s/6q**.
 
+### Telão (`GET /telao`) + correções de segurança/dados
+- **Arquitetura**: SPA pública em `backend/templates/telao.html` + `static/js/telao.js` + `static/css/telao.css`; rota `vote.py::telao`; estado `GET /api/telao/estado`; Socket.IO room `telao` (7 arquivos de rota emitem para ele); polling 15s (WS) / 5s (sem WS).
+- **Bugs corrigidos**:
+  -- `<div class="t-main">` nunca fechado desde o commit inicial → ticker agora é filho de `body` e gruda na base (flex).
+  -- Timer de debate: handlers `debate_timer_*` agora exigem moderator (antes qualquer anônimo controlava); botões ▶/↺ só renderizam para mesa (`can_control` no template).
+  -- `POST /api/vote/<id>/auto_close` removido do cliente (sem login/CSRF falhava); auto-close é server-side.
+  -- XSS: `esc()` + novo `safeUrl()` (só http(s)/relativo) em `flag`/`flag_url`/títulos do ticker.
+  -- Fila de oradores volta após cada fala; resultado volta ao idle em 12s; dedupe de `vote_closed` repetido.
+- **Restauração de tela (Fase D)**: `backend/telao_state.py` grava a tela ativa em `SystemConfig` (`telao_state`) nos endpoints `*/telao` show/hide; `/api/telao/estado` devolve `display` com payload reconstruído do banco; `telao.js` reaplica quando o `ts` muda (F5/reboot do projetor volta à tela certa).
+- **Admin — perda de dados corrigida**:
+  -- `student_delete` não apaga mais votos/inscrição/delegação do grupo inteiro (usa `_cleanup_orphan_delegation` + checagens de referência).
+  -- `period_delete` bloqueado se o período tem itens de agenda (senão `period_id` era anulado).
+- **Limpeza**: `admin.py.bak` removido; `pypdf`/`reportlab` fora dos requirements; rotas mortas removidas (`agenda_set_status`, `certificate_sign/unsign`, `student_remove_member`); botões criados para `students_unlock_all` (dashboard) e `inscricoes_toggle` (delegações); `gestao_endpoints`/`simulacao_endpoints` removidos do `base.html`; `_sign_certificate` não commita mais por aluno (1 commit por lote).
+
 ---
 
 ## Active
@@ -93,20 +102,20 @@ Build a complete student panel + admin backend for the SWDL Model UN platform wi
 | `pages/js/main.js` | Global JS sem lógica de crisis (só navbar, scroll, counter) |
 | `pages/noticias.html` | Inline JS: loadCrisisBanner + setInterval 60s |
 | `pages/index.html`, `comites.html`, etc. | Cada página com inline script de crisis banner independente |
-| `backend/models/certificate_template.py` | PDF template model with render_pdf() |
 | `backend/models/delegation.py` | Delegation model (country, theme, presence, DPO) |
 | `backend/models/student.py` | Student model (certificate hash, delegation link) |
-| `backend/routes/admin.py` | All admin routes (CRUD templates, delegations, DPO, dashboard) |
+| `backend/routes/admin/` | Pacote admin: 20 submódulos (dashboard, students, delegations, certificates, agenda, attendance...) |
+| `backend/routes/admin/_helpers.py` | Blueprint, decorators, context processor cacheado, `_cleanup_orphan_delegation()` |
 | `backend/routes/student.py` | Student dashboard, DPO upload, auto-certificates |
-| `backend/routes/vote.py` | Certificate view endpoint, voting |
+| `backend/routes/vote.py` | Certificate view, voting, rota `/telao` + `/api/telao/estado` |
+| `backend/templates/telao.html` | Telão SPA (8 telas + ticker) |
+| `backend/static/js/telao.js` | Telão: WS room `telao`, polling, restauração de tela |
+| `backend/telao_state.py` | Estado da tela ativa do telão (SystemConfig `telao_state`) |
 | `backend/routes/api.py` | API pública (noticias, ticker, `noticia-json/<slug>`, status) |
 | `backend/app.py` | Instrumentação de perf (headers, SLOW, `DB target:`) |
 | `backend/perf_probe.py` | Sonda HTTP de produção (TTFB/srv/db/queries) |
 | `backend/test_perf_pages.py` | Harness local de smoke/perf (18 rotas) |
 | `backend/perf_cache.py` | Cache de processo com TTL/invalidação |
-| `backend/routes/admin/_helpers.py` | Context processor cacheado + `delegation_options()` |
-| `backend/templates/admin/certificate_templates.html` | Template list |
-| `backend/templates/admin/certificate_template_form.html` | Template form with PDF upload + field positioning |
 | `backend/templates/admin/delegation_create.html` | New delegation form |
 | `backend/templates/admin/dpos_list.html` | DPO list with delete button |
 | `backend/static/css/student.css` | External CSS for student panel |
