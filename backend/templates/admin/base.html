@@ -38,16 +38,28 @@
         <span class="context-chevron">▾</span>
       </button>
       <div class="context-dropdown" id="contextDropdown">
-        <form method="POST" action="{{ url_for('admin.phase_set', phase='auto') }}" style="margin:0">
-          <button type="submit" class="context-option {{ 'active' if event_phase != 'during' }}">
+        <form method="POST" action="{{ url_for('admin.phase_set', phase='pre') }}" style="margin:0">
+          <button type="submit" class="context-option {{ 'active' if event_phase == 'pre' }}">
             <span class="context-dot dot-pre"></span>
-            <span>Pré/Pós-Evento (Automático)</span>
+            <span>Pré-Evento (Manual)</span>
+          </button>
+        </form>
+        <form method="POST" action="{{ url_for('admin.phase_set', phase='post') }}" style="margin:0">
+          <button type="submit" class="context-option context-option-during {{ 'disabled' if event_phase == 'post' }}">
+            <span class="context-dot" style="background:#1E40AF"></span>
+            <span>Pós-Evento (Manual)</span>
           </button>
         </form>
         <form method="POST" action="{{ url_for('admin.phase_set', phase='during') }}" style="margin:0">
           <button type="submit" class="context-option context-option-during {{ 'disabled' if event_phase == 'during' }}">
             <span class="context-dot dot-during"></span>
             <span>Durante a Simulação</span>
+          </button>
+        </form>
+        <form method="POST" action="{{ url_for('admin.phase_set', phase='auto') }}" style="margin:0">
+          <button type="submit" class="context-option">
+            <span class="context-dot"></span>
+            <span>Automático (agenda)</span>
           </button>
         </form>
       </div>

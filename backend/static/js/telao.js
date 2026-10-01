@@ -753,7 +753,6 @@
   let wsConnected = false;
   try {
     socket = io({
-      transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: 3,
       reconnectionDelay: 3000,
