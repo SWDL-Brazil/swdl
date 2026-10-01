@@ -12,4 +12,4 @@ services:
       - key: ADMIN_PASSWORD
         generateValue: true
       - key: CORS_ORIGINS
-        value: https://swdl-5a3fa.web.app
+        value: https://swdl-5a3fa.web.app,https://swdl.onrender.com
