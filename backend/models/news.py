@@ -46,7 +46,15 @@ class News(db.Model):
         db.session.commit()
 
     def time_ago(self):
-        delta = datetime.now(timezone.utc) - self.created_at
+        if not self.created_at:
+            return ''
+        # Colunas DateTime sem timezone voltam naive do Postgres; subtrair de
+        # datetime.now(timezone.utc) levantaria TypeError e derrubaria
+        # /api/noticias com 500 em produção (no SQLite local vinha aware).
+        created = self.created_at
+        if created.tzinfo is None:
+            created = created.replace(tzinfo=timezone.utc)
+        delta = datetime.now(timezone.utc) - created
         s = int(delta.total_seconds())
         if s < 60:    return 'agora mesmo'
         if s < 3600:  return f'há {s//60} min'
@@ -71,7 +79,7 @@ class News(db.Model):
             'is_crisis':   self.is_crisis,
             'published':   self.published,
             'time_ago':    self.time_ago(),
-            'created_at':  self.created_at.strftime('%d/%m/%Y'),
+            'created_at':  self.created_at.strftime('%d/%m/%Y') if self.created_at else '',
             'author':      self.author.name if self.author else 'SWDL',
         }
 

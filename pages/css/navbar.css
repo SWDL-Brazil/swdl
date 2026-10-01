@@ -10,7 +10,7 @@ nav.swdl-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 48px;
+  padding: env(safe-area-inset-top, 0px) 48px 0;
   background: rgba(16, 30, 76, 0.97);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -72,12 +72,10 @@ nav.swdl-nav.scrolled {
   transition: transform 0.25s;
 }
 
-.nav-links a:hover,
 .nav-links a.active {
   color: var(--white);
 }
 
-.nav-links a:hover::after,
 .nav-links a.active::after {
   transform: scaleX(1);
 }
@@ -92,10 +90,6 @@ nav.swdl-nav.scrolled {
   letter-spacing: 0.06em;
 }
 .nav-links .nav-cta::after { display: none; }
-.nav-links .nav-cta:hover {
-  background: var(--gold-light);
-  transform: none;
-}
 
 /* ── MOBILE HAMBURGER ──────────────────────────────────────── */
 .nav-hamburger {
@@ -148,5 +142,19 @@ nav.swdl-nav.scrolled {
     display: inline-block;
     margin-top: 16px;
     padding: 12px 24px;
+  }
+}
+
+/* ── HOVER GATING ──────────────────────────────────────────── */
+@media (hover: hover) and (pointer: fine) {
+  .nav-links a:hover {
+    color: var(--white);
+  }
+  .nav-links a:hover::after {
+    transform: scaleX(1);
+  }
+  .nav-links .nav-cta:hover {
+    background: var(--gold-light);
+    transform: none;
   }
 }

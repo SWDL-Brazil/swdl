@@ -54,6 +54,16 @@ def period_edit(id):
 @admin_required
 def period_delete(id):
     period = EventPeriod.query.get_or_404(id)
+    # Sem cascade: apagar o periodo anularia AgendaItem.period_id e os
+    # itens perderiam periodo (coreografia de cores da agenda).
+    item_count = period.items.count()
+    if item_count:
+        flash(
+            f'⚠️ Não é possível excluir: há {item_count} item(ns) de agenda '
+            f'neste período. Mova-os para outro período (ou exclua-os) antes.',
+            'error',
+        )
+        return redirect(url_for('admin.periods_list'))
     db.session.delete(period)
     db.session.commit()
     flash('Período removido.', 'info')

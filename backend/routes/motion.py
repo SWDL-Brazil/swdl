@@ -212,6 +212,7 @@ def motion_notes(id):
 @login_required
 @moderator_required
 def motion_telao():
+    from telao_state import set_telao_state
     data = request.get_json(silent=True) or {}
     action = data.get('action', 'show')
     committee = data.get('committee', 'all')
@@ -223,6 +224,7 @@ def motion_telao():
         active = Motion.active_for_committee(
             committee if committee != 'all' else None
         )
+        set_telao_state('motion', {'committee': committee})
         socketio.emit('motion_queue_show', {
             'committee': committee,
             'pending': [m.to_dict() for m in pending],
@@ -230,6 +232,7 @@ def motion_telao():
         }, room='telao')
         return jsonify({'status': 'success'})
     else:
+        set_telao_state(None)
         socketio.emit('motion_queue_hide', {}, room='telao')
         return jsonify({'status': 'success'})
 

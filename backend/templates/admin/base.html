@@ -26,6 +26,7 @@
     </div>
 
     <!-- ═══ CONTEXT SWITCHER ═══════════════════════════════ -->
+    {% if is_admin %}
     <div class="context-switcher">
       <button class="context-switcher-btn {{ 'active-during' if event_phase == 'during' }}" id="contextSwitcherBtn" type="button">
         <span class="context-dot {{ 'dot-during' if event_phase == 'during' else 'dot-pre' }}"></span>
@@ -51,6 +52,7 @@
         </form>
       </div>
     </div>
+    {% endif %}
 
 
     <div style="flex:1;overflow-y:auto;padding-bottom:8px">
@@ -166,6 +168,7 @@
                class="{{ 'active' if request.endpoint and 'categor' in request.endpoint }}">
           <span class="nav-icon">🏷️</span> Categorias
         </a></li>
+        {% if is_admin %}
         <li><a href="{{ url_for('admin.agenda_list') }}"
                class="{{ 'active' if 'agenda' in (request.endpoint or '') }}">
           <span class="nav-icon">📅</span> Agenda
@@ -174,6 +177,7 @@
                class="{{ 'active' if 'period' in (request.endpoint or '') }}">
           <span class="nav-icon">📆</span> Períodos
         </a></li>
+        {% endif %}
         <li><a href="{{ url_for('admin.documentos_list') }}"
                class="{{ 'active' if 'documento' in (request.endpoint or '') }}">
           <span class="nav-icon">📁</span> Documentos

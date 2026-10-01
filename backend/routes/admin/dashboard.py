@@ -10,7 +10,7 @@ from models.student import Student
 from models.document import Document
 from models.urgent_alert import UrgentAlert
 from models.news import News
-from routes.agenda_utils import get_agenda_status
+from routes.agenda_utils import get_resolved_phase, get_current_next
 from sqlalchemy import func, select
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timezone
@@ -77,9 +77,9 @@ def dashboard():
         'read_only':    row.read_only,
     }
     recent_news          = News.query.order_by(News.created_at.desc()).limit(5).all()
-    event_phase, _, _     = get_agenda_status()
+    event_phase, _, _     = get_resolved_phase()
     # Só o template de "sessão em andamento" usa current_agenda — 1 query a menos
-    current_agenda       = (AgendaItem.query.filter_by(status='now').first()
+    current_agenda       = (get_current_next()[0]
                             if event_phase == 'during' else None)
 
     return render_template('admin/dashboard.html',
@@ -98,7 +98,7 @@ def director_dashboard():
     from models.vote import VoteSession
     from models.student import Student
     themes = Theme.query.order_by(Theme.name).all()
-    phase  = get_agenda_status()[0] or 'pre'
+    phase  = get_resolved_phase()[0]
     theme_id = request.args.get('theme_id', None)
     if theme_id and theme_id != 'all':
         try:
@@ -142,7 +142,7 @@ def director_dashboard():
     certificates   = agg.certificates
     agenda_count   = agg.agenda_count
 
-    current_agenda = AgendaItem.query.filter_by(status='now').first()
+    current_agenda = get_current_next()[0]
 
     # Itens da agenda por dia (para timeline) — 1 query serve para os dois
     day_counts = db.session.query(

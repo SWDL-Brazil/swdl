@@ -190,14 +190,20 @@
         const items = [...list.querySelectorAll('.agenda-item-row')]
           .map((el, i) => ({ id: parseInt(el.dataset.id), order: i }));
         const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-        await fetch('/admin/agenda/reorder', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfMeta ? csrfMeta.content : ''
-          },
-          body: JSON.stringify({ items })
-        });
+        try {
+          const res = await fetch('{{ url_for("admin.agenda_reorder") }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfMeta ? csrfMeta.content : ''
+            },
+            body: JSON.stringify({ items })
+          });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+        } catch (e) {
+          alert('Não foi possível salvar a nova ordem. A lista será recarregada.');
+          location.reload();
+        }
       }
     });
   });

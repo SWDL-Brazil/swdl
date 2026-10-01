@@ -11,7 +11,7 @@ Build a complete student panel + admin backend for the SWDL Model UN platform wi
 - "Meu Debate" highlight card on dashboard when delegation assigned
 - DPO deadline check (3 days before 1st agenda item)
 - Voting auto-unlock on event day (`is_event_day` flag)
-- Auto-compile certificates with PDF rendering when event ends
+- Certificates: compile/release é manual pelo admin (ver Admin Panel)
 - Student certificates page listing released certificates
 
 ### Admin Panel
@@ -22,6 +22,17 @@ Build a complete student panel + admin backend for the SWDL Model UN platform wi
 - **Certificates (fluxo atual — o sistema de templates PDF foi REMOVIDO no commit `b7ec9fc`; liberação/assinatura manuais REMOVIDAS da admin)**:
   -- Gerar códigos de verificação (por aluno ou em lote) → upload de PDF por aluno (libera o certificado no painel do delegado; remover PDF revoga a liberação)
   -- `certificate_view` (`/certificado/<code>`) serve o PDF ou a página do certificado
+
+### Admin — Agenda (correções)
+- `get_resolved_phase()` em `agenda_utils.py`: fase = agenda (ou `'pre'`) + override manual — fonte única para context processor e dashboards (corrige dashboard `/admin/` vazio com fase `None` e switcher 🟢/🔴/🔵 ignorado em `/admin/` e `/admin/diretor`)
+- `get_current_next()`: "Agora/Próximo" derivado do horário (status `now/next` nunca era gravado no banco) — card AO VIVO dos dashboards, card "Agora" do aluno e `/api/agenda/agora` voltaram a funcionar
+- Edit não zera mais o `order` (preserva drag-and-drop); create insere no fim do grupo (`_next_order`)
+- Form: sigla de comitê (`CS`, `DHR`...) e `day > 10` não são mais apagados ao editar
+- Reorder em 1 query (era N+1 ≈ 180 ms/item), payload validado, `fetch` com rollback visual no erro
+- Validação de data/hora no create/edit (evita fase `None` silenciosa)
+- Switcher de fase e links Agenda/Períodos só para admin (diretor levava 403)
+- Limpeza: `get_agenda_bounds`, `_cached_phase_override`, imports mortos removidos
+- `backend/test_agenda.py`: 19 checagens funcionais (roda junto com `test_perf_pages.py`)
 
 ### Infrastructure
 - `datetime.utcnow` replaced with `datetime.now(timezone.utc)` everywhere

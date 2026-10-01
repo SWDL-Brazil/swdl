@@ -4,6 +4,24 @@
    mantém fallback para conteúdo estático caso API offline.
    ============================================================ */
 
+// ── Sanitização helper ────────────────────────────────────────
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sanitizeUrl(url) {
+  if (!url) return '';
+  const s = String(url).trim();
+  if (/^(https?:\/\/)/i.test(s)) return s;
+  return '';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 
   // ── NOTÍCIAS ───────────────────────────────────────────────
@@ -39,23 +57,25 @@ document.addEventListener('DOMContentLoaded', () => {
       const color   = committeeColors[n.committee] || 'var(--navy)';
       const emoji   = emojis[n.category] || '📋';
       const featured = i === 0 ? 'featured' : '';
-      const link    = n.slug ? `${API_BASE}/noticia/${n.slug}` : '#';
-      const safeTitle = n.title ? n.title.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
-      const safeExcerpt = n.excerpt ? n.excerpt.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
-      const safeCommittee = n.committee ? n.committee.toUpperCase().replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
-      const imgHtml = n.cover_image
-        ? `<img src="${n.cover_image}" alt="${safeTitle}" style="width:100%;height:100%;object-fit:cover;display:block">`
+      const link    = n.slug ? `${API_BASE}/noticia/${escapeHtml(n.slug)}` : '#';
+      const safeTitle = escapeHtml(n.title);
+      const safeExcerpt = escapeHtml(n.excerpt);
+      const safeCommittee = escapeHtml(n.committee ? n.committee.toUpperCase() : '');
+      const safeCategory = escapeHtml(n.category);
+      const safeImg = sanitizeUrl(n.cover_image);
+      const imgHtml = safeImg
+        ? `<img src="${safeImg}" alt="${safeTitle}" style="width:100%;height:100%;object-fit:cover;display:block">`
         : `<div class="news-img-icon">${emoji}</div>`;
 
       return `
-        <article class="news-card ${featured}" data-cat="${n.category}">
+        <article class="news-card ${featured}" data-cat="${safeCategory}">
           <a href="${link}">
             <div class="news-img" style="background:linear-gradient(135deg,${color},var(--navy));overflow:hidden">
               ${imgHtml}
             </div>
           </a>
           <div class="news-card-body">
-            <span class="news-tag ${n.category}" style="background:${cat.bg}">${cat.label} — ${safeCommittee}</span>
+            <span class="news-tag ${safeCategory}" style="background:${cat.bg}">${cat.label} — ${safeCommittee}</span>
             <a href="${link}" style="text-decoration:none;color:inherit">
               <h3>${safeTitle}</h3>
             </a>
@@ -65,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="dot" style="background:${color}"></span>
                 ${safeCommittee}
               </div>
-              <span class="news-time">${n.time_ago}</span>
+              <span class="news-time">${escapeHtml(n.time_ago)}</span>
             </div>
           </div>
         </article>`;
@@ -98,11 +118,11 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="timeline-item ${isNow ? 'active' : ''}">
           <div class="timeline-dot"></div>
           <span class="timeline-time">
-            ${item.start_time}${item.end_time ? ' — ' + item.end_time : ''}
+            ${escapeHtml(item.start_time)}${item.end_time ? ' — ' + escapeHtml(item.end_time) : ''}
             ${isNow ? '<span class="timeline-badge">Agora</span>' : ''}
           </span>
-          <div class="timeline-title">${item.title}</div>
-          ${item.description ? `<div class="timeline-desc">${item.description.substring(0, 80)}...</div>` : ''}
+          <div class="timeline-title">${escapeHtml(item.title)}</div>
+          ${item.description ? `<div class="timeline-desc">${escapeHtml(item.description.substring(0, 80))}...</div>` : ''}
         </div>`;
     }).join('');
   }
@@ -118,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!news || !news.length) return;
 
     const items = [...news, ...news].map(n =>
-      `<span class="ticker-item"><span class="sep">◆</span> <strong>${n.category.toUpperCase()} — ${n.committee.toUpperCase()}:</strong> ${n.title} <span class="sep">◆</span></span>`
+      `<span class="ticker-item"><span class="sep">◆</span> <strong>${escapeHtml(n.category.toUpperCase())} — ${escapeHtml(n.committee.toUpperCase())}:</strong> ${escapeHtml(n.title)} <span class="sep">◆</span></span>`
     ).join('');
     tickerInner.innerHTML = items;
   }

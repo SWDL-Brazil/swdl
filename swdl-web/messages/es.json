@@ -77,6 +77,8 @@
     "cta_register": "Inscríbete Ahora",
     "unit_days": "días",
     "unit_hours": "horas",
+    "countdown_min": "min",
+    "countdown_seg": "seg",
     "gallery_archive_label": "Archivo",
     "gallery_editions_title": "Ediciones Anteriores",
     "testimonials_next": "Siguiente",

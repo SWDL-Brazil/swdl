@@ -1,14 +1,67 @@
 import logging
-from flask import render_template, redirect, url_for, flash, request, abort, jsonify
+from datetime import datetime
+from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required
 from routes.admin._helpers import admin_bp, admin_required
 from models.agenda import AgendaItem
 from models.theme import Theme
 from models.event_period import EventPeriod
-from extensions import db, socketio
+from extensions import db
 from perf_cache import cache_clear
 
 logger = logging.getLogger(__name__)
+
+
+def _valid_date(s):
+    """AAAA-MM-DD (aceita também AAAA-MM-DDTHH:MM:SS de inputs date+time)."""
+    try:
+        datetime.strptime(s or '', '%Y-%m-%d')
+        return True
+    except ValueError:
+        return False
+
+
+def _valid_time(s, required=False):
+    """HH:MM ou HH:MM:SS; opcional salvo quando required=True."""
+    if not s:
+        return not required
+    try:
+        datetime.strptime(s, '%H:%M')
+        return True
+    except ValueError:
+        pass
+    try:
+        datetime.strptime(s, '%H:%M:%S')
+        return True
+    except ValueError:
+        return False
+
+
+def _next_order(day, period_id):
+    """Próximo order dentro do grupo (período → dia) — item novo vai ao fim."""
+    from sqlalchemy import func
+    q = db.session.query(func.max(AgendaItem.order)).filter(
+        AgendaItem.day == day,
+        (AgendaItem.period_id == period_id) if period_id
+        else AgendaItem.period_id.is_(None),
+    )
+    return (q.scalar() or 0) + 1
+
+
+def _validate_form():
+    """Valida data/horários do form. Retorna mensagem de erro ou None."""
+    event_date = request.form.get('event_date', '')
+    start_time = request.form.get('start_time', '')
+    end_time   = request.form.get('end_time', '')
+    if not _valid_date(event_date):
+        return 'Data inválida. Use o formato AAAA-MM-DD.'
+    if not _valid_time(start_time, required=True):
+        return 'Horário de início inválido. Use HH:MM.'
+    if not _valid_time(end_time):
+        return 'Horário de término inválido. Use HH:MM.'
+    if end_time and start_time and end_time[:5] < start_time[:5]:
+        return 'O horário de término deve ser depois do início.'
+    return None
 
 
 @admin_bp.route('/agenda')
@@ -27,10 +80,16 @@ def agenda_list():
 @admin_required
 def agenda_create():
     if request.method == 'POST':
+        err = _validate_form()
+        if err:
+            flash(err, 'error')
+            return redirect(url_for('admin.agenda_create'))
         try:
             period_id_raw = request.form.get('period_id', '')
+            day   = int(request.form.get('day', 1))
+            period_id = int(period_id_raw) if period_id_raw else None
             item = AgendaItem(
-                day         = int(request.form.get('day', 1)),
+                day         = day,
                 event_date  = request.form.get('event_date', ''),
                 start_time  = request.form['start_time'],
                 end_time    = request.form.get('end_time', ''),
@@ -39,8 +98,8 @@ def agenda_create():
                 location    = request.form.get('location', ''),
                 status      = request.form.get('status', 'auto'),
                 committee   = request.form.get('committee', ''),
-                order       = int(request.form.get('order', 0)),
-                period_id   = int(period_id_raw) if period_id_raw else None,
+                order       = _next_order(day, period_id),
+                period_id   = period_id,
             )
             db.session.add(item)
             db.session.commit()
@@ -63,6 +122,10 @@ def agenda_create():
 def agenda_edit(id):
     item = AgendaItem.query.get_or_404(id)
     if request.method == 'POST':
+        err = _validate_form()
+        if err:
+            flash(err, 'error')
+            return redirect(url_for('admin.agenda_edit', id=id))
         try:
             period_id_raw = request.form.get('period_id', '')
             item.day         = int(request.form.get('day', 1))
@@ -74,7 +137,7 @@ def agenda_edit(id):
             item.location    = request.form.get('location', '')
             item.status      = request.form.get('status', 'auto')
             item.committee   = request.form.get('committee', '')
-            item.order       = int(request.form.get('order', 0))
+            # O form não tem campo 'order' — preserva o valor do drag-and-drop
             item.period_id   = int(period_id_raw) if period_id_raw else None
             db.session.commit()
             cache_clear('agenda_status')
@@ -102,37 +165,28 @@ def agenda_delete(id):
     return redirect(url_for('admin.agenda_list'))
 
 
-@admin_bp.route('/agenda/<int:id>/status/<string:status>', methods=['POST'])
-@login_required
-@admin_required
-def agenda_set_status(id, status):
-    """Muda status de um item rapidamente (ex: marcar como 'now')."""
-    allowed = ('now', 'next', 'done', 'break', 'vote', 'crisis', 'open')
-    if status not in allowed:
-        abort(400)
-    # Se marcando como 'now', remove 'now' dos outros
-    if status == 'now':
-        AgendaItem.query.filter_by(status='now').update({'status': 'done'})
-    item = AgendaItem.query.get_or_404(id)
-    item.status = status
-    db.session.commit()
-    cache_clear('agenda_status')
-    flash(f'Status atualizado para "{status}".', 'success')
-    return redirect(url_for('admin.agenda_list'))
-
-
 @admin_bp.route('/agenda/reorder', methods=['POST'])
 @login_required
 @admin_required
 def agenda_reorder():
     """Reordena itens da agenda via drag-and-drop (Sortable.js)."""
-    data = request.get_json()
-    if not data or 'items' not in data:
+    data = request.get_json(silent=True)
+    if not data or not isinstance(data.get('items'), list):
         return jsonify({'error': 'missing items'}), 400
-    for entry in data['items']:
-        item = AgendaItem.query.get(entry.get('id'))
-        if item:
-            item.order = entry.get('order', item.order)
-    db.session.commit()
-    cache_clear('agenda_status')
-    return jsonify({'ok': True})
+    try:
+        entries = [e for e in data['items'] if isinstance(e, dict)]
+        ids = [e.get('id') for e in entries]
+        # 1 query em vez de 1 get() por item (N+1 ≈ 180ms cada em produção)
+        items = {i.id: i for i in
+                 AgendaItem.query.filter(AgendaItem.id.in_(ids)).all()}
+        for entry in entries:
+            item = items.get(entry.get('id'))
+            if item and isinstance(entry.get('order'), int):
+                item.order = entry['order']
+        db.session.commit()
+        cache_clear('agenda_status')
+        return jsonify({'ok': True})
+    except Exception as e:
+        db.session.rollback()
+        logger.error('Erro ao reordenar agenda: %s', e, exc_info=True)
+        return jsonify({'error': str(e)}), 500

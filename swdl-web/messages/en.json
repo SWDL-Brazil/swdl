@@ -77,6 +77,8 @@
     "cta_register": "Register Now",
     "unit_days": "days",
     "unit_hours": "hours",
+    "countdown_min": "min",
+    "countdown_seg": "sec",
     "gallery_archive_label": "Archive",
     "gallery_editions_title": "Previous Editions",
     "testimonials_next": "Next",

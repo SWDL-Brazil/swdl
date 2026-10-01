@@ -59,6 +59,7 @@ def set_presence(id, status):
 @moderator_required
 def chamada_control_screen():
     """Controla exibição da chamada no telão público."""
+    from telao_state import set_telao_state
     data   = request.get_json(silent=True) or {}
     action = data.get('action', 'show')
 
@@ -80,8 +81,10 @@ def chamada_control_screen():
                 'status':     d.presence_status or 'ausente',
             } for d in delegations],
         }
+        set_telao_state('chamada', {'committee': committee_filter})
         socketio.emit('chamada_show', payload, room='telao')
     else:
+        set_telao_state(None)
         socketio.emit('chamada_hide', {}, room='telao')
 
     return jsonify({'status': 'success', 'action': action})

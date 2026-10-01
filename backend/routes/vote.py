@@ -262,9 +262,19 @@ def on_join_telao(data):
     emit('debate_timer_sync', get_state())
 
 
+def _can_control_debate_timer():
+    """Controle do cronometro de debate: apenas mesa (admin/diretor).
+
+    A pagina /telao e publica — sem essa checagem qualquer visitante
+    com a URL start/pausaria o cronometro global.
+    """
+    return bool(current_user.is_authenticated and current_user.is_moderator())
+
+
 @socketio.on('debate_timer_start')
 def on_debate_timer_start(data):
-    from routes.admin._helpers import moderator_required as _check
+    if not _can_control_debate_timer():
+        return
     from models.debate_timer import start
     state = start()
     socketio.emit('debate_timer_sync', state, room='telao')
@@ -272,6 +282,8 @@ def on_debate_timer_start(data):
 
 @socketio.on('debate_timer_pause')
 def on_debate_timer_pause(data):
+    if not _can_control_debate_timer():
+        return
     from models.debate_timer import pause
     state = pause()
     socketio.emit('debate_timer_sync', state, room='telao')
@@ -279,6 +291,8 @@ def on_debate_timer_pause(data):
 
 @socketio.on('debate_timer_reset')
 def on_debate_timer_reset(data):
+    if not _can_control_debate_timer():
+        return
     from models.debate_timer import reset
     state = reset()
     socketio.emit('debate_timer_sync', state, room='telao')
@@ -339,7 +353,8 @@ def api_open_sessions():
 @vote_bp.route('/telao')
 def telao():
     """Página de projeção — sem login, aberta no projetor."""
-    return render_template('telao.html')
+    can_control = bool(current_user.is_authenticated and current_user.is_moderator())
+    return render_template('telao.html', can_control=can_control)
 
 
 @vote_bp.route('/api/telao/estado')
@@ -379,9 +394,14 @@ def api_telao_estado():
     oradores = Delegation.query.filter(Delegation.orador == True)\
                                .order_by(Delegation.country).all()
 
+    # Tela ativa pedida pelo admin — restaurada pelo telao apos F5/reboot
+    from telao_state import get_telao_state, build_telao_display
+    display = build_telao_display(get_telao_state())
+
     return jsonify({
         'session': session_data,
         'ticker':  [n.title for n in news],
+        'display': display,
         'oradores': [{
             'id':        d.id,
             'country':   d.country or '?',

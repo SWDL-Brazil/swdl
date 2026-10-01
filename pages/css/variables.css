@@ -57,6 +57,23 @@ a {
   color: inherit;
 }
 
+/* ── MOBILE BASELINE ────────────────────────────────────────── */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+button, a, [role="button"], .btn, .nav-cta, .hamburger {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input, textarea, select {
+  font-size: 16px;
+}
+
 /* ── TIPOGRAFIA GLOBAL ─────────────────────────────────────── */
 h1, h2, h3, h4, h5 {
   font-family: 'Playfair Display', serif;
@@ -80,10 +97,32 @@ h1, h2, h3, h4, h5 {
   opacity: 0;
   transform: translateY(28px);
   transition: opacity 0.65s ease, transform 0.65s ease;
+  will-change: opacity, transform;
+  transition-delay: calc(var(--i, 0) * 80ms);
 }
 .reveal.visible {
   opacity: 1;
   transform: translateY(0);
+  will-change: auto;
+}
+
+/* Scroll-driven animation (progressive enhancement) */
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: revealUp linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 100%;
+    transition: none;
+  }
+  .reveal.visible {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ── BOTÕES ────────────────────────────────────────────────── */
@@ -99,27 +138,20 @@ h1, h2, h3, h4, h5 {
   border-radius: 3px;
   border: none;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s;
+  transition: transform 0.4s linear(0,0.006,0.025 2.8%,0.101 6.1%,0.539 18.9%,0.721 25.3%,0.849 31.5%,0.937 38.1%,0.968 41.8%,0.991 46.5%,1.006 51.9%,1.015 58.1%,1.017 64.5%,1.001 79.4%,1),
+              box-shadow 0.3s ease,
+              background 0.25s ease,
+              color 0.25s ease;
 }
 
 .btn-primary {
   background: var(--gold);
   color: var(--navy);
 }
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(183, 148, 65, 0.35);
-  background: var(--gold-light);
-}
 
 .btn-navy {
   background: var(--navy);
   color: var(--white);
-}
-.btn-navy:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(16, 30, 76, 0.25);
-  background: var(--navy-mid);
 }
 
 .btn-ghost {
@@ -127,18 +159,11 @@ h1, h2, h3, h4, h5 {
   color: var(--navy);
   border: 1.5px solid var(--border);
 }
-.btn-ghost:hover {
-  border-color: var(--navy);
-  background: rgba(16, 30, 76, 0.04);
-}
 
 .btn-ghost-white {
   background: transparent;
   color: var(--white);
   border: 1.5px solid rgba(255,255,255,0.25);
-}
-.btn-ghost-white:hover {
-  border-color: var(--white);
 }
 
 /* ── SECTION LABELS ────────────────────────────────────────── */
@@ -238,7 +263,7 @@ h1, h2, h3, h4, h5 {
   display: none;
   align-items: center;
   gap: 14px;
-  animation: slide-down 0.4s ease;
+  animation: slide-down 0.5s linear(0,0.004,0.016 1.5%,0.065 3.1%,0.241 6.3%,0.676 12.7%,0.887 17.4%,0.976 21.2%,1.017 25.1%,1.029 29.8%,1.027 35.6%,1.007 45.1%,0.997 52.2%,0.993 68.2%,1) both;
 }
 #crisis-banner.active { display: flex; }
 body.crisis-active .ticker-bar { margin-top: 40px; }
@@ -268,7 +293,30 @@ body.crisis-active .ticker-bar { margin-top: 40px; }
   transition: color 0.2s;
   flex-shrink: 0;
 }
-.crisis-close:hover { color: var(--white); }
+
+/* ── HOVER GATING (só em dispositivos com hover real) ───────── */
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(183, 148, 65, 0.35);
+    background: var(--gold-light);
+  }
+  .btn-navy:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(16, 30, 76, 0.25);
+    background: var(--navy-mid);
+  }
+  .btn-ghost:hover {
+    border-color: var(--navy);
+    background: rgba(16, 30, 76, 0.04);
+  }
+  .btn-ghost-white:hover {
+    border-color: var(--white);
+  }
+  .crisis-close:hover {
+    color: var(--white);
+  }
+}
 
 @keyframes slide-down {
   from { transform: translateY(-100%); opacity: 0; }
@@ -277,4 +325,19 @@ body.crisis-active .ticker-bar { margin-top: 40px; }
 @keyframes pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%       { opacity: 0.4; transform: scale(0.75); }
+}
+
+/* ── REDUCED MOTION ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }

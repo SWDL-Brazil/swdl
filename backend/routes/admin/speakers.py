@@ -75,6 +75,7 @@ def oradores_toggle():
 @moderator_required
 def oradores_control_screen():
     """Controla exibição da lista de oradores no telão."""
+    from telao_state import set_telao_state
     data = request.get_json(silent=True) or {}
     action = data.get('action', 'show')
     current_app.logger.debug(f'[ORADORES] Controle telao: action={action} (por {current_user.email})')
@@ -96,8 +97,10 @@ def oradores_control_screen():
                 'committee': d.committee or '',
             } for d in oradores],
         }
+        set_telao_state('oradores', {'committee': committee_filter})
         socketio.emit('oradores_show', payload, room='telao')
     else:
+        set_telao_state(None)
         socketio.emit('oradores_hide', {}, room='telao')
 
     return jsonify({'status': 'success', 'action': action})

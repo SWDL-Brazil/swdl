@@ -15,6 +15,4 @@ psycopg2-binary
 # SQLAlchemy 2.1+ trocou o dialeto postgres:// para psycopg3 e quebra o build
 # (só temos psycopg2-binary). Manter <2.1 ate migrar para psycopg.
 sqlalchemy<2.1
-pypdf
-reportlab
 packaging

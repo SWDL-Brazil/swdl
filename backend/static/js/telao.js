@@ -10,6 +10,13 @@
     if (!s) return '';
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
+  /* So aceita URLs relativas ou http(s) — bloqueia javascript:, data:, etc. */
+  function safeUrl(u) {
+    if (!u) return '';
+    const s = String(u).trim();
+    if (/^(https?:)?\/\//i.test(s) || s.startsWith('/') || s.startsWith('./')) return esc(s);
+    return '';
+  }
   const SCREENS = [
     'idleScreen','voteScreen','resultScreen','chamadaScreen',
     'speechScreen','speakerQueueScreen','motionScreen',
@@ -23,6 +30,8 @@
   }, 1000);
 
   /* ---- Utility ---- */
+  let resultTimeout = null;
+
   function show(id) {
     SCREENS.forEach((s) => {
       const el = $id(s);
@@ -30,13 +39,14 @@
     });
     const ov = $id('oradores-overlay');
     if (ov && id !== 'idleScreen') ov.remove();
+    if (id !== 'resultScreen') clearTimeout(resultTimeout);
   }
 
   function buildTicker(items) {
     const inner = $id('tickerInner');
     if (!inner) return;
     const html = [...items, ...items]
-      .map((t) => `<span class="t-ticker-item">${t}</span><span class="t-ticker-sep"> \u25C6 </span>`)
+      .map((t) => `<span class="t-ticker-item">${esc(t)}</span><span class="t-ticker-sep"> \u25C6 </span>`)
       .join('');
     inner.innerHTML = html;
   }
@@ -179,6 +189,7 @@
   /* ---- Vote Timer ---- */
   const CIRC = 226;
   let voteInterval = null, voteRem = 0, voteTotal = 120, currentSession = null;
+  let lastResultId = null;
 
   function renderVoteTimer() {
     const mm = String(Math.floor(voteRem / 60)).padStart(2, '0');
@@ -206,7 +217,8 @@
       } else {
         clearInterval(voteInterval);
         if (currentSession) {
-          fetch(`/api/vote/${currentSession.id}/auto_close`, { method: 'POST' });
+          /* Auto-close e fechado pelo servidor (vote.py api_telao_estado).
+             O POST /auto_close daqui exigia login+CSRF e falhava sempre. */
           showResult(currentSession);
         }
       }
@@ -251,11 +263,12 @@
     if (!listEl) return;
     const item = document.createElement('div');
     item.className = 't-country-item';
+    const fu = safeUrl(vote.flag_url);
     let flag = '';
-    if (vote.flag_url && vote.flag_url.trim()) {
-      flag = `<img class="t-flag-img" src="${vote.flag_url}" onerror="this.style.display='none'" alt="">`;
+    if (fu) {
+      flag = `<img class="t-flag-img" src="${fu}" onerror="this.style.display='none'" alt="">`;
     } else if (vote.flag) {
-      flag = `<span class="t-flag-emoji">${vote.flag}</span>`;
+      flag = `<span class="t-flag-emoji">${esc(vote.flag)}</span>`;
     } else {
       flag = '<span class="t-flag-emoji">\uD83C\uDF0D</span>';
     }
@@ -278,6 +291,11 @@
   }
 
   function showResult(data) {
+    /* ignora re-emissao da mesma sessao (cliente ja mostrou o resultado) */
+    const rs = $id('resultScreen');
+    if (data && data.id != null && data.id === lastResultId &&
+        rs && rs.style.display !== 'none') return;
+    lastResultId = (data && data.id != null) ? data.id : null;
     clearInterval(voteInterval);
     currentSession = null;
     show('resultScreen');
@@ -317,6 +335,13 @@
     }
     const ct = $id('committeeTag');
     if (ct) ct.style.display = 'none';
+
+    /* Auto-volta ao idle apos 12s — cancelado por show() de outra tela. */
+    clearTimeout(resultTimeout);
+    resultTimeout = setTimeout(() => {
+      const rs = $id('resultScreen');
+      if (rs && rs.style.display !== 'none') show('idleScreen');
+    }, 12000);
   }
 
   /* ---- Oradores ---- */
@@ -344,10 +369,11 @@
         const card = document.createElement('div');
         card.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 20px;min-width:140px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px';
         let flagHtml = '';
-        if (d.flag_url && d.flag_url.trim()) {
-          flagHtml = `<img src="${d.flag_url}" style="height:36px;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.4)" onerror="this.style.display='none'">`;
+        const ofu = safeUrl(d.flag_url);
+        if (ofu) {
+          flagHtml = `<img src="${ofu}" style="height:36px;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.4)" onerror="this.style.display='none'">`;
         } else if (d.flag) {
-          flagHtml = `<span style="font-size:44px;line-height:1">${d.flag}</span>`;
+          flagHtml = `<span style="font-size:44px;line-height:1">${esc(d.flag)}</span>`;
         } else {
           flagHtml = '<span style="font-size:44px;line-height:1">\uD83C\uDF0D</span>';
         }
@@ -375,11 +401,12 @@
       const item = document.createElement('div');
       item.className = 'ch-country-item';
       item.dataset.id = d.id;
+      const cfu = safeUrl(d.flag_url);
       let flag = '';
-      if (d.flag_url && d.flag_url.trim()) {
-        flag = `<img class="ch-flag-img" src="${d.flag_url}" onerror="this.style.display='none'">`;
+      if (cfu) {
+        flag = `<img class="ch-flag-img" src="${cfu}" onerror="this.style.display='none'">`;
       } else if (d.flag) {
-        flag = `<span class="ch-flag-emoji">${d.flag}</span>`;
+        flag = `<span class="ch-flag-emoji">${esc(d.flag)}</span>`;
       } else {
         flag = '<span class="ch-flag-emoji">\uD83C\uDF0D</span>';
       }
@@ -433,8 +460,9 @@
       item.className = 'ch-country-item';
       item.dataset.id = data.id;
       let flag = '';
-      if (data.flag_url && data.flag_url.trim()) {
-        flag = `<img class="ch-flag-img" src="${esc(data.flag_url)}" onerror="this.style.display='none'">`;
+      const dfu = safeUrl(data.flag_url);
+      if (dfu) {
+        flag = `<img class="ch-flag-img" src="${dfu}" onerror="this.style.display='none'">`;
       } else if (data.flag) {
         flag = `<span class="ch-flag-emoji">${esc(data.flag)}</span>`;
       } else {
@@ -453,14 +481,27 @@
 
   /* ---- Speaker Queue ---- */
   let sqActiveEntry = null;
+  let lastQueueData = null;
+  let pendingQueueAfterStop = false;
+  let queueStopFallback = null;
+
+  /* Volta a fila de oradores apos a fala (ou idle se nao ha fila). */
+  function returnToQueueOrIdle(data) {
+    pendingQueueAfterStop = false;
+    clearTimeout(queueStopFallback);
+    const d = data || lastQueueData;
+    if (d && (d.active || (d.queue && d.queue.length))) showSpeakerQueue(d);
+    else show('idleScreen');
+  }
 
   function updateActiveSpeakerDisplay(entry) {
     const card = $id('sqActiveCard');
     if (card) card.style.display = 'flex';
     const countryEl = $id('sqActiveCountry');
     let flag = '';
-    if (entry.flag_url && entry.flag_url.trim()) {
-      flag = `<img src="${esc(entry.flag_url)}" style="height:40px;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.4)" onerror="this.style.display='none'">`;
+    const efu = safeUrl(entry.flag_url);
+    if (efu) {
+      flag = `<img src="${efu}" style="height:40px;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.4)" onerror="this.style.display='none'">`;
     } else if (entry.flag) {
       flag = `<span style="font-size:40px">${esc(entry.flag)}</span>`;
     } else {
@@ -477,6 +518,7 @@
   }
 
   function renderSpeakerQueue(data) {
+    lastQueueData = data;
     const committee = data.committee || 'all';
     const sqTitle = $id('sqCommittee');
     if (sqTitle) sqTitle.textContent = committee === 'all' ? 'Todos os Comit\u00eas' : committee.toUpperCase();
@@ -502,8 +544,9 @@
       const item = document.createElement('div');
       item.className = 'sq-item';
       let flag = '';
-      if (entry.flag_url && entry.flag_url.trim()) {
-        flag = `<img class="sq-item-flag" src="${esc(entry.flag_url)}" onerror="this.style.display='none'">`;
+      const sfu = safeUrl(entry.flag_url);
+      if (sfu) {
+        flag = `<img class="sq-item-flag" src="${sfu}" onerror="this.style.display='none'">`;
       } else if (entry.flag) {
         flag = `<span class="sq-item-flag-emoji">${esc(entry.flag)}</span>`;
       } else {
@@ -553,8 +596,9 @@
       const item = document.createElement('div');
       item.className = 'mo-item';
       let proposerFlag = '';
-      if (m.proposer_flag_url && m.proposer_flag_url.trim()) {
-        proposerFlag = `<img src="${esc(m.proposer_flag_url)}" style="height:20px;border-radius:3px;box-shadow:0 1px 6px rgba(0,0,0,.3)" onerror="this.style.display='none'">`;
+      const pfu = safeUrl(m.proposer_flag_url);
+      if (pfu) {
+        proposerFlag = `<img src="${pfu}" style="height:20px;border-radius:3px;box-shadow:0 1px 6px rgba(0,0,0,.3)" onerror="this.style.display='none'">`;
       } else if (m.proposer_flag) {
         proposerFlag = `<span style="font-size:18px">${esc(m.proposer_flag)}</span>`;
       } else {
@@ -623,8 +667,8 @@
     const flagEmoji = $id('rsProposerEmoji');
     const countryEl = $id('rsProposerCountry');
     if (proposerEl) proposerEl.style.display = 'flex';
-    if (res.proposer_flag_url && res.proposer_flag_url.trim()) {
-      if (flagImg) { flagImg.src = res.proposer_flag_url; flagImg.style.display = 'block'; }
+    if (safeUrl(res.proposer_flag_url)) {
+      if (flagImg) { flagImg.src = safeUrl(res.proposer_flag_url); flagImg.style.display = 'block'; }
       if (flagEmoji) flagEmoji.style.display = 'none';
     } else {
       if (flagImg) flagImg.style.display = 'none';
@@ -713,20 +757,31 @@
     socket.on('chamada_hide', () => { show('idleScreen'); });
     socket.on('chamada_update', (data) => { updateChamadaItem(data); });
     socket.on('speaker_queue_show', (data) => { showSpeakerQueue(data); });
-    socket.on('speaker_queue_hide', () => { show('idleScreen'); });
-    socket.on('speaker_queue_display', (data) => { renderSpeakerQueue(data); });
+    socket.on('speaker_queue_hide', () => { lastQueueData = null; show('idleScreen'); });
+    socket.on('speaker_queue_display', (data) => {
+      renderSpeakerQueue(data);
+      /* apos o fim da fala, restaura a tela da fila com os dados frescos */
+      if (pendingQueueAfterStop) returnToQueueOrIdle(data);
+    });
     socket.on('speaker_started', (data) => { sqActiveEntry = data; updateActiveSpeakerDisplay(data); });
     socket.on('speaker_ended', () => { sqActiveEntry = null; });
     socket.on('speech_timer_start', (data) => { startSpeechTimer(data.duration || 90); });
-    socket.on('speech_timer_stop', () => { stopSpeechTimer(); });
-    socket.on('speech_timer_reset', () => {
-      const sqScreen = $id('speakerQueueScreen');
-      if (sqScreen && sqScreen.style.display !== 'none') {
-        resetSpeechTimer();
-        show('speakerQueueScreen');
+    socket.on('speech_timer_stop', () => {
+      stopSpeechTimer();
+      if (lastQueueData) {
+        returnToQueueOrIdle(lastQueueData);
       } else {
-        resetSpeechTimer();
+        /* sem dados em cache: aguarda o speaker_queue_display que vem em seguida */
+        pendingQueueAfterStop = true;
+        clearTimeout(queueStopFallback);
+        queueStopFallback = setTimeout(() => {
+          if (pendingQueueAfterStop) returnToQueueOrIdle(null);
+        }, 1200);
       }
+    });
+    socket.on('speech_timer_reset', () => {
+      resetSpeech();
+      returnToQueueOrIdle(lastQueueData);
     });
     socket.on('motion_queue_show', (data) => { showMotionQueue(data); });
     socket.on('motion_queue_hide', () => { show('idleScreen'); });
@@ -740,6 +795,23 @@
     socket.on('resolution_hide', () => { show('idleScreen'); });
   } catch (e) { socket = null; }
 
+  /* ---- Restauracao de tela (apos F5/reboot do projetor) ---- */
+  let lastDisplayTs = null;
+
+  function applyDisplay(d) {
+    if (!d || !d.feature) return;
+    const p = d.payload || {};
+    switch (d.feature) {
+      case 'chamada':       showChamada(p); break;
+      case 'oradores':      showOradores(p); break;
+      case 'speaker_queue': showSpeakerQueue(p); break;
+      case 'motion':        showMotionQueue(p); break;
+      case 'resolution':
+        if (p.active || (p.submitted && p.submitted.length)) showResolutionDisplay(p);
+        break;
+    }
+  }
+
   /* ---- Polling (adaptive: faster when WS is down) ---- */
   async function poll() {
     try {
@@ -748,6 +820,12 @@
       const res = await fetch('/api/telao/estado', { signal: controller.signal });
       clearTimeout(timeoutId);
       const data = await res.json();
+      /* primeiro: restaura a tela pedida pelo admin (o voto, se aberto,
+         ganha na sequencia — a ordem abaixo mantém voto acima de tudo) */
+      if (data.display && data.display.ts !== lastDisplayTs) {
+        lastDisplayTs = data.display.ts;
+        applyDisplay(data.display);
+      }
       if (data.session) {
         if (!currentSession || currentSession.id !== data.session.id) {
           loadSession(data.session);

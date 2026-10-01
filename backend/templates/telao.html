@@ -29,8 +29,10 @@
   <div class="t-debate-section">
     <span class="t-debate-label">⏱ Debate</span>
     <div class="t-debate-time" id="debateTime">00:00:00</div>
+    {% if can_control %}
     <button class="t-debate-btn" id="debateToggleBtn" onclick="toggleDebate()">▶ Iniciar</button>
     <button class="t-debate-btn" onclick="resetDebate()" style="opacity:.55">↺</button>
+    {% endif %}
   </div>
 </div>
 
@@ -257,6 +259,7 @@
       <div style="text-align:center;padding:40px;color:var(--muted);">Aguardando resolução...</div>
     </div>
   </div>
+</div><!-- /.t-main -->
 
   <div class="t-ticker">
   <div class="t-ticker-label">

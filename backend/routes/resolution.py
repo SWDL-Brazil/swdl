@@ -174,14 +174,17 @@ def resolution_vote_final(id):
 @login_required
 @moderator_required
 def resolution_telao():
+    from telao_state import set_telao_state
     data = request.get_json(silent=True) or {}
     action = data.get('action', 'show')
     committee = data.get('committee', 'all')
 
     if action == 'show':
+        set_telao_state('resolution', {'committee': committee})
         _emit_telao_resolution(committee if committee != 'all' else None)
         return jsonify({'status': 'success'})
     else:
+        set_telao_state(None)
         socketio.emit('resolution_hide', {}, room='telao')
         return jsonify({'status': 'success'})
 

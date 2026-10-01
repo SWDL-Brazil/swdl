@@ -2,9 +2,8 @@
 from flask import (Blueprint, render_template, redirect, url_for,
                    flash, request, abort, jsonify, send_file, current_app)
 from flask_login import login_required, current_user
-from extensions import db, socketio
+from extensions import db
 from models.news         import News
-from models.agenda       import AgendaItem
 from models.inscription  import Inscription
 from models.delegation   import Delegation
 from models.user         import User
@@ -16,7 +15,7 @@ from models.category    import Category
 from models.theme      import Theme
 from models.urgent_alert import UrgentAlert
 from datetime import datetime, timezone
-from routes.agenda_utils import get_agenda_status
+from routes.agenda_utils import get_resolved_phase
 import os, uuid as _uuid, hmac, hashlib
 
 admin_bp = Blueprint('admin', __name__)
@@ -83,10 +82,6 @@ def delegation_options():
 _GLOBALS_TTL = 60.0
 
 
-def _cached_phase_override():
-    return EventConfig.get_state()['phase_override'] or None
-
-
 def _cached_invoke():
     return EventConfig.get_state()['invoke']
 
@@ -105,13 +100,10 @@ def _cached_alert_messages():
 @admin_bp.context_processor
 def inject_globals():
     try:
-        phase, _, _ = get_agenda_status()
-        override = _cached_phase_override()
-        if override in ('pre', 'during', 'post'):
-            phase = override
+        phase, _, _ = get_resolved_phase()
         active_invoke = _cached_invoke()
         active_alerts = _cached_alert_messages()
-        return dict(event_phase=phase or 'pre', active_invoke=active_invoke,
+        return dict(event_phase=phase, active_invoke=active_invoke,
                     active_alerts=active_alerts,
                     is_admin=current_user.is_admin() if current_user.is_authenticated else False)
     except Exception:

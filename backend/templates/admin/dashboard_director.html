@@ -94,7 +94,7 @@
           <tr>
             <td style="font-weight:600">{{ day }}</td>
             <td>{{ agenda_items_by_day[day] }}</td>
-            <td><a href="{{ url_for('admin.agenda_list') }}" class="btn btn-ghost btn-sm">Ver</a></td>
+            <td>{% if is_admin %}<a href="{{ url_for('admin.agenda_list') }}" class="btn btn-ghost btn-sm">Ver</a>{% endif %}</td>
           </tr>
           {% else %}
           <tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">Nenhum item cadastrado.</td></tr>

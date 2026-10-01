@@ -319,6 +319,12 @@
           <button class="btn btn-sm" style="background:#E74C3C;color:#fff">🔒 Travar Alunos</button>
         </form>
         {% endif %}
+        {% if stats.read_only > 0 %}
+        <form method="POST" action="{{ url_for('admin.students_unlock_all') }}" style="display:inline"
+              onsubmit="return confirm('Destravar TODOS os alunos? Eles voltam a poder registrar presença e votar.')">
+          <button class="btn btn-sm" style="background:#2ECC71;color:#fff">🔓 Destravar Alunos</button>
+        </form>
+        {% endif %}
       </div>
     </div>
   </div>

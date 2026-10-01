@@ -3,6 +3,12 @@
 {% block page_title %}Delegações{% endblock %}
 
 {% block topbar_actions %}
+  <form method="POST" action="{{ url_for('admin.inscricoes_toggle') }}" style="display:inline"
+        onsubmit="return confirm('{{ 'Fechar as inscrições? Ninguém mais poderá se inscrever.' if inscricoes_abertas else 'Abrir as inscrições agora?' }}')">
+    <button class="btn {{ 'btn-ghost' if inscricoes_abertas else 'btn-gold' }}">
+      {{ '🔓 Fechar Inscrições' if inscricoes_abertas else '🔒 Abrir Inscrições' }}
+    </button>
+  </form>
   <a href="{{ url_for('admin.delegation_create') }}" class="btn btn-gold">➕ Nova Delegação</a>
 {% endblock %}
 

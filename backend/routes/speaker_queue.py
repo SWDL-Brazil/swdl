@@ -260,6 +260,7 @@ def speaker_queue_clear():
 @login_required
 @moderator_required
 def speaker_queue_telao():
+    from telao_state import set_telao_state
     data = request.get_json(silent=True) or {}
     action = data.get('action', 'show')
     committee = data.get('committee', 'all')
@@ -271,6 +272,7 @@ def speaker_queue_telao():
         active = SpeakerEntry.active_speaker(
             committee if committee != 'all' else None
         )
+        set_telao_state('speaker_queue', {'committee': committee})
         socketio.emit('speaker_queue_show', {
             'committee': committee,
             'queue': [e.to_dict() for e in queue],
@@ -278,6 +280,7 @@ def speaker_queue_telao():
         }, room='telao')
         return jsonify({'status': 'success'})
     else:
+        set_telao_state(None)
         socketio.emit('speaker_queue_hide', {}, room='telao')
         return jsonify({'status': 'success'})
 

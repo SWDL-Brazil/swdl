@@ -1,9 +1,21 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://swdl.onrender.com/api';
+// O bundle de produção já foi gerado com `process.env.NEXT_PUBLIC_API_URL`
+// resolvendo para a string literal "NEXT_PUBLIC_API_URL" (env ausente/errada no
+// build), o que quebrava TODOS os fetches: a URL virava relativa
+// (/NEXT_PUBLIC_API_URL/agenda -> 404). Por isso o valor só é aceito se for
+// uma URL http(s) de verdade; caso contrário caímos no endpoint de produção.
+const FALLBACK_API_BASE = 'https://swdl.onrender.com/api';
+
+const RAW_API_BASE: string =
+  (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_URL) || '';
+
+const API_BASE = /^https?:\/\/\S+$/i.test(RAW_API_BASE.trim())
+  ? RAW_API_BASE.trim().replace(/\/+$/, '')
+  : FALLBACK_API_BASE;
 
 // Em dev, permite fallback local se a env não estavar no build do browser
 const API_BASE_CANDIDATES = [
   API_BASE,
-  'http://localhost:5000/api',
+  ...(process.env.NODE_ENV === 'development' ? ['http://localhost:5000/api'] : []),
 ].filter((v, i, a) => a.indexOf(v) === i);
 
 export interface News {

@@ -9,7 +9,7 @@ from models.news import News
 from models.agenda import AgendaItem
 from models.document import Document
 from models.vote import VoteSession, Vote
-from routes.agenda_utils import get_agenda_status
+from routes.agenda_utils import get_agenda_status, get_current_next
 from datetime import datetime, timezone
 import os
 
@@ -96,9 +96,7 @@ def dashboard():
 
     recent_news  = News.query.filter_by(published=True)\
                              .order_by(News.created_at.desc()).limit(4).all()
-    current_item = AgendaItem.query.filter_by(status='now').first()
-    next_item    = AgendaItem.query.filter_by(status='next')\
-                                   .order_by(AgendaItem.order).first()
+    current_item, next_item = get_current_next()
 
     if delegation and delegation.theme_id:
         docs = Document.query.filter(
