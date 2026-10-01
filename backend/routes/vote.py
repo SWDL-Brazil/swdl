@@ -357,6 +357,19 @@ def telao():
     return render_template('telao.html', can_control=can_control)
 
 
+def _active_crisis_message():
+    """Mensagem de crise ativa para o telão (alerta do admin > notícia de crise)."""
+    from models.urgent_alert import UrgentAlert
+    alert = UrgentAlert.query.filter_by(active=True)\
+            .order_by(UrgentAlert.created_at.desc()).first()
+    if alert:
+        return alert.message
+    from models.news import News
+    crisis = News.query.filter_by(is_crisis=True, published=True)\
+             .order_by(News.created_at.desc()).first()
+    return crisis.title if crisis else None
+
+
 @vote_bp.route('/api/telao/estado')
 def api_telao_estado():
     """Estado atual para o telão: sessão aberta + votos + ticker + oradores."""
@@ -402,6 +415,7 @@ def api_telao_estado():
         'session': session_data,
         'ticker':  [n.title for n in news],
         'display': display,
+        'crisis':  _active_crisis_message(),
         'oradores': [{
             'id':        d.id,
             'country':   d.country or '?',

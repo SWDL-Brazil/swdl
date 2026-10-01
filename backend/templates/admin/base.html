@@ -76,6 +76,10 @@
                class="{{ 'active' if request.endpoint in ('admin.invocar_page', 'admin.invocar_sessao') }}">
           <span class="nav-icon">📡</span> Invocar Alunos
         </a></li>
+        <li><a href="{{ url_for('vote.telao') }}" target="_blank"
+               class="{{ 'active' if request.endpoint == 'vote.telao' }}">
+          <span class="nav-icon">📺</span> Telão
+        </a></li>
       </ul>
 
       <div class="sidebar-section">🎤 Plenário</div>
@@ -226,6 +230,9 @@
       <ul class="sidebar-nav">
         <li><a href="/" target="_blank">
           <span class="nav-icon">🌐</span> Ver Site
+        </a></li>
+        <li><a href="{{ url_for('vote.telao') }}" target="_blank">
+          <span class="nav-icon">📺</span> Telão
         </a></li>
       </ul>
 

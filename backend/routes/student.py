@@ -33,6 +33,20 @@ def get_student():
     return g._student
 
 
+def notify_telao_presence(delegation):
+    """Avisa o telão que a delegacao marcou presença pelo portal do aluno.
+
+    Sem isso a lista de presença projetada só mudava quando o admin
+    reabria a chamada, mesmo com o delegado ja registrado como presente.
+    """
+    try:
+        from telao_state import emit_chamada_update
+        emit_chamada_update(delegation)
+    except Exception:
+        current_app.logger.error('[TELAO] falha ao emitir presença do aluno',
+                                 exc_info=True)
+
+
 def get_delegation(student_profile):
     """Delegation com cache por request via flask.g."""
     if hasattr(g, '_delegation'):
@@ -153,6 +167,7 @@ def attendance():
         if action == 'registrar':
             delegation.presence_status = 'presente'
             db.session.commit()
+            notify_telao_presence(delegation)
             flash('Presença registrada com sucesso!', 'success')
             if quick_mode:
                 logout_user()
@@ -161,6 +176,7 @@ def attendance():
             delegation.presence_status = 'presente'
             student_profile.adapted_device = True
             db.session.commit()
+            notify_telao_presence(delegation)
             flash('Presença registrada em modo adaptado (dispositivo compartilhado).', 'success')
             if quick_mode:
                 logout_user()
@@ -420,6 +436,8 @@ def api_attendance():
         student_profile.adapted_device = True
     db.session.commit()
 
+    notify_telao_presence(delegation)
+
     return jsonify({'ok': True, 'presence_status': delegation.presence_status})
 
 
@@ -469,5 +487,8 @@ def on_join_students(data):
     if not current_user.is_authenticated:
         return
     join_room('all_students')
+    # vote_opened/vote_closed sao emitidos para 'all_delegates' (vote.py).
+    # Sem entrar aqui os alunos nunca recebiam o aviso de votacao aberta.
+    join_room('all_delegates')
     open_sessions = VoteSession.query.filter_by(status='open').all()
     emit('open_sessions', [s.to_dict() for s in open_sessions])

@@ -197,7 +197,22 @@
 </div>
 {% endif %}
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
 <script>
+  /* Room 'admin': outro operador mexeu na fila -> recarrega. */
+  let lastSelfAction = 0;
+  const _nativeFetch = window.fetch;
+  window.fetch = function () {
+    const opts = arguments[1] || {};
+    if (!opts.method || String(opts.method).toUpperCase() === 'POST') lastSelfAction = Date.now();
+    return _nativeFetch.apply(this, arguments);
+  };
+  const adminSock = io();
+  adminSock.on('connect', () => adminSock.emit('join_admin', {}));
+  adminSock.on('speaker_queue_updated', () => {
+    if (Date.now() - lastSelfAction > 3000) location.reload();
+  });
+
   function filterCommittee(val) {
     window.location.href = "{{ url_for('speaker.speaker_queue_panel') }}?committee=" + val;
   }

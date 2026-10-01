@@ -41,6 +41,25 @@ def get_telao_state():
     return data
 
 
+def emit_chamada_update(delegation, status=None):
+    """Emite a troca de presença de UMA delegação para o telão.
+
+    Fonte unica do payload `chamada_update` — usada pelo painel admin
+    (set_presence) e pelo proprio aluno (auto-chamada pelo portal), para
+    que a lista projetada acompanhe o que os delegados registram.
+    """
+    from extensions import socketio
+    st = status or delegation.presence_status or 'ausente'
+    socketio.emit('chamada_update', {
+        'id':        delegation.id,
+        'country':   delegation.country or '?',
+        'flag':      delegation.country_flag or '',
+        'flag_url':  delegation.flag_url or '',
+        'committee': delegation.committee or '',
+        'status':    st,
+    }, room='telao')
+
+
 def build_telao_display(state):
     """Reconstrói o payload da tela indicada, com dados atuais do banco."""
     from flask import current_app

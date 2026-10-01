@@ -69,6 +69,20 @@
     dot.style.background = connected ? '#2ECC71' : '#E74C3C';
   }
 
+  /* ---- Crisis / alerta urgente ---- */
+  function showCrisis(msg) {
+    const banner = $id('crisisBanner');
+    const text = $id('crisisText');
+    if (!banner) return;
+    if (text) text.textContent = msg || 'Crise diplomática ativa.';
+    banner.style.display = 'flex';
+  }
+
+  function hideCrisis() {
+    const banner = $id('crisisBanner');
+    if (banner) banner.style.display = 'none';
+  }
+
   /* ---- Debate Timer (server-synced) ---- */
   let debateSec = 0, debateRunning = false, debateInterval = null;
 
@@ -747,6 +761,8 @@
     });
     socket.on('connect', () => { wsConnected = true; socket.emit('join_telao', {}); updateConnectionDot(true); });
     socket.on('disconnect', () => { wsConnected = false; updateConnectionDot(false); });
+    socket.on('urgent_alert', (data) => { showCrisis(data && data.message); });
+    socket.on('urgent_alert_hide', () => { hideCrisis(); });
     socket.on('vote_opened', (data) => { loadSession(data); });
     socket.on('vote_update', (data) => { if (currentSession && data.id === currentSession.id) renderVotes(data); });
     socket.on('vote_closed', (data) => { showResult(data); });
@@ -841,6 +857,7 @@
         show('idleScreen');
       }
       if (data.ticker && data.ticker.length) buildTicker(data.ticker);
+      if (data.crisis) showCrisis(data.crisis); else hideCrisis();
       const ov = $id('oradores-overlay');
       if (ov) {
         if (data.oradores && data.oradores.length) {

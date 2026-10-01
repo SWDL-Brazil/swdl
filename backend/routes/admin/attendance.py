@@ -42,14 +42,8 @@ def set_presence(id, status):
     deleg.presence_status = status
     db.session.commit()
 
-    socketio.emit('chamada_update', {
-        'id':         deleg.id,
-        'country':    deleg.country or '?',
-        'flag':       deleg.country_flag or '',
-        'flag_url':   deleg.flag_url or '',
-        'committee':  deleg.committee or '',
-        'status':     status,
-    }, room='telao')
+    from telao_state import emit_chamada_update
+    emit_chamada_update(deleg, status)
 
     return jsonify({'status': 'success', 'presence': status})
 

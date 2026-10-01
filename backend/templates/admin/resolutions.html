@@ -113,7 +113,22 @@
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
 <script>
+  /* Room 'admin': outro operador alterou as resolucoes -> recarrega. */
+  let lastSelfAction = 0;
+  const _nativeFetch = window.fetch;
+  window.fetch = function () {
+    const opts = arguments[1] || {};
+    if (!opts.method || String(opts.method).toUpperCase() === 'POST') lastSelfAction = Date.now();
+    return _nativeFetch.apply(this, arguments);
+  };
+  const adminSock = io();
+  adminSock.on('connect', () => adminSock.emit('join_admin', {}));
+  adminSock.on('resolution_list_updated', () => {
+    if (Date.now() - lastSelfAction > 3000) location.reload();
+  });
+
   function filterCommittee(val) {
     window.location.href = "{{ url_for('resolution.resolutions_panel') }}?committee=" + val;
   }

@@ -1,38 +1,73 @@
-"""Server-side debate timer state (in-memory, synced via Socket.IO)."""
+"""Server-side debate timer state (persisted in SystemConfig).
+
+Antes era in-memory: reiniciar o worker (deploy/reboot) zerava o cronometro
+do debate e o telao voltava para 00:00. Agora o estado mora no banco
+(`debate_timer`) com `start` em epoch, entao mesmo um restart com o cronometro
+rodando continua contando corretamente.
+"""
+import json
 import time
 
-_state = {
-    'start': 0.0,       # epoch when current run started
-    'accumulated': 0.0,  # seconds accumulated before current run
-    'running': False,
-}
+KEY = 'debate_timer'
+_state = {'start': 0.0, 'accumulated': 0.0, 'running': False}
+
+
+def _load():
+    """Le o estado persistido (cache de processo de 30s via SystemConfig)."""
+    try:
+        from models.system_config import SystemConfig
+        raw = SystemConfig.get(KEY)
+        data = json.loads(raw) if raw else None
+    except Exception:
+        data = None
+    if isinstance(data, dict):
+        _state['start'] = float(data.get('start') or 0.0)
+        _state['accumulated'] = float(data.get('accumulated') or 0.0)
+        _state['running'] = bool(data.get('running'))
+    return _state
+
+
+def _save():
+    try:
+        from models.system_config import SystemConfig
+        SystemConfig.set(KEY, json.dumps(_state))
+    except Exception:
+        # Sem app/db context (ou DB fora do ar) o timer segue em memoria.
+        pass
 
 
 def get_state():
     """Return current elapsed seconds and running flag."""
-    if _state['running']:
-        elapsed = _state['accumulated'] + (time.time() - _state['start'])
+    st = _load()
+    if st['running']:
+        elapsed = st['accumulated'] + (time.time() - st['start'])
     else:
-        elapsed = _state['accumulated']
-    return {'elapsed': int(elapsed), 'running': _state['running']}
+        elapsed = st['accumulated']
+    return {'elapsed': int(elapsed), 'running': st['running']}
 
 
 def start():
-    if not _state['running']:
-        _state['start'] = time.time()
-        _state['running'] = True
+    st = _load()
+    if not st['running']:
+        st['start'] = time.time()
+        st['running'] = True
+        _save()
     return get_state()
 
 
 def pause():
-    if _state['running']:
-        _state['accumulated'] += time.time() - _state['start']
-        _state['running'] = False
+    st = _load()
+    if st['running']:
+        st['accumulated'] += time.time() - st['start']
+        st['running'] = False
+        _save()
     return get_state()
 
 
 def reset():
-    _state['start'] = 0.0
-    _state['accumulated'] = 0.0
-    _state['running'] = False
+    st = _load()
+    st['start'] = 0.0
+    st['accumulated'] = 0.0
+    st['running'] = False
+    _save()
     return get_state()
