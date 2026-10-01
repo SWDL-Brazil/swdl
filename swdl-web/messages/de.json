@@ -5,7 +5,8 @@
     "comites": "Themen",
     "agenda": "Zeitplan",
     "sobre": "Über uns",
-    "faca_parte": "Mach mit"
+    "faca_parte": "Mach mit",
+    "certificado": "Zertifikat"
   },
   "crisis_banner": {
     "close": "✕",
@@ -27,7 +28,8 @@
       "faca_parte": "Mach mit",
       "aviso_legal": "Impressum",
       "privacidade": "Datenschutz",
-      "termos": "Nutzungsbedingungen"
+      "termos": "Nutzungsbedingungen",
+      "certificado": "Zertifikat"
     },
     "address": "SESI CE-437, Hortolândia",
     "developed_by": "Desenvolvido por Pedro Bonazzi",
@@ -811,11 +813,41 @@
     "legal_title": "Rechtliches — SWDL",
     "noticia_title": "Nachricht — SWDL",
     "root_title": "SWDL — SESI World Diplomacy League",
-    "root_desc": "Das größte UN-Modell des SESI. Vertreten Sie Nationen, debattieren Sie Resolutionen und schließen Sie diplomatische Abkommen."
+    "root_desc": "Das größte UN-Modell des SESI. Vertreten Sie Nationen, debattieren Sie Resolutionen und schließen Sie diplomatische Abkommen.",
+    "certificado_title": "Zertifikat prüfen — SWDL",
+    "certificado_desc": "Prüfe die Echtheit eines SWDL-Teilnahmezertifikats mit dem Prüfcode."
   },
   "a11y": {
     "cvd_label": "Farbenfehlsichtigkeit",
     "cvd_on": "Farbenfehlsichtigkeit aktiviert",
     "cvd_off": "Farbenfehlsichtigkeit deaktiviert"
+  },
+  "certificado": {
+    "page_title": "Zertifikat prüfen — SWDL",
+    "hero_label": "OFFIZIELLE PRÜFUNG",
+    "hero_title": "Zertifikat prüfen",
+    "hero_desc": "Gib den Prüfcode ein, um die Echtheit eines SWDL-Teilnahmezertifikats zu bestätigen.",
+    "input_label": "Prüfcode",
+    "placeholder": "SWDL-XXXXXX",
+    "submit": "Prüfen",
+    "checking": "Wird geprüft...",
+    "hint": "Der Code steht auf dem Zertifikat und im Delegierten-Dashboard.",
+    "empty_error": "Gib den Prüfcode ein.",
+    "valid_badge": "Gültiges Zertifikat",
+    "valid_title": "Zertifikat authentifiziert",
+    "participant_label": "Teilnehmer",
+    "country_label": "Land / Delegation",
+    "committee_label": "Gremium",
+    "code_label": "Code",
+    "global_id_label": "Globale ID",
+    "signed_badge": "Digital signiert",
+    "signed_date": "Signiert am",
+    "signature_invalid": "Signatur stimmt nicht überein",
+    "view_pdf": "Zertifikat ansehen (PDF)",
+    "not_found_title": "Zertifikat nicht gefunden",
+    "not_found_desc": "Der Code wurde nicht gefunden oder das Zertifikat wurde noch nicht freigegeben. Prüfe, ob du ihn richtig eingegeben hast.",
+    "network_error": "Derzeit keine Abfrage möglich. Prüfe deine Verbindung und versuche es erneut.",
+    "search_again": "Anderen Code prüfen",
+    "watermark": "ZERTIFIKAT"
   }
 }

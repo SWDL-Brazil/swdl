@@ -66,6 +66,7 @@ Build a complete student panel + admin backend for the SWDL Model UN platform wi
 - **API Flask**: `GET /api/noticia-json/<slug>` retorna JSON + `related[]` (o `/noticia/<slug>` continua servindo HTML)
 - **Ticker**: prioriza `type === 'urgent'` e mostra `🚨 N ALERTAS` quando houver
 - **i18n**: namespaces `noticias.*` (portal) e `noticia.*` em 9 idiomas
+- **Aba Verificar Certificado**: rota `/[locale]/certificado` (form + `?code=` auto-valida) → `GET /api/certificado/validar` (JSON enriquecido com `country/country_flag/committee/global_id/pdf_path` em `student.py`), link do PDF para a rota pública `/certificado/<code>`; item no Navbar/Footer + namespace `certificado.*` nos 9 idiomas; `api.certificado()` com distinção 404 × falha de rede
 - **`.gitignore`**: `.next/` e `swdl-web/.next/` adicionados
 - `npm run build` passando (typecheck incluso; `next lint` sem config ESLint)
 

@@ -18,6 +18,10 @@ const API_BASE_CANDIDATES = [
   ...(process.env.NODE_ENV === 'development' ? ['http://localhost:5000/api'] : []),
 ].filter((v, i, a) => a.indexOf(v) === i);
 
+// Origem do backend Flask (sem o sufixo /api) — usado para links diretos
+// como o PDF público /certificado/<code>.
+export const BACKEND_ORIGIN = API_BASE.replace(/\/api\/?$/, '');
+
 export interface News {
   id: number;
   title: string;
@@ -111,6 +115,27 @@ export interface Category {
   icon: string;
 }
 
+export interface CertificateResult {
+  ok: boolean;
+  valid: boolean;
+  name: string;
+  verification_code: string | null;
+  pdf_path: string | null;
+  digital_signature: boolean;
+  signature_valid: boolean | null;
+  signed_at: string | null;
+  global_id: string | null;
+  country: string;
+  country_flag: string;
+  committee: string;
+  committee_name: string;
+}
+
+export type CertificateLookup =
+  | { status: 'valid'; data: CertificateResult }
+  | { status: 'not_found' }
+  | { status: 'error' };
+
 export interface RegistrationData {
   name: string;
   email: string;
@@ -199,6 +224,31 @@ export const api = {
 
   bandeira: (country: string) =>
     fetchAPI<{ ok: boolean; flag_url: string; name: string; code: string }>('/bandeira', { country }),
+
+  // Fetch próprio: precisa distinguir 404 (certificado não encontrado)
+  // de falha de rede — o fetchJSON devolve null e engole o status.
+  certificado: async (code: string): Promise<CertificateLookup> => {
+    for (const base of API_BASE_CANDIDATES) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+        const response = await fetch(
+          `${base}/certificado/validar?code=${encodeURIComponent(code)}`,
+          { signal: controller.signal }
+        );
+        clearTimeout(timeout);
+        if (response.ok) {
+          return { status: 'valid', data: (await response.json()) as CertificateResult };
+        }
+        if (response.status === 404) return { status: 'not_found' };
+        if (response.status >= 500) continue; // tenta próximo base
+        return { status: 'error' };
+      } catch {
+        // rede/timeout — tenta próximo base
+      }
+    }
+    return { status: 'error' };
+  },
 
   inscrever: async (data: RegistrationData) => {
     try {

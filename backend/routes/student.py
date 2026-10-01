@@ -439,15 +439,23 @@ def api_validate_certificate():
 
     sig_valid = student.verify_signature(current_app.config.get('SECRET_KEY', 'swdl-secret')) if student.digital_signature else None
 
+    deleg = student.delegation
+    pdf_code = student.verification_code or student.certificate_hash
     return jsonify({
         'ok': True,
         'valid': True,
         'name': student.name,
         'verification_code': student.verification_code,
         'certificate_url': student.certificate_url,
+        'pdf_path': f'/certificado/{pdf_code}' if pdf_code else None,
         'digital_signature': bool(student.digital_signature),
         'signature_valid': sig_valid,
         'signed_at': student.signed_at.isoformat() if student.signed_at else None,
+        'global_id': student.global_id,
+        'country': deleg.country if deleg else '',
+        'country_flag': deleg.country_flag if deleg else '',
+        'committee': deleg.committee if deleg else '',
+        'committee_name': (deleg.theme.name if deleg and deleg.theme else '') if deleg else '',
     })
 
 

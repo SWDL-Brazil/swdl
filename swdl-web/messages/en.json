@@ -5,7 +5,8 @@
     "comites": "Themes",
     "agenda": "Schedule",
     "sobre": "About",
-    "faca_parte": "Join Us"
+    "faca_parte": "Join Us",
+    "certificado": "Certificate"
   },
   "crisis_banner": {
     "close": "✕",
@@ -27,7 +28,8 @@
       "faca_parte": "Join Us",
       "aviso_legal": "Legal Notice",
       "privacidade": "Privacy",
-      "termos": "Terms of Use"
+      "termos": "Terms of Use",
+      "certificado": "Certificate"
     },
     "address": "SESI CE-437, Hortolândia",
     "developed_by": "Developed by Pedro Bonazzi",
@@ -811,11 +813,41 @@
     "legal_title": "Legal — SWDL",
     "noticia_title": "News — SWDL",
     "root_title": "SWDL — SESI World Diplomacy League",
-    "root_desc": "The largest Model UN of SESI. Represent nations, debate resolutions and build diplomatic agreements."
+    "root_desc": "The largest Model UN of SESI. Represent nations, debate resolutions and build diplomatic agreements.",
+    "certificado_title": "Verify Certificate — SWDL",
+    "certificado_desc": "Check the authenticity of a SWDL participation certificate using its verification code."
   },
   "a11y": {
     "cvd_label": "Colorblind mode",
     "cvd_on": "Colorblind mode on",
     "cvd_off": "Colorblind mode off"
+  },
+  "certificado": {
+    "page_title": "Verify Certificate — SWDL",
+    "hero_label": "OFFICIAL VALIDATION",
+    "hero_title": "Verify Certificate",
+    "hero_desc": "Enter the verification code to confirm the authenticity of a SWDL participation certificate.",
+    "input_label": "Verification code",
+    "placeholder": "SWDL-XXXXXX",
+    "submit": "Verify",
+    "checking": "Verifying...",
+    "hint": "The code is printed on the certificate and available in the delegate dashboard.",
+    "empty_error": "Enter the verification code.",
+    "valid_badge": "Valid certificate",
+    "valid_title": "Authenticated certificate",
+    "participant_label": "Participant",
+    "country_label": "Country / Delegation",
+    "committee_label": "Committee",
+    "code_label": "Code",
+    "global_id_label": "Global ID",
+    "signed_badge": "Digitally signed",
+    "signed_date": "Signed on",
+    "signature_invalid": "Signature does not match",
+    "view_pdf": "View certificate (PDF)",
+    "not_found_title": "Certificate not found",
+    "not_found_desc": "The code was not found or the certificate has not been released by the organization yet. Check that you typed it correctly.",
+    "network_error": "Unable to check right now. Check your connection and try again.",
+    "search_again": "Verify another code",
+    "watermark": "CERTIFICATE"
   }
 }

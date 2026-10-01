@@ -5,7 +5,8 @@
     "comites": "Tema",
     "agenda": "Jadual",
     "sobre": "Tentang",
-    "faca_parte": "Sertai Kami"
+    "faca_parte": "Sertai Kami",
+    "certificado": "Sijil"
   },
   "crisis_banner": {
     "close": "✕",
@@ -27,7 +28,8 @@
       "faca_parte": "Sertai Kami",
       "aviso_legal": "Pemberitahuan Undang-undang",
       "privacidade": "Privasi",
-      "termos": "Syarat Penggunaan"
+      "termos": "Syarat Penggunaan",
+      "certificado": "Sijil"
     },
     "address": "SESI CE-437, Hortolândia",
     "developed_by": "Desenvolvido por Pedro Bonazzi",
@@ -811,11 +813,41 @@
     "legal_title": "Undang-undang — SWDL",
     "noticia_title": "Berita — SWDL",
     "root_title": "SWDL — SESI World Diplomacy League",
-    "root_desc": "Simulasi PBB terbesar SESI. Wakili negara, berdebat resolusi dan bina perjanjian diplomatik"
+    "root_desc": "Simulasi PBB terbesar SESI. Wakili negara, berdebat resolusi dan bina perjanjian diplomatik",
+    "certificado_title": "Sahkan Sijil — SWDL",
+    "certificado_desc": "Semak kesahihan sijil penyertaan SWDL dengan kod pengesahan."
   },
   "a11y": {
     "cvd_label": "Mod buta warna",
     "cvd_on": "Mod buta warna aktif",
     "cvd_off": "Mod buta warna mati"
+  },
+  "certificado": {
+    "page_title": "Sahkan Sijil — SWDL",
+    "hero_label": "PENGESAHAN RASMI",
+    "hero_title": "Sahkan Sijil",
+    "hero_desc": "Masukkan kod pengesahan untuk mengesahkan kesahihan sijil penyertaan SWDL.",
+    "input_label": "Kod pengesahan",
+    "placeholder": "SWDL-XXXXXX",
+    "submit": "Sahkan",
+    "checking": "Menyahkan...",
+    "hint": "Kod dicetak pada sijil dan tersedia di panel delegasi.",
+    "empty_error": "Masukkan kod pengesahan.",
+    "valid_badge": "Sijil sah",
+    "valid_title": "Sijil disahkan",
+    "participant_label": "Peserta",
+    "country_label": "Negara / Delegasi",
+    "committee_label": "Jawatankuasa",
+    "code_label": "Kod",
+    "global_id_label": "ID Global",
+    "signed_badge": "Ditandatangani secara digital",
+    "signed_date": "Ditandatangani pada",
+    "signature_invalid": "Tandatangan tidak sepadan",
+    "view_pdf": "Lihat sijil (PDF)",
+    "not_found_title": "Sijil tidak ditemui",
+    "not_found_desc": "Kod tidak ditemui atau sijil belum dikeluarkan oleh organisasi. Semak sama ada anda menaipnya dengan betul.",
+    "network_error": "Tidak dapat menyemak buat masa ini. Semak sambungan anda dan cuba lagi.",
+    "search_again": "Sahkan kod lain",
+    "watermark": "SIJIL"
   }
 }

@@ -5,7 +5,8 @@
     "comites": "Thema's",
     "agenda": "Schema",
     "sobre": "Over ons",
-    "faca_parte": "Doe mee"
+    "faca_parte": "Doe mee",
+    "certificado": "Certificaat"
   },
   "crisis_banner": {
     "close": "✕",
@@ -27,7 +28,8 @@
       "faca_parte": "Doe mee",
       "aviso_legal": "Juridische kennisgeving",
       "privacidade": "Privacy",
-      "termos": "Gebruiksvoorwaarden"
+      "termos": "Gebruiksvoorwaarden",
+      "certificado": "Certificaat"
     },
     "address": "SESI CE-437, Hortolândia",
     "developed_by": "Desenvolvido por Pedro Bonazzi",
@@ -811,11 +813,41 @@
     "legal_title": "Juridisch — SWDL",
     "noticia_title": "Nieuwsbericht — SWDL",
     "root_title": "SWDL — SESI World Diplomacy League",
-    "root_desc": "Het grootste Model VN van SESI. Vertegenwoordig naties, debatteer over resoluties en bouw diplomatieke overeenkomsten."
+    "root_desc": "Het grootste Model VN van SESI. Vertegenwoordig naties, debatteer over resoluties en bouw diplomatieke overeenkomsten.",
+    "certificado_title": "Certificaat verifiëren — SWDL",
+    "certificado_desc": "Controleer de authenticiteit van een SWDL-deelnamecertificaat met de verificatiecode."
   },
   "a11y": {
     "cvd_label": "Kleurenblindmodus",
     "cvd_on": "Kleurenblindmodus aan",
     "cvd_off": "Kleurenblindmodus uit"
+  },
+  "certificado": {
+    "page_title": "Certificaat verifiëren — SWDL",
+    "hero_label": "OFFICIËLE VALIDATIE",
+    "hero_title": "Certificaat verifiëren",
+    "hero_desc": "Voer de verificatiecode in om de authenticiteit van een SWDL-deelnamecertificaat te bevestigen.",
+    "input_label": "Verificatiecode",
+    "placeholder": "SWDL-XXXXXX",
+    "submit": "Verifiëren",
+    "checking": "Controleren...",
+    "hint": "De code staat op het certificaat en is beschikbaar in het delegatiedashboard.",
+    "empty_error": "Voer de verificatiecode in.",
+    "valid_badge": "Geldig certificaat",
+    "valid_title": "Certificaat geauthenticeerd",
+    "participant_label": "Deelnemer",
+    "country_label": "Land / Delegatie",
+    "committee_label": "Comité",
+    "code_label": "Code",
+    "global_id_label": "Globale ID",
+    "signed_badge": "Digitaal ondertekend",
+    "signed_date": "Ondertekend op",
+    "signature_invalid": "Handtekening komt niet overeen",
+    "view_pdf": "Bekijk certificaat (PDF)",
+    "not_found_title": "Certificaat niet gevonden",
+    "not_found_desc": "De code is niet gevonden of het certificaat is nog niet vrijgegeven door de organisatie. Controleer of je hem correct hebt getypt.",
+    "network_error": "Nu niet mogelijk om te controleren. Controleer je verbinding en probeer het opnieuw.",
+    "search_again": "Andere code verifiëren",
+    "watermark": "CERTIFICAAT"
   }
 }

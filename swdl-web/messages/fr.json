@@ -5,7 +5,8 @@
     "comites": "Thèmes",
     "agenda": "Programme",
     "sobre": "À propos",
-    "faca_parte": "Rejoignez-nous"
+    "faca_parte": "Rejoignez-nous",
+    "certificado": "Certificat"
   },
   "crisis_banner": {
     "close": "✕",
@@ -27,7 +28,8 @@
       "faca_parte": "Rejoignez-nous",
       "aviso_legal": "Mentions légales",
       "privacidade": "Confidentialité",
-      "termos": "Conditions d'utilisation"
+      "termos": "Conditions d'utilisation",
+      "certificado": "Certificat"
     },
     "address": "SESI CE-437, Hortolândia",
     "developed_by": "Desenvolvido por Pedro Bonazzi",
@@ -811,11 +813,41 @@
     "legal_title": "Juridique — SWDL",
     "noticia_title": "Actualité — SWDL",
     "root_title": "SWDL — SESI World Diplomacy League",
-    "root_desc": "La plus grande simulation de l’ONU du SESI. Représentez des nations, débattez des résolutions et construisez des accords diplomatiques."
+    "root_desc": "La plus grande simulation de l’ONU du SESI. Représentez des nations, débattez des résolutions et construisez des accords diplomatiques.",
+    "certificado_title": "Vérifier le Certificat — SWDL",
+    "certificado_desc": "Vérifiez l'authenticité d'un certificat de participation SWDL avec son code de vérification."
   },
   "a11y": {
     "cvd_label": "Mode daltonien",
     "cvd_on": "Mode daltonien activé",
     "cvd_off": "Mode daltonien désactivé"
+  },
+  "certificado": {
+    "page_title": "Vérifier le Certificat — SWDL",
+    "hero_label": "VALIDATION OFFICIELLE",
+    "hero_title": "Vérifier le Certificat",
+    "hero_desc": "Saisissez le code de vérification pour confirmer l'authenticité d'un certificat de participation SWDL.",
+    "input_label": "Code de vérification",
+    "placeholder": "SWDL-XXXXXX",
+    "submit": "Vérifier",
+    "checking": "Vérification...",
+    "hint": "Le code est imprimé sur le certificat et disponible dans espace du délégué.",
+    "empty_error": "Saisissez le code de vérification.",
+    "valid_badge": "Certificat valide",
+    "valid_title": "Certificat authentifié",
+    "participant_label": "Participant",
+    "country_label": "Pays / Délégation",
+    "committee_label": "Comité",
+    "code_label": "Code",
+    "global_id_label": "ID Global",
+    "signed_badge": "Signé numériquement",
+    "signed_date": "Signé le",
+    "signature_invalid": "La signature ne correspond pas",
+    "view_pdf": "Voir le certificat (PDF)",
+    "not_found_title": "Certificat introuvable",
+    "not_found_desc": "Le code est introuvable ou le certificat n'a pas encore été libéré par l'organisation. Vérifiez qu'il est saisi correctement.",
+    "network_error": "Impossible de consulter pour le moment. Vérifiez votre connexion et réessayez.",
+    "search_again": "Vérifier un autre code",
+    "watermark": "CERTIFICAT"
   }
 }

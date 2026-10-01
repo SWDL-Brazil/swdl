@@ -16,6 +16,7 @@ const footerLinks = [
   { key: 'noticias', href: '/noticias' },
   { key: 'comites', href: '/comites' },
   { key: 'agenda', href: '/agenda' },
+  { key: 'certificado', href: '/certificado' },
   { key: 'sobre', href: '/sobre' },
   { key: 'faca_parte', href: '/faca-parte' },
 ];

@@ -5,7 +5,8 @@
     "comites": "Tema",
     "agenda": "Jadwal",
     "sobre": "Tentang",
-    "faca_parte": "Gabung"
+    "faca_parte": "Gabung",
+    "certificado": "Sertifikat"
   },
   "crisis_banner": {
     "close": "✕",
@@ -27,7 +28,8 @@
       "faca_parte": "Gabung",
       "aviso_legal": "Pernyataan Hukum",
       "privacidade": "Privasi",
-      "termos": "Syarat Penggunaan"
+      "termos": "Syarat Penggunaan",
+      "certificado": "Sertifikat"
     },
     "address": "SESI CE-437, Hortolândia",
     "developed_by": "Desenvolvido por Pedro Bonazzi",
@@ -811,11 +813,41 @@
     "legal_title": "Hukum — SWDL",
     "noticia_title": "Berita — SWDL",
     "root_title": "SWDL — SESI World Diplomacy League",
-    "root_desc": "Simulasi PBB terbesar SESI. Wakili negara, debatkan resolusi, dan bangun perjanjian diplomatik."
+    "root_desc": "Simulasi PBB terbesar SESI. Wakili negara, debatkan resolusi, dan bangun perjanjian diplomatik.",
+    "certificado_title": "Verifikasi Sertifikat — SWDL",
+    "certificado_desc": "Periksa keaslian sertifikat partisipasi SWDL dengan kode verifikasi."
   },
   "a11y": {
     "cvd_label": "Mode buta warna",
     "cvd_on": "Mode buta warna aktif",
     "cvd_off": "Mode buta warna nonaktif"
+  },
+  "certificado": {
+    "page_title": "Verifikasi Sertifikat — SWDL",
+    "hero_label": "VALIDASI RESMI",
+    "hero_title": "Verifikasi Sertifikat",
+    "hero_desc": "Masukkan kode verifikasi untuk memastikan keaslian sertifikat partisipasi SWDL.",
+    "input_label": "Kode verifikasi",
+    "placeholder": "SWDL-XXXXXX",
+    "submit": "Verifikasi",
+    "checking": "Memverifikasi...",
+    "hint": "Kode tercetak pada sertifikat dan tersedia di panel delegasi.",
+    "empty_error": "Masukkan kode verifikasi.",
+    "valid_badge": "Sertifikat valid",
+    "valid_title": "Sertifikat terotentikasi",
+    "participant_label": "Peserta",
+    "country_label": "Negara / Delegasi",
+    "committee_label": "Komite",
+    "code_label": "Kode",
+    "global_id_label": "ID Global",
+    "signed_badge": "Ditandatangani digital",
+    "signed_date": "Ditandatangani pada",
+    "signature_invalid": "Tanda tangan tidak cocok",
+    "view_pdf": "Lihat sertifikat (PDF)",
+    "not_found_title": "Sertifikat tidak ditemukan",
+    "not_found_desc": "Kode tidak ditemukan atau sertifikat belum dirilis oleh organisasi. Periksa apakah Anda mengetiknya dengan benar.",
+    "network_error": "Tidak dapat memeriksa saat ini. Periksa koneksi Anda dan coba lagi.",
+    "search_again": "Verifikasi kode lain",
+    "watermark": "SERTIFIKAT"
   }
 }
