@@ -76,6 +76,7 @@
 </div>
 
 <!-- ═══ SUA JORNADA ═══════════════════════════════════════ -->
+{% set designated = delegation and delegation.country %}
 <div class="st-journey">
   <div class="st-journey-title">Sua Jornada</div>
   <div class="st-journey-steps">
@@ -84,18 +85,18 @@
       <div class="st-journey-step-label">Cadastro</div>
       <div class="st-journey-step-status">✓ Concluído</div>
     </div>
-    <div class="st-journey-line {{ 'done' if delegation }}"></div>
-    <div class="st-journey-step {{ 'done' if delegation else 'current' }}">
+    <div class="st-journey-line {{ 'done' if designated }}"></div>
+    <div class="st-journey-step {{ 'done' if designated else 'current' }}">
       <div class="st-journey-dot"></div>
       <div class="st-journey-step-label">Designação</div>
-      <div class="st-journey-step-status">{{ '✓ Concluído' if delegation else '⏳ Aguardando' }}</div>
+      <div class="st-journey-step-status">{{ '✓ Concluído' if designated else '⏳ Aguardando' }}</div>
     </div>
-    <div class="st-journey-line {{ 'done' if delegation and event_started }}"></div>
-    <div class="st-journey-step {{ 'done' if event_started else ('current' if delegation else 'locked') }}">
+    <div class="st-journey-line {{ 'done' if designated and event_started }}"></div>
+    <div class="st-journey-step {{ 'done' if event_started else ('current' if designated else 'locked') }}">
       <div class="st-journey-dot"></div>
       <div class="st-journey-step-label">Preparação</div>
       <div class="st-journey-step-status">
-        {% if event_started %}✓ Concluído{% elif delegation %}● Atual{% else %}🔒 Bloqueada{% endif %}
+        {% if event_started %}✓ Concluído{% elif designated %}● Atual{% else %}🔒 Bloqueada{% endif %}
       </div>
     </div>
     <div class="st-journey-line {{ 'done' if event_started and not event_ended }}"></div>

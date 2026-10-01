@@ -19,10 +19,17 @@ student_bp = Blueprint('student', __name__)
 # ── HELPERS ────────────────────────────────────────────────────
 
 def get_student():
-    """Student com cache por request via flask.g."""
+    """Student com cache por request via flask.g.
+
+    Prioriza o perfil que ja tem delegacao (login compartilhado de
+    dupla/trio pode ter varios Students para o mesmo User).
+    """
     if hasattr(g, '_student'):
         return g._student
-    g._student = Student.query.filter_by(user_id=current_user.id).first()
+    g._student = Student.query.filter_by(user_id=current_user.id)\
+            .filter(Student.delegation_id.isnot(None)).first()
+    if not g._student:
+        g._student = Student.query.filter_by(user_id=current_user.id).first()
     return g._student
 
 

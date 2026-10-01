@@ -45,12 +45,24 @@ class Delegation(db.Model):
         return extras
 
     def member_names(self):
-        """Lista de todos os membros (candidato da inscrição + alunos vinculados + extras)."""
+        """Lista de todos os membros (candidato da inscrição + alunos vinculados + extras).
+
+        Dedup por nome normalizado (preserva ordem) — evita contar a mesma
+        pessoa 2x (ex.: nos campos 'membros extras' e 'extra_ids') e trocar
+        o formato Individual por Dupla.
+        """
         names = [s.name for s in self.students] if self.students else []
         if self.inscription and self.inscription.name not in names:
             names.insert(0, self.inscription.name)
         names.extend(self._extra_members())
-        return names
+        seen, out = set(), []
+        for n in names:
+            key = (n or '').strip().lower()
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            out.append((n or '').strip())
+        return out
 
     def member_count(self):
         return len(self.member_names())

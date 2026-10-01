@@ -97,12 +97,16 @@
       list.push(name);
       memberInput.value = list.join(', ');
     }
-    const opt = findMemberOption(name);
-    if (opt) opt.remove();
+    const opt2 = findMemberOption(name);
+    if (opt2) opt2.remove();
     renderMembersPreview();
+    memberInput.dispatchEvent(new CustomEvent('memberschanged'));
   });
 
-  memberInput.addEventListener('input', renderMembersPreview);
+  memberInput.addEventListener('input', () => {
+    renderMembersPreview();
+    memberInput.dispatchEvent(new CustomEvent('memberschanged'));
+  });
   renderMembersPreview();
 
   /* ── Expose helpers for templates that need extra logic ──── */

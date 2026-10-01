@@ -1,6 +1,9 @@
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
-from routes.admin._helpers import admin_bp, admin_required, _ensure_participation_history, _cleanup_orphan_delegation
+from routes.admin._helpers import (admin_bp, admin_required,
+                                   _ensure_participation_history,
+                                   _cleanup_orphan_delegation,
+                                   _country_taken)
 from models.delegation import Delegation
 from models.inscription import Inscription
 from models.user import User
@@ -23,7 +26,8 @@ def delegations_list():
         joinedload(Delegation.theme),
     ).all()
     return render_template('admin/delegations_list.html',
-                           delegations=delegations)
+                           delegations=delegations,
+                           inscricoes_abertas=EventConfig.get_inscricoes_abertas())
 
 
 @admin_bp.route('/delegacoes/criar', methods=['GET', 'POST'])
@@ -54,6 +58,11 @@ def delegation_create():
             return redirect(url_for('admin.delegation_create'))
 
         theme = Theme.query.get(theme_id) if theme_id else None
+
+        if _country_taken(country, theme, committee=committee_name):
+            flash(f'⚠️ {country} já foi designado neste tema/comitê. '
+                  f'Escolha outro país.', 'error')
+            return redirect(url_for('admin.delegation_create'))
 
         # Cria Inscription para cada aluno, mas usa a primeira como principal
         first_student = Student.query.get(student_ids[0])
@@ -143,13 +152,35 @@ def delegation_assign(id):
     from models.student import Student
     deleg = Delegation.query.get_or_404(id)
     if request.method == 'POST':
+        country = request.form.get('country', '').strip()
+        if not country:
+            flash('O país é obrigatório.', 'error')
+            return redirect(url_for('admin.delegation_assign', id=id))
+
         theme_id = request.form.get('theme_id', type=int)
         theme = Theme.query.get(theme_id) if theme_id else None
+
+        if _country_taken(country, theme, exclude_id=deleg.id):
+            flash(f'⚠️ {country} já foi designado neste tema/comitê. '
+                  f'Escolha outro país.', 'error')
+            return redirect(url_for('admin.delegation_assign', id=id))
+
+        committee_name = request.form.get('committee_name', '').strip()
+        prev_theme_id  = deleg.theme_id
+        prev_committee = deleg.committee or ''
+
         deleg.theme_id    = theme.id if theme else None
-        deleg.country      = request.form.get('country', '').strip()
+        deleg.country      = country
         deleg.country_flag = request.form.get('flag', '')
         deleg.flag_url     = request.form.get('flag_url', '').strip()
-        deleg.committee    = theme.name if theme else ''
+        if committee_name:
+            deleg.committee = committee_name
+        elif theme and (theme.id != prev_theme_id or not prev_committee):
+            deleg.committee = theme.name
+        elif not theme:
+            prev_theme = db.session.get(Theme, prev_theme_id) if prev_theme_id else None
+            if not prev_theme or prev_committee == prev_theme.name:
+                deleg.committee = ''
         deleg.members      = request.form.get('members', '').strip()
         deleg.flag_animation = bool(request.form.get('flag_animation'))
 
@@ -275,4 +306,4 @@ def inscricoes_toggle():
     EventConfig.set_inscricoes_abertas(not current)
     status = 'abertas' if not current else 'fechadas'
     flash(f'📋 Inscricoes de delegados {status}!', 'success')
-    return redirect(url_for('admin.dashboard'))
+    return redirect(request.referrer or url_for('admin.dashboard'))

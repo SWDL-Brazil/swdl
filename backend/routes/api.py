@@ -177,6 +177,8 @@ def api_inscricao():
         return jsonify({'ok': False, 'error': 'Dupla requer exatamente 1 membro adicional.'}), 400
     if formato == 'trio' and len(members_data) != 2:
         return jsonify({'ok': False, 'error': 'Trio requer exatamente 2 membros adicionais.'}), 400
+    if formato == 'individual' and members_data:
+        return jsonify({'ok': False, 'error': 'Formato individual não aceita membros adicionais.'}), 400
 
     # Valida membros obrigatórios
     for m in members_data:
@@ -469,5 +471,54 @@ def public_news_page(slug):
     ).order_by(News.created_at.desc()).limit(4).all()
 
     return render_template('public/news_detail.html', news=news, related=related)
+
+
+# ── NOTÍCIA (JSON — consumida pelo front Next.js) ──────────────
+@api_bp.route('/noticia-json/<slug>')
+def api_noticia_json(slug):
+    """JSON de uma notícia + relacionadas (para o portal Next.js)."""
+    news = News.query.filter_by(slug=slug, published=True).first()
+    if not news:
+        return jsonify({'error': 'Not found'}), 404
+
+    related = News.query.filter(
+        News.published == True,
+        News.id != news.id,
+    ).order_by(News.created_at.desc()).limit(4).all()
+
+    def mini(n):
+        return {
+            'id':            n.id,
+            'title':         n.title,
+            'slug':          n.slug,
+            'excerpt':       n.excerpt or '',
+            'category':      n.category_obj.name if n.category_obj else 'Geral',
+            'category_slug': n.category_obj.slug if n.category_obj else 'geral',
+            'category_icon': n.category_obj.icon if n.category_obj else '',
+            'committee':     n.committee,
+            'is_crisis':     n.is_crisis,
+            'image_url':     n.cover_image,
+            'time_ago':      n.time_ago(),
+            'created_at':    n.created_at.isoformat() if n.created_at else None,
+        }
+
+    return jsonify({
+        'id':            news.id,
+        'title':         news.title,
+        'slug':          news.slug,
+        'excerpt':       news.excerpt or '',
+        'body':          news.body,
+        'category':      news.category_obj.name if news.category_obj else 'Geral',
+        'category_slug': news.category_obj.slug if news.category_obj else 'geral',
+        'category_icon': news.category_obj.icon if news.category_obj else '',
+        'committee':     news.committee,
+        'tags':          news.tags_list(),
+        'is_crisis':     news.is_crisis,
+        'image_url':     news.cover_image,
+        'time_ago':      news.time_ago(),
+        'created_at':    news.created_at.isoformat() if news.created_at else None,
+        'author':        news.author.name if news.author else 'SWDL',
+        'related':       [mini(r) for r in related],
+    })
 
 

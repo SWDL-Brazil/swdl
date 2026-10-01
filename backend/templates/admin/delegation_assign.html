@@ -73,6 +73,16 @@
         </div>
 
         <div class="form-group">
+          <label>Nome do Comitê (se diferente do tema) <span style="font-size:11px;color:var(--muted)">(opcional)</span></label>
+          <input type="text" name="committee_name"
+                 placeholder="Deixa em branco para usar o nome do tema"
+                 value="{{ deleg.committee if deleg.committee and deleg.committee != (deleg.theme.name if deleg.theme else '') else '' }}">
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">
+            Preencha para manter um nome customizado ao trocar o tema.
+          </div>
+        </div>
+
+        <div class="form-group">
           <label>Membros extras do grupo <span style="font-size:11px;color:var(--muted)">(opcional)</span></label>
           <div style="display:flex;gap:8px">
             <input type="text" name="members" id="membersInput"

@@ -45,9 +45,19 @@ def moderator_required(f):
 
 
 def get_current_delegation():
-    """Return the delegation for the current user, or None."""
+    """Return the delegation for the current user, or None.
+
+    Resolve primeiro pelo perfil do Student ligado ao login (delegation_id) —
+    assim TODOS os membros de dupla/trio votam/proponem pela mesma delegacao,
+    mesmo quando so o primeiro tem deleg.user_id. Fallback: delegacao cujo
+    user_id e o proprio login (dados legados/seed).
+    """
     if not current_user.is_authenticated:
         return None
+    student = Student.query.filter_by(user_id=current_user.id)\
+        .filter(Student.delegation_id.isnot(None)).first()
+    if student:
+        return db.session.get(Delegation, student.delegation_id)
     return Delegation.query.filter_by(user_id=current_user.id).first()
 
 
@@ -173,6 +183,34 @@ def _ensure_participation_history(student):
             setattr(entry, k, v)
 
 
+def _country_taken(country, theme=None, committee='', exclude_id=None):
+    """True se o pais ja foi designado no mesmo tema/comite desta edicao.
+
+    Unicidade POR COMITE (regra escolhida pelo admin): o mesmo pais pode
+    existir em temas diferentes; bloqueia so repeticao no mesmo tema/comite.
+    edition_year NULL (legado) nunca casa — nao bloqueia dados antigos.
+    """
+    from sqlalchemy.orm import joinedload
+    key = (country or '').strip().lower()
+    if not key:
+        return False
+    mine = (theme.name if theme else (committee or '')).strip().lower()
+    if not mine:
+        return False
+    year = datetime.now(timezone.utc).year
+    q = Delegation.query.options(joinedload(Delegation.theme)).filter(
+        db.func.lower(Delegation.country) == key,
+        db.func.coalesce(Delegation.edition_year, 0) == year,
+    )
+    if exclude_id:
+        q = q.filter(Delegation.id != exclude_id)
+    for d in q.all():
+        theirs = (d.theme.name if d.theme_id and d.theme else (d.committee or '')).strip().lower()
+        if theirs == mine:
+            return True
+    return False
+
+
 def _cleanup_orphan_delegation(deleg_id):
     """Remove uma delegacao que ficou sem alunos, desde que nao tenha votos,
     DPO ou presence registrada (evita perda de dados)."""
@@ -192,13 +230,16 @@ def _cleanup_orphan_delegation(deleg_id):
 
 
 def _sign_certificate(student):
-    """Gera uma assinatura HMAC-SHA256 para o certificado."""
+    """Gera uma assinatura HMAC-SHA256 para o certificado.
+
+    Nao faz commit — quem chama decide (commit por lote evita N round-trips
+    de ~180ms cada em producao).
+    """
     if not student.verification_code:
         return None
     secret = current_app.config.get('SECRET_KEY', 'swdl-secret')
     student.digital_signature = student.compute_signature(secret)
     student.signed_at = datetime.now(timezone.utc)
-    db.session.commit()
     return student.digital_signature
 
 
