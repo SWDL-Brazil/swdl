@@ -16,7 +16,7 @@ class AgendaItem(db.Model):
     description = db.Column(db.Text)
     location    = db.Column(db.String(120))
     status      = db.Column(db.String(20), default='auto', index=True)
-    committee   = db.Column(db.String(60))
+    committee   = db.Column(db.String(300))
     order       = db.Column(db.Integer, default=0, index=True)
     day         = db.Column(db.Integer, default=1, index=True)
     period_id   = db.Column(db.Integer, db.ForeignKey('event_periods.id'), nullable=True, index=True)
