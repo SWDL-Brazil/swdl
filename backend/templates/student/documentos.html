@@ -1,10 +1,12 @@
 {% extends "student/base.html" %}
 {% from "student/_macros.html" import empty_state, doc_row %}
 {% block title %}Documentos{% endblock %}
+{% block page_title %}Documentos{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
+    <div class="section-label">Recursos</div>
     <h1 class="page-title">📁 Documentos</h1>
     <p class="page-sub">Materiais de estudo, guias e documentos oficiais.</p>
   </div>
@@ -20,7 +22,7 @@
 </div>
 
 <div class="card">
-  <div class="card-body" style="padding:0">
+  <div class="card-body card-body--flush">
     {% for doc in documentos %}
     {{ doc_row(doc) }}
     {% else %}

@@ -1,15 +1,17 @@
 {% extends "student/base.html" %}
 {% from "student/_macros.html" import empty_state %}
 {% block title %}Meu Histórico{% endblock %}
+{% block page_title %}Meu Histórico{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
+    <div class="section-label">Registro</div>
     <h1 class="page-title">📜 Meu Histórico</h1>
     <p class="page-sub">Registro completo das suas participações na SWDL.</p>
   </div>
   {% if student %}
-  <div class="mono text-muted">
+  <div class="mono text-muted" style="padding-top:26px">
     ID Global: {{ student.global_id }}
   </div>
   {% endif %}

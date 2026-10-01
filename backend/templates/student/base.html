@@ -22,7 +22,7 @@
       </div>
     </div>
 
-    <nav class="st-sidebar-nav" style="flex:1;overflow-y:auto;padding-bottom:8px">
+    <nav class="st-sidebar-nav">
 
       <!-- 🏠 Dashboard -->
       <div class="st-nav-section">Início</div>
@@ -83,6 +83,12 @@
           <a href="{{ url_for('student.certificados') }}"
              class="{{ 'active' if request.endpoint == 'student.certificados' }}">
             <span class="st-nav-icon">🎓</span> Certificados
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('vote.telao') }}" target="_blank"
+             class="{{ 'active' if request.endpoint == 'vote.telao' }}">
+            <span class="st-nav-icon">📺</span> Telão
           </a>
         </li>
       </ul>
@@ -151,6 +157,82 @@
     document.getElementById('stSidebar').classList.toggle('collapsed');
     document.getElementById('stHamburger').classList.toggle('active');
   }
+
+  /* ── Toast global (substitui alert) ── */
+  function showToast(title, sub, opts) {
+    opts = opts || {};
+    var t = document.createElement('div');
+    t.className = 'st-toast' + (opts.variant ? ' st-toast--' + opts.variant : '');
+    var strong = document.createElement('strong');
+    strong.textContent = title;
+    t.appendChild(strong);
+    if (sub) {
+      var span = document.createElement('span');
+      span.textContent = sub;
+      t.appendChild(span);
+    }
+    if (opts.href) t.addEventListener('click', function() { window.location.href = opts.href; });
+    document.body.appendChild(t);
+    var ms = opts.timeout || 5000;
+    setTimeout(function() {
+      t.classList.add('st-toast-hide');
+      setTimeout(function() { t.remove(); }, 300);
+    }, ms);
+    return t;
+  }
+
+  /* ── Modal helpers ── */
+  function openModal(id) {
+    var m = document.getElementById(id);
+    if (m) m.classList.add('is-open');
+  }
+  function closeModal(id) {
+    var m = document.getElementById(id);
+    if (m) m.classList.remove('is-open');
+  }
+  document.addEventListener('click', function(e) {
+    if (e.target.classList && e.target.classList.contains('modal-overlay')) {
+      e.target.classList.remove('is-open');
+    }
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.is-open').forEach(function(m) { m.classList.remove('is-open'); });
+    }
+  });
+
+  /* ── Confirm assíncrono (substitui confirm) ── */
+  function stConfirm(message, onOk, opts) {
+    opts = opts || {};
+    var overlay = document.createElement('div');
+    overlay.className = 'modal-overlay is-open';
+    var box = document.createElement('div');
+    box.className = 'modal';
+    box.style.maxWidth = '420px';
+    var h = document.createElement('h3');
+    h.className = 'modal-title';
+    h.textContent = opts.title || 'Confirmar ação';
+    var p = document.createElement('p');
+    p.className = 'modal-text';
+    p.textContent = message;
+    var actions = document.createElement('div');
+    actions.className = 'modal-actions';
+    var cancel = document.createElement('button');
+    cancel.className = 'btn btn-ghost';
+    cancel.textContent = 'Cancelar';
+    cancel.onclick = function() { overlay.remove(); };
+    var ok = document.createElement('button');
+    ok.className = 'btn ' + (opts.danger ? 'btn-danger' : 'btn-gold');
+    ok.textContent = opts.confirmLabel || 'Confirmar';
+    ok.onclick = function() { overlay.remove(); onOk(); };
+    actions.appendChild(cancel);
+    actions.appendChild(ok);
+    box.appendChild(h); box.appendChild(p); box.appendChild(actions);
+    overlay.appendChild(box);
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+  }
+
   (function() {
     var csrfToken = document.querySelector('meta[name="csrf-token"]');
     if (csrfToken) {

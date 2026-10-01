@@ -39,12 +39,14 @@
       } else {
         btn.disabled = false;
         btn.textContent = 'Confirmar Voto';
-        alert(data.error || 'Erro ao votar.');
+        if (window.showToast) showToast('Erro ao votar', data.error || 'Tente novamente.', {variant:'error'});
+        else alert(data.error || 'Erro ao votar.');
       }
     } catch (e) {
       btn.disabled = false;
       btn.textContent = 'Confirmar Voto';
-      alert('Erro de conexão. Tente novamente.');
+      if (window.showToast) showToast('Erro de conexão', 'Tente novamente.', {variant:'error'});
+      else alert('Erro de conexão. Tente novamente.');
     }
   };
 })();

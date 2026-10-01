@@ -17,11 +17,6 @@
     }
     if (warnings.length) {
       triagem.style.display = 'flex';
-      triagem.style.alignItems = 'center';
-      triagem.style.gap = '8px';
-      triagem.style.background = 'rgba(212,131,15,.08)';
-      triagem.style.border = '1px solid rgba(212,131,15,.2)';
-      triagem.style.color = '#856404';
       triagem.innerHTML = '🔍 ' + warnings.join(' · ');
     }
     if (window.innerWidth < 768 && ('ontouchstart' in window)) {

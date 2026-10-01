@@ -1,10 +1,12 @@
 {% extends "student/base.html" %}
 {% from "student/_macros.html" import field_pair %}
 {% block title %}Registrar Presença{% endblock %}
+{% block page_title %}Registrar Presença{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
+    <div class="section-label">Participação</div>
     <h1 class="page-title">📋 Registrar Presença</h1>
     <p class="page-sub">Registre sua presença na simulação.</p>
   </div>
@@ -16,26 +18,26 @@
 </div>
 {% endif %}
 
-<div id="deviceTriagem" style="display:none;margin-bottom:16px;padding:10px 16px;border-radius:4px;font-size:12px"></div>
+<div id="deviceTriagem" class="triagem-bar"></div>
 
 {% if delegation %}
-<div class="card" style="margin-bottom:20px" id="presenceCard">
-  <div class="card-body cert-center">
-    <div style="font-size:48px;margin-bottom:16px">
+<div class="card" id="presenceCard">
+  <div class="card-body hero-center">
+    <div class="hero-icon">
       {% if delegation.presence_status == 'presente' or delegation.presence_status == 'votante' %}
         ✅
       {% else %}
         📋
       {% endif %}
     </div>
-    <div class="cert-title">
+    <div class="hero-title">
       {% if delegation.presence_status == 'presente' or delegation.presence_status == 'votante' %}
         Presença Registrada
       {% else %}
         Registrar Presença
       {% endif %}
     </div>
-    <div class="cert-subtitle">
+    <div class="hero-sub">
       {% if delegation.presence_status == 'presente' or delegation.presence_status == 'votante' %}
         Você já registrou sua presença. Status: <strong>{{ delegation.presence_status }}</strong>
       {% else %}
@@ -45,40 +47,40 @@
 
     {% if not read_only and delegation.presence_status == 'ausente' %}
     <div id="presenceActions">
-      <div class="cert-actions" style="margin-bottom:16px">
+      <div class="hero-actions">
         <form method="POST" id="normalPresenceForm" style="display:inline">
           <input type="hidden" name="action" value="registrar">
-          <button type="submit" class="btn btn-green" style="padding:14px 32px;font-size:13px">
+          <button type="submit" class="btn btn-green">
             ✅ Registrar Presença
           </button>
         </form>
         <form method="POST" style="display:inline">
           <input type="hidden" name="action" value="modo_adaptado">
-          <button type="submit" class="btn btn-navy" style="padding:14px 24px;font-size:13px">
+          <button type="submit" class="btn btn-navy">
             📱 Modo Adaptado
           </button>
         </form>
-        <button onclick="toggleQuickMode()" class="btn btn-ghost" style="padding:14px 24px;font-size:13px;border-color:var(--gold);color:var(--gold)">
+        <button onclick="toggleQuickMode()" class="btn btn-ghost">
           ⚡ Modo Rápido
         </button>
       </div>
 
-      <div id="quickModePanel" style="display:none;margin-top:20px;padding:20px;background:rgba(16,30,76,.03);border-radius:8px;border:1px dashed var(--border)">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-          <span style="font-size:24px">⚡</span>
+      <div id="quickModePanel" class="inset-panel" style="display:none">
+        <div class="inset-panel-head">
+          <span class="inset-panel-icon">⚡</span>
           <div>
-            <div class="cert-title" style="font-size:16px">Modo Rápido — Dispositivo Compartilhado</div>
+            <div class="hero-title">Modo Rápido — Dispositivo Compartilhado</div>
             <div class="field-help">Registra presença e desconecta em um clique para o próximo aluno usar.</div>
           </div>
         </div>
         <form method="POST" id="quickPresenceForm" data-logout-url="{{ url_for('auth.student_logout') }}">
           <input type="hidden" name="action" value="registrar">
           <input type="hidden" name="quick_mode" value="1">
-          <button type="submit" class="btn btn-green" style="width:100%;padding:18px;font-size:15px;justify-content:center">
+          <button type="submit" class="btn btn-green btn-block">
             ✅ Registrar e Sair
           </button>
         </form>
-        <div class="field-help" style="margin-top:8px">
+        <div class="field-help" style="margin-top:8px;text-align:center">
           Após registrar, você será desconectado automaticamente.
         </div>
       </div>

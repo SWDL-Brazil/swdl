@@ -1,9 +1,11 @@
 {% extends "student/base.html" %}
 {% block title %}Votação{% endblock %}
+{% block page_title %}Votação Eletrônica{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
+    <div class="section-label">Participação</div>
     <h1 class="page-title">🗳️ Votação Eletrônica</h1>
     <p class="page-sub">Participe das votações das resoluções em pauta.</p>
   </div>
@@ -31,7 +33,7 @@
 {% endif %}
 
 {% if not is_event_day and open_sessions %}
-<div class="warning-card" style="border-color:var(--slate)">
+<div class="warning-card warning-card--slate">
   <div class="warning-card-body">
     <span class="warning-card-icon">🔒</span>
     <div>
@@ -46,7 +48,7 @@
 
 {% if open_sessions %}
   {% for session in open_sessions %}
-  <div class="card" style="margin-bottom:20px">
+  <div class="card">
     <div class="card-header">
       <span class="card-title">{{ session.title }}</span>
       <span class="badge badge-votacao">Aberta</span>
@@ -57,7 +59,7 @@
       {% endif %}
 
       {% if session.id in voted_ids %}
-        <div class="cert-center" style="padding:24px;background:rgba(30,123,69,.06);border-radius:6px">
+        <div class="cert-center" style="padding:24px;background:rgba(21,128,61,.06);border:1px solid rgba(21,128,61,.2);border-radius:8px">
           <div style="font-size:40px;margin-bottom:10px">✅</div>
           <div style="font-size:16px;font-weight:700;color:var(--green)">Voto registrado</div>
           <div class="text-muted" style="margin-top:4px">
@@ -65,7 +67,7 @@
           </div>
         </div>
       {% elif delegation and presence_status == 'ausente' %}
-        <div class="cert-center" style="padding:24px;color:var(--muted);background:rgba(212,131,15,.04);border-radius:6px">
+        <div class="cert-center" style="padding:24px;color:var(--muted);background:rgba(217,119,6,.05);border:1px solid rgba(217,119,6,.2);border-radius:8px">
           <div style="font-size:32px;margin-bottom:8px">⚠️</div>
           <div style="font-size:14px;font-weight:600;color:var(--orange);margin-bottom:4px">Registre sua presença primeiro</div>
           <div class="text-muted">Você precisa estar presente para votar.</div>
@@ -97,11 +99,11 @@
             <div class="v-check"></div>
           </div>
         </div>
-        <div class="text-muted" style="margin-bottom:14px;text-align:center">
+        <div class="text-muted" style="margin-bottom:14px;text-align:center;font-size:12.5px">
           ⚠️ Strict Single Vote: apenas <strong>um voto por delegação</strong>, independentemente do número de alunos.
         </div>
         <button id="submitVote" disabled onclick="submitVote({{ session.id }})"
-                class="btn btn-gold" style="width:100%;justify-content:center;padding:14px">
+                class="btn btn-gold btn-block">
           Confirmar Voto
         </button>
         <div id="voteResult" style="display:none;text-align:center;padding:20px 0">
@@ -136,5 +138,6 @@
   const sio = io();
   sio.emit('join_students', {});
   sio.on('vote_opened', (data) => { window.location.reload(); });
+  sio.on('vote_closed', (data) => { window.location.reload(); });
 </script>
 {% endblock %}

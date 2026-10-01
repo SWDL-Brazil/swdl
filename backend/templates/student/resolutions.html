@@ -1,25 +1,27 @@
 {% extends "student/base.html" %}
 
 {% block title %}Resoluções — {{ committee.upper() }}{% endblock %}
+{% block page_title %}Resoluções{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width:800px;margin:0 auto;padding:20px;">
+<div class="subpage">
 
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+  <div class="page-head-row">
     <div>
-      <h1 style="font-size:22px;font-weight:700;margin-bottom:4px;">📜 Resoluções</h1>
-      <p style="font-size:13px;color:var(--muted);">Comitê: <strong>{{ committee.upper() }}</strong></p>
+      <div class="section-label">Participação</div>
+      <h1 class="page-title">📜 Resoluções</h1>
+      <p class="page-sub">Comitê: <strong>{{ committee.upper() }}</strong></p>
     </div>
-    <button class="btn btn-gold" onclick="openNewResolution()">➕ Nova Resolução</button>
+    <button class="btn btn-gold" onclick="openModal('newResModal')">➕ Nova Resolução</button>
   </div>
 
   {% for r in resolutions %}
-  <div style="padding:16px 20px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);margin-bottom:12px;">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-      <span style="font-size:18px;">📜</span>
-      <div style="flex:1;">
-        <strong style="font-size:15px;">{{ r.title }}</strong>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px;">
+  <div class="queue-item queue-item--block" style="margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      <span class="queue-icon">📜</span>
+      <div style="flex:1;min-width:0">
+        <strong class="queue-title" style="font-size:15.5px">{{ r.title }}</strong>
+        <div class="queue-meta">
           Por: {{ r.proposer.country if r.proposer else '?' }} ·
           Co-sponsors: {{ r.co_sponsor_ids()|length }} ·
           Emendas: {{ r.amendments|length }}
@@ -27,15 +29,15 @@
       </div>
       <div>
         {% if r.status == 'draft' %}
-          <span style="font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(138,144,170,.15);color:var(--slate);">Rascunho</span>
+          <span class="chip chip--slate">Rascunho</span>
         {% elif r.status == 'submitted' %}
-          <span style="font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(183,148,65,.15);color:var(--gold);">Submetida</span>
+          <span class="chip chip--gold">Submetida</span>
         {% elif r.status == 'voting' %}
-          <span style="font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(30,123,69,.15);color:var(--green);">Em Votação</span>
+          <span class="chip chip--green">Em Votação</span>
         {% elif r.status == 'passed' %}
-          <span style="font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(30,123,69,.25);color:var(--green);">✓ Aprovada</span>
+          <span class="chip chip--green-solid">✓ Aprovada</span>
         {% elif r.status == 'rejected' %}
-          <span style="font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(192,57,43,.15);color:var(--red);">✗ Rejeitada</span>
+          <span class="chip chip--red">✗ Rejeitada</span>
         {% endif %}
       </div>
     </div>
@@ -43,42 +45,45 @@
     {# Preview of operative clauses #}
     {% set clauses = r.operative_clauses() %}
     {% if clauses %}
-    <div style="margin-top:8px;">
+    <div class="clause-list">
       {% for clause in clauses[:3] %}
-      <div style="font-size:12px;color:var(--muted);padding:4px 0;">
+      <div class="clause">
         {{ loop.index }}. {{ clause[:80] }}{% if clause|length > 80 %}...{% endif %}
       </div>
       {% endfor %}
       {% if clauses|length > 3 %}
-      <div style="font-size:11px;color:var(--muted);">+{{ clauses|length - 3 }} mais cláusulas</div>
+      <div class="clause-more">+{{ clauses|length - 3 }} mais cláusulas</div>
       {% endif %}
     </div>
     {% endif %}
 
     {# Actions #}
-    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+    {% if (r.status == 'draft' and r.proposer_id == delegation.id)
+       or (r.status in ('draft', 'submitted') and r.proposer_id != delegation.id) %}
+    <div class="action-row">
       {% if r.status == 'draft' and r.proposer_id == delegation.id %}
         <button class="btn btn-sm btn-gold" onclick="submitResolution({{ r.id }})">📤 Submeter</button>
         <button class="btn btn-sm btn-ghost" onclick="editResolution({{ r.id }})">✏️ Editar</button>
       {% endif %}
       {% if r.status in ('draft', 'submitted') and r.proposer_id != delegation.id %}
         <button class="btn btn-sm btn-ghost" onclick="cosponsorResolution({{ r.id }})">👍 Apoiar</button>
-        <button class="btn btn-sm btn-ghost" onclick="openAmendModal({{ r.id }})">📝 Emendar</button>
+        <button class="btn btn-sm btn-ghost" onclick="openModal('amendModal');setAmendRes({{ r.id }})">📝 Emendar</button>
       {% endif %}
     </div>
+    {% endif %}
   </div>
   {% else %}
-  <div style="text-align:center;padding:48px;color:var(--muted);">
-    <p style="font-size:15px;">Nenhuma resolução ainda.</p>
-    <p style="font-size:12px;margin-top:8px;">Seja o primeiro a criar uma resolução!</p>
+  <div class="queue-empty" style="padding:48px 16px">
+    <div style="font-size:15px;color:var(--navy);font-weight:600">Nenhuma resolução ainda.</div>
+    <div style="font-size:13px;margin-top:6px">Seja o primeiro a criar uma resolução!</div>
   </div>
   {% endfor %}
 </div>
 
 {# ═══════ MODAL NOVA RESOLUÇÃO ═══════ #}
-<div id="newResModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.6);align-items:center;justify-content:center;">
-  <div style="background:var(--white);border-radius:8px;padding:24px;width:90%;max-width:600px;max-height:80vh;overflow-y:auto;">
-    <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Nova Resolução</h3>
+<div id="newResModal" class="modal-overlay">
+  <div class="modal modal--lg">
+    <h3 class="modal-title">Nova Resolução</h3>
     <div class="form-group">
       <label for="nr-title">Título</label>
       <input type="text" id="nr-title" placeholder="Ex: Resolução A/RES/01" maxlength="200">
@@ -91,17 +96,17 @@
       <label for="nr-operative">Cláusulas Operativas (uma por linha)</label>
       <textarea id="nr-operative" rows="6" placeholder="1. Implanta um programa de...&#10;2. Exorta os estados membros a...&#10;3. Solicita que o Secretário-Geral..."></textarea>
     </div>
-    <div style="display:flex;gap:12px;margin-top:16px;">
+    <div class="modal-actions">
       <button class="btn btn-gold" onclick="submitNewResolution()">Criar Resolução</button>
-      <button class="btn btn-ghost" onclick="closeNewResolution()">Cancelar</button>
+      <button class="btn btn-ghost" onclick="closeModal('newResModal')">Cancelar</button>
     </div>
   </div>
 </div>
 
 {# ═══════ MODAL EMENDA ═══════ #}
-<div id="amendModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.6);align-items:center;justify-content:center;">
-  <div style="background:var(--white);border-radius:8px;padding:24px;width:90%;max-width:500px;">
-    <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Propor Emenda</h3>
+<div id="amendModal" class="modal-overlay">
+  <div class="modal">
+    <h3 class="modal-title">Propor Emenda</h3>
     <input type="hidden" id="am-res-id">
     <div class="form-group">
       <label for="am-section">Seção</label>
@@ -125,23 +130,17 @@
         <option value="unfriendly">Unfriendly (adiciona)</option>
       </select>
     </div>
-    <div style="display:flex;gap:12px;margin-top:16px;">
+    <div class="modal-actions">
       <button class="btn btn-gold" onclick="submitAmendment()">Enviar Emenda</button>
-      <button class="btn btn-ghost" onclick="closeAmendModal()">Cancelar</button>
+      <button class="btn btn-ghost" onclick="closeModal('amendModal')">Cancelar</button>
     </div>
   </div>
 </div>
 
 <script>
-  function openNewResolution() {
-    document.getElementById('newResModal').style.display = 'flex';
-  }
-  function closeNewResolution() {
-    document.getElementById('newResModal').style.display = 'none';
-  }
   function submitNewResolution() {
     const title = document.getElementById('nr-title').value.trim();
-    if (!title) { alert('Informe o título'); return; }
+    if (!title) { showToast('Informe o título da resolução.', null, {variant:'error'}); return; }
     fetch("{{ url_for('resolution.student_resolution_create') }}", {
       method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
@@ -151,34 +150,37 @@
       })
     }).then(r => r.json()).then(d => {
       if (d.status === 'success') location.reload();
-      else alert(d.message || 'Erro ao criar');
-    });
+      else showToast('Erro ao criar', d.message || 'Tente novamente.', {variant:'error'});
+    }).catch(() => showToast('Erro de conexão', 'Tente novamente.', {variant:'error'}));
   }
   function submitResolution(id) {
-    if (!confirm('Submeter esta resolução para aprovação da mesa?')) return;
-    fetch("/delegado/resolucoes/" + id + "/submeter", {
-      method: 'POST', headers: {'Content-Type': 'application/json'}
-    }).then(r => r.json()).then(d => { if (d.status === 'success') location.reload(); else alert(d.message); });
+    stConfirm('Submeter esta resolução para aprovação da mesa?', function() {
+      fetch("/delegado/resolucoes/" + id + "/submeter", {
+        method: 'POST', headers: {'Content-Type': 'application/json'}
+      }).then(r => r.json()).then(d => {
+        if (d.status === 'success') location.reload();
+        else showToast('Não foi possível submeter', d.message, {variant:'error'});
+      }).catch(() => showToast('Erro de conexão', 'Tente novamente.', {variant:'error'}));
+    }, {title:'Submeter resolução', confirmLabel:'Submeter'});
   }
   function cosponsorResolution(id) {
     fetch("/delegado/resolucoes/" + id + "/apoiar", {
       method: 'POST', headers: {'Content-Type': 'application/json'}
-    }).then(r => r.json()).then(d => { if (d.status === 'success') location.reload(); else alert(d.message); });
+    }).then(r => r.json()).then(d => {
+      if (d.status === 'success') location.reload();
+      else showToast('Não foi possível apoiar', d.message, {variant:'error'});
+    }).catch(() => showToast('Erro de conexão', 'Tente novamente.', {variant:'error'}));
   }
   function editResolution(id) {
-    alert('Edição de resolução existente — funcionalidade em desenvolvimento.');
+    showToast('Edição indisponível', 'A edição de resolução existente está em desenvolvimento.', {variant:'info'});
   }
-  function openAmendModal(resId) {
+  function setAmendRes(resId) {
     document.getElementById('am-res-id').value = resId;
-    document.getElementById('amendModal').style.display = 'flex';
-  }
-  function closeAmendModal() {
-    document.getElementById('amendModal').style.display = 'none';
   }
   function submitAmendment() {
     const resId = document.getElementById('am-res-id').value;
     const text = document.getElementById('am-text').value.trim();
-    if (!text) { alert('Informe o texto proposto'); return; }
+    if (!text) { showToast('Informe o texto proposto.', null, {variant:'error'}); return; }
     fetch("/delegado/resolucoes/" + resId + "/emendar", {
       method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
@@ -189,8 +191,8 @@
       })
     }).then(r => r.json()).then(d => {
       if (d.status === 'amendment') location.reload();
-      else alert(d.message || 'Erro ao enviar emenda');
-    });
+      else showToast('Erro ao enviar emenda', d.message || 'Tente novamente.', {variant:'error'});
+    }).catch(() => showToast('Erro de conexão', 'Tente novamente.', {variant:'error'}));
   }
 </script>
 {% endblock %}

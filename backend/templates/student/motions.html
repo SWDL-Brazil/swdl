@@ -1,27 +1,29 @@
 {% extends "student/base.html" %}
 
 {% block title %}Moções — {{ committee.upper() }}{% endblock %}
+{% block page_title %}Moções de Debate{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width:800px;margin:0 auto;padding:20px;">
+<div class="subpage">
 
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+  <div class="page-head-row">
     <div>
-      <h1 style="font-size:22px;font-weight:700;margin-bottom:4px;">📋 Moções de Debate</h1>
-      <p style="font-size:13px;color:var(--muted);">Comitê: <strong>{{ committee.upper() }}</strong></p>
+      <div class="section-label">Participação</div>
+      <h1 class="page-title">📋 Moções de Debate</h1>
+      <p class="page-sub">Comitê: <strong>{{ committee.upper() }}</strong></p>
     </div>
-    <button class="btn btn-gold" onclick="openNewMotion()">➕ Propor Moção</button>
+    <button class="btn btn-gold" onclick="openModal('newMotionModal')">➕ Propor Moção</button>
   </div>
 
   {# ═══════ MOÇÃO ATIVA ═══════ #}
   {% if active %}
-  <div style="padding:16px 20px;border-radius:8px;background:rgba(30,123,69,.08);border:1px solid rgba(30,123,69,.2);margin-bottom:20px;">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-      <span style="font-size:18px;">{{ active.type_info().icon }}</span>
-      <strong style="color:var(--green);">{{ active.type_info().label }} — Em Andamento</strong>
+  <div class="active-panel">
+    <div class="active-panel-head">
+      <span style="font-size:18px">{{ active.type_info().icon }}</span>
+      <span class="active-panel-status">{{ active.type_info().label }} — Em Andamento</span>
     </div>
-    <div style="font-size:15px;font-weight:600;">{{ active.topic }}</div>
-    <div style="font-size:12px;color:var(--muted);margin-top:4px;">
+    <div class="active-panel-topic">{{ active.topic }}</div>
+    <div class="active-panel-meta">
       Proposta por: {{ active.proposer.country if active.proposer else '?' }} ·
       Total: {{ active.total_time // 60 }}min · Orador: {{ active.speaking_time }}s
     </div>
@@ -29,29 +31,27 @@
   {% endif %}
 
   {# ═══════ FILA PENDENTE ═══════ #}
-  <div style="margin-bottom:24px;">
-    <h2 style="font-size:16px;font-weight:700;margin-bottom:12px;">Fila Pendente</h2>
+  <div style="margin-bottom:24px">
+    <div class="subpanel-title">Fila Pendente</div>
     {% for m in pending %}
-    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);margin-bottom:8px;">
-      <span style="font-size:20px;">{{ m.type_info().icon }}</span>
-      <div style="flex:1;">
-        <div style="font-weight:600;font-size:14px;">{{ m.topic }}</div>
-        <div style="font-size:11px;color:var(--muted);">
+    <div class="queue-item">
+      <span class="queue-icon">{{ m.type_info().icon }}</span>
+      <div class="queue-body">
+        <div class="queue-title">{{ m.topic }}</div>
+        <div class="queue-meta">
           {{ m.type_info().label }} ·
           {{ m.proposer.country if m.proposer else '?' }} ·
           {% if m.total_time > 0 %}{{ m.total_time // 60 }}min{% else %}Voto{% endif %}
         </div>
       </div>
       {% if m.seconded_by %}
-        <span style="font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(30,123,69,.1);color:var(--green);">
-          Secondada por {{ m.seconded_by.country }}
-        </span>
+        <span class="chip chip--green">Secondada por {{ m.seconded_by.country }}</span>
       {% elif m.proposer_id != delegation.id %}
         <button class="btn btn-sm btn-ghost" onclick="secondMotion({{ m.id }})">👍 Secondar</button>
       {% endif %}
     </div>
     {% else %}
-    <div style="text-align:center;padding:32px;color:var(--muted);font-size:13px;">
+    <div class="queue-empty">
       Nenhuma moção pendente. Seja o primeiro a propor!
     </div>
     {% endfor %}
@@ -60,18 +60,18 @@
   {# ═══════ HISTÓRICO ═══════ #}
   {% if log %}
   <div>
-    <h2 style="font-size:16px;font-weight:700;margin-bottom:12px;">Histórico</h2>
+    <div class="subpanel-title">Histórico</div>
     {% for m in log %}
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:6px;margin-bottom:6px;font-size:13px;">
+    <div class="log-row">
       <span>{{ m.type_info().icon }}</span>
-      <span style="flex:1;">{{ m.topic }}</span>
-      <span style="color:var(--muted);">{{ m.proposer.country if m.proposer else '?' }}</span>
+      <span class="log-row-topic">{{ m.topic }}</span>
+      <span class="log-row-country">{{ m.proposer.country if m.proposer else '?' }}</span>
       {% if m.status == 'approved' %}
-        <span style="color:var(--green);font-weight:600;">✓ Aprovada</span>
+        <span class="log-status--approved">✓ Aprovada</span>
       {% elif m.status == 'rejected' %}
-        <span style="color:var(--red);font-weight:600;">✗ Rejeitada</span>
+        <span class="log-status--rejected">✗ Rejeitada</span>
       {% elif m.status == 'completed' %}
-        <span style="color:var(--muted);">Concluída</span>
+        <span class="log-status--completed">Concluída</span>
       {% endif %}
     </div>
     {% endfor %}
@@ -80,9 +80,9 @@
 </div>
 
 {# ═══════ MODAL NOVA MOÇÃO ═══════ #}
-<div id="newMotionModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;">
-  <div style="background:var(--white);border-radius:8px;padding:24px;width:90%;max-width:500px;max-height:80vh;overflow-y:auto;">
-    <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Propor Nova Moção</h3>
+<div id="newMotionModal" class="modal-overlay">
+  <div class="modal">
+    <h3 class="modal-title">Propor Nova Moção</h3>
     <div class="form-group">
       <label for="nm-type">Tipo</label>
       <select id="nm-type" onchange="updateModalDefaults()">
@@ -97,7 +97,7 @@
       <label for="nm-topic">Tópico</label>
       <input type="text" id="nm-topic" placeholder="Ex: Questão da Segurança Alimentar" maxlength="300">
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="form-grid-2">
       <div class="form-group">
         <label for="nm-total">Tempo Total (seg)</label>
         <input type="number" id="nm-total" value="900" min="0">
@@ -107,20 +107,14 @@
         <input type="number" id="nm-speaking" value="60" min="0">
       </div>
     </div>
-    <div style="display:flex;gap:12px;margin-top:16px;">
+    <div class="modal-actions">
       <button class="btn btn-gold" onclick="submitMotion()">Enviar Moção</button>
-      <button class="btn btn-ghost" onclick="closeNewMotion()">Cancelar</button>
+      <button class="btn btn-ghost" onclick="closeModal('newMotionModal')">Cancelar</button>
     </div>
   </div>
 </div>
 
 <script>
-  function openNewMotion() {
-    document.getElementById('newMotionModal').style.display = 'flex';
-  }
-  function closeNewMotion() {
-    document.getElementById('newMotionModal').style.display = 'none';
-  }
   function updateModalDefaults() {
     const sel = document.getElementById('nm-type');
     const opt = sel.options[sel.selectedIndex];
@@ -129,7 +123,7 @@
   }
   function submitMotion() {
     const topic = document.getElementById('nm-topic').value.trim();
-    if (!topic) { alert('Informe o tópico'); return; }
+    if (!topic) { showToast('Informe o tópico da moção.', null, {variant:'error'}); return; }
     fetch("{{ url_for('motion.student_motion_create') }}", {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -143,15 +137,20 @@
     .then(r => r.json())
     .then(d => {
       if (d.status === 'success') location.reload();
-      else alert(d.message || 'Erro ao criar moção');
-    });
+      else showToast('Erro ao criar moção', d.message || 'Tente novamente.', {variant:'error'});
+    })
+    .catch(() => showToast('Erro de conexão', 'Tente novamente.', {variant:'error'}));
   }
   function secondMotion(id) {
     fetch("/delegado/mocoes/" + id + "/secondar", {
       method: 'POST', headers: {'Content-Type': 'application/json'}
     })
     .then(r => r.json())
-    .then(d => { if (d.status === 'success') location.reload(); else alert(d.message); });
+    .then(d => {
+      if (d.status === 'success') location.reload();
+      else showToast('Não foi possível secondar', d.message, {variant:'error'});
+    })
+    .catch(() => showToast('Erro de conexão', 'Tente novamente.', {variant:'error'}));
   }
 </script>
 {% endblock %}

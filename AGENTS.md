@@ -34,6 +34,15 @@ Build a complete student panel + admin backend for the SWDL Model UN platform wi
 - Limpeza: `get_agenda_bounds`, `_cached_phase_override`, imports mortos removidos
 - `backend/test_agenda.py`: 19 checagens funcionais (roda junto com `test_perf_pages.py`)
 
+### Painel do Delegado — Redesign na vibe swdl-web (commit no main)
+- **Regressão corrigida**: o commit `74bab11` apagou do `student.css` as classes `.card`, `.btn`, `.page-header`, `.text-muted`, `.mono`, `.badge-warning/success`, `.info-grid`, `.form-group` — 10 subpáginas usavam essas classes e renderizavam **sem estilo** (botões cinza do UA, badge "Comunicado" branco invisível). Todas restauradas como aliases no novo CSS
+- **`student.css` reescrito** (684→~1000 linhas) com tokens exatos do portal: navy `#0D1B2A` / gold `#C9A84C` / surface `#FAFAF8` / accent `#7A5F1F`, sombras `shadow-card/elevated/glow`, botões DM Mono uppercase `tracking .08em` radius 4px (DNA do `.btn` do swdl-web), inputs com `focus:border-gold + ring`, flash messages em paleta do portal (era Bootstrap), badges nas cores do `Badge.tsx` (`#1E40AF` oficial, `#065F46` imprensa), `.section-label` com filete dourado
+- **Componentes novos**: `.modal-overlay`/`.modal` (fecha os 4 modais inline de moções/resoluções; Esc/overlay fecham), `showToast()`/`stConfirm()` globais em `base.html` (substituem `alert()`/`confirm()`), `.hero-center` (substitui semântica trocada `cert-center` em attendance/voting), `.queue-item`/`.chip`/`.subpanel-title`/`.log-row` (moções/resoluções), `.inset-panel` (modo rápido), `.triagem-bar`
+- **Templates migrados (13)**: login (260→108 linhas, `<style>` inline movido para seção LOGIN do CSS), `page_title` preenchido nas 10 telas que tinham topbar vazia, `style=""` 110→43 (restantes são posicionais pontuais), `alert()/confirm()` → toast/modal em motions, resolutions e `student-voting.js`
+- **UI do upload de DPO restaurada** em `profile.html` (form `dpo_file` + status ✅/⏳ — rota `POST /student/dpo/enviar` existia mas a UI foi apagada no `74bab11`; histórico do form em `a1dd4a7`)
+- **`admin.css` na mesma paleta** (só tokens/typography, zero mudança de layout): `:root` + varredura de hex/rgba hardcoded (`#101E4C`→`#0D1B2A`, `#B79441`→`#C9A84C`, `rgba(16,30,76,..)`→`rgba(13,27,42,..)` etc.), botões `.btn` migrados para DM Mono uppercase, cards radius 6→8px, flash messages na paleta do portal. Telão (`variables.css`) intocado
+- **Verificação**: `backend/test_student_pages.py` (NOVO — 11 rotas do delegado com sessão injetada), `backend/check_css_classes.py` (NOVO — classes usadas × definidas, exit 1 se órfã), `test_agenda.py` 19/19, `test_perf_pages.py --real` 18/18 (admin após troca de paleta)
+
 ### Infrastructure
 - `datetime.utcnow` replaced with `datetime.now(timezone.utc)` everywhere
 - Hardcoded email and year removed from templates

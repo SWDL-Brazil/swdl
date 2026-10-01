@@ -1,17 +1,19 @@
 {% extends "student/base.html" %}
 {% from "student/_macros.html" import empty_state %}
 {% block title %}Comunicados{% endblock %}
+{% block page_title %}Comunicados{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
+    <div class="section-label">Recursos</div>
     <h1 class="page-title">📰 Comunicados Oficiais</h1>
     <p class="page-sub">Acompanhe todos os comunicados da organização.</p>
   </div>
 </div>
 
 <div class="card">
-  <div class="card-body" style="padding:0">
+  <div class="card-body card-body--flush">
     {% set cat_icons = {'crise':'⚡','oficial':'📋','imprensa':'📰','votacao':'🗳️'} %}
     {% for n in news %}
     <div class="cmp-card">
@@ -27,7 +29,7 @@
           </div>
           <div class="news-row-title">{{ n.title }}</div>
           {% if n.excerpt %}
-          <div class="text-muted" style="margin-top:4px">{{ n.excerpt }}</div>
+          <div class="text-muted" style="margin-top:4px;font-size:13px">{{ n.excerpt }}</div>
           {% endif %}
         </div>
       </div>

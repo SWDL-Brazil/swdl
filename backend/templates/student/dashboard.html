@@ -227,7 +227,7 @@
     <span class="st-card-title">📰 Comunicados Recentes</span>
     <a href="{{ url_for('student.comunicados') }}" class="st-card-link">Ver todos →</a>
   </div>
-  <div class="st-card-body" style="padding:0">
+  <div class="st-card-body card-body--flush">
     {% for n in recent_news[:3] %}
     <div class="st-news-row">
       <span class="st-news-icon">📢</span>
@@ -246,14 +246,14 @@
 <!-- ═══ PÓS-EVENTO: CERTIFICADO ══════════════════════════ -->
 {% if event_ended or read_only %}
 <div class="st-card st-cert-highlight">
-  <div class="st-card-body" style="text-align:center;padding:28px">
-    <div style="font-size:40px;margin-bottom:8px">🎓</div>
-    <div class="st-card-title" style="margin-bottom:4px">Seu Certificado</div>
+  <div class="st-card-body cert-center" style="padding:30px 24px">
+    <div class="cert-icon">🎓</div>
+    <div class="st-card-title">Seu Certificado</div>
     {% if student and student.certificate_released %}
-    <div style="font-size:13px;color:var(--green);margin-bottom:12px">✅ Disponível para download</div>
+    <div class="text-muted" style="font-size:13px;margin:6px 0 14px">✅ Disponível para download</div>
     <a href="{{ url_for('student.certificados') }}" class="st-btn st-btn-gold">Ver Certificado</a>
     {% else %}
-    <div style="font-size:13px;color:var(--muted)">Pendente de liberação pela organização.</div>
+    <div class="text-muted" style="font-size:13px;margin-top:6px">Pendente de liberação pela organização.</div>
     {% endif %}
   </div>
 </div>
@@ -268,15 +268,14 @@
   sio.emit('join_students', {});
   sio.on('invoke_session', (data) => { if (data.url) window.location.href = data.url; });
   sio.on('vote_opened', (data) => {
-    const toast = document.createElement('div');
-    toast.className = 'st-toast';
-    toast.innerHTML = '<strong>🗳️ ' + data.title + '</strong><br><span>Nova votação aberta!</span>';
-    toast.onclick = () => { window.location.href = '{{ url_for("student.voting") }}'; };
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      toast.classList.add('st-toast-hide');
-      setTimeout(() => toast.remove(), 300);
-    }, 6000);
+    showToast('🗳️ ' + data.title, 'Nova votação aberta!', {
+      href: '{{ url_for("student.voting") }}', timeout: 6000
+    });
+  });
+  sio.on('vote_closed', (data) => {
+    showToast('🗳️ ' + (data.title || 'Votação'), 'Votação encerrada — veja o resultado.', {
+      href: '{{ url_for("student.voting") }}', timeout: 6000
+    });
   });
 </script>
 {% endblock %}

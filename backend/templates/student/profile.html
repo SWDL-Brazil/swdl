@@ -1,10 +1,12 @@
 {% extends "student/base.html" %}
 {% from "student/_macros.html" import field_pair %}
 {% block title %}Meu Perfil{% endblock %}
+{% block page_title %}Meu Perfil{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
+    <div class="section-label">Registro</div>
     <h1 class="page-title">👤 Meu Perfil</h1>
     <p class="page-sub">Suas informações de acesso, identidade global e documentos.</p>
   </div>
@@ -47,4 +49,47 @@
     </div>
   </div>
 </div>
+
+<!-- ═══ DPO — DOCUMENTO DE POSIÇÃO OFICIAL ═══════════════ -->
+{% if delegation %}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">📄 Documento de Posição Oficial (DPO)</span>
+    {% if delegation.dpo_uploaded %}
+    <span class="chip chip--green">✓ Recebido</span>
+    {% else %}
+    <span class="chip chip--slate">⏳ Pendente</span>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+      <div>
+        {% if delegation.dpo_uploaded %}
+        <div class="field-label">Arquivo enviado</div>
+        <div class="field-value-mono" style="font-size:12px">
+          {{ delegation.dpo_path.split('/')[-1].split('\\')[-1] if delegation.dpo_path else '—' }}
+        </div>
+        {% else %}
+        <div class="field-help" style="margin-top:0">
+          Nenhum DPO enviado ainda. Envie seu Documento de Posição Oficial em formato PDF.
+        </div>
+        {% endif %}
+      </div>
+      <form method="POST" action="{{ url_for('student.dpo_upload') }}" enctype="multipart/form-data"
+            style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <input type="file" name="dpo_file" accept=".pdf" required
+               style="font-size:13px;padding:10px 12px;border:1px solid var(--border);
+                      border-radius:8px;background:var(--white);color:var(--text)">
+        <button type="submit" class="btn {{ 'btn-navy' if delegation.dpo_uploaded else 'btn-gold' }} btn-sm">
+          {{ '📤 Substituir DPO' if delegation.dpo_uploaded else '📤 Enviar DPO' }}
+        </button>
+      </form>
+    </div>
+    <div class="field-help" style="margin-top:14px">
+      📌 Envie seu Documento de Posição Oficial em formato PDF. O DPO é obrigatório para
+      participação na simulação. Apenas arquivos PDF são aceitos.
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
