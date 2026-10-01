@@ -1,0 +1,819 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "noticias": "Actualités",
+    "comites": "Thèmes",
+    "agenda": "Programme",
+    "sobre": "À propos",
+    "faca_parte": "Rejoignez-nous"
+  },
+  "crisis_banner": {
+    "close": "✕",
+    "close_aria": "Fermer alerte",
+    "label": "CRISE —"
+  },
+  "footer": {
+    "description": "Fondation de simulations de l'ONU du SESI CE-437 Hortolândia. Représentez des nations, établissez des alliances et construisez des accords diplomatiques.",
+    "contact": "Contact",
+    "navigation": "Navigation",
+    "legal": "Mentions légales",
+    "rights": "Tous droits réservés.",
+    "links": {
+      "home": "Accueil",
+      "noticias": "Actualités",
+      "comites": "Thèmes",
+      "agenda": "Programme",
+      "sobre": "À propos",
+      "faca_parte": "Rejoignez-nous",
+      "aviso_legal": "Mentions légales",
+      "privacidade": "Confidentialité",
+      "termos": "Conditions d'utilisation"
+    },
+    "address": "SESI CE-437, Hortolândia",
+    "developed_by": "Desenvolvido por Pedro Bonazzi",
+    "copyright_swdl": "SESI World Diplomacy League"
+  },
+  "home": {
+    "page_title": "SWDL — SESI World Diplomacy League",
+    "hero_tag": "Édition 2026 — En Cours",
+    "hero_title_line1": "Diplomatie.",
+    "hero_title_line2": "Stratégie.",
+    "hero_title_line3": "Leadership.",
+    "hero_sub": "Fondation de simulations de l’ONU du SESI CE-437 Hortolândia. Représentez des nations, forgez de nouvelles alliances, débattez des résolutions et construisez des accords qui façonnent le monde contemporain.",
+    "hero_btn_parte": "Rejoignez-nous",
+    "hero_btn_temas": "Voir les Thèmes",
+    "hero_stat_temas": "Thèmes",
+    "hero_stat_delegados": "Délégués",
+    "hero_stat_paises": "Pays",
+    "stats_label": "Nos Chiffres",
+    "stats_title": "Une Conférence à Impact",
+    "stats_countries": "Pays",
+    "stats_countries_desc": "Représentés par les délégués",
+    "stats_delegates": "Délégués",
+    "stats_delegates_desc": "Participants confirmés",
+    "stats_committees": "Comités",
+    "stats_committees_desc": "Thèmes de débat",
+    "news_label": "Dernières Nouvelles",
+    "news_title": "À la une à la SWDL",
+    "news_read": "Lire la suite",
+    "news_all": "Tout voir",
+    "committees_label": "Comités",
+    "committees_title": "Nos Thèmes de Débat",
+    "committees_all": "Voir tous les comités",
+    "agenda_label": "Programme",
+    "agenda_title": "Prochains Événements",
+    "agenda_full": "Voir le programme complet",
+    "gallery_label": "Galerie",
+    "testimonials_title": "Ceux qui l’ont vécu en parlent le mieux",
+    "gallery_title": "Moments de la SWDL",
+    "testimonials_label": "Témoignages",
+    "stats_editions_desc": "Réalisées depuis 2024",
+    "stats_editions": "Éditions",
+    "next_debate_label": "Prochain Débat",
+    "next_debate_title": "De l'Esclavage du Passé au Racisme du Présent",
+    "next_debate_theme": "Défier l’Avenir",
+    "closes_in": "Les inscriptions ferment dans :",
+    "registrations_closed": "Inscriptions clôturées !",
+    "cta_register": "Inscrivez-vous",
+    "unit_days": "jours",
+    "unit_hours": "heures",
+    "gallery_archive_label": "Archives",
+    "gallery_editions_title": "Éditions Précédentes",
+    "testimonials_next": "Suivant",
+    "gallery_items": {
+      "g1": {
+        "title": "Séance Plénière",
+        "desc": "Délégués de tous les comités réunis pour la séance d’ouverture et les débats plénaires."
+      },
+      "g2": {
+        "title": "Conseil de Sécurité",
+        "desc": "Négociations intenses sur les conflits internationaux et le maintien de la paix."
+      },
+      "g3": {
+        "title": "Négociations Bilatérales",
+        "desc": "Accords diplomatiques signés entre des délégations de nations différentes."
+      },
+      "g4": {
+        "title": "Cérémonie de Remise des Prix",
+        "desc": "Reconnaissance des meilleurs délégués et délégations de la conférence."
+      },
+      "g5": {
+        "title": "Éloquence en Vedette",
+        "desc": "Discours mémorables et compétences d’éloquence des délégués."
+      }
+    },
+    "committee_preview": {
+      "guide": {
+        "name": "Guide du Délégué",
+        "tag": "SWDL — SESI",
+        "desc": "Guide général obligatoire pour tous les délégués."
+      },
+      "mma": {
+        "name": "Environnement",
+        "tag": "MMA — UNEP",
+        "desc": "Changement climatique, biodiversité et développement durable"
+      },
+      "dhr": {
+        "name": "Droits de l’Homme",
+        "tag": "DHR — UNHCR",
+        "desc": "Protection des minorités, des réfugiés et des libertés fondamentales"
+      },
+      "ecosoc": {
+        "name": "Développement Économique",
+        "tag": "ECOSOC",
+        "desc": "Commerce international, lutte contre la pauvreté et finances mondiales"
+      },
+      "disec": {
+        "name": "Désarmement",
+        "tag": "DISEC — ONU",
+        "desc": "Non-prolifération nucléaire, contrôle des armes et cybersécurité"
+      },
+      "oms": {
+        "name": "Santé Mondiale",
+        "tag": "OMS — WHO",
+        "desc": "Pandémies, couverture sanitaire universelle et riposte aux urgences"
+      },
+      "acnur": {
+        "name": "Réfugiés",
+        "tag": "ACNUR — UNHCR",
+        "desc": "Protection des personnes déplacées par des événements climatiques extrêmes"
+      }
+    },
+    "testimonials_items": [
+      {
+        "quote": "La SWDL m'a montré que la diplomatie n'est pas que discours — c'est écouter, stratégie et courage. En quelques mois, j'ai quitté ma zone de confort et découvert une passion pour les relations internationales.",
+        "role": "Déléguée — Comité de Sécurité"
+      },
+      {
+        "quote": "Je n'aurais jamais imaginé qu'un débat scolaire puisse autant me préparer à la vie. J'ai appris à défendre des idées avec respect, négocier sous pression et travailler avec des gens très différents de moi.",
+        "role": "Délégué — DHR"
+      },
+      {
+        "quote": "Ce qui m'a le plus marqué, c'est de voir des élèves de première année débattre avec le même sérieux que des étudiants. La SWDL a transformé ma vision du monde et de mon rôle.",
+        "role": "Déléguée — ECOSOC"
+      }
+    ],
+    "staggered": [
+      {
+        "alt": "Déléguée en séance plénière",
+        "caption": "Séance Plénière — SWDL 2025"
+      },
+      {
+        "alt": "Carte du monde représentant la dimension mondiale de la SWDL",
+        "caption": "Délégations de 193 pays représentées"
+      },
+      {
+        "alt": "Délégué pendant un débat de comité",
+        "caption": "Débat de Comité — Conseil de Sécurité"
+      }
+    ]
+  },
+  "stats": {
+    "countries": "Pays",
+    "countries_desc": "Représentés par les délégués",
+    "delegates": "Délégués",
+    "delegates_desc": "Participants confirmés",
+    "committees": "Comités",
+    "committees_desc": "Thèmes de débat",
+    "days": "Jours",
+    "days_desc": "D'activités intensives"
+  },
+  "noticias": {
+    "page_title": "Actualités — SWDL",
+    "hero_title": "Actualités",
+    "hero_sub": "Suivez les dernières nouvelles de la SWDL",
+    "portal_title": "Dernières Nouvelles",
+    "portal_count": "{n} articles",
+    "search_placeholder": "Rechercher…",
+    "category_all": "Toutes",
+    "category_geral": "Général",
+    "category_oficial": "Officiel",
+    "category_imprensa": "Presse",
+    "category_crise": "Crise",
+    "all_committees": "Comités",
+    "tab_committees": "Par Comité",
+    "section_live": "En Direct",
+    "section_archive": "Archives",
+    "load_more": "Charger plus",
+    "trending": "Tendances",
+    "empty": "Aucune nouvelle trouvée.",
+    "sidebar_about": "La ligue qui transforme les élèves en diplomates. Suivez le programme, les débats et les résultats.",
+    "sidebar_more": "En savoir plus",
+    "read_more": "Lire la suite",
+    "back": "Retour",
+    "category_votacao": "Vote"
+  },
+  "noticia": {
+    "back_portal": "Retour au portail",
+    "related": "Plus d'actualités",
+    "tags": "Tags",
+    "sidebar_title": "Tendances"
+  },
+  "agenda": {
+    "page_title": "Programme — SWDL",
+    "hero_title": "Programme de l'événement",
+    "hero_sub": "Consultez le programme complet de l'événement",
+    "now": "Maintenant",
+    "next": "Suivant",
+    "day": "Jour",
+    "time": "Horaires",
+    "location": "Lieu",
+    "committee": "Comité",
+    "hero_bg": "PROGRAMME",
+    "breadcrumb_home": "Accueil",
+    "breadcrumb_current": "Programme",
+    "hero_label": "Calendrier",
+    "hero_desc": "Suivez en temps réel ce qui se passe maintenant. L'activité en cours brille en or.",
+    "now_label": "En cours",
+    "now_next_label": "Activité suivante",
+    "countdown_min": "min",
+    "countdown_seg": "sec",
+    "loading": "Chargement du programme...",
+    "empty": "Aucune activité pour ce jour.",
+    "no_date": "Date non définie",
+    "no_period": "Sans période",
+    "until": "Jusqu'à",
+    "started_at": "Commencé à",
+    "ends_at": "Se termine à",
+    "day_n": "Jour {n}",
+    "status_done": "✓ Terminé",
+    "status_now": "▶ Maintenant",
+    "status_next": "Suivant",
+    "status_break": "☕ Pause",
+    "status_vote": "🗳️ Vote",
+    "status_crisis": "🚨 Crise",
+    "status_award": "🏆 Récompenses",
+    "status_archive": "📋 Réalisé"
+  },
+  "comites": {
+    "page_title": "Comités — SWDL",
+    "hero_title": "Thèmes de débat",
+    "hero_sub": "Découvrez les comités et thèmes de la SWDL 2026",
+    "status_voting": "Vote",
+    "status_debate": "En débat",
+    "status_waiting": "En attente",
+    "status_done": "Terminé",
+    "guide": "Guide du Comité",
+    "download_guide": "Télécharger le Guide",
+    "section_manual": "Ressources",
+    "section_committees": "Comités",
+    "hero_label": "Structure",
+    "section_themes": "Thèmes",
+    "download_manual": "Télécharger le Manuel",
+    "breadcrumb_home": "Accueil",
+    "breadcrumb_themes": "Thèmes",
+    "watermark": "THÈMES",
+    "guide_link": "Guide",
+    "manual_link": "Manuel",
+    "edition_2026": "Édition 2026",
+    "edition_2025": "Édition 2025",
+    "meta_mma": "MMA — Environnement",
+    "meta_dhr": "DHR — Droits de l'Homme",
+    "meta_ecosoc": "ECOSOC — Économique et Social",
+    "meta_disec": "DISEC — Désarmement",
+    "meta_oms": "OMS — Santé Mondiale",
+    "meta_cs": "CS — Conseil de Sécurité",
+    "manual_org": "Manuel du Délégué — Édition 2026",
+    "entries": {
+      "escravidao": {
+        "title": "De l'Esclavage au Racisme d'Aujourd'hui — Défier l'Avenir",
+        "description": "Dans cette simulation, les délégués discuteront des liens entre l'esclavage, ses héritages historiques et les différentes manifestations du racisme dans la société contemporaine. Le débat abordera les impacts sociaux, économiques et politiques de l'esclavage et de ses héritages, ainsi que les défis du racisme structurel, de l'égalité raciale et des mécanismes de réparation et d'inclusion. Les délégués rechercheront des réponses internationales face aux inégalités persistantes pour construire des sociétés plus justes.",
+        "topics": [
+          "Esclavage et Héritages Historiques",
+          "Racisme Structurel",
+          "Égalité Raciale",
+          "Discrimination Raciale",
+          "Réparation Historique",
+          "Justice Sociale"
+        ],
+        "delegates": "11 délégations · 33 étudiants"
+      },
+      "acnur": {
+        "title": "La Protection Internationale des Personnes Déplacées par des Événements Climatiques Extrêmes",
+        "description": "Dans cette simulation, les délégués du Haut-Commissariat pour les Réfugiés (HCR) feront face au décroît croissant des déplacements forcés causés par des événements climatiques extrêmes (inondations, sécheresses, ouragans, tempêtes). Ils discuteront des mécanismes internationaux de protection, d'assistance humanitaire et d'intégration, en conciliant souveraineté nationale, financement international et responsabilité partagée.",
+        "topics": [
+          "Déplacement Climatique",
+          "Réfugiés Climatiques",
+          "Aide Humanitaire",
+          "Changement Climatique",
+          "Responsabilité Partagée",
+          "Financement International"
+        ],
+        "delegates": "11 délégations · 34 étudiants"
+      },
+      "ormuz": {
+        "title": "Détroit d'Ormuz — La Crise du Commerce International et l'Escalade Militaire",
+        "description": "Dans cette simulation, le Conseil de Sécurité tiendra une session d'urgence face à la aggravation des tensions au Moyen-Orient et à leurs impacts sur la sécurité internationale. L'intensification des hostilités, l'implication de multiples acteurs régionaux et internationaux et les risques pour la circulation du pétrole et du commerce mondial obligeront les délégués à formuler des réponses diplomatiques pour endiguer l'escalade et préserver la stabilité internationale.",
+        "topics": [
+          "Escalade Militaire",
+          "Commerce International",
+          "Arsenaux Nucléaires",
+          "Pétrole",
+          "Sanctions Internationales",
+          "Acteurs Non Étatiques"
+        ],
+        "delegates": "16 délégations · 32 délégués"
+      },
+      "canabis": {
+        "title": "Réglementation du Chanvre — Santé Publique et Économie Mondiale",
+        "description": "Dans cette simulation, les délégués discuteront des impacts de la transformation des politiques nationales et internationales relatives au chanvre. Le débat abordera les défis de concilier dépénalisation, usage médical et santé publique avec la lutte contre le trafic de drogues, et analysera les effets socioéconomiques de la légalisation, les limites de la souveraineté étatique et la construction de cadres réglementaires internationaux.",
+        "topics": [
+          "Santé Publique",
+          "Usage Médical",
+          "Lutte Contre le Trafic de Drogues",
+          "Cadres Réglementaires",
+          "Impact Économique",
+          "Souveraineté Nationale"
+        ],
+        "delegates": "16 délégations · 32 délégués"
+      },
+      "misoginia": {
+        "title": "Lutte Contre la Misogynie — Droits de l'Homme et Violences de Genre",
+        "description": "Dans cette simulation, les délégués discuteront de stratégies internationales pour lutter contre la misogynie et les violences fondées sur le genre. Le débat portera sur le renforcement des mécanismes de protection, la lutte contre la haine et la violence en ligne, et la promotion des droits fondamentaux des femmes, face aux inégalités persistantes et aux cadres sociaux et législatifs variés dans le monde.",
+        "topics": [
+          "Violences de Genre",
+          "Droits de l'Homme",
+          "Discours de Haine en Ligne",
+          "Égalité Salariale",
+          "Mécanismes de Protection",
+          "Législation Internationale"
+        ],
+        "delegates": "16 délégations · 32 délégués"
+      },
+      "mma": {
+        "title": "Programme des Nations Unies pour l'Environnement (PNUE)",
+        "description": "Principal organe du système des Nations Unies consacré aux questions environnementales, le PNUE promeut la coopération internationale sur le changement climatique, la préservation de la biodiversité et la lutte contre la pollution. Dans cette simulation, les délégués discuteront de réponses multilatérales aux grands défis environnementaux contemporains.",
+        "topics": [
+          "Changement Climatique",
+          "Biodiversité",
+          "Énergie Renouvelable",
+          "Pollution des Océans"
+        ],
+        "delegates": "18 délégations · 36 délégués"
+      },
+      "dhr": {
+        "title": "Conseil des Droits de l'Homme",
+        "description": "Organe des Nations Unies dédié à la promotion et à la protection des droits de l'homme dans le monde. Dans cette simulation, les délégués discuteront des mécanismes internationaux de protection et des défis de la garantie des droits fondamentaux dans différents contextes nationaux.",
+        "topics": [
+          "Protection des Minorités",
+          "Réfugiés",
+          "Liberté d'Expression",
+          "Travail des Enfants"
+        ],
+        "delegates": "16 délégations · 32 délégués"
+      },
+      "ecosoc": {
+        "title": "Conseil Économique et Social",
+        "description": "L'un des principaux forums des Nations Unies pour discuter des questions économiques, sociales et environnementales d'envergure internationale. Dans cette simulation, les délégués chercheront des solutions multilatérales aux défis du développement durable, de la réduction des inégalités et de la coopération économique entre États.",
+        "topics": [
+          "Lutte Contre la Pauvreté",
+          "Commerce International",
+          "Dette Extérieure",
+          "ODD — Agenda 2030"
+        ],
+        "delegates": "14 délégations · 28 délégués"
+      },
+      "disec": {
+        "title": "Comité du Désarmement et de la Sécurité Internationale",
+        "description": "Premier Comité de l'Assemblée Générale des Nations Unies, chargé des questions de désarmement et de sécurité internationale. Dans cette simulation, les délégués aborderont les défis de la prolifération des armes, des nouvelles technologies militaires et de la prévention des conflits.",
+        "topics": [
+          "Non-Prolifération Nucléaire",
+          "Guerres Cybernétiques",
+          "Armes Autonomes",
+          "Traités de Paix"
+        ],
+        "delegates": "16 délégations · 32 délégués"
+      },
+      "oms": {
+        "title": "Organisation Mondiale de la Santé",
+        "description": "Agence spécialisée des Nations Unies chargée de promouvoir la santé et de coordonner la coopération internationale dans le domaine. Dans cette simulation, les délégués discuteront de stratégies pour affronter les menaces sanitaires mondiales et renforcer les systèmes de santé face aux défis émergents.",
+        "topics": [
+          "Prévention des Pandémies",
+          "Accès aux Vaccins",
+          "Santé Mentale Mondiale",
+          "Résistance Antimicrobienne"
+        ],
+        "delegates": "16 délégations · 32 délégués"
+      },
+      "cs": {
+        "title": "Conseil de Sécurité des Nations Unies",
+        "description": "Organe des Nations Unies responsable principalement du maintien de la paix et de la sécurité internationales. Dans cette simulation, les délégués discuteront de réponses diplomatiques aux conflits et crises internationaux, en considérant opérations de maintien de la paix, sanctions et mécanismes de protection des populations civiles.",
+        "topics": [
+          "Conflits Armés",
+          "Maintien de la Paix",
+          "Sanctions Internationales",
+          "Droit International Humanitaire"
+        ],
+        "delegates": "15 délégations · 30 délégués"
+      },
+      "manual": {
+        "title": "Manuel du Délégué",
+        "org": "Manuel du Délégué — Édition 2026",
+        "description": "Le Manuel du Délégué est le principal guide de préparation pour l'Édition 2026. Il contient les informations essentielles sur les comités, leurs thèmes de débat, le contexte de chaque discussion et les orientations pour préparer et mener les séances.\n\nLe document vise à donner aux délégués les outils pour comprendre le thème de leur comité, approfondir leurs recherches et participer aux débats de manière fondée, pour une simulation plus dynamique, immersive et enrichissante."
+      }
+    }
+  },
+  "sobre": {
+    "page_title": "À propos — SWDL",
+    "hero_title": "À propos de la SWDL",
+    "hero_sub": "Découvrez notre histoire et notre mission",
+    "mission": "Notre mission",
+    "vision": "Notre vision",
+    "values": "Nos valeurs",
+    "history": "Notre histoire",
+    "team": "Notre équipe",
+    "representacao": "Représentation des Pays",
+    "simulacao": "Qu'est-ce qu'une simulation de l'ONU ?",
+    "edicoes_realizadas": "À partir de l'année",
+    "resolucoes_desc": "Élaboration de documents officiels proposant des solutions concrètes aux problèmes discutés.",
+    "debates": "Débats Réalistes",
+    "unidade": "Établissement SESI",
+    "values_title": "What We Believe",
+    "fundacao_ano": "Année de fondation",
+    "resolucoes": "Rédaction de Résolutions",
+    "representacao_desc": "Les participants représentent différents pays sur les dossiers de l'ONU, défendant leurs positions et intérêts nationaux.",
+    "negociacao": "Négociation et Diplomatie",
+    "simulacao_desc": "Une expérience éducative où les participants simulent le fonctionnement réel des Nations Unies",
+    "mission_desc": "Former de jeunes leaders capables de relever les défis mondiaux contemporains grâce à des simulations réalistes de l’ONU, en développant des compétences diplomatiques, de négociation et d’esprit critique.",
+    "vision_desc": "Former de futurs membres qui rejoindront ensuite le comité. Établir des partenariats avec des organismes externes pour créer un environnement participatif tant pour les participants internes qu’externes. Inspirer de nouvelles générations de leaders engagés pour la paix, la justice et la coopération internationale.",
+    "negociacao_desc": "Développement de compétences diplomatiques par la négociation et la recherche de consensus.",
+    "debates_desc": "Discussions sur les enjeux mondiaux contemporains selon les procédures officielles des Nations Unies.",
+    "history_desc": "D'un rêve d'élèves de 1re année de lycée à la réalité",
+    "hero_label": "La Ligue",
+    "breadcrumb_about": "À propos",
+    "founding_badge": "Fondation — 2024",
+    "history_p1": "La SESI World Diplomacy League (SWDL) est née en 2024 de la vision d’étudiants de première année de lycée du SESI CE-437, passionnés par les relations internationales et la diplomatie.",
+    "history_p2": "Le projet a commencé comme une initiative pour promouvoir des simulations réalistes de l'ONU, offrant aux étudiants l'occasion de vivre le travail diplomatique dans un environnement éducatif et stimulant.",
+    "history_p3": "Aujourd'hui, la SWDL est reconnue pour la qualité de ses simulations, avec la participation de dizaines de délégués et des partenariats avec des institutions éducatives régionales.",
+    "how_it_works": "Comment Ça Marche",
+    "team_current": [
+      {
+        "quote": "En tant que Secrétaire général, j'ai appris que la diplomatie n'est pas que discours : c'est écouter, le bon timing et le courage des décisions difficiles pour l'équipe."
+      },
+      {
+        "quote": "Chaque édition semble impossible jusqu'à l'ouverture des portes, où tout s'enchaîne. La logistique est la diplomatie en coulisses."
+      },
+      {
+        "quote": "Raconter la SWDL à l'extérieur, c'est faire comprendre à la communauté scolaire que la diplomatie commence dans les couloirs de l'école."
+      },
+      {
+        "quote": "Former une équipe, c'est former une délégation : chacun doit connaître son rôle et faire confiance aux autres. C'est ce qui fait tenir la ligue."
+      },
+      {
+        "quote": "Derrière chaque débat impeccable, il y a de l'organisation. J'aime être la raison pour laquelle personne ne se demande « et maintenant ? »."
+      },
+      {
+        "quote": "Construire la plateforme de la SWDL a été ma façon de servir la ligue : transformer le chaos opérationnel en expérience fluide pour délégués et staff."
+      },
+      {
+        "quote": "Rejoindre la SWDL, c'est découvrir qu'un avis bien étudié pèse plus qu'un cri."
+      },
+      {
+        "quote": "J'ai appris que représenter un pays, c'est avant tout comprendre l'autre côté de la table."
+      },
+      {
+        "quote": "Mon premier débat m'a fait sortir de ma zone de confort — et c'est précisément là que j'ai grandi."
+      },
+      {
+        "quote": "À la SWDL, j'ai trouvé des gens qui prennent l'au sérieux. Cela m'a donné le courage d'en faire autant."
+      },
+      {
+        "quote": "Négocier dans l'ONU simulée m'a appris à mieux négocier dans la vie réelle — y compris avec moi-même."
+      },
+      {
+        "quote": "Rechercher une position nationale est devenu une passion. Aujourd'hui, je lis l'actualité autrement."
+      },
+      {
+        "quote": "Le meilleur n'est pas le trophée : c'est le silence après un argument qui change la salle."
+      },
+      {
+        "quote": "Je croyais que ce n'était qu'un débat. C'est devenu amitié, méthode et une nouvelle façon de voir le monde."
+      },
+      {
+        "quote": "J'ai gagné du vocabulaire pour des sujets que j'évitais. Aujourd'hui, j'affronte le difficile de face."
+      },
+      {
+        "quote": "Chaque comité est un monde. La SWDL m'a donné des cartes pour tous les explorer."
+      },
+      {
+        "quote": "Le travail d'équipe sous pression de délai est la meilleure école que j'aie eue."
+      },
+      {
+        "quote": "J'ai trouvé ma voix ici — ferme, préparée et sans peur de diverger avec respect."
+      }
+    ],
+    "team_2025": [
+      {
+        "quote": "La direction 2025 a montré qu'hériter d'une ligue est aussi difficile que la fonder. Nous veillons sur l'héritage avec rigueur et soin."
+      },
+      {
+        "quote": "L'excellence académique à la SWDL, c'est une préparation sérieuse — pas apprendre par cœur, comprendre le monde."
+      },
+      {
+        "quote": "En 2025, j'ai appris que la logistique est une promesse tenue : ce que nous convenons doit fonctionner le jour J."
+      },
+      {
+        "quote": "La communication n'est pas un ornement : c'est comment toute l'école comprend ce que représente la diplomatie étudiante."
+      },
+      {
+        "quote": "Les relations publiques à la SWDL, c'est bâtir des ponts — avec d'autres écoles, la communauté et l'avenir."
+      },
+      {
+        "quote": "En 2025, nous avons posé la culture d'équipe. Quand les gens se sentent à leur place, l'événement respire."
+      },
+      {
+        "quote": "L'administration est le silence qui permet le débat. L'organisation est ma langue d'amour pour la ligue."
+      },
+      {
+        "quote": "Coordonner le staff, c'est diriger un orchestre : rôles clairs, énergie au même tempo."
+      },
+      {
+        "quote": "En 2025, le site est devenu la maison numérique de la SWDL. Le code n'est qu'un moyen — la fin est de servir ceux qui débattent."
+      }
+    ],
+    "join_cta": "Rejoignez-nous →",
+    "read_testimonial": "Lire le témoignage de {name}",
+    "testimonial_of": "Témoignage de {name}",
+    "angela_bio": "Conseillère pédagogique de la SWDL : accompagne les délégations, soutient la préparation académique et aide à maintenir le niveau pédagogique des simulations.",
+    "role_secretario": "Secrétaire Général",
+    "role_diretora_eventos": "Directrice des Événements et de la Logistique",
+    "role_diretora_rp": "Directrice des Relations Publiques",
+    "role_diretora_academica": "Directrice Académique",
+    "role_membro": "Membre",
+    "role_tech": "Technologie et Web",
+    "role_professora": "Conseillère Pédagogique",
+    "history_body": "D'un rêve d'élèves de 1re année de lycée à une ligue qui inspire de jeunes diplomates dans tout l'État. La SWDL a grandi d'année en année, conservant son engagement en faveur de l'excellence éducative et de la formation de citoyens du monde.",
+    "watermark": "À PROPOS",
+    "team_who": "Ceux Qui Rendent Cela Possible",
+    "tab_current": "Équipe Actuelle",
+    "tab_2025": "Direction 2025",
+    "role_hr": "Directrice des Ressources Humaines",
+    "role_admin": "Coordonnatrice Administrative",
+    "role_staff_web": "Coord. Staff et Développement Web",
+    "role_comm": "Directrice de la Communication et du Marketing",
+    "role_staff_coord": "Coordination du Staff",
+    "angela_quote": "Mon rôle est d'orienter : accompagner chaque délégation, stimuler la préparation et garantir un débat honnête et de haut niveau. L'excellence de la SWDL naît de ce suivi rapproché."
+  },
+  "faca_parte": {
+    "page_title": "Rejoignez-nous — SWDL",
+    "hero_title": "Rejoignez-nous",
+    "hero_sub": "Inscrivez-vous et participez à la SWDL 2026",
+    "format_selector": "Comment souhaitez-vous participer ?",
+    "format_individual": "Individuel",
+    "format_dupla": "Duo",
+    "format_trio": "Trio",
+    "form_name": "Nom complet",
+    "form_email": "E-mail",
+    "form_phone": "Téléphone",
+    "form_instagram": "Instagram",
+    "form_school": "École",
+    "form_grade": "Niveau",
+    "form_motivation": "Pourquoi voulez-vous participer ?",
+    "form_submit": "Envoyer l'Inscription",
+    "form_sending": "Envoi...",
+    "form_success": "Inscription envoyée avec succès !",
+    "form_terms": "J'accepte les conditions d'utilisation et la politique de confidentialité",
+    "requirements": "Prérequis pour Participer",
+    "req_disponibilidade_desc": "Participation aux journées de débat et préparation préalable",
+    "role_mentor": "Mentor",
+    "form_success_msg": "Votre inscription a bien été reçue. Nous vous contacterons bientôt !",
+    "role_organizacao_desc": "Aidez à la logistique, à la préparation des supports et à la coordination générale des événements.",
+    "closed_title": "Inscriptions Clôturées",
+    "hero_label": "Rejoignez la Ligue",
+    "step_1": "Envoyez Votre Inscription",
+    "req_equipe": "Travail d’Équipe",
+    "form_interests": "Thèmes d’Intérêt",
+    "step_3_desc": "Assistez aux ateliers et séances de préparation",
+    "role_mentor_desc": "Orientez les nouveaux délégués et partagez vos connaissances en diplomatie et procédures de l’ONU.",
+    "tab_delegado": "Devenez Délégué",
+    "closed_desc": "Les inscriptions pour la SWDL 2026 sont temporairement fermées.",
+    "form_motivation_volunteer": "Pourquoi voulez-vous être bénévole ?",
+    "step_4_desc": "Participez aux débats et développez vos compétences diplomatiques",
+    "form_submit_volunteer": "Je Veux Être Bénévole",
+    "req_school": "Niveau Scolaire",
+    "step_2": "Attendez le Contact",
+    "role_moderador_desc": "Animez les séances de débat et maintenez l'ordre pendant les discussions.",
+    "volunteer_roles": "Domaines d’Intervention",
+    "step_3": "Participez à la Préparation",
+    "req_equipe_desc": "Collaboration avec les autres délégués et respect des règles",
+    "form_experience": "Expérience Précédente",
+    "step_4": "Débattez et Apprenez",
+    "req_comprometimento": "Engagement",
+    "step_1_desc": "Remplissez le formulaire ci-dessus avec vos informations et motivations",
+    "role_organizacao": "Organisation",
+    "req_disponibilidade": "Disponibilité",
+    "req_comprometimento_desc": "Étude du pays représenté et des thèmes de débat",
+    "req_school_desc": "Élèves à partir de la 6e du SESI CE-437",
+    "why_delegate": "Pourquoi être délégué de la SWDL ?",
+    "form_experience_placeholder": "Ex. : j’ai participé à un MUN à l’école X…",
+    "form_grade_select": "Sélectionnez",
+    "form_interests_placeholder": "Ex. : Sécurité internationale, Droits de l’Homme, Environnement…",
+    "tab_voluntario": "Devenez Bénévole",
+    "role_midia_desc": "Documentez les événements par photos, vidéos et couverture sur les réseaux sociaux de la SWDL.",
+    "why_reasons": [
+      "Développez vos compétences d'éloquence et d'argumentation",
+      "Apprenez sur les enjeux mondiaux contemporains",
+      "Pratiquez négociation et diplomatie en situations réelles",
+      "Travaillez en équipe avec des élèves de niveaux différents",
+      "Acquérez de l'expérience en recherche et analyse critique",
+      "Constituez un CV différenciant",
+      "Réseau avec des jeunes intéressés par la politique internationale"
+    ],
+    "next_steps": "Prochaines Étapes",
+    "step_2_desc": "Nous répondrons après la fin de la période d’inscription",
+    "role_midia": "Équipe Média",
+    "role_moderador": "Modérateur de Débat",
+    "grades": [
+      "6e Année",
+      "7e Année",
+      "8e Année",
+      "9e Année",
+      "1re de Bac",
+      "2e de Bac",
+      "3e de Bac"
+    ],
+    "zod_name": "Le nom doit comporter au moins 3 caractères",
+    "zod_email": "E-mail invalide",
+    "zod_phone": "Le téléphone doit contenir au moins 10 chiffres",
+    "zod_terms": "Vous devez accepter les conditions",
+    "zod_instagram": "Instagram est obligatoire",
+    "zod_members_count": "Le nombre de membres ne correspond pas au format choisi",
+    "members_title": "Informations des membres du groupe",
+    "member_card_label": "Membre {index}",
+    "form_error": "Impossible d'envoyer. Vérifiez les champs et réessayez.",
+    "watermark": "REJOIGNEZ-NOUS"
+  },
+  "aviso_legal": {
+    "page_title": "Mentions légales — SWDL",
+    "hero_title": "Mentions légales",
+    "content": "Informations juridiques sur la propriété, l'utilisation et les responsabilités du site SWDL.",
+    "sections": [
+      {
+        "title": "1. Propriété Intellectuelle",
+        "body": "Tout le contenu de ce site — textes, images, graphiques, marques, logos et autres matériaux — appartient à la SWDL — SESI World Diplomacy League ou à ses partenaires et est protégé par les lois brésiliennes et internationales sur la propriété intellectuelle. Toute reproduction totale ou partielle sans autorisation préalable est interdite, sauf les limites de la loi."
+      },
+      {
+        "title": "2. Utilisation du Site",
+        "body": "L'utilisation de ce site implique l'acceptation des présents termes légaux et, le cas échéant, des Conditions d'utilisation. Vous vous engagez à utiliser le site de manière éthique et conforme à la législation applicable, sans nuire à la plateforme ni aux droits des tiers."
+      },
+      {
+        "title": "3. Liens Externes",
+        "body": "Ce site peut contenir des liens vers des sites tiers. La SWDL ne contrôle pas et n'est pas responsable du contenu, des politiques de confidentialité, de la disponibilité ou des pratiques de ces sites. L'inclusion d'un lien n'implique pas approbation ni partenariat."
+      },
+      {
+        "title": "4. Avertissement",
+        "body": "Les informations de ce site sont fournies « en l'état », sans garanties expresses ou implicites d'aucune sorte. La SWDL ne garantit ni disponibilité continue, ni absence d'erreurs, ni adéquation à un objectif particulier, et n'est pas responsable des dommages directs ou indirects liés à l'utilisation ou à l'impossibilité d'utilisation du site."
+      },
+      {
+        "title": "5. Modifications",
+        "body": "La SWDL se réserve le droit de modifier ces termes légaux à tout moment, sans préavis. Les changements prennent effet immédiatement après publication sur cette page. La poursuite de l'utilisation du site après modification vaut acceptation de la nouvelle version."
+      },
+      {
+        "title": "6. Contact",
+        "body": "Pour toute question sur ces termes légaux, contactez : pedro.pereira63@portalsesisp.org.br"
+      }
+    ],
+    "updated_date": "23/09/2026"
+  },
+  "privacidade": {
+    "page_title": "Confidentialité — SWDL",
+    "hero_title": "Politique de Confidentialité",
+    "content": "Comment nous collectons, utilisons et protégeons vos données personnelles selon la législation applicable.",
+    "sections": [
+      {
+        "title": "1. Données Collectées",
+        "body": "Pour participer à la SWDL, nous collectons uniquement les données nécessaires à l'inscription : nom complet, e-mail, téléphone, Instagram (facultatif), nom de l'école, niveau scolaire et motivation. Nous ne demandons pas de données sensibles au-delà du nécessaire à l'organisation de l'événement."
+      },
+      {
+        "title": "2. Finalité des Données",
+        "body": "Les données sont utilisées exclusivement pour : (a) traiter les inscriptions et vérifier l'éligibilité ; (b) communiquer les informations sur l'événement ; (c) délivrer les certificats de participation ; et (d) améliorer l'expérience des participants. Nous n'utilisons pas vos données pour la publicité de tiers sans consentement."
+      },
+      {
+        "title": "3. Base Légale (LGPD)",
+        "body": "Le traitement des données repose sur le consentement de la personne concernée (art. 7, I de la loi n° 13.709/2018 — LGPD) et, le cas échéant, sur l'exécution d'un contrat ou de procédures préliminaires liées à un contrat (art. 7, V). Vous pouvez retirer votre consentement à tout moment."
+      },
+      {
+        "title": "4. Partage des Données",
+        "body": "Vos données personnelles ne sont ni vendues ni partagées avec des tiers à des fins marketing. Elles peuvent être partagées uniquement si la loi l'exige, avec des prestataires de services sous contrat (hébergement, e-mail) ou avec votre consentement explicite."
+      },
+      {
+        "title": "5. Conservation des Données",
+        "body": "Les données sont conservées pendant la durée nécessaire aux finalités pour lesquelles elles ont été collectées ou selon le délai exigé par la législation applicable. Une fois la finalité atteinte, les données sont supprimées ou anonymisées de manière sécurisée."
+      },
+      {
+        "title": "6. Droits de la Personne Concernée",
+        "body": "Selon la LGPD, vous avez droit à : la confirmation et l'accès aux données ; la correction de données incomplètes ou obsolètes ; l'anonymisation, le blocage ou la suppression de données inutiles ; la portabilité ; et la suppression des données traitées avec consentement. Pour exercer ces droits, utilisez l'e-mail de la section Contact."
+      },
+      {
+        "title": "7. Sécurité des Données",
+        "body": "Nous prenons des mesures techniques et administratives appropriées pour protéger les données personnelles contre tout accès non autorisé et toute destruction, perte, altération ou communication illicites. Aucun système n'est sûr à 100 % ; en cas d'incident pertinent, nous informerons les personnes concernées conformément à la loi."
+      },
+      {
+        "title": "8. Contact",
+        "body": "Pour exercer vos droits ou poser des questions sur cette politique, contactez : pedro.pereira63@portalsesisp.org.br"
+      }
+    ],
+    "updated_date": "23/09/2026"
+  },
+  "termos": {
+    "page_title": "Conditions d'utilisation — SWDL",
+    "hero_title": "Conditions d'utilisation",
+    "content": "Conditions d'utilisation du site et des services de la SWDL — SESI World Diplomacy League.",
+    "sections": [
+      {
+        "title": "1. Acceptation des Conditions",
+        "body": "En accédant à ce site et en l'utilisant, vous acceptez les présentes Conditions d'utilisation de la SWDL — SESI World Diplomacy League. Si vous n'acceptez pas une condition, n'utilisez pas le site."
+      },
+      {
+        "title": "2. Utilisation du Site",
+        "body": "Le site est fourni à des fins informatives, institutionnelles et d'inscription à l'événement SWDL. Vous vous engagez à l'utiliser de manière éthique, respectueuse et conformément à la législation applicable, sans activité illicite ni atteinte aux droits des tiers."
+      },
+      {
+        "title": "3. Inscriptions",
+        "body": "En vous inscrivant à la SWDL, vous déclarez que : (a) les informations fournies sont exactes et à jour ; (b) vous répondez aux critères d'âge de l'événement ; (c) vous êtes élève du SESI ou d'une école partenaire, le cas échéant ; et (d) vous acceptez les règles, le code de conduite et le règlement de l'événement."
+      },
+      {
+        "title": "4. Conduite des Participants",
+        "body": "Les participants doivent adopter un comportement respectueux, inclusif et professionnel tout au long de l'événement — en présentiel et en ligne. L'organisation se réserve le droit d'avertir, de suspendre ou de disqualifier toute personne violant le code de conduite, y compris harcèlement, discrimination, désinformation ou usage abusif de la marque SWDL."
+      },
+      {
+        "title": "5. Propriété Intellectuelle",
+        "body": "Tout le contenu produit pendant l'événement (résolutions, discours, travaux, photos et enregistrements) appartient à ses auteurs. En participant, vous accordez à la SWDL une licence non exclusive, gratuite et mondiale pour utiliser ces supports en communication institutionnelle et promotionnelle, avec mention de l'auteur le cas échéant."
+      },
+      {
+        "title": "6. Limitation de Responsabilité",
+        "body": "La SWDL n'est pas responsable des dommages directs ou indirects résultant de la participation à l'événement ou de l'utilisation du site, y compris — sans limitation — annulation ou report de l'événement, modifications de programme, pannes techniques, force majeure ou actes de tiers. Le site est fourni « en l'état », dans la limite autorisée par la loi."
+      },
+      {
+        "title": "7. Annulation et Remboursements",
+        "body": "En cas d'annulation de l'événement par l'organisation, les inscrits seront notifiés par e-mail ou les canaux officiels de la SWDL. L'événement étant gratuit, aucun remboursement n'est prévu. Les frais de voyage ou d'hébergement restent à la charge du participant."
+      },
+      {
+        "title": "8. Modification des Conditions",
+        "body": "La SWDL peut modifier les présentes Conditions d'utilisation à tout moment. Les changements prennent effet immédiatement après leur publication sur cette page. Il est recommandé de relire le contenu périodiquement. La poursuite de l'utilisation du site après modification vaut acceptation de la nouvelle version."
+      },
+      {
+        "title": "9. Contact",
+        "body": "Pour toute question sur ces Conditions d'utilisation, contactez-nous à : pedro.pereira63@portalsesisp.org.br"
+      }
+    ],
+    "updated_date": "23/09/2026"
+  },
+  "page_404": {
+    "title": "Page non trouvée",
+    "subtitle": "Oups ! La page que vous recherchez n'existe pas.",
+    "back": "Retour à l'accueil"
+  },
+  "common": {
+    "read_testimonial": "Lire le témoignage",
+    "language": "Langue",
+    "home": "Accueil",
+    "back_home": "Retour à l'accueil",
+    "back": "Retour",
+    "close": "Fermer",
+    "live": "En Direct",
+    "now": "Maintenant",
+    "prev": "Précédent",
+    "next": "Suivant",
+    "menu": "Menu",
+    "scroll_left": "Faire défiler {label} vers la gauche",
+    "scroll_right": "Faire défiler {label} vers la droite"
+  },
+  "sobre_values": {
+    "diplomacia": "Diplomatie et Dialogue",
+    "diversidade": "Respect de la Diversité",
+    "excelencia": "Excellence Académique",
+    "cooperacao": "Coopération Internationale",
+    "sustentavel": "Développement Durable"
+  },
+  "ticker": {
+    "live": "EN DIRECT",
+    "alerts": "{n} ALERTES"
+  },
+  "legal": {
+    "label": "Juridique",
+    "toc": "Sur cette page",
+    "updated": "Dernière mise à jour"
+  },
+  "meta": {
+    "sobre_title": "À Propos — SWDL",
+    "sobre_desc": "Découvrez l'histoire et la mission de la SWDL",
+    "comites_title": "Comités — SWDL",
+    "comites_desc": "Découvrez les comités et thèmes de la SWDL 2026",
+    "faca_parte_title": "Rejoignez — SWDL",
+    "faca_parte_desc": "Inscrivez-vous et participez à la SWDL",
+    "noticias_title": "Actualités — SWDL",
+    "noticias_desc": "Suivez les dernières nouvelles de la SWDL",
+    "agenda_title": "Programme — SWDL",
+    "agenda_desc": "Consultez le programme complet de l’événement SWDL",
+    "legal_title": "Juridique — SWDL",
+    "noticia_title": "Actualité — SWDL",
+    "root_title": "SWDL — SESI World Diplomacy League",
+    "root_desc": "La plus grande simulation de l’ONU du SESI. Représentez des nations, débattez des résolutions et construisez des accords diplomatiques."
+  },
+  "a11y": {
+    "cvd_label": "Mode daltonien",
+    "cvd_on": "Mode daltonien activé",
+    "cvd_off": "Mode daltonien désactivé"
+  }
+}

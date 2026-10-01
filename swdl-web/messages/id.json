@@ -1,0 +1,819 @@
+{
+  "nav": {
+    "home": "Beranda",
+    "noticias": "Berita",
+    "comites": "Tema",
+    "agenda": "Jadwal",
+    "sobre": "Tentang",
+    "faca_parte": "Gabung"
+  },
+  "crisis_banner": {
+    "close": "✕",
+    "close_aria": "Tutup peringatan",
+    "label": "KRISIS —"
+  },
+  "footer": {
+    "description": "Yayasan Simulasi PBB SESI CE-437 Hortolândia. Wakili negara, bangun aliansi, dan ciptakan perjanjian diplomatik.",
+    "contact": "Kontak",
+    "navigation": "Navigasi",
+    "legal": "Hukum",
+    "rights": "Hak cipta dilindungi.",
+    "links": {
+      "home": "Beranda",
+      "noticias": "Berita",
+      "comites": "Tema",
+      "agenda": "Jadwal",
+      "sobre": "Tentang",
+      "faca_parte": "Gabung",
+      "aviso_legal": "Pernyataan Hukum",
+      "privacidade": "Privasi",
+      "termos": "Syarat Penggunaan"
+    },
+    "address": "SESI CE-437, Hortolândia",
+    "developed_by": "Desenvolvido por Pedro Bonazzi",
+    "copyright_swdl": "SESI World Diplomacy League"
+  },
+  "home": {
+    "page_title": "SWDL — SESI World Diplomacy League",
+    "hero_tag": "Edisi 2026 — Berlangsung",
+    "hero_title_line1": "Diplomasi.",
+    "hero_title_line2": "Strategi.",
+    "hero_title_line3": "Kepemimpinan.",
+    "hero_sub": "Yayasan Simulasi PBB SESI CE-437 Hortolândia. Wakili negara, bentuk aliansi baru, debatkan resolusi, dan bangun perjanjian yang membentuk dunia kontemporer.",
+    "hero_btn_parte": "Gabung",
+    "hero_btn_temas": "Lihat Tema",
+    "hero_stat_temas": "Tema",
+    "hero_stat_delegados": "Delegasi",
+    "hero_stat_paises": "Negara",
+    "stats_label": "Angka Kami",
+    "stats_title": "Konferensi yang Berdampak",
+    "stats_countries": "Negara",
+    "stats_countries_desc": "Diwakili oleh para delegasi",
+    "stats_delegates": "Delegasi",
+    "stats_delegates_desc": "Peserta terkonfirmasi",
+    "stats_committees": "Komite",
+    "stats_committees_desc": "Tema debat",
+    "news_label": "Berita Terbaru",
+    "news_title": "Terjadi di SWDL",
+    "news_read": "Baca selengkapnya",
+    "news_all": "Lihat semua",
+    "committees_label": "Komite",
+    "committees_title": "Tema Debat Kami",
+    "committees_all": "Lihat semua komite",
+    "agenda_label": "Jadwal",
+    "agenda_title": "Acara Mendatang",
+    "agenda_full": "Lihat jadwal lengkap",
+    "gallery_label": "Galeri",
+    "testimonials_title": "Mereka yang mengalaminya paling paham",
+    "gallery_title": "Momen SWDL",
+    "testimonials_label": "Testimoni",
+    "stats_editions_desc": "Diselenggarakan sejak 2024",
+    "stats_editions": "Edisi",
+    "next_debate_label": "Debat Berikutnya",
+    "next_debate_title": "Dari Perbudakan Masa Lalu hingga Rasisme Masa Kini",
+    "next_debate_theme": "Menantang Masa Depan",
+    "closes_in": "Pendaftaran ditutup dalam:",
+    "registrations_closed": "Pendaftaran ditutup!",
+    "cta_register": "Daftar Sekarang",
+    "unit_days": "hari",
+    "unit_hours": "jam",
+    "gallery_archive_label": "Arsip",
+    "gallery_editions_title": "Edisi Sebelumnya",
+    "testimonials_next": "Berikutnya",
+    "gallery_items": {
+      "g1": {
+        "title": "Sidang Pleno",
+        "desc": "Delegasi semua komite berkumpul untuk sidang pembukaan dan debat pleno."
+      },
+      "g2": {
+        "title": "Dewan Keamanan",
+        "desc": "Negosiasi intensif tentang konflik internasional dan pemeliharaan perdamaian."
+      },
+      "g3": {
+        "title": "Negosiasi Bilateral",
+        "desc": "Perjanjian diplomatik ditandatangani antara delegasi bangsa yang berbeda."
+      },
+      "g4": {
+        "title": "Upacara Penghargaan",
+        "desc": "Penghargaan bagi delegasi dan delegat terbaik konferensi."
+      },
+      "g5": {
+        "title": "Oratori Unggul",
+        "desc": "Pidato berkesan dan keterampilan oratori para delegasi."
+      }
+    },
+    "committee_preview": {
+      "guide": {
+        "name": "Panduan Delegasi",
+        "tag": "SWDL — SESI",
+        "desc": "Panduan umum wajib bagi semua delegasi."
+      },
+      "mma": {
+        "name": "Lingkungan",
+        "tag": "MMA — UNEP",
+        "desc": "Perubahan iklim, biodiversitas dan pembangunan berkelanjutan"
+      },
+      "dhr": {
+        "name": "Hak Asasi Manusia",
+        "tag": "DHR — UNHCR",
+        "desc": "Perlindungan minoritas, pengungsi dan kebebasan dasar"
+      },
+      "ecosoc": {
+        "name": "Pembangunan Ekonomi",
+        "tag": "ECOSOC",
+        "desc": "Perdagangan internasional, pemberantasan kemiskinan dan keuangan global"
+      },
+      "disec": {
+        "name": "Pengurangan Senjata",
+        "tag": "DISEC — ONU",
+        "desc": "Non-proliferasi nuklir, kontrol senjata dan keamanan siber"
+      },
+      "oms": {
+        "name": "Kesehatan Global",
+        "tag": "OMS — WHO",
+        "desc": "Pandemi, cakupan kesehatan universal dan tanggap darurat"
+      },
+      "acnur": {
+        "name": "Pengungsi",
+        "tag": "ACNUR — UNHCR",
+        "desc": "Perlindungan orang yang mengungsi akibat cuaca ekstrem"
+      }
+    },
+    "testimonials_items": [
+      {
+        "quote": "SWDL menunjukkan pada saya bahwa diplomasi bukan hanya pidato — mendengarkan, strategi, dan keberanian. Dalam beberapa bulan saya keluar zona nyaman dan menemukan hasrat untuk hubungan internasional.",
+        "role": "Delegasi — Komite Keamanan"
+      },
+      {
+        "quote": "Saya tidak pernah membayangkan debat di sekolah bisa menyiapkan saya begitu banyak untuk hidup. Saya belajar membela ide dengan hormat, bernegosiasi di bawah tekanan, dan bekerja dengan orang yang sangat berbeda dari saya.",
+        "role": "Delegasi — DHR"
+      },
+      {
+        "quote": "Yang paling membekas adalah melihat siswa kelas 1 berdebat dengan keseriusan yang sama seperti mahasiswa. SWDL mengubah cara saya melihat dunia dan peran saya di dalamnya.",
+        "role": "Delegasi — ECOSOC"
+      }
+    ],
+    "staggered": [
+      {
+        "alt": "Delegasi dalam sidang pleno",
+        "caption": "Sidang Pleno — SWDL 2025"
+      },
+      {
+        "alt": "Peta dunia yang mewakili dimensi global SWDL",
+        "caption": "Delegasi dari 193 negara terwakili"
+      },
+      {
+        "alt": "Delegasi saat debat komite",
+        "caption": "Debat Komite — Dewan Keamanan"
+      }
+    ]
+  },
+  "stats": {
+    "countries": "Negara",
+    "countries_desc": "Diwakili oleh delegasi",
+    "delegates": "Delegasi",
+    "delegates_desc": "Peserta terkonfirmasi",
+    "committees": "Komite",
+    "committees_desc": "Tema debat",
+    "days": "Hari",
+    "days_desc": "Aktivitas intensif"
+  },
+  "noticias": {
+    "page_title": "Berita — SWDL",
+    "hero_title": "Berita",
+    "hero_sub": "Ikuti berita terbaru SWDL",
+    "portal_title": "Berita Terbaru",
+    "portal_count": "{n} artikel",
+    "search_placeholder": "Cari…",
+    "category_all": "Semua",
+    "category_geral": "Umum",
+    "category_oficial": "Resmi",
+    "category_imprensa": "Pers",
+    "category_crise": "Krisis",
+    "all_committees": "Komite",
+    "tab_committees": "Per Komite",
+    "section_live": "Langsung",
+    "section_archive": "Arsip",
+    "load_more": "Muat lebih banyak",
+    "trending": "Trending",
+    "empty": "Berita tidak ditemukan.",
+    "sidebar_about": "Liga yang mengubah siswa menjadi diplomat. Ikuti jadwal, debat, dan hasil.",
+    "sidebar_more": "Selengkapnya",
+    "read_more": "Baca selengkapnya",
+    "back": "Kembali",
+    "category_votacao": "Voting"
+  },
+  "noticia": {
+    "back_portal": "Kembali ke portal",
+    "related": "Berita lainnya",
+    "tags": "Tag",
+    "sidebar_title": "Trending"
+  },
+  "agenda": {
+    "page_title": "Jadwal — SWDL",
+    "hero_title": "Jadwal Acara",
+    "hero_sub": "Lihat jadwal lengkap acara",
+    "now": "Sekarang",
+    "next": "Berikutnya",
+    "day": "Hari",
+    "time": "Waktu",
+    "location": "Lokasi",
+    "committee": "Komite",
+    "hero_bg": "JADWAL",
+    "breadcrumb_home": "Beranda",
+    "breadcrumb_current": "Jadwal",
+    "hero_label": "Kronologi",
+    "hero_desc": "Pantau secara langsung apa yang sedang terjadi. Aktivitas saat ini bersinar emas.",
+    "now_label": "Sedang berlangsung",
+    "now_next_label": "Aktivitas berikutnya",
+    "countdown_min": "mnt",
+    "countdown_seg": "dtk",
+    "loading": "Memuat jadwal...",
+    "empty": "Tidak ada aktivitas untuk hari ini.",
+    "no_date": "Tanggal belum ditentukan",
+    "no_period": "Tanpa periode",
+    "until": "Sampai",
+    "started_at": "Mulai pukul",
+    "ends_at": "Selesai pukul",
+    "day_n": "Hari {n}",
+    "status_done": "✓ Selesai",
+    "status_now": "▶ Sekarang",
+    "status_next": "Berikutnya",
+    "status_break": "☕ Istirahat",
+    "status_vote": "🗳️ Pemungutan suara",
+    "status_crisis": "🚨 Krisis",
+    "status_award": "🏆 Penghargaan",
+    "status_archive": "📋 Selesai dilaksanakan"
+  },
+  "comites": {
+    "page_title": "Komite — SWDL",
+    "hero_title": "Tema Debat",
+    "hero_sub": "Kenali komite dan tema SWDL 2026",
+    "status_voting": "Voting",
+    "status_debate": "Sedang Didebatkan",
+    "status_waiting": "Menunggu",
+    "status_done": "Selesai",
+    "guide": "Panduan Komite",
+    "download_guide": "Unduh Panduan",
+    "section_manual": "Sumber Daya",
+    "section_committees": "Komite",
+    "hero_label": "Struktur",
+    "section_themes": "Tema",
+    "download_manual": "Unduh Manual",
+    "breadcrumb_home": "Beranda",
+    "breadcrumb_themes": "Tema",
+    "watermark": "TEMA",
+    "guide_link": "Panduan",
+    "manual_link": "Manual",
+    "edition_2026": "Edisi 2026",
+    "edition_2025": "Edisi 2025",
+    "meta_mma": "MMA — Lingkungan",
+    "meta_dhr": "DHR — Hak Asasi Manusia",
+    "meta_ecosoc": "ECOSOC — Ekonomi dan Sosial",
+    "meta_disec": "DISEC — Pelucutan Senjata",
+    "meta_oms": "WHO — Kesehatan Global",
+    "meta_cs": "DK — Dewan Keamanan",
+    "manual_org": "Manual Delegasi — Edisi 2026",
+    "entries": {
+      "escravidao": {
+        "title": "Dari Perbudakan ke Rasisme Hari Ini — Tantang Masa Depan",
+        "description": "Dalam simulasi ini, delegasi akan membahas hubungan antara perbudakan, warisan sejarahnya, dan berbagai manifestasi rasisme di masyarakat kontemporer. Debat akan membahas dampak sosial, ekonomi, dan politik perbudakan serta tantangan mengatasi rasisme struktural, mempromosikan kesetaraan rasial, dan membangun mekanisme restorasi dan inklusi. Delegasi mencari respons internasional terhadap ketidaksetaraan yang berkelanjutan untuk masyarakat yang lebih adil.",
+        "topics": [
+          "Perbudakan dan Warisan Sejarah",
+          "Rasisme Struktural",
+          "Kesetaraan Rasial",
+          "Diskriminasi Rasial",
+          "Restorasi Sejarah",
+          "Keadilan Sosial"
+        ],
+        "delegates": "11 delegasi · 33 siswa"
+      },
+      "acnur": {
+        "title": "Perlindungan Internasional untuk Orang yang Mengungsi Akibat Peristiwa Iklim Ekstrem",
+        "description": "Dalam simulasi ini, delegasi Komisaris Tinggi PBB untuk Pengungsi (UNHCR) akan menghadapi tantangan perpindahan paksa akibat peristiwa iklim ekstrem seperti banjir, kekeringan, badai, dan topan. Sepanjang debat mereka membahas mekanisme perlindungan internasional, bantuan kemanusiaan, dan integrasi bagi penduduk terusir, dengan menyeimbangkan kedaulatan nasional, pendanaan internasional, dan tanggungjawab bersama.",
+        "topics": [
+          "Perpindahan Iklim",
+          "Pengungsi Iklim",
+          "Bantuan Kemanusiaan",
+          "Perubahan Iklim",
+          "Tanggungjawab Bersama",
+          "Pendanaan Internasional"
+        ],
+        "delegates": "11 delegasi · 34 siswa"
+      },
+      "ormuz": {
+        "title": "Selat Hormuz — Krisis Perdagangan Internasional dan Eskalasi Militer",
+        "description": "Dalam simulasi ini, Dewan Keamanan akan mengadakan sesi darurat menghadapi memburuknya ketegangan di Timur Tengah dan dampaknya terhadap keamanan internasional. Memanasnya permusuhan, keterlibatan berbagai aktor regional dan internasional, serta risiko peredaran minyak dan perdagangan global menuntut delegasi merumuskan respons diplomatik untuk menahan eskalasi dan memelihara stabilitas internasional.",
+        "topics": [
+          "Eskalasi Militer",
+          "Perdagangan Internasional",
+          "Persenjataan Nuklir",
+          "Minyak",
+          "Sanksi Internasional",
+          "Aktor Non-Negara"
+        ],
+        "delegates": "16 delegasi · 32 delegasi"
+      },
+      "canabis": {
+        "title": "Regulasi Ganja — Kesehatan Masyarakat dan Ekonomi Global",
+        "description": "Dalam simulasi ini, delegasi akan membahas dampak perubahan kebijakan nasional dan internasional terkait ganja. Debat akan membahas tantangan menyeimbangkan dekriminalisasi, penggunaan medis, dan kesehatan masyarakat dengan pemberantasan perdagangan narkoba, serta menganalisis dampak sosial-ekonomi legalisasi, batas kedaulatan negara, dan pembentukan kerangka regulasi internasional.",
+        "topics": [
+          "Kesehatan Masyarakat",
+          "Penggunaan Medis",
+          "Pemberantasan Perdagangan Narkoba",
+          "Kerangka Regulasi",
+          "Dampak Ekonomi",
+          "Kedaulatan Nasional"
+        ],
+        "delegates": "16 delegasi · 32 delegasi"
+      },
+      "misoginia": {
+        "title": "Pemberantasan Misogini — Hak Asasi Manusia dan Kekerasan Berbasis Gender",
+        "description": "Dalam simulasi ini, delegasi akan membahas strategi internasional untuk mengatasi misogini dan kekerasan berbasis gender. Debat berfokus pada penguatan mekanisme perlindungan, memerangi ujaran kebencian dan kekerasan di lingkungan digital, serta mempromosikan hak-hak dasar perempuan, dengan mempertimbangkan ketidaksetaraan yang berkelanjutan dan kerangka sosial serta legislasi yang berbeda di seluruh dunia.",
+        "topics": [
+          "Kekerasan Berbasis Gender",
+          "Hak Asasi Manusia",
+          "Ujaran Kebencian Daring",
+          "Kesetaraan Upah",
+          "Mekanisme Perlindungan",
+          "Legislasi Internasional"
+        ],
+        "delegates": "16 delegasi · 32 delegasi"
+      },
+      "mma": {
+        "title": "Programme Perserikatan Bangsa-Bangsa untuk Lingkungan Hidup (UNEP)",
+        "description": "Lingkaran utama PBB yang berfokus pada isu lingkungan, UNEP mempromosikan kerjasama internasional tentang perubahan iklim, pelestarian biodiversitas, dan pengendalian polusi. Dalam simulasi ini, delegasi akan membahas respons multilateral terhadap tantangan lingkungan utama saat ini.",
+        "topics": [
+          "Perubahan Iklim",
+          "Keanekaragaman Hayati",
+          "Energi Terbarukan",
+          "Pencemaran Lautan"
+        ],
+        "delegates": "18 delegasi · 36 delegasi"
+      },
+      "dhr": {
+        "title": "Dewan Hak Asasi Manusia",
+        "description": "Lingkaran PBB yang berdedikasi pada promosi dan perlindungan hak asasi manusia di seluruh dunia. Dalam simulasi ini, delegasi akan membahas mekanisme perlindungan internasional dan tantangan menjamin hak dasar dalam berbagai konteks nasional.",
+        "topics": [
+          "Perlindungan Minoritas",
+          "Pengungsi",
+          "Kebebasan Berekspresi",
+          "Pekerjaan Anak"
+        ],
+        "delegates": "16 delegasi · 32 delegasi"
+      },
+      "ecosoc": {
+        "title": "Dewan Ekonomi dan Sosial",
+        "description": "Salah satu forum utama PBB untuk membahas isu ekonomi, sosial, dan lingkungan berskala internasional. Dalam simulasi ini, delegasi akan mencari solusi multilateral atas tantangan terkait pembangunan berkelanjutan, pengurangan ketidaksetaraan, dan kerjasama ekonomi antar negara.",
+        "topics": [
+          "Pemberantasan Kemiskinan",
+          "Perdagangan Internasional",
+          "Utang Luar Negeri",
+          "SDGs — Agenda 2030"
+        ],
+        "delegates": "14 delegasi · 28 delegasi"
+      },
+      "disec": {
+        "title": "Komite Perlucutan Senjata dan Keamanan Internasional",
+        "description": "Komite Pertama Majelis Umum PBB, bertanggungjawab membahas isu perlucutan senjata dan keamanan internasional. Dalam simulasi ini, delegasi akan membahas tantangan proliferasi senjata, teknologi militer baru, dan pencegahan konflik.",
+        "topics": [
+          "Non-Proliferasi Nuklir",
+          "Perang Siber",
+          "Senjata Otonom",
+          "Perjanjian Damai"
+        ],
+        "delegates": "16 delegasi · 32 delegasi"
+      },
+      "oms": {
+        "title": "Organisasi Kesehatan Dunia",
+        "description": "Lembaga khusus PBB yang bertanggungjawab mempromosikan kesehatan dan mengoordinasikan kerjasama internasional di bidang ini. Dalam simulasi ini, delegasi akan membahas strategi menghadapi ancaman kesehatan global dan memperkuat sistem kesehatan menghadapi tantangan yang muncul.",
+        "topics": [
+          "Pencegahan Pandemi",
+          "Akses Vaksin",
+          "Kesehatan Mental Global",
+          "Resistensi Antimikroba"
+        ],
+        "delegates": "16 delegasi · 32 delegasi"
+      },
+      "cs": {
+        "title": "Dewan Keamanan Perserikatan Bangsa-Bangsa",
+        "description": "Lingkaran PBB dengan tanggungjawab utama memelihara perdamaian dan keamanan internasional. Dalam simulasi ini, delegasi akan membahas respons diplomatik terhadap konflik dan krisis internasional, dengan mempertimbangkan instrumen seperti operasi pemeliharaan perdamaian, sanksi, dan mekanisme perlindungan penduduk sipil.",
+        "topics": [
+          "Konflik Bersenjata",
+          "Pemeliharaan Perdamaian",
+          "Sanksi Internasional",
+          "Hukum Kemanusiaan"
+        ],
+        "delegates": "15 delegasi · 30 delegasi"
+      },
+      "manual": {
+        "title": "Manual Delegasi",
+        "org": "Manual Delegasi — Edisi 2026",
+        "description": "Manual Delegasi adalah panduan persiapan utama untuk Edisi 2026. Di dalamnya peserta menemukan informasi penting tentang komite, tema debat, konteks setiap diskusi, dan pedoman persiapan serta pelaksanaan sesi.\n\nDokumen ini bertujuan memberi delegasi alat untuk memahami topik komite, memperdalam riset, dan berpartisipasi dalam debat secara mendasar, sehingga pengalaman simulasi menjadi lebih dinamis, imersif, dan memperkaya."
+      }
+    }
+  },
+  "sobre": {
+    "page_title": "Tentang — SWDL",
+    "hero_title": "Tentang SWDL",
+    "hero_sub": "Kenali sejarah dan misi kami",
+    "mission": "Misi Kami",
+    "vision": "Visi Kami",
+    "values": "Nilai Kami",
+    "history": "Sejarah Kami",
+    "team": "Tim Kami",
+    "representacao": "Perwakilan Negara",
+    "simulacao": "Apa itu Simulasi PBB?",
+    "edicoes_realizadas": "Sejak tahun",
+    "resolucoes_desc": "Penyusunan dokumen resmi yang mengusulkan solusi konkret untuk masalah yang dibahas.",
+    "debates": "Debat Realistis",
+    "unidade": "Unit SESI",
+    "values_title": "What We Believe",
+    "fundacao_ano": "Tahun berdiri",
+    "resolucoes": "Penyusunan Resolusi",
+    "representacao_desc": "Peserta mewakili berbagai negara dalam isu PBB, membela posisi dan kepentingan nasional mereka.",
+    "negociacao": "Negosiasi dan Diplomasi",
+    "simulacao_desc": "Pengalaman edukatif peserta mensimulasikan cara kerja PBB yang sesungguhnya",
+    "mission_desc": "Membentuk pemimpin muda yang mampu menghadapi tantangan global kontemporer melalui simulasi PBB yang realistis, mengembangkan keterampilan diplomasi, negosiasi, dan berpikir kritis.",
+    "vision_desc": "Membentuk calon anggota yang kelak bergabung dengan komite. Menjalin kemitraan dengan lembaga eksternal untuk menciptakan lingkungan partisipatif bagi peserta internal dan eksternal. Menginspirasi generasi baru pemimpin yang berkomitmen pada perdamaian, keadilan, dan kerja sama internasional.",
+    "negociacao_desc": "Pengembangan keterampilan diplomasi melalui negosiasi dan pencarian konsensus.",
+    "debates_desc": "Diskusi isu global kontemporer mengikuti prosedur resmi Perserikatan Bangsa-Bangsa.",
+    "history_desc": "Dari mimpi siswa SMA kelas 1 menuju kenyataan",
+    "hero_label": "Liga",
+    "breadcrumb_about": "Tentang",
+    "founding_badge": "Didirikan — 2024",
+    "history_p1": "SESI World Diplomacy League (SWDL) lahir pada 2024 dari visi siswa kelas satu SMA SESI CE-437 yang bersemangat hubungan internasional dan diplomasi.",
+    "history_p2": "Proyek dimulai sebagai inisiatif untuk mempromosikan simulasi PBB yang realistis, memberi siswa kesempatan mengalami kerja diplomatik dalam lingkungan pendidikan yang menarik.",
+    "history_p3": "Hari ini, SWDL diakui karena kualitas simulasinya, dengan puluhan delegat berpartisipasi dan kemitraan dengan lembaga pendidikan regional.",
+    "how_it_works": "Cara Kerja",
+    "team_current": [
+      {
+        "quote": "Sebagai Sekretaris Jenderal, saya belajar bahwa diplomasi bukan hanya pidato: mendengarkan, timing, dan keberanian mengambil keputusan sulit untuk tim."
+      },
+      {
+        "quote": "Setiap edisi tampak mustahil sampai pintu terbuka dan semuanya mengalir. Logistik adalah diplomasi di balik layar."
+      },
+      {
+        "quote": "Menceritakan SWDL ke luar adalah membantu komunitas sekolah memahami bahwa diplomasi dimulai di koridor sekolah."
+      },
+      {
+        "quote": "Membangun tim sama seperti membentuk delegasi: setiap orang harus tahu perannya dan saling percaya. Itulah yang menopang liga."
+      },
+      {
+        "quote": "Di balik setiap debat yang sempurna ada organisasi. Saya suka menjadi alasan tak ada yang perlu bingung “lalu apa?”."
+      },
+      {
+        "quote": "Membangun platform SWDL adalah cara saya melayuni liga: mengubah kekacauan operasional menjadi pengalaman lancar bagi delegasi dan staf."
+      },
+      {
+        "quote": "Masuk SWDL berarti menemukan bahwa opini yang terresearch dengan baik lebih berbobot daripada teriakan."
+      },
+      {
+        "quote": "Saya belajar bahwa mewakili negara adalah, di atas segalanya, memahami sisi lain meja."
+      },
+      {
+        "quote": "Debat pertama saya mengeluarkan saya dari zona nyaman — dan di situlah saya berkembang."
+      },
+      {
+        "quote": "Di SWDL saya menemukan orang-orang yang menganggap masa depan serius. Itu memberi saya keberanian melakukan hal yang sama."
+      },
+      {
+        "quote": "BNegosiasi di PBB simulasi mengajarkan saya bernegosiasi lebih baik dalam kehidupan nyata — termasuk dengan diri sendiri."
+      },
+      {
+        "quote": "Meneliti posisi nasional menjadi hasrat. Kini saya membaca berita dengan cara berbeda."
+      },
+      {
+        "quote": "Yang terbaik bukan piala: melainkan keheningan setelah argumen yang mengubah ruangan."
+      },
+      {
+        "quote": "Saya kira hanya debat. Menjadi persahabatan, metode, dan cara baru melihat dunia."
+      },
+      {
+        "quote": "Saya mendapat kosakata untuk topik yang dulu saya hindari. Kini saya menghadapi yang sulit apa adanya."
+      },
+      {
+        "quote": "Setiap komite adalah satu dunia. SWDL memberi saya peta untuk menavigasi semuanya."
+      },
+      {
+        "quote": "Kerja tim di bawah tekanan tenggat waktu adalah sekolah terbaik yang pernah saya miliki."
+      },
+      {
+        "quote": "Saya menemukan suara saya di sini — tegas, siap, dan tak takut berbeda pendapat dengan hormat."
+      }
+    ],
+    "team_2025": [
+      {
+        "quote": "Kepemimpinan 2025 menunjukkan bahwa mewarisi liga sama menantangnya dengan mendirikannya. Kami merawat warisan dengan ketelitian."
+      },
+      {
+        "quote": "Keunggulan akademik di SWDL berarti persiapan serius — bukan menghafal, memahami dunia."
+      },
+      {
+        "quote": "Pada 2025 saya belajar bahwa logistik adalah janji yang ditepati: apa yang kita sepakati harus berfungsi pada hari-H."
+      },
+      {
+        "quote": "Komunikasi bukan hiasan: melainkan bagaimana seluruh sekolah memahami apa yang diwakili diplomasi siswa."
+      },
+      {
+        "quote": "Hubungan masyarakat di SWDL berarti membangun jembatan — dengan sekolah lain, komunitas, dan masa depan."
+      },
+      {
+        "quote": "Pada 2025 kami meneguhkan budaya tim. Ketika orang merasa di tempat yang tepat, acara bernapas."
+      },
+      {
+        "quote": "Administrasi adalah keheningan yang memungkinkan debat. Organisasi adalah bahasa cinta saya untuk liga."
+      },
+      {
+        "quote": "Mengkoordinasi staf adalah memimpin orkestra: peran jelas, energi dalam tempo yang sama."
+      },
+      {
+        "quote": "Pada 2025 situs menjadi rumah digital SWDL. Kode hanyalah alat — tujuannya melayani mereka yang berdebat."
+      }
+    ],
+    "join_cta": "Gabung dengan kami →",
+    "read_testimonial": "Baca testimoni dari {name}",
+    "testimonial_of": "Testimoni dari {name}",
+    "angela_bio": "Penasihat fakultas SWDL: mendampingi delegasi, membantu persiapan akademik, dan menjaga standar pedagogis simulasi.",
+    "role_secretario": "Sekretaris Jenderal",
+    "role_diretora_eventos": "Direktur Acara dan Logistik",
+    "role_diretora_rp": "Direktur Hubungan Masyarakat",
+    "role_diretora_academica": "Direktur Akademik",
+    "role_membro": "Anggota",
+    "role_tech": "Teknologi & Web",
+    "role_professora": "Penasihat Fakultas",
+    "history_body": "Dari mimpi siswa SMA kelas 1 menuju liga yang menginspirasi diplomat muda di seluruh negara bagian. SWDL tumbuh tahun demi tahun, memegang komitmen pada keunggulan pendidikan dan pembentukan warga global.",
+    "watermark": "TENTANG",
+    "team_who": "Siapa Yang Mewujudkannya",
+    "tab_current": "Tim Saat Ini",
+    "tab_2025": "Kepemimpinan 2025",
+    "role_hr": "Direktur Sumber Daya Manusia",
+    "role_admin": "Koordinator Administrasi",
+    "role_staff_web": "Koord. Staf & Pengembangan Web",
+    "role_comm": "Direktur Komunikasi dan Pemasaran",
+    "role_staff_coord": "Koordinasi Staf",
+    "angela_quote": "Peran saya adalah membimbing: mendampingi setiap delegasi, menantang kesiapan, dan memastikan debat jujur dan bermutu tinggi. Keunggulan SWDL lahir dari pendampingan dekat ini."
+  },
+  "faca_parte": {
+    "page_title": "Gabung — SWDL",
+    "hero_title": "Gabung",
+    "hero_sub": "Daftar dan berpartisipasi di SWDL 2026",
+    "format_selector": "Bagaimana Anda ingin berpartisipasi?",
+    "format_individual": "Individu",
+    "format_dupla": "Berpasangan",
+    "format_trio": "Trio",
+    "form_name": "Nama lengkap",
+    "form_email": "Email",
+    "form_phone": "Telepon",
+    "form_instagram": "Instagram",
+    "form_school": "Sekolah",
+    "form_grade": "Jenjang",
+    "form_motivation": "Mengapa Anda ingin berpartisipasi?",
+    "form_submit": "Kirim Pendaftaran",
+    "form_sending": "Mengirim...",
+    "form_success": "Pendaftaran berhasil dikirim!",
+    "form_terms": "Saya menerima syarat penggunaan dan kebijakan privasi",
+    "requirements": "Persyaratan Berpartisipasi",
+    "req_disponibilidade_desc": "Partisipasi pada hari debat dan persiapan sebelumnya",
+    "role_mentor": "Mentor",
+    "form_success_msg": "Pendaftaran Anda berhasil diterima. Kami akan segera menghubungi Anda!",
+    "role_organizacao_desc": "Bantu logistik, persiapan materi dan koordinasi umum acara.",
+    "closed_title": "Pendaftaran Ditutup",
+    "hero_label": "Bergabung dengan Liga",
+    "step_1": "Kirim Pendaftaran Anda",
+    "req_equipe": "Kerja Sama Tim",
+    "form_interests": "Topik Minat",
+    "step_3_desc": "Hadir ke bengkel dan sesi persiapan",
+    "role_mentor_desc": "Bimbing delegasi baru dan bagikan pengetahuan tentang diplomasi dan prosedur PBB.",
+    "tab_delegado": "Jadi Delegasi",
+    "closed_desc": "Pendaftaran SWDL 2026 untuk sementara ditutup.",
+    "form_motivation_volunteer": "Mengapa Anda ingin menjadi relawan?",
+    "step_4_desc": "Ikuti debat dan kembangkan keterampilan diplomasi Anda",
+    "form_submit_volunteer": "Saya Ingin Jadi Relawan",
+    "req_school": "Jenjang Sekolah",
+    "step_2": "Tunggu Kontak",
+    "role_moderador_desc": "Pandu sesi debat dan jaga ketertiban selama diskusi topik.",
+    "volunteer_roles": "Bidang Keterlibatan",
+    "step_3": "Ikuti Persiapan",
+    "req_equipe_desc": "Kolaborasi dengan delegasi lain dan menghormati aturan",
+    "form_experience": "Pengalaman Sebelumnya",
+    "step_4": "Berdebat dan Belajar",
+    "req_comprometimento": "Komitmen",
+    "step_1_desc": "Isi formulir di atas dengan informasi dan motivasi Anda",
+    "role_organizacao": "Organisasi",
+    "req_disponibilidade": "Ketersediaan",
+    "req_comprometimento_desc": "Pengkajian negara yang diwakili dan tema debat",
+    "req_school_desc": "Siswa mulai kelas 6 di SESI CE-437",
+    "why_delegate": "Mengapa jadi Delegasi SWDL?",
+    "form_experience_placeholder": "Mis. saya mengikuti MUN di sekolah X...",
+    "form_grade_select": "Pilih",
+    "form_interests_placeholder": "Mis. Keamanan Internasional, Hak Asasi Manusia, Lingkungan...",
+    "tab_voluntario": "Jadi Relawan",
+    "role_midia_desc": "Dokumentasikan acara melalui foto, video dan liputan di media sosial SWDL.",
+    "why_reasons": [
+      "Kembangkan keterampilan oratori dan argumen",
+      "Pelajari isu global kontemporer",
+      "Latih negosiasi dan diplomasi dalam situasi nyata",
+      "Bekerja dalam tim dengan siswa dari jenjang berbeda",
+      "Dapatkan pengalaman riset dan analisis kritis",
+      "Bangun CV yang menonjol",
+      "Bangun jaringan dengan anak muda yang tertarik politik internasional"
+    ],
+    "next_steps": "Langkah Berikutnya",
+    "step_2_desc": "Kami akan membalas setelah periode pendaftaran berakhir",
+    "role_midia": "Tim Media",
+    "role_moderador": "Moderator Debat",
+    "grades": [
+      "Kelas 6",
+      "Kelas 7",
+      "Kelas 8",
+      "Kelas 9",
+      "Kelas 10",
+      "Kelas 11",
+      "Kelas 12"
+    ],
+    "zod_name": "Nama harus minimal 3 karakter",
+    "zod_email": "E-mail tidak valid",
+    "zod_phone": "Telepon harus minimal 10 digit",
+    "zod_terms": "Anda harus menerima syarat",
+    "zod_instagram": "Instagram wajib diisi",
+    "zod_members_count": "Jumlah anggota tidak sesuai dengan format yang dipilih",
+    "members_title": "Data anggota kelompok",
+    "member_card_label": "Anggota {index}",
+    "form_error": "Gagal mengirim. Periksa kolom dan coba lagi.",
+    "watermark": "GABUNG"
+  },
+  "aviso_legal": {
+    "page_title": "Pernyataan Hukum — SWDL",
+    "hero_title": "Pernyataan Hukum",
+    "content": "Informasi hukum tentang kepemilikan, penggunaan dan tanggung jawab situs SWDL.",
+    "sections": [
+      {
+        "title": "1. Kekayaan Intelektual",
+        "body": "Seluruh isi situs ini — teks, gambar, grafis, merek, logo dan materi lain — adalah milik SWDL — SESI World Diplomacy League atau mitranya dan dilindungi hukum kekayaan intelektual Brasil dan internasional. Dilarang memproduksi seluruh atau sebagian tanpa izin terlebih dahulu, sejauh diizinkan hukum."
+      },
+      {
+        "title": "2. Penggunaan Situs",
+        "body": "Penggunaan situs ini berarti penerimaan persyaratan hukum ini dan, jika berlaku, Syarat Penggunaan. Anda setuju menggunakan situs secara etis dan sesuai hukum, tanpa merugikan platform atau hak pihak lain."
+      },
+      {
+        "title": "3. Tautan Eksternal",
+        "body": "Situs ini mungkin berisi tautan ke situs pihak ketiga. SWDL tidak mengontrol dan tidak bertanggung jawab atas isi, kebijakan privasi, ketersediaan atau praktik situs tersebut. Sertanya tautan tidak berarti dukungan atau kemitraan."
+      },
+      {
+        "title": "4. Penafian",
+        "body": "Informasi di situs ini disediakan \"sebagaimana adanya\", tanpa jaminan tersirat atau tersurat apa pun. SWDL tidak menjamin ketersediaan tanpa gangguan, bebas kesalahan atau kesesuaian untuk tujuan tertentu, dan tidak bertanggung jawab atas kerugian langsung atau tidak langsung akibat penggunaan atau ketidakmungkinan menggunakan situs."
+      },
+      {
+        "title": "5. Perubahan",
+        "body": "SWDL berhak mengubah persyaratan hukum ini kapan saja, tanpa pemberitahuan sebelumnya. Perubahan berlaku segera setelah dipublikasikan di halaman ini. Penggunaan situs yang berlanjut setelah perubahan berarti penerimaan versi baru."
+      },
+      {
+        "title": "6. Kontak",
+        "body": "Pertanyaan tentang persyaratan hukum ini: pedro.pereira63@portalsesisp.org.br"
+      }
+    ],
+    "updated_date": "23/09/2026"
+  },
+  "privacidade": {
+    "page_title": "Privasi — SWDL",
+    "hero_title": "Kebijakan Privasi",
+    "content": "Bagaimana kami mengumpulkan, menggunakan dan melindungi data pribadi Anda menurut hukum privasi.",
+    "sections": [
+      {
+        "title": "1. Data yang Dikumpulkan",
+        "body": "Untuk berpartisipasi di SWDL, kami hanya mengumpulkan data yang diperlukan untuk pendaftaran: nama lengkap, email, telepon, Instagram (opsional), nama sekolah, kelas dan motivasi. Kami tidak meminta data sensitif di luar kebutuhan penyelenggaraan acara."
+      },
+      {
+        "title": "2. Tujuan Data",
+        "body": "Data digunakan secara eksklusif untuk: (a) memproses pendaftaran dan memeriksa kelayakan; (b) mengomunikasikan informasi acara; (c) menerbitkan sertifikat partisipasi; dan (d) meningkatkan pengalaman peserta. Kami tidak memakai data Anda untuk iklan pihak ketiga tanpa persetujuan."
+      },
+      {
+        "title": "3. Dasar Hukum (LGPD)",
+        "body": "Pemrosesan data berdasarkan persetujuan subjek data (Pasal 7 ayat (1) UU No. 13.709/2018 — LGPD) dan, jika berlaku, pelaksanaan kontrak atau prosedur preliminer terkait kontrak (Pasal 7 ayat (5)). Anda dapat menarik persetujuan kapan saja."
+      },
+      {
+        "title": "4. Berbagi Data",
+        "body": "Data pribadi Anda tidak dijual atau dibagikan ke pihak ketiga untuk pemasaran. Hanya dibagikan jika diwajibkan hukum/regulasi, dengan penyedia layanan berdasarkan kontrak (hosting, email) atau dengan persetujuan tegas Anda."
+      },
+      {
+        "title": "5. Penyimpanan Data",
+        "body": "Data disimpan selama diperlukan untuk mencapai tujuan pengumpulan atau sesuai jangka waktu hukum yang berlaku. Setelah tujuan tercapai, data dihapus atau dianonimkan dengan aman."
+      },
+      {
+        "title": "6. Hak Subjek Data",
+        "body": "Menurut LGPD, Anda berhak atas: konfirmasi dan akses data; koreksi data tidak lengkap atau kedaluwarsa; anonimisasi, pemblokiran atau penghapusan data tidak perlu; portabilitas; dan penghapusan data yang diproses dengan persetujuan. Untuk menggunakan hak tersebut, gunakan e-mail pada bagian Kontak."
+      },
+      {
+        "title": "7. Keamanan Data",
+        "body": "Kami menerapkan langkah teknis dan administratif yang tepat untuk melindungi data pribadi dari akses tak sah serta penghacuran, kehilangan, perubahan atau pengungkapan tidak sah secara kebetulan atau melanggar hukum. Tidak ada sistem yang 100% aman; bila ada insiden relevan, kami akan memberi tahu subjek data sesuai hukum."
+      },
+      {
+        "title": "8. Kontak",
+        "body": "Untuk menggunakan hak Anda atau bertanya tentang kebijakan ini: pedro.pereira63@portalsesisp.org.br"
+      }
+    ],
+    "updated_date": "23/09/2026"
+  },
+  "termos": {
+    "page_title": "Syarat Penggunaan — SWDL",
+    "hero_title": "Syarat Penggunaan",
+    "content": "Syarat penggunaan situs dan layanan SWDL — SESI World Diplomacy League.",
+    "sections": [
+      {
+        "title": "1. Penerimaan Persyaratan",
+        "body": "Dengan mengakses dan menggunakan situs ini, Anda menyetujui Syarat Penggunaan SWDL — SESI World Diplomacy League. Jika Anda tidak setuju, jangan gunakan situs ini."
+      },
+      {
+        "title": "2. Penggunaan Situs",
+        "body": "Situs disediakan untuk tujuan informasi, institusional dan pendaftaran acara SWDL. Anda setuju menggunakannya secara etis, sopan dan sesuai hukum, tanpa aktivitas ilegal atau pelanggaran hak pihak lain."
+      },
+      {
+        "title": "3. Pendaftaran",
+        "body": "Dengan mendaftar di SWDL, Anda menyatakan bahwa: (a) informasi yang diberikan benar dan terkini; (b) Anda memenuhi persyaratan usia acara; (c) Anda siswa SESI atau sekolah mitra, jika berlaku; dan (d) Anda menerima aturan, kode etik dan peraturan acara."
+      },
+      {
+        "title": "4. Perilaku Peserta",
+        "body": "Peserta harus menjaga perilaku sopan, inklusif dan profesional sepanjang acara — luring dan daring. Penyelenggara berhak memperingatkan, menangguhkan atau mendiskualifikasi pelanggar kode etik, termasuk pelecehan, diskriminasi, disinformasi atau penyalahgunaan merek SWDL."
+      },
+      {
+        "title": "5. Kekayaan Intelektual",
+        "body": "Semua konten yang diproduksi selama acara (resolusi, pidato, karya, foto dan rekaman) adalah milik para penulisnya. Dengan berpartisipasi, Anda memberi SWDL lisensi non-eksklusif, gratis dan global untuk menggunakan materi tersebut dalam komunikasi institusional dan promosi, dengan kredit penulis jika berlaku."
+      },
+      {
+        "title": "6. Pembatasan Tanggung Jawab",
+        "body": "SWDL tidak bertanggung jawab atas kerugian langsung atau tidak langsung akibat partisipasi dalam acara atau penggunaan situs, termasuk — tanpa batasan — pembatalan atau penundaan acara, perubahan jadwal, kegagalan teknis, force majeure atau perbuatan pihak ketiga. Situs disediakan \"sebagaimana adanya\", sejauh diizinkan hukum."
+      },
+      {
+        "title": "7. Pembatalan dan Pengembalian",
+        "body": "Jika acara dibatalkan oleh penyelenggara, peserta akan diberi tahu melalui e-mail atau kanal resmi SWDL. Karena acara gratis, tidak ada pengembalian dana. Biaya perjalanan atau penginapan menjadi tanggung jawab peserta."
+      },
+      {
+        "title": "8. Perubahan Persyaratan",
+        "body": "SWDL dapat mengubah Syarat Penggunaan ini kapan saja. Perubahan berlaku segera setelah dipublikasikan di halaman ini. Disarankan meninjau isi secara berkala. Penggunaan situs yang berlanjut setelah perubahan berarti penerimaan versi baru."
+      },
+      {
+        "title": "9. Kontak",
+        "body": "Pertanyaan tentang Syarat Penggunaan ini? Hubungi: pedro.pereira63@portalsesisp.org.br"
+      }
+    ],
+    "updated_date": "23/09/2026"
+  },
+  "page_404": {
+    "title": "Halaman tidak ditemukan",
+    "subtitle": "Ups! Halaman yang Anda cari tidak ada.",
+    "back": "Kembali ke beranda"
+  },
+  "common": {
+    "read_testimonial": "Baca testimoni",
+    "language": "Bahasa",
+    "home": "Beranda",
+    "back_home": "Kembali ke beranda",
+    "back": "Kembali",
+    "close": "Tutup",
+    "live": "Langsung",
+    "now": "Sekarang",
+    "prev": "Sebelumnya",
+    "next": "Berikutnya",
+    "menu": "Menu",
+    "scroll_left": "Gulir {label} ke kiri",
+    "scroll_right": "Gulir {label} ke kanan"
+  },
+  "sobre_values": {
+    "diplomacia": "Diplomasi dan Dialog",
+    "diversidade": "Menghargai Keragaman",
+    "excelencia": "Keunggulan Akademik",
+    "cooperacao": "Kerja Sama Internasional",
+    "sustentavel": "Pembangunan Berkelanjutan"
+  },
+  "ticker": {
+    "live": "LANGSUNG",
+    "alerts": "{n} PERINGATAN"
+  },
+  "legal": {
+    "label": "Hukum",
+    "toc": "Di halaman ini",
+    "updated": "Terakhir diperbarui"
+  },
+  "meta": {
+    "sobre_title": "Tentang — SWDL",
+    "sobre_desc": "Kenali sejarah dan misi SWDL",
+    "comites_title": "Komite — SWDL",
+    "comites_desc": "Kenali komite dan tema SWDL 2026",
+    "faca_parte_title": "Gabung — SWDL",
+    "faca_parte_desc": "Daftar dan ikuti SWDL",
+    "noticias_title": "Berita — SWDL",
+    "noticias_desc": "Ikuti berita terbaru SWDL",
+    "agenda_title": "Jadwal — SWDL",
+    "agenda_desc": "Lihat jadwal lengkap acara SWDL",
+    "legal_title": "Hukum — SWDL",
+    "noticia_title": "Berita — SWDL",
+    "root_title": "SWDL — SESI World Diplomacy League",
+    "root_desc": "Simulasi PBB terbesar SESI. Wakili negara, debatkan resolusi, dan bangun perjanjian diplomatik."
+  },
+  "a11y": {
+    "cvd_label": "Mode buta warna",
+    "cvd_on": "Mode buta warna aktif",
+    "cvd_off": "Mode buta warna nonaktif"
+  }
+}

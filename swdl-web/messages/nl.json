@@ -1,0 +1,819 @@
+{
+  "nav": {
+    "home": "Home",
+    "noticias": "Nieuws",
+    "comites": "Thema's",
+    "agenda": "Schema",
+    "sobre": "Over ons",
+    "faca_parte": "Doe mee"
+  },
+  "crisis_banner": {
+    "close": "✕",
+    "close_aria": "Sluit waarschuwing",
+    "label": "CRISIS —"
+  },
+  "footer": {
+    "description": "SESI CE-437 Hortolândia Model UN Stichting. Vertegenwoordig naties, sluit allianties en bouw diplomatieke overeenkomsten.",
+    "contact": "Contact",
+    "navigation": "Navigatie",
+    "legal": "Juridisch",
+    "rights": "Alle rechten voorbehouden.",
+    "links": {
+      "home": "Home",
+      "noticias": "Nieuws",
+      "comites": "Thema's",
+      "agenda": "Schema",
+      "sobre": "Over ons",
+      "faca_parte": "Doe mee",
+      "aviso_legal": "Juridische kennisgeving",
+      "privacidade": "Privacy",
+      "termos": "Gebruiksvoorwaarden"
+    },
+    "address": "SESI CE-437, Hortolândia",
+    "developed_by": "Desenvolvido por Pedro Bonazzi",
+    "copyright_swdl": "SESI World Diplomacy League"
+  },
+  "home": {
+    "page_title": "SWDL — SESI World Diplomacy League",
+    "hero_tag": "Editie 2026 — Gaande",
+    "hero_title_line1": "Diplomatie.",
+    "hero_title_line2": "Strategie.",
+    "hero_title_line3": "Leiderschap.",
+    "hero_sub": "Model-UN-stichting van SESI CE-437 Hortolândia. Vertegenwoordig naties, smeed nieuwe allianties, debatteer over resoluties en bouw overeenkomsten die de hedendaagse wereld vormgeven.",
+    "hero_btn_parte": "Doe mee",
+    "hero_btn_temas": "Bekijk Thema",
+    "hero_stat_temas": "Thema's",
+    "hero_stat_delegados": "Afgevaardigden",
+    "hero_stat_paises": "Landen",
+    "stats_label": "Onze Cijfers",
+    "stats_title": "Een Conferentie met Impact",
+    "stats_countries": "Landen",
+    "stats_countries_desc": "Vertegenwoordigd door de afgevaardigden",
+    "stats_delegates": "Afgevaardigden",
+    "stats_delegates_desc": "Bevestigde deelnemers",
+    "stats_committees": "Commissies",
+    "stats_committees_desc": "Debatthema’s",
+    "news_label": "Laatste Nieuws",
+    "news_title": "Gebeurt bij SWDL",
+    "news_read": "Lees meer",
+    "news_all": "Alles bekijken",
+    "committees_label": "Comités",
+    "committees_title": "Onze Debatthema’s",
+    "committees_all": "Alle comités bekijken",
+    "agenda_label": "Schema",
+    "agenda_title": "Aankomende Evenementen",
+    "agenda_full": "Bekijk volledig schema",
+    "gallery_label": "Galerij",
+    "testimonials_title": "Wie het meemaakte vertelt het het best",
+    "gallery_title": "SWDL-momenten",
+    "testimonials_label": "Getuigenissen",
+    "stats_editions_desc": "Georganiseerd sinds 2024",
+    "stats_editions": "Edities",
+    "next_debate_label": "Volgend Debat",
+    "next_debate_title": "Van Slavernij van het Verleden naar Racisme van Nu",
+    "next_debate_theme": "De Toekomst uitdagen",
+    "closes_in": "Inschrijvingen sluiten over:",
+    "registrations_closed": "Inschrijvingen gesloten!",
+    "cta_register": "Schrijf je nu in",
+    "unit_days": "dagen",
+    "unit_hours": "uren",
+    "gallery_archive_label": "Archief",
+    "gallery_editions_title": "Eerdere Edities",
+    "testimonials_next": "Volgende",
+    "gallery_items": {
+      "g1": {
+        "title": "Plenaire Vergadering",
+        "desc": "Afgevaardigden van alle comités bijeen voor de openingssessie en plenaire debatten."
+      },
+      "g2": {
+        "title": "Veiligheidsraad",
+        "desc": "Intense onderhandelingen over internationale conflicten en vredesbehoud."
+      },
+      "g3": {
+        "title": "Bilaterale Onderhandelingen",
+        "desc": "Diplomatieke overeenkomsten tussen delegaties van verschillende naties."
+      },
+      "g4": {
+        "title": "Slotceremonie",
+        "desc": "Erkenning van de beste afgevaardigden en delegaties van de conferentie."
+      },
+      "g5": {
+        "title": "Spreken in de Schijnwerper",
+        "desc": "Onvergetelijke toespraken en spreekvaardigheden van de afgevaardigden."
+      }
+    },
+    "committee_preview": {
+      "guide": {
+        "name": "Gids voor de Afgevaardigde",
+        "tag": "SWDL — SESI",
+        "desc": "Verplichte algemene gids voor alle afgevaardigden."
+      },
+      "mma": {
+        "name": "Milieu",
+        "tag": "MMA — UNEP",
+        "desc": "Klimaatverandering, biodiversiteit en duurzame ontwikkeling"
+      },
+      "dhr": {
+        "name": "Mensenrechten",
+        "tag": "DHR — UNHCR",
+        "desc": "Bescherming van minderheden, vluchtelingen en fundamentele vrijheden"
+      },
+      "ecosoc": {
+        "name": "Economische Ontwikkeling",
+        "tag": "ECOSOC",
+        "desc": "Internationale handel, armoedebestrijding en mondiale financiën"
+      },
+      "disec": {
+        "name": "Ontwapening",
+        "tag": "DISEC — ONU",
+        "desc": "Nucleaire niet-verspreiding, wapenbeheersing en cyberbeveiliging"
+      },
+      "oms": {
+        "name": "Wereldgezondheid",
+        "tag": "OMS — WHO",
+        "desc": "Pandemieën, universele zorgdekking en noodrespons"
+      },
+      "acnur": {
+        "name": "Vluchtelingen",
+        "tag": "ACNUR — UNHCR",
+        "desc": "Bescherming van mensen die door extreme weersomstandigheden zijn verdreven"
+      }
+    },
+    "testimonials_items": [
+      {
+        "quote": "SWDL liet me zien dat diplomatie niet alleen toespraken zijn — het is luisteren, strategie en moed. Binnen enkele maanden verliet ik mijn comfortzone en vond ik passie voor internationale betrekkingen.",
+        "role": "Afgevaardigde — Veiligheidscomité"
+      },
+      {
+        "quote": "Ik had nooit gedacht dat een schooldebat me zo voor het leven kon voorbereiden. Ik leerde ideeën met respect verdedigen, onder druk onderhandelen en werken met heel andere mensen.",
+        "role": "Afgevaardigde — DHR"
+      },
+      {
+        "quote": "Wat me het meest raakte, was leerlingen van klas 1 die even serieus debatteerden als studenten. SWDL veranderde hoe ik de wereld en mijn rol daarin zie.",
+        "role": "Afgevaardigde — ECOSOC"
+      }
+    ],
+    "staggered": [
+      {
+        "alt": "Afgevaardigde in plenaire vergadering",
+        "caption": "Plenaire Vergadering — SWDL 2025"
+      },
+      {
+        "alt": "Wereldkaart die de mondiale dimensie van SWDL representeert",
+        "caption": "Delegaties van 193 landen vertegenwoordigd"
+      },
+      {
+        "alt": "Afgevaardigde tijdens comitédebat",
+        "caption": "Comitédebat — Veiligheidsraad"
+      }
+    ]
+  },
+  "stats": {
+    "countries": "Landen",
+    "countries_desc": "Vertegenwoordigd door afgevaardigden",
+    "delegates": "Afgevaardigden",
+    "delegates_desc": "Bevestigde deelnemers",
+    "committees": "Commissies",
+    "committees_desc": "Debats",
+    "days": "Dagen",
+    "days_desc": "Van intensieve activiteiten"
+  },
+  "noticias": {
+    "page_title": "Nieuws — SWDL",
+    "hero_title": "Nieuws",
+    "hero_sub": "Volg het laatste SWDL-nieuws",
+    "portal_title": "Laatste Nieuws",
+    "portal_count": "{n} artikelen",
+    "search_placeholder": "Zoeken…",
+    "category_all": "Alle",
+    "category_geral": "Algemeen",
+    "category_oficial": "Officieel",
+    "category_imprensa": "Pers",
+    "category_crise": "Crisis",
+    "all_committees": "Commissies",
+    "tab_committees": "Per Commissie",
+    "section_live": "Live",
+    "section_archive": "Archief",
+    "load_more": "Meer laden",
+    "trending": "Trending",
+    "empty": "Geen nieuws gevonden.",
+    "sidebar_about": "De competitie die studenten in diplomaten verandert. Volg schema, debatten en resultaten.",
+    "sidebar_more": "Meer info",
+    "read_more": "Lees meer",
+    "back": "Terug",
+    "category_votacao": "Stemming"
+  },
+  "noticia": {
+    "back_portal": "Terug naar portaal",
+    "related": "Meer nieuws",
+    "tags": "Tags",
+    "sidebar_title": "Trending"
+  },
+  "agenda": {
+    "page_title": "Schema — SWDL",
+    "hero_title": "Evenementenschema",
+    "hero_sub": "Bekijk het volledige evenementenschema",
+    "now": "Nu",
+    "next": "Volgende",
+    "day": "Dag",
+    "time": "Tijd",
+    "location": "Locatie",
+    "committee": "Commissie",
+    "hero_bg": "SCHEMA",
+    "breadcrumb_home": "Home",
+    "breadcrumb_current": "Schema",
+    "hero_label": "Programma",
+    "hero_desc": "Volg in realtime wat er nu gebeurt. De huidige activiteit gloeit in goud.",
+    "now_label": "Nu bezig",
+    "now_next_label": "Volgende activiteit",
+    "countdown_min": "min",
+    "countdown_seg": "sec",
+    "loading": "Schema laden...",
+    "empty": "Geen activiteiten voor deze dag.",
+    "no_date": "Geen datum ingesteld",
+    "no_period": "Geen periode",
+    "until": "Tot",
+    "started_at": "Gestart om",
+    "ends_at": "Eindigt om",
+    "day_n": "Dag {n}",
+    "status_done": "✓ Klaar",
+    "status_now": "▶ Nu",
+    "status_next": "Volgende",
+    "status_break": "☕ Pauze",
+    "status_vote": "🗳️ Stemming",
+    "status_crisis": "🚨 Crisis",
+    "status_award": "🏆 Prijzen",
+    "status_archive": "📋 Afgerond"
+  },
+  "comites": {
+    "page_title": "Commissies — SWDL",
+    "hero_title": "Debats",
+    "hero_sub": "Leer de SWDL 2026 commissies en thema's kennen",
+    "status_voting": "Stemming",
+    "status_debate": "In debat",
+    "status_waiting": "Wachtend",
+    "status_done": "Afgerond",
+    "guide": "Comitégids",
+    "download_guide": "Gids Downloaden",
+    "section_manual": "Bronnen",
+    "section_committees": "Comités",
+    "hero_label": "Structuur",
+    "section_themes": "Thema's",
+    "download_manual": "Handleiding Downloaden",
+    "breadcrumb_home": "Home",
+    "breadcrumb_themes": "Thema's",
+    "watermark": "THEMA'S",
+    "guide_link": "Gids",
+    "manual_link": "Handleiding",
+    "edition_2026": "Editie 2026",
+    "edition_2025": "Editie 2025",
+    "meta_mma": "MMA — Milieu",
+    "meta_dhr": "DHR — Mensenrechten",
+    "meta_ecosoc": "ECOSOC — Economisch en Sociaal",
+    "meta_disec": "DISEC — Ontwapening",
+    "meta_oms": "WHO — Wereldgezondheid",
+    "meta_cs": "VS — Veiligheidsraad",
+    "manual_org": "Handleiding voor de Afgevaardigde — Editie 2026",
+    "entries": {
+      "escravidao": {
+        "title": "Van Slavernij tot Hedendaags Racisme — De Toekomst Aanpakken",
+        "description": "In deze simulatie bespreken afgevaardigden de relaties tussen slavernij, historische erfenissen en verschillende vandaag bestaande uitingen van racisme. Het debat gaat over de sociale, economische en politieke impact van slavernij, structureel racisme, raciale gelijkheid en reparatie- en inclusiemechanismen. Delegati zoeken internationale antwoorden op hardnekkige ongelijkheid voor rechtvaardigere samenlevingen.",
+        "topics": [
+          "Slavernij en Historische Erfgoed",
+          "Structureel Racisme",
+          "Raciale Gelijkheid",
+          "Raciale Discriminatie",
+          "Historische Reparatie",
+          "Sociale Rechtvaardigheid"
+        ],
+        "delegates": "11 delegaties · 33 studenten"
+      },
+      "acnur": {
+        "title": "Internationale Bescherming voor Mensen die door extreme Weersomstandigheden zijn Verdreven",
+        "description": "In deze simulatie staan afgevaardigden van de Hoge Commissaris voor Vluchtelingen (UNHCR) voor de groeiende uitdaging van gedwongen verplaatsingen door extreme weersomstandigheden als overstromingen, droogte, orkanen en stormen. Zij bespreken internationale bescherming, humanitaire hulp en integratiemechanismen, met balans tussen nationale soevereiniteit, internationale financiering en gedeelde verantwoordelijkheid.",
+        "topics": [
+          "Klimaatverplaatsing",
+          "Klimaatvluchtelingen",
+          "Humanitaire Hulp",
+          "Klimaatverandering",
+          "Gedeelde Verantwoordelijkheid",
+          "Internationale Financiering"
+        ],
+        "delegates": "11 delegaties · 34 studenten"
+      },
+      "ormuz": {
+        "title": "Straits of Hormuz — De Crisis in de Internationale Handel en de Militaire Escalatie",
+        "description": "In deze simulatie komt de Veiligheidsraad in een noodsessie bijeen terwijl de spanningen in het Midden-Oosten verergeren en de internationale veiligheid raken. Escalerende vijandelijkheden, betrokkenheid van meerdere regionale en internationale actoren en risico's voor oliecirculatie en wereldhandel dwingen delegati tot diplomatieke antwoorden die de escalatie beteugelen en de internationale stabiliteit bewaren.",
+        "topics": [
+          "Militaire Escalatie",
+          "Internationale Handel",
+          "Kernarsenaal",
+          "Olie",
+          "Internationale Sancties",
+          "Niet-Staatelijke Actoren"
+        ],
+        "delegates": "16 delegaties · 32 afgevaardigden"
+      },
+      "canabis": {
+        "title": "Regulering van Hennep — Volksgezondheid en Mondiale Economie",
+        "description": "In deze simulatie bespreken afgevaardigden de effecten van gewijzigde nationale en internationale cannabisbeleid. Het debat gaat over de balans tussen depenalisering, medisch gebruik en volksgezondheid versus de strijd tegen drugshandel, en analyseert de socio-economische effecten van legalisatie, de grenzen van staatssoevereiniteit en internationale regelgevingskaders.",
+        "topics": [
+          "Volksgezondheid",
+          "Medisch Gebruik",
+          "Bestrijding Drugshandel",
+          "Regelgevingskaders",
+          "Economische Impact",
+          "Nationale Soevereiniteit"
+        ],
+        "delegates": "16 delegaties · 32 afgevaardigden"
+      },
+      "misoginia": {
+        "title": "Bestrijding van Vrouwenhaat — Mensenrechten en Gendergerelateerd Geweld",
+        "description": "In deze simulatie bespreken afgevaardigde internationale strategieën tegen vrouwenhaat en gendergerelateerd geweld. Het debat richt zich op versterking van beschermingsmechanismen, bestrijding van haatzaaien en geweld in digitale omgevingen, en het bevorderen van fundamentele rechten van vrouwen, tegen de achtergrond van hardnekkige ongelijkheid en verschillende sociale en wettelijke kaders wereldwijd.",
+        "topics": [
+          "Gendergerelateerd Geweld",
+          "Mensenrechten",
+          "Online Haatzaaien",
+          "Loongelijkheid",
+          "Beschermingsmechanismen",
+          "Internationale Wetgeving"
+        ],
+        "delegates": "16 delegaties · 32 afgevaardigden"
+      },
+      "mma": {
+        "title": "Milieuprogramma van de Verenigde Naties (UNEP)",
+        "description": "Het belangrijkste VN-orgaan voor milieukwesties, UNEP, bevordert internationale samenwerking over klimaatverandering, biodiversiteitsbehoud en vervuiling. In deze simulatie bespreken afgevaardigde multilaterale antwoorden op actuele milieudruk.",
+        "topics": [
+          "Klimaatverandering",
+          "Biodiversiteit",
+          "Vernieuwbare Energie",
+          "Oceaanvervuiling"
+        ],
+        "delegates": "18 delegaties · 36 afgevaardigden"
+      },
+      "dhr": {
+        "title": "Mensenrechtenraad",
+        "description": "VN-orgaan voor de bevordering en bescherming van mensenrechten wereldwijd. In deze simulatie bespreken afgevaardigde internationale beschermingsmechanismen en de uitdagingen van fundamentele rechten in verschillende nationale contexten.",
+        "topics": [
+          "Bescherming van Minderheden",
+          "Vluchtelingen",
+          "Vrijheid van Meningsuiting",
+          "Kinderarbeid"
+        ],
+        "delegates": "16 delegaties · 32 afgevaardigden"
+      },
+      "ecosoc": {
+        "title": "Economische en Sociale Raad",
+        "description": "Eén van de belangrijkste VN-fora voor internationale economische, sociale en milieukwesties. In deze simulatie zoeken afgevaardigde multilaterale oplossingen voor duurzame ontwikkeling, vermindering van ongelijkheid en economische samenwerking tussen staten.",
+        "topics": [
+          "Bestrijding van Armoede",
+          "Internationale Handel",
+          "Buitenlandse Schuld",
+          "SDG — Agenda 2030"
+        ],
+        "delegates": "14 delegaties · 28 afgevaardigden"
+      },
+      "disec": {
+        "title": "Comité voor Ontwapening en Internationale Veiligheid",
+        "description": "Eerste Comité van de Algemene Vergadering van de VN, verantwoordelijk voor ontwapening en internationale veiligheid. In deze simulatie bespreken afgevaardigde de uitdagingen van wapenproliferatie, nieuwe militaire technologieën en conflictpreventie.",
+        "topics": [
+          "Nucleaire Non-Proliferatie",
+          "Cyberoorlogen",
+          "Autonome Wapens",
+          "Vredesverdragen"
+        ],
+        "delegates": "16 delegaties · 32 afgevaardigden"
+      },
+      "oms": {
+        "title": "Wereldgezondheidsorganisatie",
+        "description": "VN-specialisatieagentschap voor de bevordering van gezondheid en de coördinatie van internationale samenwerking op dit gebied. In deze simulatie bespreken afgevaardigde strategieën tegen mondiale gezondheidsdreigingen en voor het versterken van gezondheidszorgstelsels bij nieuwe uitdagingen.",
+        "topics": [
+          "Pandemiepreventie",
+          "Vaccin Toegang",
+          "Globale Geestelijke Gezondheid",
+          "Antimicrobiële Resistentie"
+        ],
+        "delegates": "16 delegaties · 32 afgevaardigden"
+      },
+      "cs": {
+        "title": "Veiligheidsraad van de Verenigde Naties",
+        "description": "VN-orgaan met hoofdverantwoordelijkheid voor internationale vrede en veiligheid. In deze simulatie bespreken afgevaardigde diplomatieke antwoorden op internationale conflicten en crises, met instrumenten als vredesoperaties, sancties en beschermingsmechanismen voor burgers.",
+        "topics": [
+          "Gewapende Conflicten",
+          "Vredeshandhaving",
+          "Internationale Sancties",
+          "Humanitair Recht"
+        ],
+        "delegates": "15 delegaties · 30 afgevaardigden"
+      },
+      "manual": {
+        "title": "Handleiding voor de Afgevaardigde",
+        "org": "Handleiding voor de Afgevaardigde — Editie 2026",
+        "description": "De Handleiding voor de Afgevaardigde is de belangrijkste voorbereidingsgids voor Editie 2026. Het bevat essentiële informatie over de comités, hun debatthema's, de context van elke discussie en richtlijnen voor voorbereiding en het leiden van sessies.\n\nHet document geeft afgevaardigden de middelen om het thema van hun comité te begrijpen, onderzoek te verdiepen en onderbouwd deel te nemen aan debatten — voor een dynamischere, meeslependere en rijkere simulatie."
+      }
+    }
+  },
+  "sobre": {
+    "page_title": "Over ons — SWDL",
+    "hero_title": "Over SWDL",
+    "hero_sub": "Leer onze geschiedenis en missie kennen",
+    "mission": "Onze missie",
+    "vision": "Onze visie",
+    "values": "Onze waarden",
+    "history": "Onze geschiedenis",
+    "team": "Ons team",
+    "representacao": "Landenvertegenwoordiging",
+    "simulacao": "Wat is een MUN-simulatie?",
+    "edicoes_realizadas": "Vanaf het jaar",
+    "resolucoes_desc": "Opstellen van officiële documenten met concrete oplossingen voor de besproken problemen.",
+    "debates": "Realistische Debat­ten",
+    "unidade": "SESI-locatie",
+    "values_title": "What We Believe",
+    "fundacao_ano": "Opgericht in",
+    "resolucoes": "Opstellen van Resoluties",
+    "representacao_desc": "Deelnemers vertegenwoordigen verschillende landen bij VN-kwesties en verdedigen hun nationale posities en belangen.",
+    "negociacao": "Onderhandeling en Diplomatie",
+    "simulacao_desc": "Een educatieve ervaring waarin deelnemers de echte werking van de Verenigde Naties simuleren",
+    "mission_desc": "Jonge leiders opleiden om hedendaagse mondiale uitdagingen het hoofd te bieden via realistische VN-simulaties, met ontwikkeling van diplomatieke vaardigheden, onderhandeling en kritisch denken.",
+    "vision_desc": "Toekomstige leden voorbereiden die later toetreden tot het comité. Partnerschappen aangaan met externe organen voor een participatieve omgeving voor interne en externe deelnemers. Nieuwe generaties leiders inspireren die zich inzetten voor vrede, rechtvaardigheid en internationale samenwerking.",
+    "negociacao_desc": "Ontwikkeling van diplomatieke vaardigheden via onderhandeling en consensuszoektocht.",
+    "debates_desc": "Besprekingen over actuele mondiale kwesties volgens de officiële procedures van de Verenigde Naties.",
+    "history_desc": "Van een droom van leerlingen van klas 1 naar de werkelijkheid",
+    "hero_label": "De Liga",
+    "breadcrumb_about": "Over ons",
+    "founding_badge": "Opgericht — 2024",
+    "history_p1": "De SESI World Diplomacy League (SWDL) ontstond in 2024 vanuit de visie van leerlingen uit het eerste jaar van de bovenbouw van SESI CE-437, gepassioneerd door internationale betrekkingen en diplomatie.",
+    "history_p2": "Het project begon als initiatief om realistische VN-simulaties te bevorderen en bood leerlingen de kans diplomatiek werk te ervaren in een educatieve en boeiende omgeving.",
+    "history_p3": "Vandaag staat SWDL bekend om de kwaliteit van zijn simulaties, met tientallen delegaten en samenwerkingen met regionale onderwijsinstellingen.",
+    "how_it_works": "Hoe Het Werkt",
+    "team_current": [
+      {
+        "quote": "Als Secretaris-Generaal leerde ik dat diplomatie niet alleen toespraken zijn: luisteren, timing en de moeilijke beslissingen voor het team."
+      },
+      {
+        "quote": "Elke editie lijkt onmogelijk tot de deuren opengaan en alles stroomt. Logistiek is diplomatie achter de schermen."
+      },
+      {
+        "quote": "Het SWDL-verhaal naar buiten brengen is de schoolgemeenschap laten zien dat diplomatie begint in de schoolgang."
+      },
+      {
+        "quote": "Een team opbouwen is als een delegatie vormen: iedereen moet zijn rol kennen en de anderen vertrouwen. Dat draagt de liga."
+      },
+      {
+        "quote": "Achter elk perfect debat zit organisatie. Ik wil de reden zijn dat niemand zich „en nu?” hoeft af te vragen."
+      },
+      {
+        "quote": "Het SWDL-platform bouwen was mijn manier om de liga te dienen: operationele chaos omzetten in een soepele ervaring voor afgevaardigden en staff."
+      },
+      {
+        "quote": "Bij SWDL ontdekte ik dat een goed onderbouwde mening zwaarder weegt dan lawaai."
+      },
+      {
+        "quote": "Ik leerde dat een land vertegenwoordigen bovenal de andere kant van de tafel begrijpen is."
+      },
+      {
+        "quote": "Mijn eerste debat bracht me uit mijn comfortzone — en daar groeide ik juist."
+      },
+      {
+        "quote": "Bij SWDL vond ik mensen die de serieus nemen. Dat gaf mij de moed hetzelfde te doen."
+      },
+      {
+        "quote": "Onderhandelen in de gesimuleerde VN leerde me beter te onderhandelen in het echte leven — ook met mezelf."
+      },
+      {
+        "quote": "Een nationale positie onderzoeken werd een passie. Vandaag lees ik het nieuws anders."
+      },
+      {
+        "quote": "Het beste is niet de beker: het is de stilte na een argument dat de zaal verandert."
+      },
+      {
+        "quote": "Ik dacht dat het alleen debat was. Het werd vriendschap, methode en een nieuwe manier om de wereld te zien."
+      },
+      {
+        "quote": "Ik kreeg woordenschat voor onderwerpen die ik vermeed. Vandaag pak ik lastige dingen frontaal aan."
+      },
+      {
+        "quote": "Elk comité is een wereld. SWDL gaf mij kaarten om allemaal te navigeren."
+      },
+      {
+        "quote": "Teamwerk onder deadline-druk is de beste school die ik ooit had."
+      },
+      {
+        "quote": "Ik vond hier mijn stem — stevig, voorbereid en niet bang om met respect af te wijken."
+      }
+    ],
+    "team_2025": [
+      {
+        "quote": "De leiding 2025 liet zien dat een liga erven net zo uitdagend is als stichten. We bewaken het erfgoed met zorg."
+      },
+      {
+        "quote": "Academische excellentie bij SWDL betekent serieuze voorbereiding — niet uit het hoofd leren, de wereld begrijpen."
+      },
+      {
+        "quote": "In 2025 leerde ik dat logistiek een nagekomen belofte is: wat we afspreken moet op de dag werken."
+      },
+      {
+        "quote": "Communicatie is geen versiering: het is hoe de hele school begrijpt wat studentendiplomatie betekent."
+      },
+      {
+        "quote": "Public relations bij SWDL is bruggen bouwen — met andere scholen, de gemeenschap en de toekomst."
+      },
+      {
+        "quote": "In 2025 vestigden we teamcultuur. Als mensen zich op hun plek voelen, ademt het evenement."
+      },
+      {
+        "quote": "Administratie is de stilte die debat mogelijk maakt. Organisatie is mijn taal van liefde voor de liga."
+      },
+      {
+        "quote": "Staff coördineren is een orkest leiden: duidelijke rollen, energie in hetzelfde tempo."
+      },
+      {
+        "quote": "In 2025 werd de site het digitale huis van SWDL. Code is slechts het middel — het doel is het dienen van wie debatteert."
+      }
+    ],
+    "join_cta": "Doe mee →",
+    "read_testimonial": "Lees getuigenis van {name}",
+    "testimonial_of": "Getuigenis van {name}",
+    "angela_bio": "SWDL-faculty advisor: begeleidt de delegaties, ondersteunt de academische voorbereiding en helpt het pedagogische niveau van de simulaties bewaren.",
+    "role_secretario": "Secretaris-Generaal",
+    "role_diretora_eventos": "Directeur Evenementen en Logistiek",
+    "role_diretora_rp": "Directeur Publieke Relaties",
+    "role_diretora_academica": "Academisch Directeur",
+    "role_membro": "Lid",
+    "role_tech": "Tech & Web",
+    "role_professora": "Faculty Advisor",
+    "history_body": "Van een droom van leerlingen van klas 1 naar een liga die jonge diplomaten in heel de staat inspireert. SWDL is jaar na jaar gegroeid en blijft trouw aan onderwijskwaliteit en mondiale burgerschapsvorming.",
+    "watermark": "OVER ONS",
+    "team_who": "Wie Het Mogelijk Maakt",
+    "tab_current": "Huidig Team",
+    "tab_2025": "Leiding 2025",
+    "role_hr": "Directeur Personeelszaken",
+    "role_admin": "Administratief Coördinator",
+    "role_staff_web": "Staff-coord. & Webontwikkeling",
+    "role_comm": "Directeur Communicatie en Marketing",
+    "role_staff_coord": "Staff-coördinatie",
+    "angela_quote": "Mijn rol is begeleiden: elke delegatie steunen, voorbereiding scherpen en een eerlijk, hoogwaardig debat waarborgen. De excellentie van SWDL komt voort uit deze nabije begeleiding."
+  },
+  "faca_parte": {
+    "page_title": "Doe mee — SWDL",
+    "hero_title": "Doe mee",
+    "hero_sub": "Schrijf je in en neem deel aan SWDL 2026",
+    "format_selector": "Hoe wil je deelnemen?",
+    "format_individual": "Individueel",
+    "format_dupla": "Duo",
+    "format_trio": "Trio",
+    "form_name": "Volledige naam",
+    "form_email": "E-mail",
+    "form_phone": "Telefoon",
+    "form_instagram": "Instagram",
+    "form_school": "School",
+    "form_grade": "Jaar",
+    "form_motivation": "Waarom wil je deelnemen?",
+    "form_submit": "Inschrijving Verzenden",
+    "form_sending": "Verzenden...",
+    "form_success": "Inschrijving succesvol verzonden!",
+    "form_terms": "Ik accepteer de gebruiksvoorwaarden en het privacybeleid",
+    "requirements": "Vereisten om Deel te Nemen",
+    "req_disponibilidade_desc": "Deelname op debatdagen en voorbereiding vooraf",
+    "role_mentor": "Mentor",
+    "form_success_msg": "Je inschrijving is succesvol ontvangen. We nemen binnenkort contact met je op!",
+    "role_organizacao_desc": "Help bij logistiek, materiaalvoorbereiding en algemene evenementcoördinatie.",
+    "closed_title": "Inschrijvingen Gesloten",
+    "hero_label": "Sluit je aan bij de Liga",
+    "step_1": "Verstuur Je Inschrijving",
+    "req_equipe": "Samenwerken",
+    "form_interests": "Interessethema's",
+    "step_3_desc": "Woon workshops en voorbereidingssessies bij",
+    "role_mentor_desc": "Begeleid nieuwe afgevaardigden en deel kennis over diplomatie en VN-procedures.",
+    "tab_delegado": "Word Afgevaardigde",
+    "closed_desc": "De inschrijving voor SWDL 2026 is tijdelijk gesloten.",
+    "form_motivation_volunteer": "Waarom wil je vrijwilliger worden?",
+    "step_4_desc": "Neem deel aan de debatten en ontwikkel je diplomatieke vaardigheden",
+    "form_submit_volunteer": "Ik Wil Vrijwilliger Worden",
+    "req_school": "Schooljaar",
+    "step_2": "Wacht op Contact",
+    "role_moderador_desc": "Leid debatsessies en handhaaf de orde tijdens de themadiscussies.",
+    "volunteer_roles": "Inzetvelden",
+    "step_3": "Doe mee met de Voorbereiding",
+    "req_equipe_desc": "Samenwerking met andere afgevaardigden en respect voor de regels",
+    "form_experience": "Eerdere Ervaring",
+    "step_4": "Debatteer en Leer",
+    "req_comprometimento": "Inzet",
+    "step_1_desc": "Vul het formulier hierboven in met je gegevens en motivaties",
+    "role_organizacao": "Organisatie",
+    "req_disponibilidade": "Beschikbaarheid",
+    "req_comprometimento_desc": "Studie van het vertegenwoordigde land en de debatthema’s",
+    "req_school_desc": "Leerlingen vanaf klas 6 van SESI CE-437",
+    "why_delegate": "Waarom SWDL-afgevaardigde worden?",
+    "form_experience_placeholder": "Bv. Ik heb deelgenomen aan een MUN op school X…",
+    "form_grade_select": "Selecteer",
+    "form_interests_placeholder": "Bv. Internationale veiligheid, Mensenrechten, Milieu…",
+    "tab_voluntario": "Word Vrijwilliger",
+    "role_midia_desc": "Documenteer evenementen met foto’s, video’s en berichten op SWDL-socialmedia.",
+    "why_reasons": [
+      "Ontwikkel spreek- en argumentatievaardigheden",
+      "Leer over hedendaagse mondiale kwesties",
+      "Oefen onderhandeling en diplomatie in echte situaties",
+      "Werk samen in teams met leerlingen uit verschillende jaren",
+      "Verwerven ervaring in onderzoek en kritische analyse",
+      "Bouw een onderscheidend cv op",
+      "Netwerk met jongeren die geïnteresseerd zijn in internationale politiek"
+    ],
+    "next_steps": "Volgende Stappen",
+    "step_2_desc": "We reageren na afloop van de inschrijvingsperiode",
+    "role_midia": "Mediateam",
+    "role_moderador": "Debatmoderator",
+    "grades": [
+      "Klas 6",
+      "Klas 7",
+      "Klas 8",
+      "Klas 9",
+      "Klas 10",
+      "Klas 11",
+      "Klas 12"
+    ],
+    "zod_name": "De naam moet minstens 3 tekens bevatten",
+    "zod_email": "Ongeldig e-mailadres",
+    "zod_phone": "Het telefoonnummer moet minstens 10 cijfers bevatten",
+    "zod_terms": "Je moet de voorwaarden accepteren",
+    "zod_instagram": "Instagram is verplicht",
+    "zod_members_count": "Het aantal leden komt niet overeen met het gekozen formaat",
+    "members_title": "Gegevens van groepsleden",
+    "member_card_label": "Lid {index}",
+    "form_error": "Verzenden mislukt. Controleer de velden en probeer het opnieuw.",
+    "watermark": "DOE MEE"
+  },
+  "aviso_legal": {
+    "page_title": "Juridische kennisgeving — SWDL",
+    "hero_title": "Juridische kennisgeving",
+    "content": "Juridische informatie over eigendom, gebruik en verantwoordelijkheden van de SWDL-website.",
+    "sections": [
+      {
+        "title": "1. Intellectueel Eigendom",
+        "body": "Alle inhoud van deze website — teksten, afbeeldingen, grafieken, merken, logo’s en andere materialen — is eigendom van SWDL — SESI World Diplomacy League of haar partners en wordt beschermd door Braziliaanse en internationale wetten op intellectueel eigendom. Volledige of gedeeltelijke reproductie zonder voorafgaande toestemming is verboden, behoudens wettelijke uitzonderingen."
+      },
+      {
+        "title": "2. Gebruik van de Website",
+        "body": "Het gebruik van deze website betekent acceptatie van deze juridische voorwaarden en, waar van toepassing, de Gebruiksvoorwaarden. Je gebruikt de site ethisch en volgens de wet, zonder het platform of rechten van derden te schaden."
+      },
+      {
+        "title": "3. Externe Links",
+        "body": "Deze website kan links naar sites van derden bevatten. SWDL controleert de inhoud, privacybeleid, beschikbaarheid of praktijken van die sites niet en is daar niet verantwoordelijk voor. Een link impliceert geen steun of partnerschap."
+      },
+      {
+        "title": "4. Afwijzing",
+        "body": "De informatie op deze website wordt \"zoals deze is\" aangeboden, zonder uitdrukkelijke of stilzwijgende garanties. SWDL garandeert geen ononderbroken beschikbaarheid, foutloze werking of geschiktheid voor een bepaald doel en is niet aansprakelijk voor directe of indirecte schade door gebruik of onbruik van de website."
+      },
+      {
+        "title": "5. Wijzigingen",
+        "body": "SWDL behoudt zich het recht voor deze juridische voorwaarden altijd zonder voorafgaande kennisgeving te wijzigen. Wijzigingen treden direct in werking na publicatie op deze pagina. Door de website na wijzigingen te blijven gebruiken, accepteer je de nieuwe versie."
+      },
+      {
+        "title": "6. Contact",
+        "body": "Vragen over deze juridische voorwaarden: pedro.pereira63@portalsesisp.org.br"
+      }
+    ],
+    "updated_date": "23/09/2026"
+  },
+  "privacidade": {
+    "page_title": "Privacy — SWDL",
+    "hero_title": "Privacybeleid",
+    "content": "Hoe we je persoonsgegevens verzamelen, gebruiken en beschermen volgens de privacywetgeving.",
+    "sections": [
+      {
+        "title": "1. Verzamelde Gegevens",
+        "body": "Om deel te nemen aan SWDL verzamelen we alleen de gegevens die nodig zijn voor inschrijving: volledige naam, e-mail, telefoon, Instagram (optioneel), schoolnaam, leerjaar en motivatie. We vragen geen gevoelige gegevens buiten het nodige voor de organisatie."
+      },
+      {
+        "title": "2. Doel van Gegevens",
+        "body": "Gegevens worden uitsluitend gebruikt om: (a) inschrijvingen te verwerken en deelname te controleren; (b) evenementsinformatie te versturen; (c) deelnamecertificaten af te geven; en (d) de deelnemerservaring te verbeteren. We gebruiken je gegevens niet voor advertenties van derden zonder toestemming."
+      },
+      {
+        "title": "3. Rechtsgrondslag (LGPD)",
+        "body": "Gegevensverwerking berust op toestemming van de betrokkene (art. 7, I van wet nr. 13.709/2018 — LGPD) en, waar van toepassing, op de uitvoering van een overeenkomst of daaraan voorafgaande handelingen (art. 7, V). Je kunt toestemming altijd intrekken."
+      },
+      {
+        "title": "4. Delen van Gegevens",
+        "body": "Je persoonsgegevens worden niet verkocht of gedeeld met derden voor marketing. Delen gebeurt alleen wanneer wettelijk verplicht, met dienstverleners onder contract (hosting, e-mail) of met je uitdrukkelijke toestemming."
+      },
+      {
+        "title": "5. Bewaartermijn",
+        "body": "Gegevens worden bewaard zolang nodig voor de doeleinden waarvoor ze zijn verzameld of volgens de wettelijke bewaartermijn. Na het vervallen van het doel worden gegevens veilig verwijderd of geanonimiseerd."
+      },
+      {
+        "title": "6. Rechten van de Betrokkene",
+        "body": "Onder de LGPD heb je recht op: bevestiging en toegang tot gegevens; correctie van onvolledige of verouderde gegevens; anonymisering, blokkering of verwijdering van onnodige gegevens; overdraagbaarheid; en verwijdering van gegevens op basis van toestemming. Gebruik het e-mailadres in de sectie Contact."
+      },
+      {
+        "title": "7. Gegevensbeveiliging",
+        "body": "We nemen passende technische en organisatorische maatregelen om persoonsgegevens te beschermen tegen onbevoegde toegang en toevallige of onrechtmatige vernietiging, verlies, wijziging of openbaarmaking. Geen enkel systeem is 100% veilig; bij een relevant incident stellen we betrokkenen volgens de wet op de hoogte."
+      },
+      {
+        "title": "8. Contact",
+        "body": "Om je rechten uit te oefenen of vragen over dit beleid: pedro.pereira63@portalsesisp.org.br"
+      }
+    ],
+    "updated_date": "23/09/2026"
+  },
+  "termos": {
+    "page_title": "Gebruiksvoorwaarden — SWDL",
+    "hero_title": "Gebruiksvoorwaarden",
+    "content": "Voorwaarden voor het gebruik van de website en diensten van SWDL — SESI World Diplomacy League.",
+    "sections": [
+      {
+        "title": "1. Acceptatie van de Voorwaarden",
+        "body": "Door deze website te bezoeken en te gebruiken, ga je akkoord met deze Gebruiksvoorwaarden van SWDL — SESI World Diplomacy League. Als je niet met een voorwaarde akkoord gaat, gebruik de website dan niet."
+      },
+      {
+        "title": "2. Gebruik van de Website",
+        "body": "De website is bedoeld voor informatie, institutie en inschrijving voor het SWDL-evenement. Je gebruikt de site op een ethische, respectvolle en wettelijke manier, zonder onwettige activiteiten of inbreuk op rechten van derden."
+      },
+      {
+        "title": "3. Inschrijvingen",
+        "body": "Door je in te schrijven bij SWDL verklaar je dat: (a) de verstrekte informatie waar en actueel is; (b) je voldoet aan de leeftijdseisen van het evenement; (c) je leerling bent van SESI of een partnerschool, indien van toepassing; en (d) je de regels, gedragscode en voorschriften van het evenement accepteert."
+      },
+      {
+        "title": "4. Deelnemersgedrag",
+        "body": "Deelnemers gedragen zich tijdens het hele evenement — online en offline — respectvol, inclusief en professioneel. De organisatie behoudt het recht om iedereen die de gedragscode schendt te waarschuren, schorsen of diskwalificeren, inclusief pesterijen, discriminatie, desinformatie of misbruik van de SWDL-merknaam."
+      },
+      {
+        "title": "5. Intellectueel Eigendom",
+        "body": "Alle tijdens het evenement geproduceerde inhoud (resoluties, toespraken, werkstukken, foto’s en opnames) behoort tot de auteurs. Door deel te nemen, verleen je SWDL een niet-exclusieve, gratis en wereldwijde licentie om dit materiaal te gebruiken in institutionele en promotionele communicatie, met bronvermelding waar van toepassing."
+      },
+      {
+        "title": "6. Beperking van Aansprakelijkheid",
+        "body": "SWDL is niet aansprakelijk voor directe of indirecte schade door deelname aan het evenement of het gebruik van de website, inclusief — zonder beperking — afgelasting of uitstel, programmacwijzigingen, technische storingen, overmacht of handelingen van derden. De website wordt \"zoals deze is\" aangeboden, voor zover de wet dat toestaat."
+      },
+      {
+        "title": "7. Afgelasting en Restitutie",
+        "body": "Als het evenement door de organisatie wordt afgelast, worden deelnemers geïnformeerd via e-mail of officiële SWDL-kanalen. Omdat het evenement gratis is, is er geen restitutie. Reis- of verblijfkosten zijn voor eigen rekening."
+      },
+      {
+        "title": "8. Wijzigingen van de Voorwaarden",
+        "body": "SWDL kan deze Gebruiksvoorwaarden altijd wijzigen. Wijzigingen treden onmiddellijk in werking na publicatie op deze pagina. Het wordt aanbevolen de inhoud periodiek te controleren. Door de website na wijzigingen blijven te gebruiken, accepteer je de nieuwe versie."
+      },
+      {
+        "title": "9. Contact",
+        "body": "Vragen over deze Gebruiksvoorwaarden? Neem contact op via: pedro.pereira63@portalsesisp.org.br"
+      }
+    ],
+    "updated_date": "23/09/2026"
+  },
+  "page_404": {
+    "title": "Pagina niet gevonden",
+    "subtitle": "Oeps! De pagina die je zoekt bestaat niet.",
+    "back": "Terug naar home"
+  },
+  "common": {
+    "read_testimonial": "Getuigenis lezen",
+    "language": "Taal",
+    "home": "Home",
+    "back_home": "Terug naar home",
+    "back": "Terug",
+    "close": "Sluiten",
+    "live": "Live",
+    "now": "Nu",
+    "prev": "Vorige",
+    "next": "Volgende",
+    "menu": "Menu",
+    "scroll_left": "Scroll {label} naar links",
+    "scroll_right": "Scroll {label} naar rechts"
+  },
+  "sobre_values": {
+    "diplomacia": "Diplomatie en Dialoog",
+    "diversidade": "Respect voor Diversiteit",
+    "excelencia": "Academische Uitmuntendheid",
+    "cooperacao": "Internationale Samenwerking",
+    "sustentavel": "Duurzame Ontwikkeling"
+  },
+  "ticker": {
+    "live": "LIVE",
+    "alerts": "{n} ALARMS"
+  },
+  "legal": {
+    "label": "Juridisch",
+    "toc": "Op deze pagina",
+    "updated": "Laatst bijgewerkt"
+  },
+  "meta": {
+    "sobre_title": "Over — SWDL",
+    "sobre_desc": "Lees over de geschiedenis en missie van SWDL",
+    "comites_title": "Comités — SWDL",
+    "comites_desc": "Lees over de comités en thema’s van SWDL 2026",
+    "faca_parte_title": "Doe Mee — SWDL",
+    "faca_parte_desc": "Schrijf je in en neem deel aan SWDL",
+    "noticias_title": "Nieuws — SWDL",
+    "noticias_desc": "Volg het laatste SWDL-nieuws",
+    "agenda_title": "Schema — SWDL",
+    "agenda_desc": "Bekijk het volledige SWDL-evenementenschema",
+    "legal_title": "Juridisch — SWDL",
+    "noticia_title": "Nieuwsbericht — SWDL",
+    "root_title": "SWDL — SESI World Diplomacy League",
+    "root_desc": "Het grootste Model VN van SESI. Vertegenwoordig naties, debatteer over resoluties en bouw diplomatieke overeenkomsten."
+  },
+  "a11y": {
+    "cvd_label": "Kleurenblindmodus",
+    "cvd_on": "Kleurenblindmodus aan",
+    "cvd_off": "Kleurenblindmodus uit"
+  }
+}

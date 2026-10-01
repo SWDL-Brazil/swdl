@@ -44,8 +44,12 @@ bower_components
 # Compiled binary addons (http://nodejs.org/api/addons.html)
 build/Release
 
-# Dependency directories
+# Node / Next.js
 node_modules/
+.next/
+out/
+swdl-web/.next/
+swdl-web/node_modules/
 
 # Optional npm cache directory
 .npm
@@ -95,3 +99,4 @@ backend/static/uploads/*
 *~
 .DS_Store
 Thumbs.db
+*.tsbuildinfo
