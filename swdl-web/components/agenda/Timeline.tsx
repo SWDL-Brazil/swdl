@@ -21,46 +21,74 @@ interface PeriodGroup {
   dateGroups: DateGroup[];
 }
 
+function periodForDate(dateKey: string, periods: EventPeriod[]): EventPeriod | undefined {
+  if (!dateKey || dateKey === 'sem-data') return undefined;
+  const sorted = [...periods].sort((a, b) => {
+    if (a.order !== b.order) return a.order - b.order;
+    return (a.start_date || '').localeCompare(b.start_date || '');
+  });
+  return sorted.find(
+    (p) => p.start_date && p.end_date && p.start_date <= dateKey && dateKey <= p.end_date,
+  );
+}
+
 function groupItems(items: AgendaItem[], periods: EventPeriod[]): PeriodGroup[] {
-  const byPeriod = new Map<number | 'sem-periodo', AgendaItem[]>();
+  const byDate = new Map<string, AgendaItem[]>();
   for (const item of items) {
-    const pid = item.period_id ?? 'sem-periodo';
-    const list = byPeriod.get(pid) || [];
+    const key = item.event_date || 'sem-data';
+    const list = byDate.get(key) || [];
     list.push(item);
-    byPeriod.set(pid, list);
+    byDate.set(key, list);
   }
+
+  const allDateGroups: DateGroup[] = Array.from(byDate.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, dateItems]) => ({
+      key,
+      items: [...dateItems].sort((a, b) => {
+        if (a.order !== b.order) return a.order - b.order;
+        return (a.start_time || '').localeCompare(b.start_time || '');
+      }),
+    }));
+
+  const sortedPeriods = [...periods].sort((a, b) => {
+    if (a.order !== b.order) return a.order - b.order;
+    return (a.start_date || '').localeCompare(b.start_date || '');
+  });
 
   const groups: PeriodGroup[] = [];
-  for (const [pid, periodItems] of Array.from(byPeriod.entries())) {
-    const period =
-      pid === 'sem-periodo' ? undefined : periods.find((p) => p.id === pid) || undefined;
+  let lastPeriodId: number | 'sem-periodo' | null = null;
 
-    const byDate = new Map<string, AgendaItem[]>();
-    for (const item of periodItems) {
-      const key = item.event_date || 'sem-data';
-      const list = byDate.get(key) || [];
-      list.push(item);
-      byDate.set(key, list);
+  for (const dg of allDateGroups) {
+    const period = periodForDate(dg.key, sortedPeriods);
+    const pid: number | 'sem-periodo' = period ? period.id : 'sem-periodo';
+
+    if (pid !== lastPeriodId) {
+      groups.push({ periodId: pid, period, dateGroups: [dg] });
+      lastPeriodId = pid;
+    } else {
+      groups[groups.length - 1].dateGroups.push(dg);
     }
-
-    const dateGroups: DateGroup[] = Array.from(byDate.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, dateItems]) => ({
-        key,
-        items: [...dateItems].sort((a, b) => {
-          if (a.order !== b.order) return a.order - b.order;
-          return (a.start_time || '').localeCompare(b.start_time || '');
-        }),
-      }));
-
-    groups.push({ periodId: pid, period, dateGroups });
   }
 
-  // Mantém ordem natural dos períodos (sem período no fim se misturado)
+  for (const period of sortedPeriods) {
+    const hasBlock = groups.some((g) => g.periodId === period.id);
+    if (!hasBlock) {
+      groups.push({ periodId: period.id, period, dateGroups: [] });
+    }
+  }
+
   groups.sort((a, b) => {
+    const firstDate = (g: PeriodGroup) =>
+      g.dateGroups.length ? g.dateGroups[0].key : null;
+    const pa = a.periodId === 'sem-periodo' ? null : a.period ?? null;
+    const pb = b.periodId === 'sem-periodo' ? null : b.period ?? null;
+    const anchorA = firstDate(a) ?? pa?.start_date ?? '~~~~';
+    const anchorB = firstDate(b) ?? pb?.start_date ?? '~~~~';
+    if (a.periodId === 'sem-periodo' && b.periodId === 'sem-periodo') return 0;
     if (a.periodId === 'sem-periodo') return 1;
     if (b.periodId === 'sem-periodo') return -1;
-    return 0;
+    return anchorA.localeCompare(anchorB);
   });
 
   return groups;
@@ -219,7 +247,7 @@ export function Timeline({ items, periods }: TimelineProps) {
   const t = useTranslations('agenda');
   const locale = useLocale();
 
-  if (!items.length) {
+  if (!items.length && !periods.length) {
     return (
       <div className="py-12 text-center text-sm text-[#4B5563]">{t('empty')}</div>
     );

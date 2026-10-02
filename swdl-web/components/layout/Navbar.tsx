@@ -36,6 +36,7 @@ export function Navbar() {
   };
 
   return (
+    <>
     <nav
       className={cn(
         'fixed top-0 left-0 right-0 z-50 h-[68px] flex items-center justify-between px-6 md:px-12 transition-all duration-300',
@@ -101,36 +102,37 @@ export function Navbar() {
       >
         {mobileOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
+    </nav>
 
-      {mobileOpen && (
-        <div className="fixed inset-0 top-[68px] bg-navy/98 backdrop-blur-xl z-40 md:hidden">
-          <ul className="flex flex-col items-center gap-8 pt-12 list-none">
-            {navItems.map((item) => (
-              <li key={item.key}>
-                <Link
-                  href={item.href}
-                  className={cn(
-                    'text-lg font-medium tracking-wide uppercase no-underline',
-                    isActive(item.href) ? 'text-gold' : 'text-white'
-                  )}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {t(item.key)}
-                </Link>
-              </li>
-            ))}
-            <li>
+    {mobileOpen && (
+      <div className="fixed inset-0 top-[68px] bg-navy/98 z-40 md:hidden overflow-y-auto">
+        <ul className="flex flex-col items-center gap-8 pt-12 pb-12 list-none">
+          {navItems.map((item) => (
+            <li key={item.key}>
               <Link
-                href="/faca-parte"
-                className="bg-gold text-navy px-8 py-3 rounded text-sm font-bold tracking-wide uppercase no-underline"
+                href={item.href}
+                className={cn(
+                  'text-lg font-medium tracking-wide uppercase no-underline',
+                  isActive(item.href) ? 'text-gold' : 'text-white'
+                )}
                 onClick={() => setMobileOpen(false)}
               >
-                {t('faca_parte')}
+                {t(item.key)}
               </Link>
             </li>
-          </ul>
-        </div>
-      )}
-    </nav>
+          ))}
+          <li>
+            <Link
+              href="/faca-parte"
+              className="bg-gold text-navy px-8 py-3 rounded text-sm font-bold tracking-wide uppercase no-underline"
+              onClick={() => setMobileOpen(false)}
+            >
+              {t('faca_parte')}
+            </Link>
+          </li>
+        </ul>
+      </div>
+    )}
+    </>
   );
 }

@@ -46,6 +46,14 @@ const config: Config = {
         elevated: '0 8px 24px rgba(0,0,0,0.08)',
         glow: '0 0 40px rgba(201,168,76,0.15)',
       },
+      opacity: {
+        '4': '0.04',
+        '6': '0.06',
+        '7': '0.07',
+        '8': '0.08',
+        '12': '0.12',
+        '98': '0.98',
+      },
       animation: {
         'fade-up': 'fadeUp 0.6s ease-out forwards',
         'slide-in': 'slideIn 0.4s ease-out forwards',
