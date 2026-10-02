@@ -4,6 +4,7 @@
 
 {% block topbar_actions %}
   <a href="{{ url_for('admin.delegate_create') }}" class="btn btn-primary">+ Novo Aluno</a>
+  <a href="{{ url_for('admin.students_export_contacts') }}" class="btn btn-ghost">⤓ Exportar contatos (CSV)</a>
 {% endblock %}
 
 {% block content %}

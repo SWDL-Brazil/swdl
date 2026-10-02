@@ -35,9 +35,11 @@ def delegate_create():
         if User.query.filter_by(email=email).first():
             error = f'Já existe um usuário com o e-mail {email}.'
         else:
-            import secrets, string
-            alphabet = string.ascii_letters + string.digits
-            password = ''.join(secrets.choice(alphabet) for _ in range(10))
+            import unicodedata
+            first_name = (name.strip().split()[0] if name.strip() else '')
+            first_name = unicodedata.normalize('NFKD', first_name).encode('ascii', 'ignore').decode('ascii')
+            first_name = first_name.capitalize()
+            password = f'{first_name}@2026' if first_name else 'Delegado@2026'
 
             ins = Inscription(
                 name        = name,
@@ -99,6 +101,49 @@ def students_list():
         )
     ).order_by(Student.created_at.desc()).all()
     return render_template('admin/students_list.html', students=students)
+
+
+@admin_bp.route('/alunos/exportar-contatos')
+@login_required
+@admin_required
+def students_export_contacts():
+    """Exporta CSV com nome, email, telefone e delegacao para envio via WhatsApp Web."""
+    import csv, io
+    from flask import Response
+    from sqlalchemy.orm import joinedload, selectinload
+    students = Student.query.options(
+        selectinload(Student.delegation).options(
+            selectinload(Delegation.students),
+            joinedload(Delegation.inscription),
+        )
+    ).order_by(Student.name).all()
+
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(['nome', 'email', 'telefone', 'pais', 'comite', 'tema'])
+    for s in students:
+        ins = (s.delegation.inscription if s.delegation and s.delegation.inscription else None)
+        phone = ''
+        if s.delegation and s.delegation.inscription:
+            try:
+                member = next((m for m in s.delegation.inscription.extra_members
+                               if (m.email or '').lower() == s.email.lower()), None)
+                phone = (member.phone if member and member.phone else '') or ''
+            except Exception:
+                phone = ''
+        if not phone and ins:
+            phone = ins.phone or ''
+        w.writerow([
+            s.name, s.email, phone,
+            s.delegation.country if s.delegation else '',
+            s.delegation.committee if s.delegation else '',
+            (s.delegation.theme.name if s.delegation and s.delegation.theme else ''),
+        ])
+    return Response(
+        '﻿' + buf.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': 'attachment; filename=alunos_contatos.csv'},
+    )
 
 
 @admin_bp.route('/alunos/<int:id>/designar', methods=['GET', 'POST'])
