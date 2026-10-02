@@ -17,6 +17,7 @@ class InscriptionMember(db.Model):
     grade           = db.Column(db.String(30))
     instagram       = db.Column(db.String(100))
     phone           = db.Column(db.String(30))
+    school          = db.Column(db.String(120))
     motivation      = db.Column(db.Text)
     interests       = db.Column(db.String(300))
     experience      = db.Column(db.String(300))

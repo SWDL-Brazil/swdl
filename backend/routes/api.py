@@ -195,6 +195,7 @@ def api_inscricao():
             grade  = m.get('grade', ''),
             instagram = m.get('instagram', ''),
             phone  = m.get('phone', ''),
+            school = m.get('school', ''),
             motivation = m.get('motivation', ''),
             interests  = m.get('interests', ''),
             experience = m.get('experience', ''),

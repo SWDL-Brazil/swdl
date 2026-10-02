@@ -63,12 +63,10 @@
           <label>Instagram</label>
           <input type="text" name="instagram" value="{{ contact.instagram or '' }}" placeholder="@usuario">
         </div>
-        {% if not is_member %}
         <div class="form-group">
           <label>Escola</label>
-          <input type="text" name="school" value="{{ inscription.school or '' }}" placeholder="Nome da escola">
+          <input type="text" name="school" value="{{ (contact.school if contact else '') or '' }}" placeholder="Nome da escola">
         </div>
-        {% endif %}
         <div class="form-group">
           <label>Serie</label>
           <input type="text" name="grade" value="{{ contact.grade or '' }}" placeholder="Ex.: 1o ano EM">

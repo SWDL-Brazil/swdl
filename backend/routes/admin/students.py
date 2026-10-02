@@ -334,6 +334,7 @@ def student_edit(id):
                     member_of_ins.phone = phone
                     member_of_ins.instagram = instagram
                     member_of_ins.grade = grade
+                    member_of_ins.school = school
                 else:
                     ins.name = name
                     ins.email = email

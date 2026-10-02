@@ -19,6 +19,7 @@ const emptyMember = {
   email: '',
   phone: '',
   instagram: '',
+  school: '',
   grade: '',
   motivation: '',
 };
@@ -29,6 +30,7 @@ function makeDelegateSchema(t: (k: string) => string) {
     email: z.string().email(t('zod_email')),
     phone: z.string().min(10, t('zod_phone')),
     instagram: z.string().min(1, t('zod_instagram')),
+    school: z.string().optional(),
     grade: z.string().optional(),
     motivation: z.string().optional(),
   });
@@ -307,7 +309,7 @@ export function FacaParteContent() {
                       <label className="block text-sm font-medium text-navy mb-3">{t('members_title')}</label>
                       <div className="space-y-4">
                         {fields.map((field, i) => (
-                          <div key={field.id} className="rounded-xl border border-navy/10 bg-surface p-5 sm:p-6 shadow-card">
+                          <div key={field.id}>
                             <p className="inline-flex items-center gap-2 text-[11px] font-mono font-bold tracking-[0.12em] uppercase text-gold-dark bg-gold/10 border border-gold/30 rounded-sm px-2.5 py-1 mb-4">
                               {t('member_card_label', { index: i + 1 })}
                             </p>
@@ -343,9 +345,13 @@ export function FacaParteContent() {
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-medium text-navy mb-1">{t('form_motivation')}</label>
-                                  <input {...register(`members.${i}.motivation` as const)} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all" placeholder={t('form_motivation')} />
+                                  <label className="block text-xs font-medium text-navy mb-1">{t('form_school')}</label>
+                                  <input {...register(`members.${i}.school` as const)} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all" placeholder={t('form_school')} />
                                 </div>
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-navy mb-1">{t('form_motivation')}</label>
+                                <input {...register(`members.${i}.motivation` as const)} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all" placeholder={t('form_motivation')} />
                               </div>
                             </div>
                           </div>
