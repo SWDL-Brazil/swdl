@@ -340,9 +340,11 @@ def student_reset_password(id):
         flash('Usuario de login nao encontrado.', 'error')
         return redirect(url_for('admin.student_edit', id=student.id))
 
-    import secrets, string
-    alphabet = string.ascii_letters + string.digits
-    new_password = ''.join(secrets.choice(alphabet) for _ in range(10))
+    import unicodedata
+    first_name = (student.name or '').strip().split()[0] if student.name else ''
+    first_name = unicodedata.normalize('NFKD', first_name).encode('ascii', 'ignore').decode('ascii')
+    first_name = first_name.capitalize()
+    new_password = f'{first_name}@2026' if first_name else 'Delegado@2026'
     user.set_password(new_password)
     db.session.commit()
     flash(f'Nova senha gerada para {user.email}.', 'success')
