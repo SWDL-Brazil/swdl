@@ -134,6 +134,15 @@ export function FacaParteContent() {
   const memberCount =
     selectedFormat === 'dupla' ? 1 : selectedFormat === 'trio' ? 2 : 0;
 
+  const watched = watch();
+  const memberFilled = (m: any) =>
+    (m?.name || '').trim().length >= 3 &&
+    /^[^@]+@[^@]+\.[^@]+$/.test((m?.email || '').trim()) &&
+    (m?.phone || '').replace(/\D/g, '').length >= 10 &&
+    (m?.instagram || '').trim().length >= 1;
+  const mainFilled = memberFilled(watched);
+  const memberFilledAt = (i: number) => memberFilled((watched.members || [])[i]);
+
   useEffect(() => {
     const current = getValues('members') || [];
     if (current.length > memberCount) {
@@ -304,64 +313,9 @@ export function FacaParteContent() {
                     </div>
                   </div>
 
-                  {memberCount > 0 && (
-                    <div>
-                      <label className="block text-sm font-medium text-navy mb-3">{t('members_title')}</label>
-                      <div className="space-y-4">
-                        {fields.map((field, i) => (
-                          <div key={field.id}>
-                            <p className="inline-flex items-center gap-2 text-[11px] font-mono font-bold tracking-[0.12em] uppercase text-gold-dark bg-gold/10 border border-gold/30 rounded-sm px-2.5 py-1 mb-4">
-                              {t('member_card_label', { index: i + 1 })}
-                            </p>
-                            <div className="space-y-3">
-                              <div>
-                                <label className="block text-xs font-medium text-navy mb-1">{t('form_name')} *</label>
-                                <input {...register(`members.${i}.name` as const)} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all" placeholder={t('form_name')} />
-                                {errors.members?.[i]?.name && <p className="text-red-700 text-xs mt-1">{errors.members[i]?.name?.message}</p>}
-                              </div>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                  <label className="block text-xs font-medium text-navy mb-1">{t('form_email')} *</label>
-                                  <input {...register(`members.${i}.email` as const)} type="email" className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all" placeholder="seu@email.com" />
-                                  {errors.members?.[i]?.email && <p className="text-red-700 text-xs mt-1">{errors.members[i]?.email?.message}</p>}
-                                </div>
-                                <div>
-                                  <label className="block text-xs font-medium text-navy mb-1">{t('form_phone')} *</label>
-                                  <input {...register(`members.${i}.phone` as const)} type="tel" className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all" placeholder="(85) 99999-9999" />
-                                  {errors.members?.[i]?.phone && <p className="text-red-700 text-xs mt-1">{errors.members[i]?.phone?.message}</p>}
-                                </div>
-                              </div>
-                              <div>
-                                <label className="block text-xs font-medium text-navy mb-1">{t('form_instagram')} *</label>
-                                <input {...register(`members.${i}.instagram` as const)} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all" placeholder="@seuinstagram" />
-                                {errors.members?.[i]?.instagram && <p className="text-red-700 text-xs mt-1">{errors.members[i]?.instagram?.message}</p>}
-                              </div>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                  <label className="block text-xs font-medium text-navy mb-1">{t('form_grade')}</label>
-                                  <select {...register(`members.${i}.grade` as const)} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all bg-white">
-                                    <option value="">{t('form_grade_select')}</option>
-                                    {gradeOptions.map(g => <option key={g} value={g}>{g}</option>)}
-                                  </select>
-                                </div>
-                                <div>
-                                  <label className="block text-xs font-medium text-navy mb-1">{t('form_school')}</label>
-                                  <input {...register(`members.${i}.school` as const)} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all" placeholder={t('form_school')} />
-                                </div>
-                              </div>
-                              <div>
-                                <label className="block text-xs font-medium text-navy mb-1">{t('form_motivation')}</label>
-                                <input {...register(`members.${i}.motivation` as const)} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all" placeholder={t('form_motivation')} />
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      {errors.members && !Array.isArray(errors.members) && typeof errors.members.message === 'string' && (
-                        <p className="text-red-700 text-xs mt-2">{errors.members.message}</p>
-                      )}
-                    </div>
-                  )}
+                <p className="inline-flex items-center gap-2 text-[11px] font-mono font-bold tracking-[0.12em] uppercase text-gold-dark bg-gold/10 border border-gold/30 rounded-sm px-2.5 py-1 mb-4">
+                  {t('member_card_label', { index: 1 })}
+                </p>
 
                   <div>
                     <label className="block text-sm font-medium text-navy mb-1.5">{t('form_name')} *</label>
@@ -415,6 +369,69 @@ export function FacaParteContent() {
                     <label className="block text-sm font-medium text-navy mb-1.5">{t('form_motivation')}</label>
                     <textarea {...register('motivation')} rows={3} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all resize-none" placeholder={t('form_motivation')} />
                   </div>
+
+                  {memberCount > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium text-navy mb-3">{t('members_title')}</label>
+                      <div className="space-y-4">
+                        {fields.map((field, i) => {
+                          const visible = i === 0 ? mainFilled : memberFilledAt(i - 1);
+                          if (!visible) return null;
+                          return (
+                          <div key={field.id}>
+                            <p className="inline-flex items-center gap-2 text-[11px] font-mono font-bold tracking-[0.12em] uppercase text-gold-dark bg-gold/10 border border-gold/30 rounded-sm px-2.5 py-1 mb-4">
+                              {t('member_card_label', { index: i + 2 })}
+                            </p>
+                            <div className="space-y-3">
+                              <div>
+                                <label className="block text-xs font-medium text-navy mb-1">{t('form_name')} *</label>
+                                <input {...register(`members.${i}.name` as const)} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all" placeholder={t('form_name')} />
+                                {errors.members?.[i]?.name && <p className="text-red-700 text-xs mt-1">{errors.members[i]?.name?.message}</p>}
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                  <label className="block text-xs font-medium text-navy mb-1">{t('form_email')} *</label>
+                                  <input {...register(`members.${i}.email` as const)} type="email" className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all" placeholder="seu@email.com" />
+                                  {errors.members?.[i]?.email && <p className="text-red-700 text-xs mt-1">{errors.members[i]?.email?.message}</p>}
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-navy mb-1">{t('form_phone')} *</label>
+                                  <input {...register(`members.${i}.phone` as const)} type="tel" className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all" placeholder="(85) 99999-9999" />
+                                  {errors.members?.[i]?.phone && <p className="text-red-700 text-xs mt-1">{errors.members[i]?.phone?.message}</p>}
+                                </div>
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-navy mb-1">{t('form_instagram')} *</label>
+                                <input {...register(`members.${i}.instagram` as const)} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all" placeholder="@seuinstagram" />
+                                {errors.members?.[i]?.instagram && <p className="text-red-700 text-xs mt-1">{errors.members[i]?.instagram?.message}</p>}
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                  <label className="block text-xs font-medium text-navy mb-1">{t('form_grade')}</label>
+                                  <select {...register(`members.${i}.grade` as const)} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all bg-white">
+                                    <option value="">{t('form_grade_select')}</option>
+                                    {gradeOptions.map(g => <option key={g} value={g}>{g}</option>)}
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-navy mb-1">{t('form_school')}</label>
+                                  <input {...register(`members.${i}.school` as const)} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all" placeholder={t('form_school')} />
+                                </div>
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-navy mb-1">{t('form_motivation')}</label>
+                                <input {...register(`members.${i}.motivation` as const)} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all" placeholder={t('form_motivation')} />
+                              </div>
+                            </div>
+                          </div>
+                          );
+                        })}
+                      </div>
+                      {errors.members && !Array.isArray(errors.members) && typeof errors.members.message === 'string' && (
+                        <p className="text-red-700 text-xs mt-2">{errors.members.message}</p>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex items-start gap-3">
                     <input type="checkbox" {...register('accept_terms')} className="mt-1 w-4 h-4 text-gold-dark border-navy/30 rounded focus:ring-gold-dark" />
