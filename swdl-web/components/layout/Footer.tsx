@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { Mail, Instagram, ExternalLink } from 'lucide-react';
+import { Mail, Instagram } from 'lucide-react';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ColorblindToggle } from '@/components/a11y/ColorblindToggle';
 
@@ -122,16 +122,6 @@ export function Footer() {
           <p className="text-slate-light text-xs opacity-90">
             © {new Date().getFullYear()} SESI World Diplomacy League — {t('developed_by')}
           </p>
-          <div className="flex items-center gap-6">
-            <a
-              href="https://github.com/SWDL-Brazil"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-slate-light text-xs hover:text-gold transition-colors flex items-center gap-1"
-            >
-              GitHub <ExternalLink size={12} />
-            </a>
-          </div>
         </div>
       </div>
     </footer>
