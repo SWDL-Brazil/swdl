@@ -254,6 +254,10 @@ def student_edit(id):
     if request.method == 'POST':
         name  = request.form.get('name', '').strip()
         email = request.form.get('email', '').strip().lower()
+        phone = request.form.get('phone', '').strip()
+        instagram = request.form.get('instagram', '').strip()
+        school = request.form.get('school', '').strip()
+        grade = request.form.get('grade', '').strip()
 
         if not name or not email:
             error = 'Nome e e-mail sao obrigatorios.'
@@ -274,18 +278,29 @@ def student_edit(id):
             if ins:
                 ins.name  = name
                 ins.email = email
+                ins.phone = phone
+                ins.instagram = instagram
+                ins.school = school
+                ins.grade = grade
 
             if student.delegation and student.delegation.inscription:
                 dins = student.delegation.inscription
                 if dins.email == old_email:
                     dins.name  = name
                     dins.email = email
+                    dins.phone = phone
+                    dins.instagram = instagram
+                    dins.school = school
+                    dins.grade = grade
 
             db.session.commit()
             flash(f'✅ Dados de {name} atualizados!', 'success')
             return redirect(url_for('admin.students_list'))
 
-    return render_template('admin/student_edit.html', student=student, error=error)
+    ins = (student.delegation.inscription
+           if student.delegation and student.delegation.inscription
+           else Inscription.query.filter_by(email=student.email).first())
+    return render_template('admin/student_edit.html', student=student, error=error, inscription=ins)
 
 
 @admin_bp.route('/alunos/<int:id>/resetar-senha', methods=['POST'])
