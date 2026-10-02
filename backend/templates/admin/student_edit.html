@@ -54,23 +54,30 @@
           </div>
         </div>
 
-        {% if inscription %}
+        {% if contact %}
         <div class="form-group">
           <label>Telefone</label>
-          <input type="text" name="phone" value="{{ inscription.phone or '' }}" placeholder="(xx) xxxxx-xxxx">
+          <input type="text" name="phone" value="{{ contact.phone or '' }}" placeholder="(xx) xxxxx-xxxx">
         </div>
         <div class="form-group">
           <label>Instagram</label>
-          <input type="text" name="instagram" value="{{ inscription.instagram or '' }}" placeholder="@usuario">
+          <input type="text" name="instagram" value="{{ contact.instagram or '' }}" placeholder="@usuario">
         </div>
+        {% if not is_member %}
         <div class="form-group">
           <label>Escola</label>
           <input type="text" name="school" value="{{ inscription.school or '' }}" placeholder="Nome da escola">
         </div>
+        {% endif %}
         <div class="form-group">
           <label>Serie</label>
-          <input type="text" name="grade" value="{{ inscription.grade or '' }}" placeholder="Ex.: 1o ano EM">
+          <input type="text" name="grade" value="{{ contact.grade or '' }}" placeholder="Ex.: 1o ano EM">
         </div>
+        {% if is_member %}
+        <div style="font-size:11px;color:var(--muted);margin-top:-8px">
+          Este aluno é um membro adicional da inscrição — os dados acima são só dele.
+        </div>
+        {% endif %}
         {% endif %}
 
         <div style="display:flex;gap:8px;margin-top:8px">

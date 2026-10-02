@@ -9,6 +9,7 @@ from models.student import Student
 from models.delegation import Delegation
 from models.theme import Theme
 from models.inscription import Inscription
+from models.inscription_member import InscriptionMember
 from models.participation import ParticipationHistory
 from extensions import db
 import re
@@ -274,24 +275,27 @@ def student_edit(id):
                     user.name  = name
                     user.email = email
 
-            ins = Inscription.query.filter_by(email=old_email, status='approved').first()
+            ins = (student.delegation.inscription
+                   if student.delegation and student.delegation.inscription
+                   else Inscription.query.filter_by(email=old_email, status='approved').first())
             if ins:
-                ins.name  = name
-                ins.email = email
-                ins.phone = phone
-                ins.instagram = instagram
-                ins.school = school
-                ins.grade = grade
-
-            if student.delegation and student.delegation.inscription:
-                dins = student.delegation.inscription
-                if dins.email == old_email:
-                    dins.name  = name
-                    dins.email = email
-                    dins.phone = phone
-                    dins.instagram = instagram
-                    dins.school = school
-                    dins.grade = grade
+                member_of_ins = InscriptionMember.query.filter(
+                    InscriptionMember.inscription_id == ins.id,
+                    db.func.lower(InscriptionMember.email) == old_email.lower(),
+                ).first()
+                if member_of_ins:
+                    member_of_ins.name = name
+                    member_of_ins.email = email
+                    member_of_ins.phone = phone
+                    member_of_ins.instagram = instagram
+                    member_of_ins.grade = grade
+                else:
+                    ins.name = name
+                    ins.email = email
+                    ins.phone = phone
+                    ins.instagram = instagram
+                    ins.school = school
+                    ins.grade = grade
 
             db.session.commit()
             flash(f'✅ Dados de {name} atualizados!', 'success')
@@ -300,7 +304,15 @@ def student_edit(id):
     ins = (student.delegation.inscription
            if student.delegation and student.delegation.inscription
            else Inscription.query.filter_by(email=student.email).first())
-    return render_template('admin/student_edit.html', student=student, error=error, inscription=ins)
+    member = None
+    if ins:
+        member = InscriptionMember.query.filter(
+            InscriptionMember.inscription_id == ins.id,
+            db.func.lower(InscriptionMember.email) == student.email.lower(),
+        ).first()
+    contact = member or ins
+    return render_template('admin/student_edit.html', student=student, error=error,
+                           inscription=ins, contact=contact, is_member=member is not None)
 
 
 @admin_bp.route('/alunos/<int:id>/resetar-senha', methods=['POST'])
@@ -337,8 +349,15 @@ def student_reset_password(id):
     ins = (student.delegation.inscription
            if student.delegation and student.delegation.inscription
            else Inscription.query.filter_by(email=student.email).first())
+    member = None
+    if ins:
+        member = InscriptionMember.query.filter(
+            InscriptionMember.inscription_id == ins.id,
+            db.func.lower(InscriptionMember.email) == student.email.lower(),
+        ).first()
     return render_template('admin/student_edit.html', student=student, error=None,
-                           inscription=ins, new_password=new_password)
+                           inscription=ins, contact=member or ins, is_member=member is not None,
+                           new_password=new_password)
 
 
 @admin_bp.route('/alunos/<int:id>/deletar', methods=['POST'])
