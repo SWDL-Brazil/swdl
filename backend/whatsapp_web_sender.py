@@ -65,8 +65,20 @@ def normalize_phone(phone):
 
 def main():
     if len(sys.argv) < 2:
-        print('Uso: python whatsapp_web_sender.py <contatos.csv>')
+        print('Uso: python whatsapp_web_sender.py <contatos.csv> [--test] [--only <nome ou email>] [--phone <numero>]')
+        print('  --test        : so imprime as mensagens, nao envia nada')
+        print('  --only X      : envia apenas para o contato cujo nome/email contenha X')
+        print('  --phone N     : envia apenas para o numero N (normalizado com 55)')
         sys.exit(1)
+
+    csv_path = sys.argv[1]
+    test_only = '--test' in sys.argv
+    only = None
+    phone_filter = None
+    if '--only' in sys.argv:
+        only = sys.argv[sys.argv.index('--only') + 1].lower()
+    if '--phone' in sys.argv:
+        phone_filter = normalize_phone(sys.argv[sys.argv.index('--phone') + 1])
 
     try:
         from playwright.sync_api import sync_playwright
@@ -75,17 +87,31 @@ def main():
         sys.exit(1)
 
     rows = []
-    with open(sys.argv[1], newline='', encoding='utf-8-sig') as f:
+    with open(csv_path, newline='', encoding='utf-8-sig') as f:
         for row in csv.DictReader(f):
             phone = normalize_phone(row.get('telefone', ''))
-            if phone:
-                rows.append((row, phone))
+            if not phone:
+                continue
+            if only and only not in (row.get('nome', '') + ' ' + row.get('email', '')).lower():
+                continue
+            if phone_filter and phone != phone_filter:
+                continue
+            rows.append((row, phone))
 
     if not rows:
-        print('Nenhum contato com telefone encontrado no CSV.')
+        print('Nenhum contato com telefone encontrado no CSV (com os filtros dados).')
         sys.exit(1)
 
-    print(f'{len(rows)} contatos com telefone.')
+    print(f'{len(rows)} contato(s) com telefone.')
+
+    if test_only:
+        for row, phone in rows:
+            print('=' * 60)
+            print(f"PARA: {row['nome']} ({phone})")
+            print(build_message(row))
+        print('=' * 60)
+        print('--test: nenhuma mensagem enviada.')
+        sys.exit(0)
 
     with sync_playwright() as p:
         browser = p.chromium.launch_persistent_context(
