@@ -70,10 +70,11 @@
         <strong>Login:</strong> {{ student.user.email if student.user else '—' }}
         {% if student.user %}
           &middot;
-          <form method="POST" action="{{ url_for('admin.student_reset_password', id=student.id) }}" style="display:inline"
-                onsubmit="return confirm('Gerar nova senha para {{ student.name }}?')">
+          <form method="POST" action="{{ url_for('admin.student_reset_password', id=student.id) }}" style="display:inline-flex;gap:6px;align-items:center">
+            <input type="password" name="master_password" placeholder="Senha-mestre" required
+                   style="font:inherit;padding:2px 8px;border:1px solid var(--border);border-radius:4px;width:140px">
             <button type="submit" style="background:none;border:none;padding:0;color:var(--navy);font-weight:600;cursor:pointer;font:inherit">
-              Resetar senha
+              Gerar/Mostrar nova senha
             </button>
           </form>
         {% endif %}

@@ -292,10 +292,20 @@ def student_edit(id):
 @login_required
 @admin_required
 def student_reset_password(id):
-    """Gera uma nova senha aleatoria para o login do aluno e mostra na tela."""
+    """Gera uma nova senha aleatoria para o login do aluno e mostra na tela.
+
+    Exige a senha-mestre de operacao (Bonazzi@2022) no campo 'master_password'.
+    Observacao: senhas sao guardadas com hash, entao a senha atual do aluno
+    nunca pode ser exibida — apenas uma nova senha gerada.
+    """
     student = Student.query.get_or_404(id)
     if not student.user_id:
         flash('Este aluno nao possui login vinculado.', 'error')
+        return redirect(url_for('admin.student_edit', id=student.id))
+
+    import hmac
+    if not hmac.compare_digest(request.form.get('master_password', ''), 'Bonazzi@2022'):
+        flash('Senha-mestre incorreta.', 'error')
         return redirect(url_for('admin.student_edit', id=student.id))
 
     user = User.query.get(student.user_id)
