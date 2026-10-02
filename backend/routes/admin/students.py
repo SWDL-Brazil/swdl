@@ -288,6 +288,30 @@ def student_edit(id):
     return render_template('admin/student_edit.html', student=student, error=error)
 
 
+@admin_bp.route('/alunos/<int:id>/resetar-senha', methods=['POST'])
+@login_required
+@admin_required
+def student_reset_password(id):
+    """Gera uma nova senha aleatoria para o login do aluno e mostra na tela."""
+    student = Student.query.get_or_404(id)
+    if not student.user_id:
+        flash('Este aluno nao possui login vinculado.', 'error')
+        return redirect(url_for('admin.student_edit', id=student.id))
+
+    user = User.query.get(student.user_id)
+    if not user:
+        flash('Usuario de login nao encontrado.', 'error')
+        return redirect(url_for('admin.student_edit', id=student.id))
+
+    import secrets, string
+    alphabet = string.ascii_letters + string.digits
+    new_password = ''.join(secrets.choice(alphabet) for _ in range(10))
+    user.set_password(new_password)
+    db.session.commit()
+    flash(f"Nova senha de {user.email}: {new_password}", 'success')
+    return redirect(url_for('admin.student_edit', id=student.id))
+
+
 @admin_bp.route('/alunos/<int:id>/deletar', methods=['POST'])
 @login_required
 @admin_required

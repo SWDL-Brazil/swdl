@@ -70,11 +70,12 @@
         <strong>Login:</strong> {{ student.user.email if student.user else '—' }}
         {% if student.user %}
           &middot;
-          <a href="{{ url_for('admin.student_reset_password', id=student.id) }}"
-             style="color:var(--navy);font-weight:600"
-             onclick="return confirm('Gerar nova senha para {{ student.name }}?')">
-            Resetar senha
-          </a>
+          <form method="POST" action="{{ url_for('admin.student_reset_password', id=student.id) }}" style="display:inline"
+                onsubmit="return confirm('Gerar nova senha para {{ student.name }}?')">
+            <button type="submit" style="background:none;border:none;padding:0;color:var(--navy);font-weight:600;cursor:pointer;font:inherit">
+              Resetar senha
+            </button>
+          </form>
         {% endif %}
       </div>
     </div>
