@@ -333,8 +333,12 @@ def student_reset_password(id):
     new_password = ''.join(secrets.choice(alphabet) for _ in range(10))
     user.set_password(new_password)
     db.session.commit()
-    flash(f"Nova senha de {user.email}: {new_password}", 'success')
-    return redirect(url_for('admin.student_edit', id=student.id))
+    flash(f'Nova senha gerada para {user.email}.', 'success')
+    ins = (student.delegation.inscription
+           if student.delegation and student.delegation.inscription
+           else Inscription.query.filter_by(email=student.email).first())
+    return render_template('admin/student_edit.html', student=student, error=None,
+                           inscription=ins, new_password=new_password)
 
 
 @admin_bp.route('/alunos/<int:id>/deletar', methods=['POST'])

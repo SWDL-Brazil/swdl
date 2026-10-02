@@ -82,22 +82,40 @@
     </div>
   </div>
 
+  {% if new_password %}
+  <div class="card" style="margin-top:16px;border-left:3px solid #065F46">
+    <div class="card-body" style="padding:16px 18px">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:6px">✅ Nova senha gerada. Copie agora — ela não será exibida novamente:</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <code id="new-password" style="font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:var(--navy);background:rgba(6,95,70,.08);padding:8px 14px;border-radius:6px;letter-spacing:.06em">{{ new_password }}</code>
+        <button type="button" class="btn btn-ghost" onclick="navigator.clipboard.writeText(document.getElementById('new-password').textContent);this.textContent='Copiado!';setTimeout(()=>this.textContent='Copiar',2000)">Copiar</button>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   {% if student.user_id %}
   <div class="card" style="margin-top:16px;border-left:3px solid var(--orange)">
-    <div class="card-body" style="padding:14px 18px">
-      <div style="font-size:13px;color:var(--muted)">
-        <strong>Login:</strong> {{ student.user.email if student.user else '—' }}
-        {% if student.user %}
-          &middot;
-          <form method="POST" action="{{ url_for('admin.student_reset_password', id=student.id) }}" style="display:inline-flex;gap:6px;align-items:center">
-            <input type="password" name="master_password" placeholder="Senha-mestre" required
-                   style="font:inherit;padding:2px 8px;border:1px solid var(--border);border-radius:4px;width:140px">
-            <button type="submit" style="background:none;border:none;padding:0;color:var(--navy);font-weight:600;cursor:pointer;font:inherit">
-              Gerar/Mostrar nova senha
-            </button>
-          </form>
-        {% endif %}
-      </div>
+    <div class="card-header">
+      <span class="card-title">🔐 Login e Senha</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">
+        <strong>Login:</strong> {{ student.user.email if student.user else '—' }}<br>
+        A senha atual não pode ser visualizada (fica gravada com criptografia).
+        Para entregar uma nova senha ao aluno, informe a senha-mestre e gere uma nova:
+      </p>
+      {% if student.user %}
+      <form method="POST" action="{{ url_for('admin.student_reset_password', id=student.id) }}"
+            onsubmit="return confirm('Gerar uma NOVA senha para {{ student.name }}? A antiga deixará de funcionar.')">
+        <div class="form-group" style="max-width:280px">
+          <label>Senha-mestre *</label>
+          <input type="password" name="master_password" required
+                 placeholder="Digite a senha-mestre" autocomplete="off">
+        </div>
+        <button type="submit" class="btn btn-ghost">Gerar nova senha</button>
+      </form>
+      {% endif %}
     </div>
   </div>
   {% endif %}
