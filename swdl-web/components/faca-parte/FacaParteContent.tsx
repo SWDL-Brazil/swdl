@@ -307,8 +307,10 @@ export function FacaParteContent() {
                       <label className="block text-sm font-medium text-navy mb-3">{t('members_title')}</label>
                       <div className="space-y-4">
                         {fields.map((field, i) => (
-                          <div key={field.id} className="bg-white rounded-lg p-4 border border-navy/5 border-l-4 border-l-gold">
-                            <p className="text-xs font-semibold text-navy mb-3">{t('member_card_label', { index: i + 1 })}</p>
+                          <div key={field.id} className="rounded-xl border border-navy/10 bg-surface p-5 sm:p-6 shadow-card">
+                            <p className="inline-flex items-center gap-2 text-[11px] font-mono font-bold tracking-[0.12em] uppercase text-gold-dark bg-gold/10 border border-gold/30 rounded-sm px-2.5 py-1 mb-4">
+                              {t('member_card_label', { index: i + 1 })}
+                            </p>
                             <div className="space-y-3">
                               <div>
                                 <label className="block text-xs font-medium text-navy mb-1">{t('form_name')} *</label>
