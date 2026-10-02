@@ -372,6 +372,12 @@ export function FacaParteContent() {
 
                   {memberCount > 0 && (
                     <div>
+                      <div style={{background:'rgba(201,168,76,.08)',border:'1px solid rgba(201,168,76,.3)',borderRadius:8,padding:'12px 16px',marginBottom:16,fontSize:13,color:'#7A5F1F',display:'flex',gap:10,alignItems:'flex-start'}}>
+                        <span style={{fontSize:16,flexShrink:0}}>💡</span>
+                        <div>
+                          <strong>Preenchimento progressivo:</strong> os campos dos membros extras (Membro 2 e, se for trio, Membro 3) só aparecem depois que o membro anterior estiver com nome, e-mail, telefone e Instagram preenchidos.
+                        </div>
+                      </div>
                       <label className="block text-sm font-medium text-navy mb-3">{t('members_title')}</label>
                       <div className="space-y-4">
                         {fields.map((field, i) => {
