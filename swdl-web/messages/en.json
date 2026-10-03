@@ -641,6 +641,9 @@
     "zod_phone": "Phone must have at least 10 digits",
     "zod_terms": "You must accept the terms",
     "zod_instagram": "Instagram is required",
+
+    "zod_school": "School is required",
+    "zod_grade": "Grade is required",
     "zod_members_count": "Number of members does not match the selected format",
     "members_title": "Group members details",
     "member_card_label": "Member {index}",

@@ -641,6 +641,9 @@
     "zod_phone": "El teléfono debe tener al menos 10 dígitos",
     "zod_terms": "Debes aceptar los términos",
     "zod_instagram": "Instagram es obligatorio",
+
+    "zod_school": "La escuela es obligatoria",
+    "zod_grade": "El curso es obligatorio",
     "zod_members_count": "El número de miembros no coincide con el formato elegido",
     "members_title": "Datos de los miembros del grupo",
     "member_card_label": "Miembro {index}",

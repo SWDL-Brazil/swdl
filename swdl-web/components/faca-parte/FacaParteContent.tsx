@@ -22,6 +22,8 @@ const emptyMember = {
   school: '',
   grade: '',
   motivation: '',
+  experience: '',
+  interests: '',
 };
 
 function makeDelegateSchema(t: (k: string) => string) {
@@ -30,9 +32,11 @@ function makeDelegateSchema(t: (k: string) => string) {
     email: z.string().email(t('zod_email')),
     phone: z.string().min(10, t('zod_phone')),
     instagram: z.string().min(1, t('zod_instagram')),
-    school: z.string().optional(),
-    grade: z.string().optional(),
+    school: z.string().min(1, t('zod_school')),
+    grade: z.string().min(1, t('zod_grade')),
     motivation: z.string().optional(),
+    experience: z.string().optional(),
+    interests: z.string().optional(),
   });
 
   return z
@@ -41,8 +45,8 @@ function makeDelegateSchema(t: (k: string) => string) {
       email: z.string().email(t('zod_email')),
       phone: z.string().min(10, t('zod_phone')),
       instagram: z.string().min(1, t('zod_instagram')),
-      school: z.string().optional(),
-      grade: z.string().optional(),
+      school: z.string().min(1, t('zod_school')),
+      grade: z.string().min(1, t('zod_grade')),
       experience: z.string().optional(),
       interests: z.string().optional(),
       motivation: z.string().optional(),
@@ -427,6 +431,14 @@ export function FacaParteContent() {
                               <div>
                                 <label className="block text-xs font-medium text-navy mb-1">{t('form_motivation')}</label>
                                 <input {...register(`members.${i}.motivation` as const)} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all" placeholder={t('form_motivation')} />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-navy mb-1">{t('form_experience')}</label>
+                                <textarea {...register(`members.${i}.experience` as const)} rows={2} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all resize-none" placeholder={t('form_experience_placeholder')} />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-navy mb-1">{t('form_interests')}</label>
+                                <textarea {...register(`members.${i}.interests` as const)} rows={2} className="w-full px-4 py-3 rounded-lg border border-navy/10 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all resize-none" placeholder={t('form_interests_placeholder')} />
                               </div>
                             </div>
                           </div>

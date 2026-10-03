@@ -641,6 +641,9 @@
     "zod_phone": "Telepon harus minimal 10 digit",
     "zod_terms": "Anda harus menerima syarat",
     "zod_instagram": "Instagram wajib diisi",
+
+    "zod_school": "Sekolah wajib diisi",
+    "zod_grade": "Kelas wajib diisi",
     "zod_members_count": "Jumlah anggota tidak sesuai dengan format yang dipilih",
     "members_title": "Data anggota kelompok",
     "member_card_label": "Anggota {index}",

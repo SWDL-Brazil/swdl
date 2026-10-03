@@ -122,7 +122,7 @@ def api_periods():
 def api_inscricao():
     data = request.get_json(silent=True) or request.form
 
-    required = ('name', 'email', 'phone', 'instagram')
+    required = ('name', 'email', 'phone', 'instagram', 'school', 'grade')
     for field in required:
         if not data.get(field):
             return jsonify({'ok': False, 'error': f'Campo {field} obrigatório.'}), 400
@@ -154,8 +154,8 @@ def api_inscricao():
 
     # Valida membros obrigatórios
     for m in members_data:
-        if not m.get('name') or not m.get('email') or not m.get('phone') or not m.get('instagram'):
-            return jsonify({'ok': False, 'error': 'Todos os membros devem informar nome, email, telefone e Instagram.'}), 400
+        if not m.get('name') or not m.get('email') or not m.get('phone') or not m.get('instagram') or not m.get('school') or not m.get('grade'):
+            return jsonify({'ok': False, 'error': 'Todos os membros devem informar nome, email, telefone, Instagram, escola e série.'}), 400
 
     # Valida emails duplicados
     all_emails = [data['email'].lower().strip()]

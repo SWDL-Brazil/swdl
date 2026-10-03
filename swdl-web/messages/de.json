@@ -641,6 +641,9 @@
     "zod_phone": "Die Telefonnummer muss mindestens 10 Ziffern haben",
     "zod_terms": "Du musst die Bedingungen akzeptieren",
     "zod_instagram": "Instagram ist erforderlich",
+
+    "zod_school": "Schule ist erforderlich",
+    "zod_grade": "Jahrgangsstufe ist erforderlich",
     "zod_members_count": "Die Anzahl der Mitglieder passt nicht zum gewählten Format",
     "members_title": "Daten der Gruppenmitglieder",
     "member_card_label": "Mitglied {index}",
