@@ -1,10 +1,25 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { LinkButton } from '@/components/ui/Button';
 import { ArrowRight, Eye } from 'lucide-react';
 import { motion } from 'motion/react';
+
+function useSplashDone() {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if ((window as unknown as { __swdlSplashDone?: boolean }).__swdlSplashDone) {
+      setReady(true);
+      return;
+    }
+    const onDone = () => setReady(true);
+    window.addEventListener('swdl-splash-done', onDone);
+    return () => window.removeEventListener('swdl-splash-done', onDone);
+  }, []);
+  return ready;
+}
 
 const Globe3D = dynamic(() => import('./Globe3D').then(mod => mod.Globe3D), {
   ssr: false,
@@ -23,6 +38,13 @@ const stats = [
 
 export function Hero() {
   const t = useTranslations('home');
+  const ready = useSplashDone();
+
+  const a = (delay: number) => ({
+    initial: { opacity: 0, y: 20 },
+    animate: ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 },
+    transition: { duration: 0.6, delay },
+  });
 
   return (
     <section className="min-h-screen grid grid-cols-1 lg:grid-cols-2 overflow-hidden relative">
@@ -39,7 +61,7 @@ export function Hero() {
           {/* Tag */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="inline-flex items-center gap-2 font-mono text-[0.72rem] tracking-[0.14em] uppercase text-gold border border-gold/30 px-3.5 py-1.5 rounded-sm mb-7"
           >
@@ -50,7 +72,7 @@ export function Hero() {
           {/* Title */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="font-display text-[clamp(44px,5vw,74px)] font-black leading-[0.98] text-white mb-2.5"
           >
@@ -62,7 +84,7 @@ export function Hero() {
           {/* Subtitle */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.6, delay: 0.35 }}
             className="text-base font-light leading-relaxed text-slate-light max-w-[400px] my-5"
           >
@@ -72,7 +94,7 @@ export function Hero() {
           {/* Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.6, delay: 0.45 }}
             className="flex gap-3 flex-wrap"
           >
@@ -87,7 +109,7 @@ export function Hero() {
           {/* Stats */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.6, delay: 0.55 }}
             className="flex gap-10 mt-10"
           >
