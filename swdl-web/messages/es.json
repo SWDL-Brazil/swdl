@@ -641,7 +641,6 @@
     "zod_phone": "El teléfono debe tener al menos 10 dígitos",
     "zod_terms": "Debes aceptar los términos",
     "zod_instagram": "Instagram es obligatorio",
-
     "zod_school": "La escuela es obligatoria",
     "zod_grade": "El curso es obligatorio",
     "zod_members_count": "El número de miembros no coincide con el formato elegido",
@@ -768,8 +767,10 @@
   },
   "page_404": {
     "title": "Página no encontrada",
-    "subtitle": "¡Ups! La página que buscas no existe.",
-    "back": "Volver al inicio"
+    "subtitle": "La dirección puede ser incorrecta, o la página fue movida o eliminada.",
+    "back": "Volver al inicio",
+    "eyebrow": "Error 404",
+    "committees": "Ver comités"
   },
   "common": {
     "read_testimonial": "Leer testimonio",

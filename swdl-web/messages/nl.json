@@ -641,7 +641,6 @@
     "zod_phone": "Het telefoonnummer moet minstens 10 cijfers bevatten",
     "zod_terms": "Je moet de voorwaarden accepteren",
     "zod_instagram": "Instagram is verplicht",
-
     "zod_school": "School is verplicht",
     "zod_grade": "Jaargroep is verplicht",
     "zod_members_count": "Het aantal leden komt niet overeen met het gekozen formaat",
@@ -768,8 +767,10 @@
   },
   "page_404": {
     "title": "Pagina niet gevonden",
-    "subtitle": "Oeps! De pagina die je zoekt bestaat niet.",
-    "back": "Terug naar home"
+    "subtitle": "Het adres kan onjuist zijn, of de pagina is verplaatst of verwijderd.",
+    "back": "Terug naar home",
+    "eyebrow": "Fout 404",
+    "committees": "Commissies bekijken"
   },
   "common": {
     "read_testimonial": "Getuigenis lezen",

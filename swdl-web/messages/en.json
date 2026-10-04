@@ -641,7 +641,6 @@
     "zod_phone": "Phone must have at least 10 digits",
     "zod_terms": "You must accept the terms",
     "zod_instagram": "Instagram is required",
-
     "zod_school": "School is required",
     "zod_grade": "Grade is required",
     "zod_members_count": "Number of members does not match the selected format",
@@ -768,8 +767,10 @@
   },
   "page_404": {
     "title": "Page not found",
-    "subtitle": "Oops! The page you're looking for doesn't exist.",
-    "back": "Back to home"
+    "subtitle": "The address may be incorrect, or the page was moved or removed.",
+    "back": "Back to home",
+    "eyebrow": "Error 404",
+    "committees": "View committees"
   },
   "common": {
     "read_testimonial": "Read testimonial",

@@ -641,7 +641,6 @@
     "zod_phone": "Telepon harus minimal 10 digit",
     "zod_terms": "Anda harus menerima syarat",
     "zod_instagram": "Instagram wajib diisi",
-
     "zod_school": "Sekolah wajib diisi",
     "zod_grade": "Kelas wajib diisi",
     "zod_members_count": "Jumlah anggota tidak sesuai dengan format yang dipilih",
@@ -768,8 +767,10 @@
   },
   "page_404": {
     "title": "Halaman tidak ditemukan",
-    "subtitle": "Ups! Halaman yang Anda cari tidak ada.",
-    "back": "Kembali ke beranda"
+    "subtitle": "Alamat mungkin salah, atau halaman telah dipindahkan atau dihapus.",
+    "back": "Kembali ke beranda",
+    "eyebrow": "Kesalahan 404",
+    "committees": "Lihat komite"
   },
   "common": {
     "read_testimonial": "Baca testimoni",

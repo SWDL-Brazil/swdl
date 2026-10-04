@@ -767,8 +767,10 @@
   },
   "page_404": {
     "title": "Página não encontrada",
-    "subtitle": "Ops! A página que você procura não existe.",
-    "back": "Voltar para o início"
+    "subtitle": "O endereço pode estar incorreto, ou a página foi movida ou removida.",
+    "back": "Voltar para o início",
+    "eyebrow": "Erro 404",
+    "committees": "Ver comitês"
   },
   "common": {
     "back": "Voltar",

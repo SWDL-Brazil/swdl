@@ -767,8 +767,10 @@
   },
   "page_404": {
     "title": "Pagina non trovata",
-    "subtitle": "Ops! La pagina che stai cercando non esiste.",
-    "back": "Torna alla home"
+    "subtitle": "L'indirizzo potrebbe essere errato, oppure la pagina è stata spostata o rimossa.",
+    "back": "Torna alla home",
+    "eyebrow": "Errore 404",
+    "committees": "Vedi i comitati"
   },
   "common": {
     "read_testimonial": "Leggi testimonianza",

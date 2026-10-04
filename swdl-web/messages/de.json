@@ -641,7 +641,6 @@
     "zod_phone": "Die Telefonnummer muss mindestens 10 Ziffern haben",
     "zod_terms": "Du musst die Bedingungen akzeptieren",
     "zod_instagram": "Instagram ist erforderlich",
-
     "zod_school": "Schule ist erforderlich",
     "zod_grade": "Jahrgangsstufe ist erforderlich",
     "zod_members_count": "Die Anzahl der Mitglieder passt nicht zum gewählten Format",
@@ -768,8 +767,10 @@
   },
   "page_404": {
     "title": "Seite nicht gefunden",
-    "subtitle": "Hoppla! Die gesuchte Seite existiert nicht.",
-    "back": "Zurück zur Startseite"
+    "subtitle": "Die Adresse ist möglicherweise falsch, oder die Seite wurde verschoben oder entfernt.",
+    "back": "Zurück zur Startseite",
+    "eyebrow": "Fehler 404",
+    "committees": "Komitees ansehen"
   },
   "common": {
     "read_testimonial": "Referenz lesen",

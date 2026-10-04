@@ -641,7 +641,6 @@
     "zod_phone": "Telefon mesti sekurang-kurangnya 10 digit",
     "zod_terms": "Anda mesti menerima syarat",
     "zod_instagram": "Instagram diperlukan",
-
     "zod_school": "Sekolah diperlukan",
     "zod_grade": "Tingkatan diperlukan",
     "zod_members_count": "Bilangan ahli tidak sepadan dengan format yang dipilih",
@@ -768,8 +767,10 @@
   },
   "page_404": {
     "title": "Halaman tidak dijumpai",
-    "subtitle": "Alamak! Halaman yang anda cari tidak wujud.",
-    "back": "Kembali ke utama"
+    "subtitle": "Alamat mungkin salah, atau halaman telah dipindahkan atau dipadam.",
+    "back": "Kembali ke utama",
+    "eyebrow": "Ralat 404",
+    "committees": "Lihat jawatankuasa"
   },
   "common": {
     "read_testimonial": "Baca testimoni",
