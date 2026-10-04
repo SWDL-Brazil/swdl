@@ -5,6 +5,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Ticker } from '@/components/layout/Ticker';
 import { CrisisBanner } from '@/components/layout/CrisisBanner';
+import { SplashLoader } from '@/components/layout/SplashLoader';
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
@@ -53,6 +54,7 @@ export default async function LocaleLayout({
       </head>
       <body className="font-body bg-surface text-navy overflow-x-hidden antialiased">
         <NextIntlClientProvider messages={messages}>
+          <SplashLoader />
           <CrisisBanner />
           <Navbar />
           <Ticker />
