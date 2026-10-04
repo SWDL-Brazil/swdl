@@ -66,6 +66,7 @@ export function SplashLoader() {
   const [leaving, setLeaving] = useState(false);
   const [awake, setAwake] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [final, setFinal] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -84,7 +85,10 @@ export function SplashLoader() {
       };
     }
     const awakeT = window.setTimeout(() => setAwake(true), 1400);
-    const statsT = window.setTimeout(() => setShowStats(true), 4400);
+    const statsT = window.setTimeout(() => {
+      setShowStats(true);
+      setFinal(true);
+    }, 4400);
     const leaveT = window.setTimeout(() => setLeaving(true), 4900);
     const hideT = window.setTimeout(() => setVisible(false), 5650);
     return () => {
@@ -230,7 +234,7 @@ export function SplashLoader() {
           )}
         </div>
 
-        <div className={`splash-globe-wrap ${awake ? 'awake' : ''} hidden sm:block`}>
+        <div className={`splash-globe-wrap ${awake ? 'awake' : ''} ${final ? 'final' : ''} hidden sm:block`}>
           <canvas ref={canvasRef} className="splash-globe-canvas" />
         </div>
       </div>
