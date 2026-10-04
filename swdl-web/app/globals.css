@@ -321,6 +321,38 @@
   border-color: #0ea5e9 !important;
 }
 
+[data-cvd='true'] .border-red-500,
+[data-cvd='true'] .border-red-600 {
+  border-color: #9a3412 !important;
+  border-style: dashed !important; /* erro não depende só da cor */
+}
+
+[data-cvd='true'] .bg-red-50,
+[data-cvd='true'] .bg-red-100 {
+  background-color: #fff7ed !important;
+}
+
+[data-cvd='true'] .bg-green-50,
+[data-cvd='true'] .bg-green-100,
+[data-cvd='true'] .border-green-200 {
+  background-color: #e0f2fe !important;
+}
+
+/* Links em texto: sublinhado (nunca só cor) */
+[data-cvd='true'] p a:not(.btn),
+[data-cvd='true'] li a:not(.btn),
+[data-cvd='true'] td a:not(.btn) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+}
+
+/* Foco sempre visível e de alto contraste */
+[data-cvd='true'] :focus-visible {
+  outline: 3px solid #1e3a8a !important;
+  outline-offset: 2px !important;
+}
+
 [data-cvd='true'] .bg-sky-600,
 [data-cvd='true'] .bg-sky-700,
 [data-cvd='true'] .bg-cyan-700 {
