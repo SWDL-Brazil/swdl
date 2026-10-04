@@ -63,10 +63,12 @@ export function SplashLoader() {
     }
     const awakeT = window.setTimeout(() => setAwake(true), 1400);
     const statsT = window.setTimeout(() => setShowStats(true), 4400);
-    const leaveT = window.setTimeout(() => setLeaving(true), 4900);
+    const leaveT = window.setTimeout(() => {
+      setLeaving(true);
+      done();
+    }, 4900);
     const hideT = window.setTimeout(() => {
       setVisible(false);
-      done();
     }, 5650);
     return () => {
       window.clearTimeout(awakeT);
@@ -81,29 +83,49 @@ export function SplashLoader() {
   return (
     <div
       aria-hidden="true"
-      className={`fixed inset-0 z-[9999] bg-[#0D1B2A] transition-opacity duration-700 ${
-        leaving ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      className={`fixed inset-0 z-[9999] ${
+        leaving ? 'pointer-events-none' : ''
       }`}
     >
-      <div className="splash-vignette" />
-
-      <img
-        src="/img/Logo/LOGO.svg"
-        alt="SWDL"
-        className="absolute top-6 left-6 md:top-8 md:left-16 w-16 z-10 opacity-0"
-        style={{ animation: 'splash-fade 0.8s 0.4s ease forwards' }}
+      {/* solid background layer — fades first */}
+      <div
+        className={`absolute inset-0 bg-[#0D1B2A] transition-opacity duration-700 ${
+          leaving ? 'opacity-0' : 'opacity-100'
+        }`}
       />
+      <div
+        className={`splash-vignette transition-opacity duration-700 ${
+          leaving ? 'opacity-0' : ''
+        }`}
+      />
+
+      <div
+        className={`absolute top-6 left-6 md:top-8 md:left-16 z-10 transition-opacity duration-700 ${
+          leaving ? 'opacity-0' : ''
+        }`}
+      >
+        <img
+          src="/img/Logo/LOGO.svg"
+          alt="SWDL"
+          className="w-16 opacity-0"
+          style={{ animation: 'splash-fade 0.8s 0.4s ease forwards' }}
+        />
+      </div>
 
       <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
         {/* Left: same geometry/classes as Hero left column */}
-        <div className="bg-navy flex flex-col justify-center px-8 md:px-16 py-24 lg:py-32 relative overflow-hidden">
+        <div className="flex flex-col justify-center px-8 md:px-16 py-24 lg:py-32 relative overflow-hidden">
           <div className="relative z-10">
             {/* spacer matching hero tag badge */}
             <div className="inline-flex items-center opacity-0 border border-gold/30 px-3.5 py-1.5 rounded-sm mb-7 text-[0.72rem] tracking-[0.14em]">
               &nbsp;
             </div>
 
-            <div className="font-display text-[clamp(44px,5vw,74px)] font-black leading-[0.98] text-white mb-2.5">
+            <div
+              className={`font-display text-[clamp(44px,5vw,74px)] font-black leading-[0.98] text-white mb-2.5 transition-opacity duration-700 ${
+                leaving ? 'opacity-0' : ''
+              }`}
+            >
               <p className="splash-word" style={{ animationDelay: '3.4s' }}>
                 {th('hero_title_line1')}
               </p>
@@ -127,6 +149,11 @@ export function SplashLoader() {
             </div>
 
             {/* stats at end */}
+            <div
+              className={`transition-opacity duration-700 ${
+                leaving ? 'opacity-0' : ''
+              }`}
+            >
             <div className="splash-stats !mt-10">
               {showStats ? (
                 [
@@ -158,6 +185,7 @@ export function SplashLoader() {
                 </>
               )}
             </div>
+            </div>
           </div>
 
           {/* setup overlay: brand + establishing */}
@@ -170,8 +198,11 @@ export function SplashLoader() {
         </div>
 
         {/* Right: identical geometry to Hero right column */}
-        <div className="bg-navy relative hidden lg:flex items-center justify-center">
-          <div className={`splash-globe-wrap ${awake ? 'awake' : ''} w-full h-full`}>
+        <div className="relative hidden lg:flex items-center justify-center">
+          <div
+            className={`splash-globe-wrap ${awake ? 'awake' : ''} w-full h-full`}
+            style={leaving ? { opacity: 0, transitionProperty: 'opacity', transitionDuration: '0.7s' } : undefined}
+          >
             <Globe3D />
           </div>
         </div>
