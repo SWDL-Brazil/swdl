@@ -60,7 +60,7 @@ export function SplashLoader() {
       <div ref={glowRef} className="splash-glow" />
       <div ref={logoRef} className="splash-logo-wrap">
         <div className="splash-logo-zoom">
-          <img src="/img/logo.svg" alt="SWDL" className="splash-logo" />
+          <img src="/img/Logo/LOGO.svg" alt="SWDL" className="splash-logo" />
         </div>
       </div>
       <div className="splash-line" />

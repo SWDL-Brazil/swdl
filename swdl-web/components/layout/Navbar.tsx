@@ -49,7 +49,7 @@ export function Navbar() {
       <Link href="/" className="flex items-center">
         <div className="h-[52px] md:h-[60px] flex items-center gap-2">
           <img
-            src="/img/logo.png"
+            src="/img/Logo/LOGO.svg"
             alt="SWDL Logo"
             className="h-full w-auto object-contain"
           />

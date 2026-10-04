@@ -38,7 +38,7 @@ export function Footer() {
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <img
-                src="/img/logo.png"
+                src="/img/Logo/LOGO.svg"
                 alt="SWDL Logo"
                 className="h-[48px] w-auto object-contain"
               />
