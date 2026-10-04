@@ -72,7 +72,7 @@ export function CommitteesPreview() {
                   <img
                     src={committee.icon}
                     alt={name}
-                    className="w-10 h-10 object-contain opacity-80"
+                    className="w-10 h-10 object-contain opacity-80 mt-7"
                   />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-white text-sm mb-1">
