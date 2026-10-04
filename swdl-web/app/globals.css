@@ -397,54 +397,92 @@
 .cvd-dot .cvd-dot-code {
   display: none;
 }
+.splash-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.45) 100%);
+  pointer-events: none;
+}
+
+.splash-glow {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(201, 168, 76, 0.22) 0%, transparent 65%);
+  animation: splash-glow 1.8s ease-in-out infinite alternate;
+  pointer-events: none;
+}
 
 .splash-logo-wrap {
-  animation: splash-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  position: relative;
+  z-index: 1;
+  will-change: transform;
+}
+
+.splash-logo-zoom {
+  animation: splash-zoom 1.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .splash-logo {
   width: 96px;
   height: auto;
+  clip-path: inset(0 0 100% 0);
+  animation: splash-mask 1s 0.15s cubic-bezier(0.77, 0, 0.18, 1) forwards;
 }
 
 .splash-line {
+  position: relative;
+  z-index: 1;
   width: 120px;
   height: 1px;
   margin-top: 28px;
   background: linear-gradient(90deg, transparent, #c9a84c, transparent);
   transform: scaleX(0);
   transform-origin: center;
-  animation: splash-line 0.9s 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: splash-line 0.9s 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .splash-tag {
+  position: relative;
+  z-index: 1;
   margin-top: 14px;
   font-family: 'DM Mono', monospace;
   font-size: 0.65rem;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.55em;
   text-transform: uppercase;
   color: rgba(201, 168, 76, 0.85);
   opacity: 0;
-  animation: splash-fade 0.6s 0.8s ease forwards;
+  animation: splash-tag 1.2s 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-@keyframes splash-in {
-  from { opacity: 0; transform: scale(0.92) translateY(8px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+@keyframes splash-mask {
+  to { clip-path: inset(0 0 0% 0); }
+}
+
+@keyframes splash-zoom {
+  from { transform: scale(1.08); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes splash-glow {
+  from { opacity: 0.5; scale: 0.9; }
+  to { opacity: 1; scale: 1.15; }
 }
 
 @keyframes splash-line {
   to { transform: scaleX(1); }
 }
 
-@keyframes splash-fade {
-  to { opacity: 1; }
+@keyframes splash-tag {
+  to { opacity: 1; letter-spacing: 0.32em; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .splash-logo-wrap, .splash-line, .splash-tag {
+  .splash-logo-zoom, .splash-line, .splash-tag, .splash-glow, .splash-logo {
     animation: none;
     opacity: 1;
     transform: none;
+    clip-path: none;
   }
 }
