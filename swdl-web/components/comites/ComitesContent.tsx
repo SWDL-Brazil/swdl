@@ -280,9 +280,10 @@ function CommitteeRow({
   const hasDownloads = Boolean(entry.guide || entry.manual);
   const statusKey =
     status?.status_type &&
-    ['voting', 'debate', 'waiting', 'done'].includes(status.status_type)
+    ['voting', 'debate', 'waiting'].includes(status.status_type)
       ? `status_${status.status_type}`
       : null;
+  const showStatus = status && status.status_type !== 'done';
 
   function resolveArray(path: string): string[] {
     const parts = path.split('.');
@@ -353,7 +354,7 @@ function CommitteeRow({
                 <span className="text-slate font-mono text-[0.68rem] tracking-[0.12em] uppercase">
                   {tc(entry.metaKey)}
                 </span>
-                {status && (statusKey || status.status_label) && (
+                {showStatus && status && (statusKey || status.status_label) && (
                   <span
                     className={`inline-flex items-center font-mono text-[0.68rem] tracking-[0.08em] uppercase px-2 py-0.5 rounded-sm border ${statusClass(status.status_type)}`}
                   >
