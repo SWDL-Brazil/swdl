@@ -853,5 +853,8 @@
     "network_error": "Não foi possível consultar agora. Verifique sua conexão e tente novamente.",
     "search_again": "Verificar outro código",
     "watermark": "CERTIFICADO"
+  },
+  "splash": {
+    "establishing": "Estabelecendo conexões"
   }
 }

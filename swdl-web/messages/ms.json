@@ -853,5 +853,8 @@
     "network_error": "Tidak dapat menyemak buat masa ini. Semak sambungan anda dan cuba lagi.",
     "search_again": "Sahkan kod lain",
     "watermark": "SIJIL"
+  },
+  "splash": {
+    "establishing": "Mewujudkan hubungan"
   }
 }

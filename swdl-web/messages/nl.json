@@ -853,5 +853,8 @@
     "network_error": "Nu niet mogelijk om te controleren. Controleer je verbinding en probeer het opnieuw.",
     "search_again": "Andere code verifiëren",
     "watermark": "CERTIFICAAT"
+  },
+  "splash": {
+    "establishing": "Verbindingen tot stand brengen"
   }
 }

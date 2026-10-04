@@ -853,5 +853,8 @@
     "network_error": "Derzeit keine Abfrage möglich. Prüfe deine Verbindung und versuche es erneut.",
     "search_again": "Anderen Code prüfen",
     "watermark": "ZERTIFIKAT"
+  },
+  "splash": {
+    "establishing": "Verbindungen werden hergestellt"
   }
 }

@@ -853,5 +853,8 @@
     "network_error": "Tidak dapat memeriksa saat ini. Periksa koneksi Anda dan coba lagi.",
     "search_again": "Verifikasi kode lain",
     "watermark": "SERTIFIKAT"
+  },
+  "splash": {
+    "establishing": "Membangun koneksi"
   }
 }

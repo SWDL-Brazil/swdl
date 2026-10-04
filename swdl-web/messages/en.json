@@ -853,5 +853,8 @@
     "network_error": "Unable to check right now. Check your connection and try again.",
     "search_again": "Verify another code",
     "watermark": "CERTIFICATE"
+  },
+  "splash": {
+    "establishing": "Establishing connections"
   }
 }

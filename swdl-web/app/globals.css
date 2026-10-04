@@ -432,89 +432,113 @@
 .splash-vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.45) 100%);
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(0, 0, 0, 0.45) 100%);
   pointer-events: none;
 }
 
-.splash-glow {
-  position: absolute;
-  width: 420px;
-  height: 420px;
-  border-radius: 9999px;
-  background: radial-gradient(circle, rgba(201, 168, 76, 0.22) 0%, transparent 65%);
-  animation: splash-glow 1.8s ease-in-out infinite alternate;
-  pointer-events: none;
-}
-
-.splash-logo-wrap {
+.splash-globe-wrap {
   position: relative;
-  z-index: 1;
-  will-change: transform;
+  opacity: 0.1;
+  filter: blur(6px);
+  transition: opacity 1.4s cubic-bezier(0.23, 1, 0.32, 1),
+    filter 1.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.splash-logo-zoom {
-  animation: splash-zoom 0.7s cubic-bezier(0.23, 1, 0.32, 1) both;
+.splash-globe-wrap.awake {
+  opacity: 1;
+  filter: blur(0);
 }
 
-.splash-logo {
-  width: 96px;
+.splash-globe-canvas {
+  width: 100%;
   height: auto;
-  clip-path: inset(0 0 100% 0);
-  animation: splash-mask 0.8s 0.2s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+  display: block;
+}
+
+.splash-brand {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: clamp(48px, 6vw, 84px);
+  line-height: 1;
+  color: #fff;
+  opacity: 0;
+  transform: translateY(18px);
+  animation: splash-rise 0.9s 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.splash-league {
+  margin-top: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: rgba(201, 168, 76, 0.9);
+  opacity: 0;
+  transform: translateY(12px);
+  animation: splash-rise 0.9s 1.4s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.splash-establish {
+  margin-top: 28px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.9);
+  opacity: 0;
+  animation: splash-fade 0.8s 2s ease forwards;
 }
 
 .splash-line {
-  position: relative;
-  z-index: 1;
-  width: 120px;
+  margin-top: 12px;
+  width: 180px;
   height: 1px;
-  margin-top: 28px;
-  background: linear-gradient(90deg, transparent, #c9a84c, transparent);
+  background: linear-gradient(90deg, #c9a84c, rgba(201, 168, 76, 0.15));
   transform: scaleX(0);
-  transform-origin: center;
-  animation: splash-line 0.7s 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  transform-origin: left;
+  animation: splash-line-fill 1.4s 2s cubic-bezier(0.65, 0, 0.35, 1) forwards;
 }
 
-.splash-tag {
-  position: relative;
-  z-index: 1;
-  margin-top: 14px;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.65rem;
-  letter-spacing: 0.55em;
-  text-transform: uppercase;
-  color: rgba(201, 168, 76, 0.85);
+.splash-word {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: clamp(32px, 3.6vw, 54px);
+  line-height: 1.05;
+  color: #fff;
   opacity: 0;
-  animation: splash-tag 0.9s 0.85s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  transform: translateY(16px);
+  animation: splash-rise 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
-@keyframes splash-mask {
-  to { clip-path: inset(0 0 0% 0); }
+.splash-word.gold {
+  color: #c9a84c;
 }
 
-@keyframes splash-zoom {
-  from { transform: scale(1.06); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+.splash-stats {
+  display: flex;
+  gap: 2.5rem;
+  margin-top: 2rem;
+  opacity: 0;
+  animation: splash-fade 0.6s ease forwards;
 }
 
-@keyframes splash-glow {
-  from { opacity: 0.5; scale: 0.9; }
-  to { opacity: 1; scale: 1.15; }
+@keyframes splash-rise {
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes splash-line {
+@keyframes splash-fade {
+  to { opacity: 1; }
+}
+
+@keyframes splash-line-fill {
   to { transform: scaleX(1); }
 }
 
-@keyframes splash-tag {
-  to { opacity: 1; letter-spacing: 0.32em; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .splash-logo-zoom, .splash-line, .splash-tag, .splash-glow, .splash-logo {
-    animation: none;
-    opacity: 1;
-    transform: none;
-    clip-path: none;
+  .splash-brand, .splash-league, .splash-establish, .splash-line, .splash-word, .splash-stats {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
+  .splash-globe-wrap { transition: none; opacity: 1; filter: none; }
 }
