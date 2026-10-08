@@ -71,6 +71,13 @@
               <span style="font-size:11px;color:var(--green);font-weight:600">✓ Login ativo</span>
               {% endif %}
               <form method="POST"
+                    action="{{ url_for('admin.delegation_members_accounts', id=d.id) }}">
+                <button class="btn btn-ghost btn-sm" type="submit"
+                        title="Cria login e perfil de aluno para membros da delegação que ainda não têm conta">
+                  👥 Logins dos membros
+                </button>
+              </form>
+              <form method="POST"
                     action="{{ url_for('admin.delegation_delete', id=d.id) }}"
                     onsubmit="return confirm('ATENÇÃO: Deseja realmente deletar esta delegação, seu login e sua inscrição? Esta ação não pode ser desfeita.');"
                     style="margin-left:4px;">

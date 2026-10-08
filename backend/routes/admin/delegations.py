@@ -297,6 +297,115 @@ def delegation_create_credentials(id):
     return redirect(url_for('admin.delegations_list'))
 
 
+@admin_bp.route('/delegacoes/<int:id>/membros-contas', methods=['POST'])
+@login_required
+@admin_required
+def delegation_members_accounts(id):
+    """Cria login + perfil de aluno para membros da delegacao sem conta.
+
+    Cobre o caso de quem aparece em member_names() (candidato da inscricao,
+    extra_members ou nome digitado no campo 'membros') mas nao tem Student —
+    sem isso a pessoa nao aparece em /alunos e nao da para resetar a senha.
+    Idempotente: membros ja com conta sao pulados.
+    """
+    import unicodedata
+    from sqlalchemy.orm import joinedload, selectinload
+    from models.inscription_member import InscriptionMember
+
+    deleg = Delegation.query.options(
+        joinedload(Delegation.inscription).selectinload(Inscription.extra_members),
+        joinedload(Delegation.students),
+    ).filter(Delegation.id == id).first_or_404()
+
+    def _norm(s):
+        return ' '.join((s or '').strip().lower().split())
+
+    # Participantes com e-mail: inscricao principal + extras
+    participants = []  # (name, email)
+    seen_emails = set()
+
+    def _add(name, email):
+        name = (name or '').strip()
+        email = (email or '').strip().lower()
+        if not name or not email or email in seen_emails:
+            return
+        seen_emails.add(email)
+        participants.append((name, email))
+
+    if deleg.inscription:
+        _add(deleg.inscription.name, deleg.inscription.email)
+        for m in deleg.inscription.extra_members:
+            _add(m.name, m.email)
+
+    # Nomes digitados no campo 'membros' que casem com inscricao aprovada
+    student_names = {_norm(s.name) for s in (deleg.students or [])}
+    for raw in deleg._extra_members():
+        if _norm(raw) in student_names:
+            continue
+        ins2 = Inscription.query.filter(
+            db.func.lower(Inscription.name) == _norm(raw),
+            Inscription.status == 'approved',
+        ).first()
+        if ins2:
+            _add(ins2.name, ins2.email)
+
+    created, updated, skipped = [], [], []
+    for name, email in participants:
+        user = User.query.filter(db.func.lower(User.email) == email).first()
+        if user and user.role == 'admin':
+            skipped.append(f'{name} (e-mail é de um admin)')
+            continue
+        password = None
+        if not user:
+            first = unicodedata.normalize('NFKD', name.split()[0])\
+                .encode('ascii', 'ignore').decode('ascii').capitalize()
+            password = f'{first}@2026' if first else 'Delegado@2026'
+            user = User(name=name, email=email, role='student')
+            user.set_password(password)
+            db.session.add(user)
+            db.session.flush()
+
+        student = Student.query.filter(db.func.lower(Student.email) == email).first()
+        if not student:
+            student = Student(user_id=user.id, name=name, email=email)
+            db.session.add(student)
+            db.session.flush()
+            created.append(f'{name} <{email}> — Senha: {password or "(conta já existia)"}')
+        else:
+            if not student.user_id:
+                student.user_id = user.id
+            if password:
+                created.append(f'{name} <{email}> — Senha: {password}')
+            else:
+                updated.append(name)
+
+        student.delegation_id = deleg.id
+        student.convened = True
+        _ensure_participation_history(student)
+
+    if deleg.inscription and not deleg.user_id:
+        main = User.query.filter(
+            db.func.lower(User.email) == deleg.inscription.email.strip().lower()
+        ).first()
+        if main and main.role != 'admin':
+            deleg.user_id = main.id
+
+    db.session.commit()
+
+    if not created and not updated:
+        flash('✅ Todos os membros desta delegação já possuem conta.', 'info')
+    else:
+        parts = []
+        if created:
+            parts.append('Contas criadas — ' + ' · '.join(created))
+        if updated:
+            parts.append('Já vinculados — ' + ', '.join(updated))
+        if skipped:
+            parts.append('Pulados — ' + ', '.join(skipped))
+        flash('👥 ' + ' | '.join(parts), 'success')
+    return redirect(url_for('admin.delegations_list'))
+
+
 @admin_bp.route('/config/inscricoes/toggle', methods=['POST'])
 @login_required
 @admin_required
