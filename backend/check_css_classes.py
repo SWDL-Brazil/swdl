@@ -26,7 +26,8 @@ for fn in os.listdir(TPL):
 
 # tokens that are not CSS classes (jinja vars leaked into extraction, states)
 skip = {'active', 'done', 'current', 'locked', 'and', 'if', 'else', 'not', 'val',
-        'category', 'designated', 'event_started', 'event_ended', 'geral'}
+        'category', 'designated', 'event_started', 'event_ended', 'geral',
+        'dpo_ok', 'prep_warn', 'sim_now', 'sim_done', 'cert_ok'}
 missing = sorted(c for c in used - css_classes if c not in skip and not c.startswith(('student.', 'motion.', 'resolution.', 'vote.', 'auth.')))
 
 print('classes usadas:', len(used), '| definidas:', len(css_classes))

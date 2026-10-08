@@ -9,7 +9,7 @@ from models.news import News
 from models.agenda import AgendaItem
 from models.document import Document
 from models.vote import VoteSession, Vote
-from routes.agenda_utils import get_agenda_status, get_current_next
+from routes.agenda_utils import get_agenda_status, get_current_next, get_resolved_phase
 from datetime import datetime, timezone
 import os
 
@@ -70,10 +70,12 @@ def inject_now():
         is_convened = current_user.student_profile.convened
     except Exception:
         pass
-    phase, first_dt, last_dt = get_agenda_status()
+    # Fase resolvida (agenda + override manual do admin) — fonte única,
+    # igual ao painel admin; jornada/banner do dashboard seguem o switcher.
+    phase, first_dt, last_dt = get_resolved_phase()
+    event_started = phase in ('during', 'post')
+    event_ended = phase == 'post'
     now = datetime.now(timezone.utc)
-    event_started = first_dt and now >= first_dt
-    event_ended = last_dt and now > last_dt
     today_str = now.strftime("%Y-%m-%d")
     is_event_day = getattr(g, '_is_event_day', None)
     if is_event_day is None:

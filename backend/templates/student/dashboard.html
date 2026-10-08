@@ -77,6 +77,11 @@
 
 <!-- ═══ SUA JORNADA ═══════════════════════════════════════ -->
 {% set designated = delegation and delegation.country %}
+{% set dpo_ok = designated and delegation.dpo_uploaded %}
+{% set prep_warn = designated and event_started and not dpo_ok %}
+{% set sim_now = designated and event_started and not event_ended %}
+{% set sim_done = designated and event_ended %}
+{% set cert_ok = student and student.certificate_released %}
 <div class="st-journey">
   <div class="st-journey-title">Sua Jornada</div>
   <div class="st-journey-steps">
@@ -91,27 +96,36 @@
       <div class="st-journey-step-label">Designação</div>
       <div class="st-journey-step-status">{{ '✓ Concluído' if designated else '⏳ Aguardando' }}</div>
     </div>
-    <div class="st-journey-line {{ 'done' if designated and event_started }}"></div>
-    <div class="st-journey-step {{ 'done' if event_started else ('current' if designated else 'locked') }}">
+    <div class="st-journey-line {{ 'done' if dpo_ok or prep_warn }}"></div>
+    <div class="st-journey-step {{ 'done' if dpo_ok else ('warn' if prep_warn else ('current' if designated else 'locked')) }}">
       <div class="st-journey-dot"></div>
       <div class="st-journey-step-label">Preparação</div>
       <div class="st-journey-step-status">
-        {% if event_started %}✓ Concluído{% elif designated %}● Atual{% else %}🔒 Bloqueada{% endif %}
+        {% if dpo_ok %}✓ DPO Enviado
+        {% elif prep_warn %}⚠ DPO pendente
+        {% elif designated %}⏳ Aguardando DPO
+        {% else %}🔒 Bloqueada{% endif %}
       </div>
     </div>
-    <div class="st-journey-line {{ 'done' if event_started and not event_ended }}"></div>
-    <div class="st-journey-step {{ 'done' if event_ended else ('current' if event_started else 'locked') }}">
+    <div class="st-journey-line {{ 'done' if designated and event_started }}"></div>
+    <div class="st-journey-step {{ 'done' if sim_done else ('current' if sim_now else 'locked') }}">
       <div class="st-journey-dot"></div>
       <div class="st-journey-step-label">Simulação</div>
       <div class="st-journey-step-status">
-        {% if event_ended %}✓ Concluído{% elif event_started %}● Atual{% else %}🔒 Bloqueada{% endif %}
+        {% if sim_done %}✓ Concluído
+        {% elif sim_now %}● Ao Vivo
+        {% else %}🔒 Bloqueada{% endif %}
       </div>
     </div>
-    <div class="st-journey-line {{ 'done' if event_ended }}"></div>
-    <div class="st-journey-step {{ 'done' if event_ended else 'locked' }}">
+    <div class="st-journey-line {{ 'done' if sim_done }}"></div>
+    <div class="st-journey-step {{ 'done' if sim_done and cert_ok else ('current' if sim_done else 'locked') }}">
       <div class="st-journey-dot"></div>
       <div class="st-journey-step-label">Pós-Evento</div>
-      <div class="st-journey-step-status">{{ '✓ Concluído' if event_ended else '🔒 Bloqueada' }}</div>
+      <div class="st-journey-step-status">
+        {% if sim_done and cert_ok %}✓ Certificado Emitido
+        {% elif sim_done %}⏳ Certificado pendente
+        {% else %}🔒 Bloqueada{% endif %}
+      </div>
     </div>
   </div>
 </div>
