@@ -9,20 +9,19 @@
 {% block content %}
 <div style="max-width:520px">
 
-  <div style="background:rgba(183,148,65,.08);border:1px solid rgba(183,148,65,.25);
+  <div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);
               border-radius:4px;padding:14px 18px;margin-bottom:24px;
               font-size:13px;color:var(--muted);display:flex;gap:10px;align-items:flex-start">
     <span style="font-size:16px;flex-shrink:0">💡</span>
     <div>
       <strong>Etapa 1 de 2:</strong> crie a conta do aluno. A senha é gerada automaticamente como
       <strong style="color:var(--navy);font-family:'DM Mono',monospace">
-        [4 letras do nome]2026
+        PrimeiroNome@2026
       </strong>
-      — ex: <em>Ana Silva</em> → <strong style="font-family:'DM Mono',monospace">ansi2026</strong>.
+      — ex: <em>Ana Silva</em> → <strong style="font-family:'DM Mono',monospace">Ana@2026</strong>.
       <br><br>
-      Depois de criar a conta, vá em
-      <a href="{{ url_for('admin.students_list') }}" style="color:var(--navy);font-weight:700">Alunos</a>
-      para designar país, tema e formato de debate (individual, dupla, trio ou grupo).
+      Depois de criar a conta você será levado à <strong>Etapa 2</strong> para designar país,
+      tema e companheiros de equipe (individual, dupla, trio ou grupo).
     </div>
   </div>
 

@@ -121,31 +121,29 @@
         </div>
 
         <div class="form-group">
-          <label>Membros extras do grupo <span style="font-size:11px;color:var(--muted)">(opcional)</span></label>
-          <div style="display:flex;gap:8px">
-            <input type="text" name="members" id="membersInput"
-                   value="{{ (student.delegation.members or student.delegation.pair_name) if student.delegation else '' }}"
-                   placeholder="Separe por virgula: Maria, Joao" style="flex:1">
-            <select id="memberSelect" style="flex:1">
-              <option value="">➕ Conta existente...</option>
-              {% set tomados = student.delegation.member_names() if student.delegation else [] %}
-              {% for s in all_students %}
-                {% if s.name not in tomados %}
-                <option value="{{ s.name }}"
-                  {% if s.delegation_id %} disabled style="color:var(--muted)"{% endif %}>
-                  {{ s.name }}{% if s.delegation_id %} (delegado){% endif %} — {{ s.email }}
-                </option>
-                {% endif %}
-              {% endfor %}
-            </select>
-            <button type="button" id="addMemberBtn"
-                    style="background:var(--navy);color:var(--white);border:none;border-radius:3px;padding:0 14px;cursor:pointer;font-size:13px;white-space:nowrap;flex-shrink:0">
-              Adicionar
-            </button>
+          <label>👥 Companheiros de equipe <span style="font-size:11px;color:var(--muted)">(opcional)</span></label>
+          <div id="teammateRows">
+            {% for i in range(2) %}
+            <div class="teammate-row" style="display:flex;gap:8px;margin-bottom:6px">
+              <input type="text" name="nm_name" placeholder="Nome completo"
+                     style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:4px">
+              <input type="email" name="nm_email" placeholder="email@email.com"
+                     style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:4px">
+              <button type="button" class="rm-teammate"
+                      title="Remover linha"
+                      style="background:transparent;border:1px solid var(--border);border-radius:4px;
+                             color:var(--muted);cursor:pointer;padding:0 12px">✕</button>
+            </div>
+            {% endfor %}
           </div>
-          <div id="membersPreview" style="font-size:12px;margin-top:4px"></div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px">
-            Alunos vinculados ja contam. O formato (individual, dupla, trio ou grupo) e definido automaticamente.
+          <button type="button" id="addTeammate" class="btn btn-ghost btn-sm" style="margin-top:2px">
+            ➕ Adicionar companheiro
+          </button>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">
+            Cada companheiro recebe login na hora (senha
+            <strong style="font-family:'DM Mono',monospace">PrimeiroNome@2026</strong>) e entra nesta
+            mesma delegação. Para quem <strong>já tem conta</strong>, use os checkboxes em
+            "Entrar na mesma delegação" abaixo.
           </div>
         </div>
 
@@ -200,38 +198,33 @@
 
 <script src="{{ url_for('static', filename='js/admin-delegation.js') }}"></script>
 <script>
-/* Sincroniza "extra_ids" x "membros extras" — evita a mesma pessoa nos 2
-   campos (contaria 2x e viraria Dupla errada). */
+/* Repeater de companheiros de equipe (nome + e-mail) */
 (function () {
-  var df = window.DelegationForm;
-  if (!df || !df.memberInput) return;
-  var boxes = Array.prototype.slice.call(
-    document.querySelectorAll('input[name="extra_ids"]'));
+  var rows = document.getElementById('teammateRows');
+  var addBtn = document.getElementById('addTeammate');
+  if (!rows || !addBtn) return;
 
-  function removeFromMembers(name) {
-    var list = df.currentMembers().filter(function (n) {
-      return n.toLowerCase() !== name.toLowerCase();
-    });
-    if (list.length !== df.currentMembers().length) {
-      df.memberInput.value = list.join(', ');
-      df.renderMembersPreview();
-      df.memberInput.dispatchEvent(new CustomEvent('memberschanged'));
-    }
+  function bindRm(row) {
+    var rm = row.querySelector('.rm-teammate');
+    if (rm) rm.addEventListener('click', function () { row.remove(); });
   }
+  rows.querySelectorAll('.teammate-row').forEach(bindRm);
 
-  boxes.forEach(function (box) {
-    box.addEventListener('change', function () {
-      var name = box.getAttribute('data-name') || '';
-      if (box.checked && name) removeFromMembers(name);
-    });
-  });
-
-  df.memberInput.addEventListener('memberschanged', function () {
-    var names = df.currentMembers().map(function (n) { return n.toLowerCase(); });
-    boxes.forEach(function (box) {
-      var name = (box.getAttribute('data-name') || '').toLowerCase();
-      if (name && names.indexOf(name) !== -1) box.checked = false;
-    });
+  addBtn.addEventListener('click', function () {
+    var row = document.createElement('div');
+    row.className = 'teammate-row';
+    row.style.cssText = 'display:flex;gap:8px;margin-bottom:6px';
+    row.innerHTML =
+      '<input type="text" name="nm_name" placeholder="Nome completo" ' +
+      'style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:4px">' +
+      '<input type="email" name="nm_email" placeholder="email@email.com" ' +
+      'style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:4px">' +
+      '<button type="button" class="rm-teammate" title="Remover linha" ' +
+      'style="background:transparent;border:1px solid var(--border);border-radius:4px;' +
+      'color:var(--muted);cursor:pointer;padding:0 12px">✕</button>';
+    bindRm(row);
+    rows.appendChild(row);
+    row.querySelector('input').focus();
   });
 })();
 </script>

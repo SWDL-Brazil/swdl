@@ -82,7 +82,8 @@ def delegate_create():
                 + (f'<br><small style="color:var(--muted)">{msg_notif}</small>' if msg_notif else ''),
                 'success'
             )
-            return redirect(url_for('admin.students_list'))
+            # Etapa 2: designar pais/tema direto (evita voltar pela lista)
+            return redirect(url_for('admin.student_assign', id=student.id))
 
     return render_template('admin/delegate_create.html', error=error)
 
@@ -107,7 +108,7 @@ def students_list():
 @login_required
 @admin_required
 def students_export_contacts():
-    """Exporta CSV com nome, email, telefone e delegacao para envio via WhatsApp Web."""
+    """Exporta CSV (nome, email, telefone, pais, comite, tema, membros) para envio via WhatsApp Web."""
     import csv, io
     from flask import Response
     from sqlalchemy.orm import joinedload, selectinload
@@ -120,7 +121,7 @@ def students_export_contacts():
 
     buf = io.StringIO()
     w = csv.writer(buf)
-    w.writerow(['nome', 'email', 'telefone', 'pais', 'comite', 'tema'])
+    w.writerow(['nome', 'email', 'telefone', 'pais', 'comite', 'tema', 'membros'])
     for s in students:
         ins = (s.delegation.inscription if s.delegation and s.delegation.inscription else None)
         phone = ''
@@ -138,6 +139,7 @@ def students_export_contacts():
             s.delegation.country if s.delegation else '',
             s.delegation.committee if s.delegation else '',
             (s.delegation.theme.name if s.delegation and s.delegation.theme else ''),
+            ('; '.join(s.delegation.member_names()) if s.delegation else ''),
         ])
     return Response(
         '﻿' + buf.getvalue(),
@@ -159,7 +161,6 @@ def student_assign(id):
         flag     = request.form.get('flag', '').strip()
         flag_url = request.form.get('flag_url', '').strip()
         theme_id = request.form.get('theme_id', type=int)
-        members   = request.form.get('members', '').strip()
 
         if not country:
             flash('O país é obrigatório.', 'error')
@@ -240,13 +241,84 @@ def student_assign(id):
             prev_theme = db.session.get(Theme, prev_theme_id) if prev_theme_id else None
             if not prev_theme or prev_committee == prev_theme.name:
                 deleg.committee = ''
-        deleg.members      = members
+        if 'members' in request.form:
+            # campo texto livre (formularios antigos) — preserva se ausente
+            deleg.members = request.form.get('members', '').strip()
         deleg.flag_animation = bool(request.form.get('flag_animation'))
         db.session.flush()
 
+        # ── Companheiros de equipe (nome + e-mail) ──────────────────
+        # Cria login na hora (User + Student) e vincula a esta delegacao.
+        import unicodedata
+        from models.system_config import SystemConfig
+        from services.email_service import send_approval_email
+        from services.whatsapp_service import send_approval_whatsapp
+
+        teammate_notes = []
+        teammate_old_ids = set()
+        nm_names  = request.form.getlist('nm_name')
+        nm_emails = request.form.getlist('nm_email')
+        for tname, temail in zip(nm_names, nm_emails):
+            tname  = tname.strip()
+            temail = temail.strip().lower()
+            if not tname and not temail:
+                continue
+            if not tname or not temail:
+                teammate_notes.append(f'⚠ linha de companheiro incompleta ({tname or temail}) — ignorada')
+                continue
+            if temail == (student.email or '').strip().lower():
+                teammate_notes.append(f'⚠ {temail} é o e-mail do aluno designado — ignorado')
+                continue
+
+            tuser = User.query.filter(db.func.lower(User.email) == temail).first()
+            if tuser and tuser.role == 'admin':
+                teammate_notes.append(f'⚠ {temail} é de um admin — ignorado')
+                continue
+
+            tpassword = None
+            if not tuser:
+                first = (tname.split()[0] if tname.split() else '')
+                first = unicodedata.normalize('NFKD', first)\
+                    .encode('ascii', 'ignore').decode('ascii').capitalize()
+                tpassword = f'{first}@2026' if first else 'Delegado@2026'
+                tuser = User(name=tname, email=temail, role='student')
+                tuser.set_password(tpassword)
+                db.session.add(tuser)
+                db.session.flush()
+
+                if SystemConfig.get('auto_email', '1') == '1':
+                    ok, m = send_approval_email(SystemConfig.get, temail, tname, temail, tpassword)
+                    teammate_notes.append(f'{tname} — e-mail: {"✅" if ok else "❌"}')
+                if SystemConfig.get('auto_whatsapp', '0') == '1':
+                    tins = Inscription.query.filter_by(email=temail, status='approved').first()
+                    if tins and tins.phone:
+                        ok, m = send_approval_whatsapp(SystemConfig.get, tins.phone, tname, temail, tpassword)
+                        teammate_notes.append(f'{tname} — WhatsApp: {"✅" if ok else "❌"}')
+
+            tstudent = Student.query.filter(db.func.lower(Student.email) == temail).first()
+            if not tstudent:
+                tstudent = Student(user_id=tuser.id, name=tname, email=temail)
+                db.session.add(tstudent)
+                db.session.flush()
+            elif not tstudent.user_id:
+                tstudent.user_id = tuser.id
+
+            if tstudent.delegation_id and tstudent.delegation_id != deleg.id:
+                teammate_old_ids.add(tstudent.delegation_id)
+            tstudent.delegation_id = deleg.id
+            tstudent.convened = True
+            if not deleg.user_id and tuser:
+                deleg.user_id = tuser.id
+            _ensure_participation_history(tstudent)
+            if tstudent.id not in extra_ids and tstudent.id != student.id:
+                extra_ids = extra_ids + [tstudent.id]
+            teammate_notes.append(
+                f'✅ {tname} <{temail}> — Login: {temail} | Senha: {tpassword or "(conta já existia)"}'
+            )
+
         member_ids = [student.id] + [i for i in extra_ids if i != student.id]
 
-        old_deleg_ids = set()
+        old_deleg_ids = set(teammate_old_ids)
         for sid in member_ids:
             s = Student.query.get(sid)
             if s and s.delegation_id and s.delegation_id != deleg.id:
@@ -279,6 +351,8 @@ def student_assign(id):
         nomes = ', '.join(s.name for s in (Student.query.get(i) for i in member_ids) if s)
         extra = f' (movidos de: {", ".join(sorted(moved))})' if moved else ''
         flash(f'🌍 {country} designado para {nomes}!{extra}', 'success')
+        for note in teammate_notes:
+            flash(note, 'success' if note.startswith('✅') else 'warning')
         return redirect(url_for('admin.students_list'))
 
     themes = Theme.query.order_by(Theme.name).all()
