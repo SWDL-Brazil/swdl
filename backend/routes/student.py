@@ -10,6 +10,7 @@ from models.agenda import AgendaItem
 from models.document import Document
 from models.vote import VoteSession, Vote
 from routes.agenda_utils import get_agenda_status, get_current_next, get_resolved_phase
+from journey import build_journey
 from datetime import datetime, timezone
 import os
 
@@ -63,6 +64,12 @@ def check_read_only(student):
 
 # ── CONTEXT PROCESSOR ──────────────────────────────────────────
 
+def event_flags():
+    """(phase, event_started, event_ended) — fonte única do dashboard."""
+    phase, _first, _last = get_resolved_phase()
+    return phase, phase in ('during', 'post'), phase == 'post'
+
+
 @student_bp.context_processor
 def inject_now():
     is_convened = False
@@ -72,9 +79,7 @@ def inject_now():
         pass
     # Fase resolvida (agenda + override manual do admin) — fonte única,
     # igual ao painel admin; jornada/banner do dashboard seguem o switcher.
-    phase, first_dt, last_dt = get_resolved_phase()
-    event_started = phase in ('during', 'post')
-    event_ended = phase == 'post'
+    _phase, event_started, event_ended = event_flags()
     now = datetime.now(timezone.utc)
     today_str = now.strftime("%Y-%m-%d")
     is_event_day = getattr(g, '_is_event_day', None)
@@ -123,6 +128,10 @@ def dashboard():
 
     read_only = check_read_only(student_profile)
 
+    _phase, event_started, event_ended = event_flags()
+    journey = build_journey(delegation, event_started, event_ended,
+                            bool(student_profile and student_profile.certificate_released))
+
     return render_template('student/dashboard.html',
                            student=student_profile,
                            delegation=delegation,
@@ -130,6 +139,7 @@ def dashboard():
                            current_item=current_item,
                            next_item=next_item,
                            documentos=docs,
+                           journey=journey,
                            read_only=read_only)
 
 

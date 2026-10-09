@@ -126,7 +126,7 @@
   <!-- ═══ MAIN CONTENT ════════════════════════════════════ -->
   <main class="st-main">
     <div class="st-topbar">
-      <button class="st-hamburger" id="stHamburger" onclick="toggleStSidebar()" aria-label="Menu">
+      <button class="st-hamburger" id="stHamburger" onclick="toggleStSidebar()" aria-label="Menu" aria-expanded="false" aria-controls="stSidebar">
         <span></span><span></span><span></span>
       </button>
       <div class="st-topbar-title">
@@ -155,10 +155,30 @@
   <script src="{{ url_for('static', filename='js/st-icons.js') }}"></script>
   {% block extra_scripts %}{% endblock %}
   <script>
-  function toggleStSidebar() {
-    document.getElementById('stSidebar').classList.toggle('collapsed');
-    document.getElementById('stHamburger').classList.toggle('active');
+  function toggleStSidebar(force) {
+    var sb = document.getElementById('stSidebar');
+    var open = (typeof force === 'boolean') ? force : !sb.classList.contains('collapsed');
+    sb.classList.toggle('collapsed', open);
+    var burger = document.getElementById('stHamburger');
+    burger.classList.toggle('active', open);
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    document.body.classList.toggle('st-menu-open', open);
   }
+  /* Fecha o menu ao navegar (mobile) */
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('#stSidebar a')) toggleStSidebar(false);
+  });
+  /* Escape fecha o menu */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') toggleStSidebar(false);
+  });
+  /* Volta pro normal ao ir pro desktop com menu aberto */
+  (function () {
+    function syncMenu(e) { if (e.matches) toggleStSidebar(false); }
+    var mq = window.matchMedia('(min-width:901px)');
+    if (mq.addEventListener) mq.addEventListener('change', syncMenu);
+    else if (mq.addListener) mq.addListener(syncMenu);
+  })();
 
   /* ── Toast global (substitui alert) ── */
   function showToast(title, sub, opts) {

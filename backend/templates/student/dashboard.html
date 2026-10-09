@@ -13,14 +13,33 @@
 <!-- ═══ SAUDAÇÃO ══════════════════════════════════════════ -->
 <div class="st-welcome">
   <div class="st-welcome-inner">
-    <div class="st-welcome-label">Portal do Aluno — SWDL {{ now.year if now is defined else '' }}</div>
-    <div class="st-welcome-name">Olá, <span>{{ current_user.name.split()[0] }}</span>! </div>
-    <div class="st-welcome-sub">Acompanhe sua participação no SWDL {{ now.year if now is defined else '' }}.</div>
+    <div class="st-welcome-main">
+      <div class="st-welcome-avatar">{{ current_user.name[0].upper() if current_user.name else '?' }}</div>
+      <div class="st-welcome-text">
+        <div class="st-welcome-label">Portal do Aluno — SWDL {{ now.year if now is defined else '' }}</div>
+        <div class="st-welcome-name">Olá, <span>{{ current_user.name.split()[0] }}</span>!</div>
+        <div class="st-welcome-sub">Acompanhe sua participação no SWDL {{ now.year if now is defined else '' }}.</div>
+        <div class="st-welcome-chips">
+          {% if delegation and delegation.country %}
+          <span class="st-w-chip">
+            {% if delegation.country_flag %}{{ delegation.country_flag }}{% endif %}
+            {{ delegation.country }}
+          </span>
+          {% if delegation.committee %}<span class="st-w-chip">{{ delegation.committee }}</span>{% endif %}
+          <span class="st-w-chip">{{ delegation.group_label() }}</span>
+          {% else %}
+          <span class="st-w-chip st-w-chip--muted">Aguardando designação</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
     {% if student and student.global_id %}
     <div class="st-welcome-id">
-      ID Global: <span class="st-welcome-id-value">{{ student.global_id }}</span>
-      <button onclick="navigator.clipboard.writeText('{{ student.global_id }}');this.textContent='Copiado!';setTimeout(()=>this.textContent='Copiar',1500)"
-              class="st-welcome-id-copy">Copiar</button>
+      <span class="st-welcome-id-label">ID Global</span>
+      <span class="st-welcome-id-value">{{ student.global_id }}</span>
+      <button type="button" class="st-welcome-id-copy" onclick="copyGlobalId()">
+        {{ icon('copy') }} Copiar
+      </button>
     </div>
     {% endif %}
   </div>
@@ -76,57 +95,29 @@
 </div>
 
 <!-- ═══ SUA JORNADA ═══════════════════════════════════════ -->
-{% set designated = delegation and delegation.country %}
-{% set dpo_ok = designated and delegation.dpo_uploaded %}
-{% set prep_warn = designated and event_started and not dpo_ok %}
-{% set sim_now = designated and event_started and not event_ended %}
-{% set sim_done = designated and event_ended %}
-{% set cert_ok = student and student.certificate_released %}
 <div class="st-journey">
   <div class="st-journey-title">Sua Jornada</div>
   <div class="st-journey-steps">
-    <div class="st-journey-step done">
+    {% for s in journey %}
+    {% if not loop.first %}
+    <div class="st-journey-line {{ 'done' if s.line_done }}"></div>
+    {% endif %}
+    {% if s.endpoint %}
+    <a href="{{ url_for(s.endpoint) }}" class="st-journey-step {{ s.state }} st-journey-step--link">
+    {% else %}
+    <div class="st-journey-step {{ s.state }}">
+    {% endif %}
       <div class="st-journey-dot"></div>
-      <div class="st-journey-step-label">Cadastro</div>
-      <div class="st-journey-step-status">{{ icon('check') }} Concluído</div>
-    </div>
-    <div class="st-journey-line {{ 'done' if designated }}"></div>
-    <div class="st-journey-step {{ 'done' if designated else 'current' }}">
-      <div class="st-journey-dot"></div>
-      <div class="st-journey-step-label">Designação</div>
-      <div class="st-journey-step-status">{{ (icon('check') ~ ' Concluído') if designated else (icon('clock') ~ ' Aguardando') }}</div>
-    </div>
-    <div class="st-journey-line {{ 'done' if dpo_ok or prep_warn }}"></div>
-    <div class="st-journey-step {{ 'done' if dpo_ok else ('warn' if prep_warn else ('current' if designated else 'locked')) }}">
-      <div class="st-journey-dot"></div>
-      <div class="st-journey-step-label">Preparação</div>
-      <div class="st-journey-step-status">
-        {% if dpo_ok %}{{ icon('check') }} DPO Enviado
-        {% elif prep_warn %}{{ icon('alert-triangle') }} DPO pendente
-        {% elif designated %}{{ icon('clock') }} Aguardando DPO
-        {% else %}{{ icon('lock') }} Bloqueada{% endif %}
+      <div class="st-journey-step-text">
+        <div class="st-journey-step-label">{{ s.label }}</div>
+        <div class="st-journey-step-status">{{ icon(s.icon) }} {{ s.status }}</div>
       </div>
+    {% if s.endpoint %}
+    </a>
+    {% else %}
     </div>
-    <div class="st-journey-line {{ 'done' if designated and event_started }}"></div>
-    <div class="st-journey-step {{ 'done' if sim_done else ('current' if sim_now else 'locked') }}">
-      <div class="st-journey-dot"></div>
-      <div class="st-journey-step-label">Simulação</div>
-      <div class="st-journey-step-status">
-        {% if sim_done %}{{ icon('check') }} Concluído
-        {% elif sim_now %}{{ icon('radio') }} Ao Vivo
-        {% else %}{{ icon('lock') }} Bloqueada{% endif %}
-      </div>
-    </div>
-    <div class="st-journey-line {{ 'done' if sim_done }}"></div>
-    <div class="st-journey-step {{ 'done' if sim_done and cert_ok else ('current' if sim_done else 'locked') }}">
-      <div class="st-journey-dot"></div>
-      <div class="st-journey-step-label">Pós-Evento</div>
-      <div class="st-journey-step-status">
-        {% if sim_done and cert_ok %}{{ icon('check') }} Certificado Emitido
-        {% elif sim_done %}{{ icon('clock') }} Certificado pendente
-        {% else %}{{ icon('lock') }} Bloqueada{% endif %}
-      </div>
-    </div>
+    {% endif %}
+    {% endfor %}
   </div>
 </div>
 
@@ -278,6 +269,27 @@
 {% block extra_scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
 <script>
+  function copyGlobalId() {
+    var id = {{ (student.global_id if student and student.global_id else '')|tojson }};
+    if (!id) return;
+    function done() { showToast('ID Global copiado', id, { icon: 'check' }); }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = id;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) { showToast('Não foi possível copiar', id, { icon: 'alert-triangle' }); }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(id).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+
   const sio = io();
   sio.emit('join_students', {});
   sio.on('invoke_session', (data) => { if (data.url) window.location.href = data.url; });
