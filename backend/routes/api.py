@@ -2,7 +2,7 @@
 #  SWDL — routes/api.py
 #  API JSON consumida pelo front-end estático
 # =============================================================
-from flask import Blueprint, jsonify, request, render_template, abort
+from flask import Blueprint, jsonify, request, render_template, abort, send_file
 from models.news         import News
 from models.category     import Category
 from models.theme        import Theme
@@ -14,12 +14,51 @@ from models.event_config import EventConfig
 from models.urgent_alert import UrgentAlert
 from models.event_period import EventPeriod
 from datetime import datetime, date
+import os
 import urllib.request, json as _json
 from extensions import db, csrf
 from datetime import datetime
 
 api_bp = Blueprint('api', __name__)
 csrf.exempt(api_bp)
+
+
+# ── CAPAS DE NOTÍCIA (públicas) ────────────────────────────────
+def news_image_url(cover):
+    """URL da capa de notícia pronta para frontends em outro domínio.
+
+    No banco o path é relativo (/admin/uploads/news/...), servido pela
+    rota admin que exige login. Para o portal (Vercel) e o site estático
+    (Firebase) — que rodam em outro domínio — devolvemos a rota pública
+    /api/uploads/news/... absoluta; sem isso o browser resolve o path
+    contra o domínio atual e dá 404.
+    """
+    if not cover:
+        return ''
+    if cover.startswith('/admin/uploads/news/'):
+        cover = '/api/uploads/news/' + cover[len('/admin/uploads/news/'):]
+    if cover.startswith('/'):
+        cover = request.host_url.rstrip('/') + cover
+    return cover
+
+
+@api_bp.route('/uploads/news/<path:filename>')
+def api_serve_news_upload(filename):
+    """Capas de notícia — público (o portal as exibe sem login).
+
+    /admin/uploads/ continua protegido: serve também coisas sensíveis
+    (DPOs, documentos) que não podem ficar anônimas.
+    """
+    from config import Config
+    import mimetypes
+    root = os.path.realpath(os.path.join(Config.UPLOAD_FOLDER, 'news'))
+    filepath = os.path.realpath(os.path.join(root, filename))
+    if not (filepath == root or filepath.startswith(root + os.sep)):
+        abort(403)
+    if not os.path.isfile(filepath):
+        abort(404)
+    mime = mimetypes.guess_type(filepath)[0] or 'application/octet-stream'
+    return send_file(filepath, mimetype=mime)
 
 
 # ── NOTÍCIAS ───────────────────────────────────────────────────
@@ -48,7 +87,7 @@ def api_news():
         'category_icon': n.category_obj.icon if n.category_obj else '',
         'committee': n.committee,
         'is_crisis': n.is_crisis,
-        'image_url': n.cover_image,
+        'image_url': news_image_url(n.cover_image),
         'time_ago':  n.time_ago(),
         'created_at': n.created_at.isoformat() if n.created_at else None,
     } for n in news])
@@ -470,7 +509,7 @@ def api_noticia_json(slug):
             'category_icon': n.category_obj.icon if n.category_obj else '',
             'committee':     n.committee,
             'is_crisis':     n.is_crisis,
-            'image_url':     n.cover_image,
+            'image_url':     news_image_url(n.cover_image),
             'time_ago':      n.time_ago(),
             'created_at':    n.created_at.isoformat() if n.created_at else None,
         }
@@ -487,7 +526,7 @@ def api_noticia_json(slug):
         'committee':     news.committee,
         'tags':          news.tags_list(),
         'is_crisis':     news.is_crisis,
-        'image_url':     news.cover_image,
+        'image_url':     news_image_url(news.cover_image),
         'time_ago':      news.time_ago(),
         'created_at':    news.created_at.isoformat() if news.created_at else None,
         'author':        news.author.name if news.author else 'SWDL',

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { NewsMeta, type NewsLike } from './NewsCard';
+import { resolveAssetUrl } from '@/lib/api';
 
 interface CrisisFeedProps {
   items: NewsLike[];
@@ -36,7 +37,7 @@ export function CrisisFeed({ items }: CrisisFeedProps) {
             <div className="overflow-hidden rounded-sm bg-surface-alt shrink-0">
               {item.image_url ? (
                 <img
-                  src={item.image_url}
+                  src={resolveAssetUrl(item.image_url)}
                   alt={item.title}
                   className="w-[140px] h-[100px] object-cover"
                   loading="lazy"

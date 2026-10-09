@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import { NewsMeta, type NewsLike } from './NewsCard';
 import { cn } from '@/lib/utils';
 import { categoryLabelKey } from '@/lib/format';
+import { resolveAssetUrl } from '@/lib/api';
 
 interface LeadStoryProps {
   item: NewsLike;
@@ -53,7 +54,7 @@ export function LeadStory({ item, className }: LeadStoryProps) {
       <div className="order-1 md:order-2 overflow-hidden rounded-sm bg-surface-alt">
         {item.image_url ? (
           <img
-            src={item.image_url}
+            src={resolveAssetUrl(item.image_url)}
             alt={item.title}
             className="w-full h-[220px] md:h-[420px] object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             loading="eager"

@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { api, News } from '@/lib/api';
+import { api, resolveAssetUrl, News } from '@/lib/api';
 import { NewsMeta, NewsCard, type NewsLike } from '@/components/noticias/NewsCard';
 import { formatTimeAgo, categoryLabelKey } from '@/lib/format';
 
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: news.title,
       description: news.excerpt || news.title,
-      images: news.image_url ? [news.image_url] : undefined,
+      images: news.image_url ? [resolveAssetUrl(news.image_url)] : undefined,
     },
   };
 }
@@ -96,7 +96,7 @@ export default async function NoticiaPage({ params }: Props) {
         <div className="container-portal mb-10">
           <div className="overflow-hidden rounded-sm bg-surface-alt">
             <img
-              src={news.image_url}
+              src={resolveAssetUrl(news.image_url)}
               alt={news.title}
               className="w-full h-[min(540px,50vw)] object-cover"
               loading="eager"

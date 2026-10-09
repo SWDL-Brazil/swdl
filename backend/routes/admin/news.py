@@ -42,7 +42,7 @@ def news_create():
             safe_name = f'news_{_uuid.uuid4().hex[:12]}.{ext}'
             filepath = os.path.join(upload_dir, safe_name)
             file.save(filepath)
-            news.cover_image = url_for('admin.serve_upload', filename=f'news/{safe_name}', _external=False)
+            news.cover_image = url_for('api.api_serve_news_upload', filename=safe_name, _external=False)
         news.save()
         flash('Notícia publicada com sucesso!', 'success')
         return redirect(url_for('admin.news_list'))
@@ -74,7 +74,7 @@ def news_edit(id):
             safe_name = f'news_{_uuid.uuid4().hex[:12]}.{ext}'
             filepath = os.path.join(upload_dir, safe_name)
             file.save(filepath)
-            news.cover_image = url_for('admin.serve_upload', filename=f'news/{safe_name}', _external=False)
+            news.cover_image = url_for('api.api_serve_news_upload', filename=safe_name, _external=False)
         news.save()
         flash('Notícia atualizada.', 'success')
         return redirect(url_for('admin.news_list'))

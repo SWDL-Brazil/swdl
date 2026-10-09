@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const safeExcerpt = escapeHtml(n.excerpt);
       const safeCommittee = escapeHtml(n.committee ? n.committee.toUpperCase() : '');
       const safeCategory = escapeHtml(n.category);
-      const safeImg = sanitizeUrl(n.cover_image);
+      const safeImg = sanitizeUrl(n.image_url);
       const imgHtml = safeImg
         ? `<img src="${safeImg}" alt="${safeTitle}" style="width:100%;height:100%;object-fit:cover;display:block">`
         : `<div class="news-img-icon">${emoji}</div>`;

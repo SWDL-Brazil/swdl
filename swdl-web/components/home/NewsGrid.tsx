@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { motion } from 'motion/react';
-import { api, News } from '@/lib/api';
+import { api, resolveAssetUrl, News } from '@/lib/api';
 import { Badge, CommitteeDot } from '@/components/ui/Badge';
 import { Card, CardImage } from '@/components/ui/Card';
 import { truncate } from '@/lib/utils';
@@ -77,7 +77,7 @@ export function NewsGrid() {
             >
               <Card className="h-full flex flex-col overflow-hidden">
                 <CardImage
-                  src={item.image_url}
+                  src={resolveAssetUrl(item.image_url)}
                   alt={item.title}
                   className="w-full h-48 -m-6 mb-0 rounded-t-lg"
                   fallback={<span className="text-5xl">📰</span>}

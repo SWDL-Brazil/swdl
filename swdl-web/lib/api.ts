@@ -22,6 +22,16 @@ const API_BASE_CANDIDATES = [
 // como o PDF público /certificado/<code>.
 export const BACKEND_ORIGIN = API_BASE.replace(/\/api\/?$/, '');
 
+// Assets com path relativo (ex.: /api/uploads/news/... vindo do backend)
+// precisam da origem do Flask: no Vercel/Firebase o browser resolveria
+// contra o domínio atual e daria 404.
+export function resolveAssetUrl(url?: string | null): string {
+  if (!url) return '';
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith('/')) return `${BACKEND_ORIGIN}${url}`;
+  return url;
+}
+
 export interface News {
   id: number;
   title: string;

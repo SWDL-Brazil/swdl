@@ -3,6 +3,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { CommitteeDot, Badge } from '@/components/ui/Badge';
 import { cn } from '@/lib/utils';
 import { formatTimeAgo, categoryLabelKey } from '@/lib/format';
+import { resolveAssetUrl } from '@/lib/api';
 
 export type NewsLike = {
   slug: string;
@@ -103,7 +104,7 @@ export function NewsCard({
           )}
         >
           <img
-            src={item.image_url}
+            src={resolveAssetUrl(item.image_url)}
             alt={item.title}
             className={cn(
               'object-cover transition-transform duration-500 group-hover:scale-[1.03]',
