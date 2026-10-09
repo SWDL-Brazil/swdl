@@ -1,5 +1,5 @@
 {% extends "student/base.html" %}
-{% from "student/_macros.html" import empty_state %}
+{% from "student/_macros.html" import empty_state %}{% from "student/_icons.html" import icon %}
 {% block title %}Certificados{% endblock %}
 {% block page_title %}Certificados{% endblock %}
 
@@ -7,7 +7,7 @@
 <div class="page-header">
   <div>
     <div class="section-label">Recursos</div>
-    <h1 class="page-title">🎓 Certificados</h1>
+    <h1 class="page-title">{{ icon('award') }} Certificados</h1>
     <p class="page-sub">Visualize e valide seu certificado de participação.</p>
   </div>
 </div>
@@ -15,7 +15,7 @@
 {% if student and student.certificate_released and student.verification_code %}
 <div class="card">
   <div class="card-body cert-center">
-    <div class="cert-icon">🎓</div>
+    <div class="cert-icon">{{ icon('award') }}</div>
     <div class="cert-title">Certificado Disponível</div>
     <p class="cert-subtitle">
       Seu certificado de participação foi liberado pela organização.
@@ -57,8 +57,8 @@
   </div>
 </div>
 {% elif student and not student.certificate_released %}
-{{ empty_state('🔒', 'Certificado não liberado', 'Seu certificado será disponibilizado assim que a organização liberar. Fique atento aos comunicados oficiais.') }}
+{{ empty_state(icon('lock'), 'Certificado não liberado', 'Seu certificado será disponibilizado assim que a organização liberar. Fique atento aos comunicados oficiais.') }}
 {% else %}
-{{ empty_state('🎓', 'Certificados', 'Complete sua participação para receber seu certificado.') }}
+{{ empty_state(icon('award'), 'Certificados', 'Complete sua participação para receber seu certificado.') }}
 {% endif %}
 {% endblock %}

@@ -1,5 +1,5 @@
 {% extends "student/base.html" %}
-{% from "student/_macros.html" import field_pair %}
+{% from "student/_macros.html" import field_pair %}{% from "student/_icons.html" import icon %}
 {% block title %}Meu Perfil{% endblock %}
 {% block page_title %}Meu Perfil{% endblock %}
 
@@ -7,7 +7,7 @@
 <div class="page-header">
   <div>
     <div class="section-label">Registro</div>
-    <h1 class="page-title">👤 Meu Perfil</h1>
+    <h1 class="page-title">{{ icon('user') }} Meu Perfil</h1>
     <p class="page-sub">Suas informações de acesso, identidade global e documentos.</p>
   </div>
 </div>
@@ -54,11 +54,11 @@
 {% if delegation %}
 <div class="card">
   <div class="card-header">
-    <span class="card-title">📄 Documento de Posição Oficial (DPO)</span>
+    <span class="card-title">{{ icon('file-text') }} Documento de Posição Oficial (DPO)</span>
     {% if delegation.dpo_uploaded %}
-    <span class="chip chip--green">✓ Recebido</span>
+    <span class="chip chip--green">{{ icon('check') }} Recebido</span>
     {% else %}
-    <span class="chip chip--slate">⏳ Pendente</span>
+    <span class="chip chip--slate">{{ icon('clock') }} Pendente</span>
     {% endif %}
   </div>
   <div class="card-body">
@@ -81,12 +81,12 @@
                style="font-size:13px;padding:10px 12px;border:1px solid var(--border);
                       border-radius:8px;background:var(--white);color:var(--text)">
         <button type="submit" class="btn {{ 'btn-navy' if delegation.dpo_uploaded else 'btn-gold' }} btn-sm">
-          {{ '📤 Substituir DPO' if delegation.dpo_uploaded else '📤 Enviar DPO' }}
+          {{ (icon('upload') ~ ' Substituir DPO') if delegation.dpo_uploaded else (icon('upload') ~ ' Enviar DPO') }}
         </button>
       </form>
     </div>
     <div class="field-help" style="margin-top:14px">
-      📌 Envie seu Documento de Posição Oficial em formato PDF. O DPO é obrigatório para
+      {{ icon('info') }} Envie seu Documento de Posição Oficial em formato PDF. O DPO é obrigatório para
       participação na simulação. Apenas arquivos PDF são aceitos.
     </div>
   </div>

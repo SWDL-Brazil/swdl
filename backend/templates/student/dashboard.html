@@ -6,7 +6,7 @@
 
 {% if read_only %}
 <div class="read-only-banner">
-  <span>🔒</span> Evento encerrado. A interface está em modo somente leitura.
+  <span>{{ icon('lock') }}</span> Evento encerrado. A interface está em modo somente leitura.
 </div>
 {% endif %}
 
@@ -14,7 +14,7 @@
 <div class="st-welcome">
   <div class="st-welcome-inner">
     <div class="st-welcome-label">Portal do Aluno — SWDL {{ now.year if now is defined else '' }}</div>
-    <div class="st-welcome-name">Olá, <span>{{ current_user.name.split()[0] }}</span>! 👋</div>
+    <div class="st-welcome-name">Olá, <span>{{ current_user.name.split()[0] }}</span>! </div>
     <div class="st-welcome-sub">Acompanhe sua participação no SWDL {{ now.year if now is defined else '' }}.</div>
     {% if student and student.global_id %}
     <div class="st-welcome-id">
@@ -29,7 +29,7 @@
 <!-- ═══ MINHA PARTICIPAÇÃO ════════════════════════════════ -->
 <div class="st-participation-card">
   <div class="st-participation-header">
-    <span class="st-participation-badge">👤 Minha Participação</span>
+    <span class="st-participation-badge">{{ icon('user') }} Minha Participação</span>
   </div>
   <div class="st-participation-body">
     {% if delegation %}
@@ -62,7 +62,7 @@
     {% endif %}
     {% else %}
     <div class="st-participation-pending">
-      <span class="st-participation-pending-icon">⏳</span>
+      <span class="st-participation-pending-icon">{{ icon('clock') }}</span>
       <div>
         <div class="st-participation-pending-title">Aguardando Designação</div>
         <div class="st-participation-pending-text">
@@ -88,23 +88,23 @@
     <div class="st-journey-step done">
       <div class="st-journey-dot"></div>
       <div class="st-journey-step-label">Cadastro</div>
-      <div class="st-journey-step-status">✓ Concluído</div>
+      <div class="st-journey-step-status">{{ icon('check') }} Concluído</div>
     </div>
     <div class="st-journey-line {{ 'done' if designated }}"></div>
     <div class="st-journey-step {{ 'done' if designated else 'current' }}">
       <div class="st-journey-dot"></div>
       <div class="st-journey-step-label">Designação</div>
-      <div class="st-journey-step-status">{{ '✓ Concluído' if designated else '⏳ Aguardando' }}</div>
+      <div class="st-journey-step-status">{{ (icon('check') ~ ' Concluído') if designated else (icon('clock') ~ ' Aguardando') }}</div>
     </div>
     <div class="st-journey-line {{ 'done' if dpo_ok or prep_warn }}"></div>
     <div class="st-journey-step {{ 'done' if dpo_ok else ('warn' if prep_warn else ('current' if designated else 'locked')) }}">
       <div class="st-journey-dot"></div>
       <div class="st-journey-step-label">Preparação</div>
       <div class="st-journey-step-status">
-        {% if dpo_ok %}✓ DPO Enviado
-        {% elif prep_warn %}⚠ DPO pendente
-        {% elif designated %}⏳ Aguardando DPO
-        {% else %}🔒 Bloqueada{% endif %}
+        {% if dpo_ok %}{{ icon('check') }} DPO Enviado
+        {% elif prep_warn %}{{ icon('alert-triangle') }} DPO pendente
+        {% elif designated %}{{ icon('clock') }} Aguardando DPO
+        {% else %}{{ icon('lock') }} Bloqueada{% endif %}
       </div>
     </div>
     <div class="st-journey-line {{ 'done' if designated and event_started }}"></div>
@@ -112,9 +112,9 @@
       <div class="st-journey-dot"></div>
       <div class="st-journey-step-label">Simulação</div>
       <div class="st-journey-step-status">
-        {% if sim_done %}✓ Concluído
-        {% elif sim_now %}● Ao Vivo
-        {% else %}🔒 Bloqueada{% endif %}
+        {% if sim_done %}{{ icon('check') }} Concluído
+        {% elif sim_now %}{{ icon('radio') }} Ao Vivo
+        {% else %}{{ icon('lock') }} Bloqueada{% endif %}
       </div>
     </div>
     <div class="st-journey-line {{ 'done' if sim_done }}"></div>
@@ -122,9 +122,9 @@
       <div class="st-journey-dot"></div>
       <div class="st-journey-step-label">Pós-Evento</div>
       <div class="st-journey-step-status">
-        {% if sim_done and cert_ok %}✓ Certificado Emitido
-        {% elif sim_done %}⏳ Certificado pendente
-        {% else %}🔒 Bloqueada{% endif %}
+        {% if sim_done and cert_ok %}{{ icon('check') }} Certificado Emitido
+        {% elif sim_done %}{{ icon('clock') }} Certificado pendente
+        {% else %}{{ icon('lock') }} Bloqueada{% endif %}
       </div>
     </div>
   </div>
@@ -135,28 +135,28 @@
   <div class="st-quick-access-title">Acesso Rápido</div>
   <div class="st-quick-grid">
     <a href="{{ url_for('student.profile') }}" class="st-quick-card">
-      <span class="st-quick-icon">👤</span>
+      <span class="st-quick-icon">{{ icon('user') }}</span>
       <span class="st-quick-label">Meu Perfil</span>
     </a>
     <a href="{{ url_for('student.documentos') }}" class="st-quick-card">
-      <span class="st-quick-icon">📁</span>
+      <span class="st-quick-icon">{{ icon('folder') }}</span>
       <span class="st-quick-label">Documentos</span>
       <span class="st-quick-count">{{ documentos|length }}</span>
     </a>
     <a href="{{ url_for('student.comunicados') }}" class="st-quick-card">
-      <span class="st-quick-icon">📰</span>
+      <span class="st-quick-icon">{{ icon('bell') }}</span>
       <span class="st-quick-label">Comunicados</span>
       {% if recent_news|length > 0 %}
       <span class="st-quick-badge">{{ recent_news|length }}</span>
       {% endif %}
     </a>
     <a href="{{ url_for('student.certificados') }}" class="st-quick-card">
-      <span class="st-quick-icon">🎓</span>
+      <span class="st-quick-icon">{{ icon('award') }}</span>
       <span class="st-quick-label">Certificados</span>
       <span class="st-quick-count">{{ 'Liberado' if student and student.certificate_released else 'Pendente' }}</span>
     </a>
     <a href="{{ url_for('student.history') }}" class="st-quick-card">
-      <span class="st-quick-icon">📜</span>
+      <span class="st-quick-icon">{{ icon('clock') }}</span>
       <span class="st-quick-label">Histórico</span>
       <span class="st-quick-count">{{ student.participations|length if student else 0 }}</span>
     </a>
@@ -181,7 +181,7 @@
 {% if current_item or next_item %}
 <div class="st-agenda-card">
   <div class="st-agenda-header">
-    <span class="st-agenda-title">📅 Agenda da Simulação</span>
+    <span class="st-agenda-title">{{ icon('calendar') }} Agenda da Simulação</span>
   </div>
   <div class="st-agenda-body">
     {% if current_item %}
@@ -191,7 +191,7 @@
       </div>
       <div class="st-agenda-now-title">{{ current_item.title }}</div>
       {% if current_item.location %}
-      <div class="st-agenda-now-location">📍 {{ current_item.location }}</div>
+      <div class="st-agenda-now-location">{{ icon('map-pin') }} {{ current_item.location }}</div>
       {% endif %}
     </div>
     {% endif %}
@@ -200,8 +200,8 @@
       <div class="st-agenda-next-label">Próxima atividade</div>
       <div class="st-agenda-next-title">{{ next_item.title }}</div>
       <div class="st-agenda-next-meta">
-        🕐 {{ next_item.start_time }}
-        {% if next_item.location %} · 📍 {{ next_item.location }}{% endif %}
+        {{ icon('clock') }} {{ next_item.start_time }}
+        {% if next_item.location %} · {{ icon('map-pin') }} {{ next_item.location }}{% endif %}
       </div>
     </div>
     {% endif %}
@@ -212,22 +212,22 @@
 <!-- Quick actions during simulation -->
 <div class="st-sim-actions">
   <a href="{{ url_for('student.attendance') }}" class="st-sim-btn">
-    <span class="st-sim-btn-icon">📋</span>
+    <span class="st-sim-btn-icon">{{ icon('clipboard') }}</span>
     <span class="st-sim-btn-label">Registrar Presença</span>
     <span class="st-sim-btn-status">{{ delegation.presence_status if delegation else '—' }}</span>
   </a>
   <a href="{{ url_for('student.voting') }}" class="st-sim-btn">
-    <span class="st-sim-btn-icon">🗳️</span>
+    <span class="st-sim-btn-icon">{{ icon('check-square') }}</span>
     <span class="st-sim-btn-label">Votação</span>
     <span class="st-sim-btn-status">Aberta</span>
   </a>
   <a href="{{ url_for('student.documentos') }}" class="st-sim-btn">
-    <span class="st-sim-btn-icon">📁</span>
+    <span class="st-sim-btn-icon">{{ icon('folder') }}</span>
     <span class="st-sim-btn-label">Documentos</span>
     <span class="st-sim-btn-status">{{ documentos|length }} arquivo(s)</span>
   </a>
   <a href="{{ url_for('student.comunicados') }}" class="st-sim-btn">
-    <span class="st-sim-btn-icon">📰</span>
+    <span class="st-sim-btn-icon">{{ icon('bell') }}</span>
     <span class="st-sim-btn-label">Comunicados</span>
     <span class="st-sim-btn-status">{{ recent_news|length }} novo(s)</span>
   </a>
@@ -238,13 +238,13 @@
 {% if recent_news %}
 <div class="st-card">
   <div class="st-card-header">
-    <span class="st-card-title">📰 Comunicados Recentes</span>
+    <span class="st-card-title">{{ icon('bell') }} Comunicados Recentes</span>
     <a href="{{ url_for('student.comunicados') }}" class="st-card-link">Ver todos →</a>
   </div>
   <div class="st-card-body card-body--flush">
     {% for n in recent_news[:3] %}
     <div class="st-news-row">
-      <span class="st-news-icon">📢</span>
+      <span class="st-news-icon">{{ icon('megaphone') }}</span>
       <div class="st-news-content">
         <div class="st-news-title">{{ n.title }}</div>
         {% if n.created_at %}
@@ -261,10 +261,10 @@
 {% if event_ended or read_only %}
 <div class="st-card st-cert-highlight">
   <div class="st-card-body cert-center" style="padding:30px 24px">
-    <div class="cert-icon">🎓</div>
+    <div class="cert-icon">{{ icon('award') }}</div>
     <div class="st-card-title">Seu Certificado</div>
     {% if student and student.certificate_released %}
-    <div class="text-muted" style="font-size:13px;margin:6px 0 14px">✅ Disponível para download</div>
+    <div class="text-muted" style="font-size:13px;margin:6px 0 14px">{{ icon('check') }} Disponível para download</div>
     <a href="{{ url_for('student.certificados') }}" class="st-btn st-btn-gold">Ver Certificado</a>
     {% else %}
     <div class="text-muted" style="font-size:13px;margin-top:6px">Pendente de liberação pela organização.</div>
@@ -282,13 +282,13 @@
   sio.emit('join_students', {});
   sio.on('invoke_session', (data) => { if (data.url) window.location.href = data.url; });
   sio.on('vote_opened', (data) => {
-    showToast('🗳️ ' + data.title, 'Nova votação aberta!', {
-      href: '{{ url_for("student.voting") }}', timeout: 6000
+    showToast(data.title, 'Nova votação aberta!', {
+      icon: 'check-square', href: '{{ url_for("student.voting") }}', timeout: 6000
     });
   });
   sio.on('vote_closed', (data) => {
-    showToast('🗳️ ' + (data.title || 'Votação'), 'Votação encerrada — veja o resultado.', {
-      href: '{{ url_for("student.voting") }}', timeout: 6000
+    showToast(data.title || 'Votação', 'Votação encerrada — veja o resultado.', {
+      icon: 'check-square', href: '{{ url_for("student.voting") }}', timeout: 6000
     });
   });
 </script>

@@ -1,3 +1,4 @@
+{% from "student/_icons.html" import icon %}
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -24,82 +25,82 @@
 
     <nav class="st-sidebar-nav">
 
-      <!-- 🏠 Dashboard -->
+      <!-- Início -->
       <div class="st-nav-section">Início</div>
       <ul class="st-nav-list">
         <li>
           <a href="{{ url_for('student.dashboard') }}"
              class="{{ 'active' if request.endpoint == 'student.dashboard' }}">
-            <span class="st-nav-icon">🏠</span> Dashboard
+            <span class="st-nav-icon">{{ icon('home') }}</span> Dashboard
           </a>
         </li>
       </ul>
 
-      <!-- 📚 PARTICIPAÇÃO -->
+      <!-- Participação -->
       <div class="st-nav-section">Participação</div>
       <ul class="st-nav-list">
         <li>
           <a href="{{ url_for('student.attendance') }}"
              class="{{ 'active' if request.endpoint == 'student.attendance' }}">
-            <span class="st-nav-icon">📋</span> Presença
+            <span class="st-nav-icon">{{ icon('clipboard') }}</span> Presença
           </a>
         </li>
         <li>
           <a href="{{ url_for('student.voting') }}"
              class="{{ 'active' if request.endpoint == 'student.voting' }}">
-            <span class="st-nav-icon">🗳️</span> Votação
+            <span class="st-nav-icon">{{ icon('check-square') }}</span> Votação
           </a>
         </li>
         <li>
           <a href="{{ url_for('motion.student_motions') }}"
              class="{{ 'active' if request.endpoint == 'motion.student_motions' }}">
-            <span class="st-nav-icon">📝</span> Moções
+            <span class="st-nav-icon">{{ icon('edit') }}</span> Moções
           </a>
         </li>
         <li>
           <a href="{{ url_for('resolution.student_resolutions') }}"
              class="{{ 'active' if request.endpoint == 'resolution.student_resolutions' }}">
-            <span class="st-nav-icon">📜</span> Resoluções
+            <span class="st-nav-icon">{{ icon('file-text') }}</span> Resoluções
           </a>
         </li>
       </ul>
 
-      <!-- 📁 RECURSOS -->
+      <!-- Recursos -->
       <div class="st-nav-section">Recursos</div>
       <ul class="st-nav-list">
         <li>
           <a href="{{ url_for('student.documentos') }}"
              class="{{ 'active' if request.endpoint == 'student.documentos' }}">
-            <span class="st-nav-icon">📁</span> Documentos
+            <span class="st-nav-icon">{{ icon('folder') }}</span> Documentos
           </a>
         </li>
         <li>
           <a href="{{ url_for('student.comunicados') }}"
              class="{{ 'active' if request.endpoint == 'student.comunicados' }}">
-            <span class="st-nav-icon">📰</span> Comunicados
+            <span class="st-nav-icon">{{ icon('bell') }}</span> Comunicados
           </a>
         </li>
         <li>
           <a href="{{ url_for('student.certificados') }}"
              class="{{ 'active' if request.endpoint == 'student.certificados' }}">
-            <span class="st-nav-icon">🎓</span> Certificados
+            <span class="st-nav-icon">{{ icon('award') }}</span> Certificados
           </a>
         </li>
         <li>
           <a href="{{ url_for('vote.telao') }}" target="_blank"
              class="{{ 'active' if request.endpoint == 'vote.telao' }}">
-            <span class="st-nav-icon">📺</span> Telão
+            <span class="st-nav-icon">{{ icon('monitor') }}</span> Telão
           </a>
         </li>
       </ul>
 
-      <!-- 📜 HISTÓRICO -->
+      <!-- Registro -->
       <div class="st-nav-section">Registro</div>
       <ul class="st-nav-list">
         <li>
           <a href="{{ url_for('student.history') }}"
              class="{{ 'active' if request.endpoint == 'student.history' }}">
-            <span class="st-nav-icon">📜</span> Histórico
+            <span class="st-nav-icon">{{ icon('clock') }}</span> Histórico
           </a>
         </li>
       </ul>
@@ -115,7 +116,7 @@
           <div class="st-sidebar-user-role">Perfil</div>
         </div>
       </a>
-      <a href="{{ url_for('auth.student_logout') }}" class="st-sidebar-logout">← Sair</a>
+      <a href="{{ url_for('auth.student_logout') }}" class="st-sidebar-logout">{{ icon('log-out') }} Sair</a>
     </div>
   </aside>
 
@@ -151,6 +152,7 @@
     </div>
   </main>
 
+  <script src="{{ url_for('static', filename='js/st-icons.js') }}"></script>
   {% block extra_scripts %}{% endblock %}
   <script>
   function toggleStSidebar() {
@@ -164,7 +166,11 @@
     var t = document.createElement('div');
     t.className = 'st-toast' + (opts.variant ? ' st-toast--' + opts.variant : '');
     var strong = document.createElement('strong');
-    strong.textContent = title;
+    if (opts.icon && typeof stIcon === 'function') {
+      strong.innerHTML = stIcon(opts.icon);
+      strong.appendChild(document.createTextNode(' '));
+    }
+    strong.appendChild(document.createTextNode(title));
     t.appendChild(strong);
     if (sub) {
       var span = document.createElement('span');

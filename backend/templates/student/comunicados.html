@@ -1,5 +1,5 @@
 {% extends "student/base.html" %}
-{% from "student/_macros.html" import empty_state %}
+{% from "student/_macros.html" import empty_state %}{% from "student/_icons.html" import icon %}
 {% block title %}Comunicados{% endblock %}
 {% block page_title %}Comunicados{% endblock %}
 
@@ -7,18 +7,18 @@
 <div class="page-header">
   <div>
     <div class="section-label">Recursos</div>
-    <h1 class="page-title">📰 Comunicados Oficiais</h1>
+    <h1 class="page-title">{{ icon('newspaper') }} Comunicados Oficiais</h1>
     <p class="page-sub">Acompanhe todos os comunicados da organização.</p>
   </div>
 </div>
 
 <div class="card">
   <div class="card-body card-body--flush">
-    {% set cat_icons = {'crise':'⚡','oficial':'📋','imprensa':'📰','votacao':'🗳️'} %}
+    {% set cat_icons = {'crise':'zap','oficial':'clipboard','imprensa':'newspaper','votacao':'check-square'} %}
     {% for n in news %}
     <div class="cmp-card">
       <div style="display:flex;align-items:flex-start;gap:14px">
-        <span class="news-row-icon">{{ cat_icons.get(n.category_obj.slug if n.category_obj else '', '📋') }}</span>
+        <span class="news-row-icon">{{ icon(cat_icons.get(n.category_obj.slug if n.category_obj else '', 'clipboard')) }}</span>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap">
             <span class="news-tag-badge {{ n.category_obj.slug if n.category_obj else 'geral' }}">{{ n.category_obj.name if n.category_obj else 'Geral' }}</span>
@@ -35,7 +35,7 @@
       </div>
     </div>
     {% else %}
-    {{ empty_state('📭', 'Nenhum comunicado', 'Comunicados oficiais aparecerão aqui quando publicados.') }}
+    {{ empty_state(icon('inbox'), 'Nenhum comunicado', 'Comunicados oficiais aparecerão aqui quando publicados.') }}
     {% endfor %}
   </div>
 </div>

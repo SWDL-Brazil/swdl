@@ -3,28 +3,30 @@
   'use strict';
 
   // Triagem de infraestrutura
+  var ico = window.stIcon || function() { return ''; };
   var triagem = document.getElementById('deviceTriagem');
+  var ico = window.stIcon || function() { return ''; };
   if (triagem) {
     var warnings = [];
     if (window.innerWidth < 768 || ('ontouchstart' in window)) {
-      warnings.push('📱 Dispositivo móvel detectado');
+      warnings.push(['smartphone', 'Dispositivo móvel detectado']);
     }
     if (!navigator.onLine) {
-      warnings.push('🔴 Sem conexão com a internet');
+      warnings.push(['wifi-off', 'Sem conexão com a internet']);
     }
     if (window.innerWidth < 480) {
-      warnings.push('📏 Tela muito pequena — use o Modo Rápido para facilitar');
+      warnings.push(['minimize-2', 'Tela muito pequena — use o Modo Rápido para facilitar']);
     }
     if (warnings.length) {
       triagem.style.display = 'flex';
-      triagem.innerHTML = '🔍 ' + warnings.join(' · ');
+      triagem.innerHTML = ico('search') + ' ' + warnings.map(function(w) { return ico(w[0]) + ' ' + w[1]; }).join(' · ');
     }
     if (window.innerWidth < 768 && ('ontouchstart' in window)) {
       var card = document.getElementById('presenceCard');
       if (card) {
         var hint = document.createElement('div');
         hint.style.cssText = 'font-size:11px;color:var(--muted);margin-top:8px';
-        hint.textContent = '💡 Dispositivo touch detectado — use o Modo Rápido abaixo';
+        hint.innerHTML = ico('lightbulb') + ' Dispositivo touch detectado — use o Modo Rápido abaixo';
         card.querySelector('.card-body').appendChild(hint);
       }
     }

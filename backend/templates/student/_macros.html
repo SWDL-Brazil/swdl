@@ -1,4 +1,5 @@
 {# ── MACROS REUTILIZÁVEIS — Painel do Aluno ── #}
+{% from "student/_icons.html" import icon %}
 
 {# Empty state padronizado #}
 {% macro empty_state(icon, title, text) %}
@@ -45,7 +46,7 @@
 {# Linha de documento #}
 {% macro doc_row(doc) %}
 <div class="doc-row">
-  <span class="doc-row-icon">📄</span>
+  <span class="doc-row-icon">{{ icon('file-text') }}</span>
   <div class="doc-row-content">
     <div class="doc-row-title">{{ doc.title }}</div>
     {% if doc.description %}
@@ -61,7 +62,7 @@
       <span>{{ doc.created_at.strftime('%d/%m/%Y') }}</span>
     </div>
   </div>
-  <a href="{{ url_for('student.documento_download', id=doc.id) }}" class="btn btn-navy btn-sm doc-row-btn">📥 Baixar</a>
+  <a href="{{ url_for('student.documento_download', id=doc.id) }}" class="btn btn-navy btn-sm doc-row-btn">{{ icon('download') }} Baixar</a>
 </div>
 {% endmacro %}
 

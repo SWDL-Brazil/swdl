@@ -1,4 +1,4 @@
-{% extends "student/base.html" %}
+{% extends "student/base.html" %}{% from "student/_icons.html" import icon %}
 
 {% block title %}Moções — {{ committee.upper() }}{% endblock %}
 {% block page_title %}Moções de Debate{% endblock %}
@@ -9,17 +9,17 @@
   <div class="page-head-row">
     <div>
       <div class="section-label">Participação</div>
-      <h1 class="page-title">📋 Moções de Debate</h1>
+      <h1 class="page-title">{{ icon('clipboard') }} Moções de Debate</h1>
       <p class="page-sub">Comitê: <strong>{{ committee.upper() }}</strong></p>
     </div>
-    <button class="btn btn-gold" onclick="openModal('newMotionModal')">➕ Propor Moção</button>
+    <button class="btn btn-gold" onclick="openModal('newMotionModal')">{{ icon('plus') }} Propor Moção</button>
   </div>
 
   {# ═══════ MOÇÃO ATIVA ═══════ #}
   {% if active %}
   <div class="active-panel">
     <div class="active-panel-head">
-      <span style="font-size:18px">{{ active.type_info().icon }}</span>
+      <span>{{ icon(active.type_info().ico) }}</span>
       <span class="active-panel-status">{{ active.type_info().label }} — Em Andamento</span>
     </div>
     <div class="active-panel-topic">{{ active.topic }}</div>
@@ -35,7 +35,7 @@
     <div class="subpanel-title">Fila Pendente</div>
     {% for m in pending %}
     <div class="queue-item">
-      <span class="queue-icon">{{ m.type_info().icon }}</span>
+      <span class="queue-icon">{{ icon(m.type_info().ico) }}</span>
       <div class="queue-body">
         <div class="queue-title">{{ m.topic }}</div>
         <div class="queue-meta">
@@ -47,7 +47,7 @@
       {% if m.seconded_by %}
         <span class="chip chip--green">Secondada por {{ m.seconded_by.country }}</span>
       {% elif m.proposer_id != delegation.id %}
-        <button class="btn btn-sm btn-ghost" onclick="secondMotion({{ m.id }})">👍 Secondar</button>
+        <button class="btn btn-sm btn-ghost" onclick="secondMotion({{ m.id }})">{{ icon('thumbs-up') }} Secondar</button>
       {% endif %}
     </div>
     {% else %}
@@ -63,13 +63,13 @@
     <div class="subpanel-title">Histórico</div>
     {% for m in log %}
     <div class="log-row">
-      <span>{{ m.type_info().icon }}</span>
+      <span>{{ icon(m.type_info().ico) }}</span>
       <span class="log-row-topic">{{ m.topic }}</span>
       <span class="log-row-country">{{ m.proposer.country if m.proposer else '?' }}</span>
       {% if m.status == 'approved' %}
-        <span class="log-status--approved">✓ Aprovada</span>
+        <span class="log-status--approved">{{ icon('check') }} Aprovada</span>
       {% elif m.status == 'rejected' %}
-        <span class="log-status--rejected">✗ Rejeitada</span>
+        <span class="log-status--rejected">{{ icon('x') }} Rejeitada</span>
       {% elif m.status == 'completed' %}
         <span class="log-status--completed">Concluída</span>
       {% endif %}
@@ -88,7 +88,7 @@
       <select id="nm-type" onchange="updateModalDefaults()">
         {% for key, info in motion_types.items() %}
         <option value="{{ key }}" data-total="{{ info.default_total }}" data-speaking="{{ info.default_speaking }}">
-          {{ info.icon }} {{ info.label }}
+          {{ info.label }}
         </option>
         {% endfor %}
       </select>

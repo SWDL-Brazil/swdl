@@ -1,5 +1,5 @@
 {% extends "student/base.html" %}
-{% from "student/_macros.html" import empty_state %}
+{% from "student/_macros.html" import empty_state %}{% from "student/_icons.html" import icon %}
 {% block title %}Meu Histórico{% endblock %}
 {% block page_title %}Meu Histórico{% endblock %}
 
@@ -7,7 +7,7 @@
 <div class="page-header">
   <div>
     <div class="section-label">Registro</div>
-    <h1 class="page-title">📜 Meu Histórico</h1>
+    <h1 class="page-title">{{ icon('clock') }} Meu Histórico</h1>
     <p class="page-sub">Registro completo das suas participações na SWDL.</p>
   </div>
   {% if student %}
@@ -42,6 +42,6 @@
   </div>
 </div>
 {% else %}
-{{ empty_state('📭', 'Nenhum registro encontrado', 'Suas participações passadas aparecerão aqui. O histórico é vinculado ao seu ID Global único.') }}
+{{ empty_state(icon('inbox'), 'Nenhum registro encontrado', 'Suas participações passadas aparecerão aqui. O histórico é vinculado ao seu ID Global único.') }}
 {% endif %}
 {% endblock %}

@@ -1,3 +1,4 @@
+{% from "student/_icons.html" import icon %}
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -58,7 +59,7 @@
       <p class="login-sub-text">Use suas credenciais de acesso.</p>
 
       {% if error %}
-        <div class="error-msg">⚠ {{ error }}</div>
+        <div class="error-msg">{{ icon('alert-triangle') }} {{ error }}</div>
       {% endif %}
 
       <form method="POST">

@@ -1,5 +1,5 @@
 {% extends "student/base.html" %}
-{% from "student/_macros.html" import field_pair %}
+{% from "student/_macros.html" import field_pair %}{% from "student/_icons.html" import icon %}
 {% block title %}Registrar Presença{% endblock %}
 {% block page_title %}Registrar Presença{% endblock %}
 
@@ -7,14 +7,14 @@
 <div class="page-header">
   <div>
     <div class="section-label">Participação</div>
-    <h1 class="page-title">📋 Registrar Presença</h1>
+    <h1 class="page-title">{{ icon('clipboard') }} Registrar Presença</h1>
     <p class="page-sub">Registre sua presença na simulação.</p>
   </div>
 </div>
 
 {% if read_only %}
 <div class="read-only-banner">
-  <span>🔒</span> Evento encerrado. A presença não pode mais ser registrada.
+  <span>{{ icon('lock') }}</span> Evento encerrado. A presença não pode mais ser registrada.
 </div>
 {% endif %}
 
@@ -25,9 +25,9 @@
   <div class="card-body hero-center">
     <div class="hero-icon">
       {% if delegation.presence_status == 'presente' or delegation.presence_status == 'votante' %}
-        ✅
+        {{ icon('check-circle') }}
       {% else %}
-        📋
+        {{ icon('clipboard') }}
       {% endif %}
     </div>
     <div class="hero-title">
@@ -51,23 +51,23 @@
         <form method="POST" id="normalPresenceForm" style="display:inline">
           <input type="hidden" name="action" value="registrar">
           <button type="submit" class="btn btn-green">
-            ✅ Registrar Presença
+            {{ icon('check') }} Registrar Presença
           </button>
         </form>
         <form method="POST" style="display:inline">
           <input type="hidden" name="action" value="modo_adaptado">
           <button type="submit" class="btn btn-navy">
-            📱 Modo Adaptado
+            {{ icon('smartphone') }} Modo Adaptado
           </button>
         </form>
         <button onclick="toggleQuickMode()" class="btn btn-ghost">
-          ⚡ Modo Rápido
+          {{ icon('zap') }} Modo Rápido
         </button>
       </div>
 
       <div id="quickModePanel" class="inset-panel" style="display:none">
         <div class="inset-panel-head">
-          <span class="inset-panel-icon">⚡</span>
+          <span class="inset-panel-icon">{{ icon('zap') }}</span>
           <div>
             <div class="hero-title">Modo Rápido — Dispositivo Compartilhado</div>
             <div class="field-help">Registra presença e desconecta em um clique para o próximo aluno usar.</div>
@@ -77,7 +77,7 @@
           <input type="hidden" name="action" value="registrar">
           <input type="hidden" name="quick_mode" value="1">
           <button type="submit" class="btn btn-green btn-block">
-            ✅ Registrar e Sair
+            {{ icon('check') }} Registrar e Sair
           </button>
         </form>
         <div class="field-help" style="margin-top:8px;text-align:center">
@@ -91,7 +91,7 @@
 
 <div class="card">
   <div class="card-header">
-    <span class="card-title">ℹ️ Informações da Delegação</span>
+    <span class="card-title">{{ icon('info') }} Informações da Delegação</span>
   </div>
   <div class="card-body">
     <div class="info-grid">
@@ -106,7 +106,7 @@
 {% else %}
 <div class="card">
   <div class="card-body empty-state">
-    <div class="empty-state-icon">⏳</div>
+    <div class="empty-state-icon">{{ icon('clock') }}</div>
     <div class="empty-state-title">Aguardando designação</div>
     <p class="empty-state-text">
       Você ainda não foi vinculado a uma delegação. Assim que a organização designar seu país, você poderá registrar presença.

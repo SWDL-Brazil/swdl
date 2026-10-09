@@ -2,16 +2,17 @@
 (function() {
   'use strict';
   let selectedChoice = null;
+  const ico = (n, cls) => (window.stIcon ? window.stIcon(n, cls) : '');
 
   window.selectVote = function(choice, el) {
     selectedChoice = choice;
     const colors = {favor:'var(--green)', contra:'var(--red)', abstencao:'var(--slate)'};
     document.querySelectorAll('.v-opt').forEach(function(o) {
       o.classList.remove('v-opt--selected');
-      o.querySelector('.v-check').textContent = '';
+      o.querySelector('.v-check').innerHTML = '';
     });
     el.classList.add('v-opt--selected');
-    el.querySelector('.v-check').textContent = '✓';
+    el.querySelector('.v-check').innerHTML = ico('check');
     document.getElementById('submitVote').disabled = false;
   };
 
@@ -28,13 +29,13 @@
       });
       const data = await res.json();
       if (data.ok) {
-        const icons = {favor:'✅', contra:'❌', abstencao:'🤝'};
+        const icons = {favor:'check-circle', contra:'x-circle', abstencao:'minus-circle'};
         const labels = {favor:'A Favor registrado!', contra:'Contra registrado!', abstencao:'Abstenção registrada!'};
         document.getElementById('voteOptions').style.display = 'none';
         btn.style.display = 'none';
         const result = document.getElementById('voteResult');
         result.style.display = 'block';
-        document.getElementById('voteResultIcon').textContent = icons[selectedChoice];
+        document.getElementById('voteResultIcon').innerHTML = ico(icons[selectedChoice], 'st-ico-xl');
         document.getElementById('voteResultTitle').textContent = labels[selectedChoice];
       } else {
         btn.disabled = false;

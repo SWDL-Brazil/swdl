@@ -412,7 +412,7 @@ def dpo_upload():
     db.session.add(log)
     db.session.commit()
 
-    flash('📄 DPO enviado com sucesso!', 'success')
+    flash('DPO enviado com sucesso!', 'success')
     return redirect(url_for('student.profile'))
 
 

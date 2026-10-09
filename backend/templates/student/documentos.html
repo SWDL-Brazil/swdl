@@ -1,5 +1,5 @@
 {% extends "student/base.html" %}
-{% from "student/_macros.html" import empty_state, doc_row %}
+{% from "student/_macros.html" import empty_state, doc_row %}{% from "student/_icons.html" import icon %}
 {% block title %}Documentos{% endblock %}
 {% block page_title %}Documentos{% endblock %}
 
@@ -7,7 +7,7 @@
 <div class="page-header">
   <div>
     <div class="section-label">Recursos</div>
-    <h1 class="page-title">📁 Documentos</h1>
+    <h1 class="page-title">{{ icon('folder') }} Documentos</h1>
     <p class="page-sub">Materiais de estudo, guias e documentos oficiais.</p>
   </div>
 </div>
@@ -26,7 +26,7 @@
     {% for doc in documentos %}
     {{ doc_row(doc) }}
     {% else %}
-    {{ empty_state('📂', 'Nenhum documento disponível', 'A organização disponibilizará documentos aqui.') }}
+    {{ empty_state(icon('folder-open'), 'Nenhum documento disponível', 'A organização disponibilizará documentos aqui.') }}
     {% endfor %}
   </div>
 </div>

@@ -7,12 +7,13 @@ from datetime import datetime, timezone
 
 
 MOTION_TYPES = {
-    'moderated_caucus':   {'label': 'Moderated Caucus',   'icon': '🎤', 'default_total': 900, 'default_speaking': 60},
-    'unmoderated_caucus': {'label': 'Unmoderated Caucus', 'icon': '🗣️', 'default_total': 600, 'default_speaking': 0},
-    'round_table':        {'label': 'Round Table',         'icon': '📋', 'default_total': 1200, 'default_speaking': 90},
-    'formal_speech':      {'label': 'Formal Speech',       'icon': '📜', 'default_total': 1800, 'default_speaking': 120},
-    'close_debate':       {'label': 'Close Debate',        'icon': '🔒', 'default_total': 0, 'default_speaking': 0},
-    'other':              {'label': 'Outro',               'icon': '📌', 'default_total': 600, 'default_speaking': 60},
+    # 'icon' = emoji (admin/telão); 'ico' = nome do SVG (painel do aluno)
+    'moderated_caucus':   {'label': 'Moderated Caucus',   'icon': '🎤', 'ico': 'mic',             'default_total': 900, 'default_speaking': 60},
+    'unmoderated_caucus': {'label': 'Unmoderated Caucus', 'icon': '🗣️', 'ico': 'users',           'default_total': 600, 'default_speaking': 0},
+    'round_table':        {'label': 'Round Table',        'icon': '📋', 'ico': 'clipboard',       'default_total': 1200, 'default_speaking': 90},
+    'formal_speech':      {'label': 'Formal Speech',      'icon': '📜', 'ico': 'file-text',       'default_total': 1800, 'default_speaking': 120},
+    'close_debate':       {'label': 'Close Debate',       'icon': '🔒', 'ico': 'lock',            'default_total': 0, 'default_speaking': 0},
+    'other':              {'label': 'Outro',              'icon': '📌', 'ico': 'info',            'default_total': 600, 'default_speaking': 60},
 }
 
 

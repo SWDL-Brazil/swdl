@@ -1,4 +1,4 @@
-{% extends "student/base.html" %}
+{% extends "student/base.html" %}{% from "student/_icons.html" import icon %}
 
 {% block title %}Resoluções — {{ committee.upper() }}{% endblock %}
 {% block page_title %}Resoluções{% endblock %}
@@ -9,16 +9,16 @@
   <div class="page-head-row">
     <div>
       <div class="section-label">Participação</div>
-      <h1 class="page-title">📜 Resoluções</h1>
+      <h1 class="page-title">{{ icon('file-text') }} Resoluções</h1>
       <p class="page-sub">Comitê: <strong>{{ committee.upper() }}</strong></p>
     </div>
-    <button class="btn btn-gold" onclick="openModal('newResModal')">➕ Nova Resolução</button>
+    <button class="btn btn-gold" onclick="openModal('newResModal')">{{ icon('plus') }} Nova Resolução</button>
   </div>
 
   {% for r in resolutions %}
   <div class="queue-item queue-item--block" style="margin-bottom:12px">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
-      <span class="queue-icon">📜</span>
+      <span class="queue-icon">{{ icon('file-text') }}</span>
       <div style="flex:1;min-width:0">
         <strong class="queue-title" style="font-size:15.5px">{{ r.title }}</strong>
         <div class="queue-meta">
@@ -35,9 +35,9 @@
         {% elif r.status == 'voting' %}
           <span class="chip chip--green">Em Votação</span>
         {% elif r.status == 'passed' %}
-          <span class="chip chip--green-solid">✓ Aprovada</span>
+          <span class="chip chip--green-solid">{{ icon('check') }} Aprovada</span>
         {% elif r.status == 'rejected' %}
-          <span class="chip chip--red">✗ Rejeitada</span>
+          <span class="chip chip--red">{{ icon('x') }} Rejeitada</span>
         {% endif %}
       </div>
     </div>
@@ -62,12 +62,12 @@
        or (r.status in ('draft', 'submitted') and r.proposer_id != delegation.id) %}
     <div class="action-row">
       {% if r.status == 'draft' and r.proposer_id == delegation.id %}
-        <button class="btn btn-sm btn-gold" onclick="submitResolution({{ r.id }})">📤 Submeter</button>
-        <button class="btn btn-sm btn-ghost" onclick="editResolution({{ r.id }})">✏️ Editar</button>
+        <button class="btn btn-sm btn-gold" onclick="submitResolution({{ r.id }})">{{ icon('send') }} Submeter</button>
+        <button class="btn btn-sm btn-ghost" onclick="editResolution({{ r.id }})">{{ icon('edit') }} Editar</button>
       {% endif %}
       {% if r.status in ('draft', 'submitted') and r.proposer_id != delegation.id %}
-        <button class="btn btn-sm btn-ghost" onclick="cosponsorResolution({{ r.id }})">👍 Apoiar</button>
-        <button class="btn btn-sm btn-ghost" onclick="openModal('amendModal');setAmendRes({{ r.id }})">📝 Emendar</button>
+        <button class="btn btn-sm btn-ghost" onclick="cosponsorResolution({{ r.id }})">{{ icon('thumbs-up') }} Apoiar</button>
+        <button class="btn btn-sm btn-ghost" onclick="openModal('amendModal');setAmendRes({{ r.id }})">{{ icon('edit-3') }} Emendar</button>
       {% endif %}
     </div>
     {% endif %}

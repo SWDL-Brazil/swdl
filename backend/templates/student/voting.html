@@ -1,4 +1,4 @@
-{% extends "student/base.html" %}
+{% extends "student/base.html" %}{% from "student/_icons.html" import icon %}
 {% block title %}Votação{% endblock %}
 {% block page_title %}Votação Eletrônica{% endblock %}
 
@@ -6,21 +6,21 @@
 <div class="page-header">
   <div>
     <div class="section-label">Participação</div>
-    <h1 class="page-title">🗳️ Votação Eletrônica</h1>
+    <h1 class="page-title">{{ icon('check-square') }} Votação Eletrônica</h1>
     <p class="page-sub">Participe das votações das resoluções em pauta.</p>
   </div>
 </div>
 
 {% if read_only %}
 <div class="read-only-banner">
-  <span>🔒</span> Evento encerrado. A votação não está mais disponível.
+  <span>{{ icon('lock') }}</span> Evento encerrado. A votação não está mais disponível.
 </div>
 {% endif %}
 
 {% if presence_status == 'ausente' and delegation %}
 <div class="warning-card">
   <div class="warning-card-body">
-    <span class="warning-card-icon">⚠️</span>
+    <span class="warning-card-icon">{{ icon('alert-triangle') }}</span>
     <div>
       <div class="warning-card-title">Presença não registrada</div>
       <div class="warning-card-text">
@@ -35,7 +35,7 @@
 {% if not is_event_day and open_sessions %}
 <div class="warning-card warning-card--slate">
   <div class="warning-card-body">
-    <span class="warning-card-icon">🔒</span>
+    <span class="warning-card-icon">{{ icon('lock') }}</span>
     <div>
       <div class="warning-card-title">Votação bloqueada</div>
       <div class="warning-card-text">
@@ -60,7 +60,7 @@
 
       {% if session.id in voted_ids %}
         <div class="cert-center" style="padding:24px;background:rgba(21,128,61,.06);border:1px solid rgba(21,128,61,.2);border-radius:8px">
-          <div style="font-size:40px;margin-bottom:10px">✅</div>
+          <div style="font-size:40px;margin-bottom:10px">{{ icon('check-circle', 'st-ico-lg') }}</div>
           <div style="font-size:16px;font-weight:700;color:var(--green)">Voto registrado</div>
           <div class="text-muted" style="margin-top:4px">
             Strict Single Vote: apenas um voto por delegação.
@@ -68,14 +68,14 @@
         </div>
       {% elif delegation and presence_status == 'ausente' %}
         <div class="cert-center" style="padding:24px;color:var(--muted);background:rgba(217,119,6,.05);border:1px solid rgba(217,119,6,.2);border-radius:8px">
-          <div style="font-size:32px;margin-bottom:8px">⚠️</div>
+          <div style="font-size:32px;margin-bottom:8px">{{ icon('alert-triangle', 'st-ico-lg') }}</div>
           <div style="font-size:14px;font-weight:600;color:var(--orange);margin-bottom:4px">Registre sua presença primeiro</div>
           <div class="text-muted">Você precisa estar presente para votar.</div>
         </div>
       {% elif delegation %}
         <div class="v-opt-group" id="voteOptions">
           <div class="v-opt" data-choice="favor" onclick="selectVote('favor',this)">
-            <span class="v-opt-icon">✅</span>
+            <span class="v-opt-icon">{{ icon('check-circle') }}</span>
             <div>
               <div class="v-opt-label">A Favor</div>
               <div class="v-opt-desc">Apoia a resolução</div>
@@ -83,7 +83,7 @@
             <div class="v-check"></div>
           </div>
           <div class="v-opt" data-choice="contra" onclick="selectVote('contra',this)">
-            <span class="v-opt-icon">❌</span>
+            <span class="v-opt-icon">{{ icon('x-circle') }}</span>
             <div>
               <div class="v-opt-label">Contra</div>
               <div class="v-opt-desc">Rejeita a resolução</div>
@@ -91,7 +91,7 @@
             <div class="v-check"></div>
           </div>
           <div class="v-opt" data-choice="abstencao" onclick="selectVote('abstencao',this)">
-            <span class="v-opt-icon">🤝</span>
+            <span class="v-opt-icon">{{ icon('minus-circle') }}</span>
             <div>
               <div class="v-opt-label">Abstenção</div>
               <div class="v-opt-desc">Não vota a favor nem contra</div>
@@ -100,7 +100,7 @@
           </div>
         </div>
         <div class="text-muted" style="margin-bottom:14px;text-align:center;font-size:12.5px">
-          ⚠️ Strict Single Vote: apenas <strong>um voto por delegação</strong>, independentemente do número de alunos.
+          {{ icon('alert-triangle') }} Strict Single Vote: apenas <strong>um voto por delegação</strong>, independentemente do número de alunos.
         </div>
         <button id="submitVote" disabled onclick="submitVote({{ session.id }})"
                 class="btn btn-gold btn-block">
@@ -121,7 +121,7 @@
 {% else %}
 <div class="card">
   <div class="card-body empty-state">
-    <div class="empty-state-icon">🗳️</div>
+    <div class="empty-state-icon">{{ icon('check-square') }}</div>
     <div class="empty-state-title">Nenhuma votação aberta</div>
     <p class="empty-state-text">
       No momento não há votações em andamento. Assim que uma votação for aberta, você será notificado.

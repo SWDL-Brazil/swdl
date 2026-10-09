@@ -50,6 +50,20 @@ button, input, select, textarea { font-family:inherit; font-size:inherit; }
 .container { width:100%; max-width:1120px; margin:0 auto; padding:0 24px; }
 .subpage { max-width:840px; margin:0 auto; }
 
+/* Ícones SVG (substituem emojis — estilo Lucide) */
+.st-ico {
+  display:inline-block; vertical-align:-.15em;
+  flex-shrink:0; overflow:visible;
+}
+.st-ico-lg { width:1em; height:1em; }
+.st-ico-xl { width:1.1em; height:1.1em; }
+.cert-icon .st-ico { width:.95em; height:.95em; }
+.empty-state-icon .st-ico { width:1em; height:1em; }
+.hero-icon .st-ico { width:1em; height:1em; }
+.v-check .st-ico { width:12px; height:12px; }
+.st-nav-icon .st-ico, .st-quick-icon .st-ico { display:block; margin:0 auto; }
+.st-sidebar-logout .st-ico { vertical-align:-.2em; margin-right:4px; }
+
 .section-label {
   font-family:'DM Mono',monospace; font-size:.75rem; font-weight:500;
   letter-spacing:.14em; text-transform:uppercase;
