@@ -248,13 +248,116 @@
 }
 
 /*
- * Colorblind mode (toggle): remaps red/green and related status hues
- * to an Okabe–Ito-inspired palette (safe for deuteranopia/protanopia).
+ * ── Design tokens (semânticos) ────────────────────────────────────────────
+ * Fonte única das cores de status/badge/comitê/período. O modo normal vive
+ * em :root; o modo daltônico sobrescreve em [data-cvd='true'] abaixo.
+ */
+:root {
+  --text-primary: #1a1f2e;
+  --text-muted: #4b5563;
+
+  --border-subtle: #d5d7dc;
+  --dropdown-bg: #0f1a2e;
+
+  /* status */
+  --status-danger: #b91c1c;
+  --status-danger-bg: #fef2f2;
+  --status-success: #15803d;
+  --status-success-bg: #f0fdf4;
+  --status-warning: #b45309;
+  --status-warning-bg: #fffbeb;
+  --status-info: #1e40af;
+  --status-info-bg: #eff6ff;
+  --status-disabled: #4b5563;
+  --status-disabled-bg: #f4f3f0;
+
+  /* badges (sólido + texto branco no modo normal) */
+  --badge-crise-bg: #b91c1c;
+  --badge-crise-text: #ffffff;
+  --badge-oficial-bg: #1e40af;
+  --badge-oficial-text: #ffffff;
+  --badge-imprensa-bg: #065f46;
+  --badge-imprensa-text: #ffffff;
+  --badge-votacao-bg: #0d1b2a;
+  --badge-votacao-text: #ffffff;
+  --badge-default-bg: #4b5563;
+  --badge-default-text: #ffffff;
+
+  /* comitês */
+  --committee-escravidao: #5d4530;
+  --committee-acnur: #155f7e;
+  --committee-ormuz: #1a6a96;
+  --committee-oms: #1d4ed8;
+  --committee-canabis: #15803d;
+  --committee-misoginia: #8e44ad;
+  --committee-mma: #1e7b45;
+  --committee-dhr: #6b21a8;
+  --committee-ecosoc: #a16207;
+  --committee-disec: #c2410c;
+  --committee-cs: #b91c1c;
+  --committee-manual: #7a5f1f;
+  --committee-unesco: #4338ca;
+
+  /* períodos da agenda */
+  --period-default: #0d1b2a;
+  --period-highlight: #7a5f1f;
+  --period-success: #15803d;
+  --period-info: #1d4ed8;
+  --period-danger: #b91c1c;
+  --period-muted: #5a6170;
+}
+
+/*
+ * Colorblind mode (toggle): sobrescreve os tokens semânticos com a paleta
+ * daltônica (deuteranopia/protanopia-safe) e remaps de utilitários legados.
  */
 [data-cvd='true'] {
   --text-accent-on-light: #6b4f12;
   --text-accent-hover: #4a380c;
   --text-muted-on-light: #4b5563;
+
+  --status-danger: #9a3412;
+  --status-danger-bg: #fff1e8;
+  --status-success: #075985;
+  --status-success-bg: #eaf4fa;
+  --status-warning: #0e7490;
+  --status-warning-bg: #e6f6f8;
+  --status-info: #4338ca;
+  --status-info-bg: #eef2ff;
+  --status-disabled: #4b5563;
+  --status-disabled-bg: #f4f3f0;
+
+  --badge-crise-bg: #fff1e8;
+  --badge-crise-text: #9a3412;
+  --badge-oficial-bg: #eaf4fa;
+  --badge-oficial-text: #075985;
+  --badge-imprensa-bg: #eaf5ec;
+  --badge-imprensa-text: #166534;
+  --badge-votacao-bg: #0d1b2a;
+  --badge-votacao-text: #ffffff;
+  --badge-default-bg: #e5e7eb;
+  --badge-default-text: #4b5563;
+
+  --committee-escravidao: #785438;
+  --committee-acnur: #075985;
+  --committee-ormuz: #0e7490;
+  --committee-oms: #4338ca;
+  --committee-canabis: #166534;
+  --committee-misoginia: #6d28d9;
+  --committee-mma: #047857;
+  --committee-dhr: #4338ca;
+  --committee-ecosoc: #92400e;
+  --committee-disec: #9a3412;
+  --committee-cs: #b91c1c;
+  --committee-manual: #7a5f1f;
+  --committee-unesco: #4338ca;
+
+  --period-default: #0d1b2a;
+  --period-highlight: #7a5f1f;
+  --period-success: #075985;
+  --period-info: #4338ca;
+  --period-danger: #9a3412;
+  --period-muted: #4b5563;
 }
 
 [data-cvd='true'] .bg-red-600,
@@ -429,6 +532,28 @@
 .cvd-dot .cvd-dot-code {
   display: none;
 }
+
+/* Badges var-driven: trocam de visual automaticamente no modo daltônico */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.625rem;
+  border-radius: 4px;
+}
+.badge-crise { background: var(--badge-crise-bg); color: var(--badge-crise-text); }
+.badge-oficial { background: var(--badge-oficial-bg); color: var(--badge-oficial-text); }
+.badge-imprensa { background: var(--badge-imprensa-bg); color: var(--badge-imprensa-text); }
+.badge-votacao { background: var(--badge-votacao-bg); color: var(--badge-votacao-text); }
+.badge-default { background: var(--badge-default-bg); color: var(--badge-default-text); }
+
+/* CommitteeDot: fundo vem do token --committee-*, aplicado via style no JSX */
+.committee-dot { background: var(--dot-color, var(--status-disabled)); }
 .splash-vignette {
   position: absolute;
   inset: 0;

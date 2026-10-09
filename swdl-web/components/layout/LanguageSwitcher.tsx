@@ -84,7 +84,7 @@ export function LanguageSwitcher({ align = 'left', className, variant = 'dark' }
             'absolute bottom-full mb-2 z-50 min-w-[220px] rounded-md border p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.5)]',
             variant === 'light'
               ? 'border-navy/10 bg-white text-navy'
-              : 'border-white/10 bg-[#0F1A2E]',
+              : 'border-white/10 bg-dropdown',
             align === 'right' ? 'right-0' : 'left-0'
           )}
         >

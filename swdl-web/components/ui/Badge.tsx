@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { committeeColorVar, normalizeCommittee } from '@/lib/committee-colors';
 
 interface BadgeProps {
   children: React.ReactNode;
@@ -6,21 +7,17 @@ interface BadgeProps {
   className?: string;
 }
 
+const variantClass: Record<string, string> = {
+  crise: 'badge-crise',
+  oficial: 'badge-oficial',
+  imprensa: 'badge-imprensa',
+  votacao: 'badge-votacao',
+  default: 'badge-default',
+};
+
 export function Badge({ children, variant = 'default', className }: BadgeProps) {
   return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1 font-mono text-[0.68rem] font-medium tracking-[0.1em] uppercase px-2.5 py-1 rounded-sm text-white',
-        variant === 'crise' && 'bg-red-700',
-        variant === 'oficial' && 'bg-blue-800',
-        variant === 'imprensa' && 'bg-emerald-800',
-        variant === 'votacao' && 'bg-navy',
-        variant === 'default' && 'bg-slate-dark',
-        className
-      )}
-    >
-      {children}
-    </span>
+    <span className={cn('badge', variantClass[variant], className)}>{children}</span>
   );
 }
 
@@ -59,44 +56,13 @@ function shortCodeFor(normalized: string, committee: string): string {
 }
 
 export function CommitteeDot({ committee, className }: CommitteeDotProps) {
-  const normalized = committee
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim();
-
-  const colorMap: Record<string, string> = {
-    cs: 'bg-red-700',
-    'conselho de seguranca': 'bg-red-700',
-    mma: 'bg-emerald-800',
-    'meio ambiente': 'bg-emerald-800',
-    'comissao de meio ambiente': 'bg-emerald-800',
-    dhr: 'bg-purple-700',
-    'direitos humanos': 'bg-purple-700',
-    ecosoc: 'bg-amber-700',
-    disec: 'bg-orange-700',
-    oms: 'bg-blue-700',
-    acnur: 'bg-sky-700',
-    unesco: 'bg-indigo-700',
-    canabis: 'bg-green-800',
-    misoginia: 'bg-fuchsia-700',
-    escravidao: 'bg-amber-800',
-    ormuz: 'bg-cyan-700',
-  };
-
-  const matched =
-    colorMap[normalized] ||
-    Object.entries(colorMap).find(([key]) => normalized.includes(key))?.[1];
-
+  const normalized = normalizeCommittee(committee);
   const code = shortCodeFor(normalized, committee);
 
   return (
     <span
-      className={cn(
-        'inline-flex items-center justify-center w-2 h-2 rounded-full shrink-0 cvd-dot',
-        matched || 'bg-slate-dark',
-        className
-      )}
+      className={cn('inline-flex items-center justify-center w-2 h-2 rounded-full shrink-0 cvd-dot committee-dot', className)}
+      style={{ '--dot-color': committeeColorVar(committee) } as React.CSSProperties}
       role="img"
       aria-label={committee}
       title={committee}

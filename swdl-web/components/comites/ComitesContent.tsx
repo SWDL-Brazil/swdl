@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMessages, useTranslations } from 'next-intl';
 import { AnimatePresence, motion } from 'motion/react';
 import { api, CommitteeStatus } from '@/lib/api';
+import { committeeColorVar } from '@/lib/committee-colors';
 import { Container } from '@/components/ui/Container';
 import Link from 'next/link';
 import { ChevronRight, Download } from 'lucide-react';
@@ -44,7 +45,7 @@ const committees: CommitteeEntry[] = [
     descriptionKey: 'entries.escravidao.description',
     topicsKey: 'entries.escravidao.topics',
     delegatesKey: 'entries.escravidao.delegates',
-    color: '#5D4530',
+    color: committeeColorVar('escravidao'),
     icon: '/icons/handshake.svg',
   },
   {
@@ -57,7 +58,7 @@ const committees: CommitteeEntry[] = [
     descriptionKey: 'entries.acnur.description',
     topicsKey: 'entries.acnur.topics',
     delegatesKey: 'entries.acnur.delegates',
-    color: '#155F7E',
+    color: committeeColorVar('acnur'),
     icon: '/icons/dove.svg',
     guide: ACNUR_PDF,
     manual: MANUAL_PDF,
@@ -72,7 +73,7 @@ const committees: CommitteeEntry[] = [
     descriptionKey: 'entries.ormuz.description',
     topicsKey: 'entries.ormuz.topics',
     delegatesKey: 'entries.ormuz.delegates',
-    color: '#1A6A96',
+    color: committeeColorVar('ormuz'),
     icon: '/icons/atom.svg',
     guide: CS_PDF,
     manual: MANUAL_PDF,
@@ -87,7 +88,7 @@ const committees: CommitteeEntry[] = [
     descriptionKey: 'entries.canabis.description',
     topicsKey: 'entries.canabis.topics',
     delegatesKey: 'entries.canabis.delegates',
-    color: '#15803D',
+    color: committeeColorVar('canabis'),
     icon: '/icons/leaf.svg',
   },
   {
@@ -100,7 +101,7 @@ const committees: CommitteeEntry[] = [
     descriptionKey: 'entries.misoginia.description',
     topicsKey: 'entries.misoginia.topics',
     delegatesKey: 'entries.misoginia.delegates',
-    color: '#8E44AD',
+    color: committeeColorVar('misoginia'),
     icon: '/icons/scales.svg',
     guide: MISOGINIA_PDF,
   },
@@ -114,7 +115,7 @@ const committees: CommitteeEntry[] = [
     descriptionKey: 'entries.mma.description',
     topicsKey: 'entries.mma.topics',
     delegatesKey: 'entries.mma.delegates',
-    color: '#1E7B45',
+    color: committeeColorVar('mma'),
     icon: '/icons/leaf.svg',
   },
   {
@@ -127,7 +128,7 @@ const committees: CommitteeEntry[] = [
     descriptionKey: 'entries.dhr.description',
     topicsKey: 'entries.dhr.topics',
     delegatesKey: 'entries.dhr.delegates',
-    color: '#6B21A8',
+    color: committeeColorVar('dhr'),
     icon: '/icons/scales.svg',
   },
   {
@@ -140,7 +141,7 @@ const committees: CommitteeEntry[] = [
     descriptionKey: 'entries.ecosoc.description',
     topicsKey: 'entries.ecosoc.topics',
     delegatesKey: 'entries.ecosoc.delegates',
-    color: '#A16207',
+    color: committeeColorVar('ecosoc'),
     icon: '/icons/coins.svg',
   },
   {
@@ -153,7 +154,7 @@ const committees: CommitteeEntry[] = [
     descriptionKey: 'entries.disec.description',
     topicsKey: 'entries.disec.topics',
     delegatesKey: 'entries.disec.delegates',
-    color: '#C2410C',
+    color: committeeColorVar('disec'),
     icon: '/icons/atom.svg',
   },
   {
@@ -166,7 +167,7 @@ const committees: CommitteeEntry[] = [
     descriptionKey: 'entries.oms.description',
     topicsKey: 'entries.oms.topics',
     delegatesKey: 'entries.oms.delegates',
-    color: '#1A6A96',
+    color: committeeColorVar('oms'),
     icon: '/icons/hospital.svg',
   },
   {
@@ -179,7 +180,7 @@ const committees: CommitteeEntry[] = [
     descriptionKey: 'entries.cs.description',
     topicsKey: 'entries.cs.topics',
     delegatesKey: 'entries.cs.delegates',
-    color: '#B91C1C',
+    color: committeeColorVar('cs'),
     icon: '/icons/shield.svg',
     guide: CS_PDF,
   },
@@ -194,7 +195,7 @@ const committees: CommitteeEntry[] = [
     descriptionKey: 'entries.manual.description',
     topicsKey: '',
     delegatesKey: '',
-    color: '#7A5F1F',
+    color: committeeColorVar('manual'),
     icon: '/icons/graduation.svg',
     guide: MANUAL_PDF,
   },
@@ -255,7 +256,7 @@ function statusClass(type: string): string {
 function SectionHeading({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-4 pt-10 pb-2 first:pt-0">
-      <span className="font-mono text-[0.75rem] tracking-[0.2em] uppercase text-[#7a5f1f]">{label}</span>
+      <span className="font-mono text-[0.75rem] tracking-[0.2em] uppercase text-gold-dark">{label}</span>
       <span className="h-px flex-1 bg-navy/10" />
     </div>
   );

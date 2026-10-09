@@ -29,12 +29,12 @@ export const STATUS_CONFIG: Record<string, StatusMeta> = {
 export const DEFAULT_STATUS: StatusMeta = STATUS_CONFIG.next;
 
 export const PERIOD_COLORS: Record<string, string> = {
-  navy: '#0D1B2A',
-  gold: '#7A5F1F',
-  green: '#15803D',
-  blue: '#1D4ED8',
-  red: '#B91C1C',
-  slate: '#5A6170',
+  navy: 'var(--period-default)',
+  gold: 'var(--period-highlight)',
+  green: 'var(--period-success)',
+  blue: 'var(--period-info)',
+  red: 'var(--period-danger)',
+  slate: 'var(--period-muted)',
 };
 
 export function statusMeta(status: string): StatusMeta {
