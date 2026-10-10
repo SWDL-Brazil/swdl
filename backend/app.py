@@ -10,6 +10,7 @@ import os
 import time
 from flask import Flask
 from flask_cors import CORS
+from werkzeug.middleware.proxy_fix import ProxyFix
 from extensions import db, login_manager, socketio, csrf
 from config import Config
 
@@ -147,6 +148,11 @@ def _setup_perf(app):
 
 def create_app():
     app = Flask(__name__)
+    # Render termina o TLS no proxy e repassa HTTP interno. Sem confiar no
+    # X-Forwarded-Proto, request.host_url e url_for(_external=True) geram
+    # http:// e o portal (HTTPS) acusa mixed content nas capas/PDFs.
+    # x_proto=1 apenas: o host já vem correto no header Host.
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
     app.config.from_object(Config)
 
     # Inicializa extensões
