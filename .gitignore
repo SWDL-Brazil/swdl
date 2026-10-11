@@ -90,6 +90,8 @@ backend/swdl.db
 
 # Uploads
 backend/static/uploads/*
+# Capas de notícia são editoriais e versionadas (somem do FS efêmero do Render)
+!backend/static/uploads/news/
 
 # IDE / OS
 .vscode/

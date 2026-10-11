@@ -10,8 +10,9 @@ venv/
 *.db
 *.sqlite
 
-# Uploads de usuários
-static/uploads/
+# Uploads de usuários (capas de notícia versionadas — ver !news/)
+static/uploads/*
+!static/uploads/news/
 
 # IDE
 .vscode/
