@@ -52,7 +52,7 @@
 </div>
 
 <!-- Modal criar -->
-<div class="modal-overlay" id="createModal" style="display:none">
+<div class="modal-overlay" id="createModal">
   <div class="modal" style="max-width:500px">
     <div class="modal-header">
       <span class="modal-title">🚨 Novo Alerta Urgente</span>
@@ -74,7 +74,17 @@
 </div>
 
 <script>
-function openCreate() { document.getElementById('createModal').style.display = 'flex'; }
-function closeCreate() { document.getElementById('createModal').style.display = 'none'; }
+function openCreate() {
+  const m = document.getElementById('createModal');
+  m.classList.add('open');
+  setTimeout(() => m.querySelector('textarea')?.focus(), 120);
+}
+function closeCreate() { document.getElementById('createModal').classList.remove('open'); }
+document.getElementById('createModal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeCreate();
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeCreate();
+});
 </script>
 {% endblock %}

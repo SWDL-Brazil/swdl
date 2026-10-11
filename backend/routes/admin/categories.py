@@ -1,10 +1,37 @@
 """SWDL Admin — News Categories routes."""
+import re
+import unicodedata
+
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_required
+from sqlalchemy.exc import IntegrityError
 from routes.admin._helpers import admin_bp, admin_required
 from models.category import Category
 from models.news import News
 from extensions import db
+
+
+def _slugify(text):
+    """'Educação Básica' -> 'educacao-basica' (sem acentos, só [a-z0-9-])."""
+    text = unicodedata.normalize('NFKD', str(text)).encode('ascii', 'ignore').decode('ascii')
+    text = re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')
+    return text or 'categoria'
+
+
+def _validate(name, slug, icon, exclude_id=None):
+    """Valida e normaliza. Retorna (slug, None) ou (None, mensagem de erro)."""
+    name = name.strip()
+    if not name:
+        return None, 'O nome da categoria é obrigatório.'
+    slug = (slug or '').strip() or _slugify(name)
+    q = Category.query
+    if exclude_id:
+        q = q.filter(Category.id != exclude_id)
+    if q.filter(db.func.lower(Category.name) == name.lower()).first():
+        return None, f'Já existe uma categoria chamada "{name}".'
+    if q.filter(Category.slug == slug).first():
+        return None, f'Já existe uma categoria com o slug "{slug}".'
+    return (slug, name, icon), None
 
 
 @admin_bp.route('/categorias')
@@ -19,20 +46,21 @@ def categories_list():
 @login_required
 @admin_required
 def category_create():
-    name = request.form.get('name', '').strip()
-    slug = request.form.get('slug', '').strip()
-    icon = request.form.get('icon', '').strip()
-    if not name:
-        flash('O nome da categoria é obrigatório.', 'error')
+    data, err = _validate(request.form.get('name', ''),
+                          request.form.get('slug', ''),
+                          request.form.get('icon', '').strip())
+    if err:
+        flash(err, 'error')
         return redirect(url_for('admin.categories_list'))
-    if not slug:
-        slug = name.lower().replace(' ', '-')
-    if Category.query.filter_by(slug=slug).first():
-        flash('Já existe uma categoria com este slug.', 'error')
-        return redirect(url_for('admin.categories_list'))
+    slug, name, icon = data
     cat = Category(name=name, slug=slug, icon=icon)
     db.session.add(cat)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash('Não foi possível criar: já existe uma categoria com esse nome ou slug.', 'error')
+        return redirect(url_for('admin.categories_list'))
     flash(f'Categoria "{name}" criada!', 'success')
     return redirect(url_for('admin.categories_list'))
 
@@ -42,22 +70,23 @@ def category_create():
 @admin_required
 def category_edit(id):
     cat = Category.query.get_or_404(id)
-    name = request.form.get('name', '').strip()
-    slug = request.form.get('slug', '').strip()
-    icon = request.form.get('icon', '').strip()
-    if not name:
-        flash('O nome é obrigatório.', 'error')
+    data, err = _validate(request.form.get('name', ''),
+                          request.form.get('slug', ''),
+                          request.form.get('icon', '').strip(),
+                          exclude_id=id)
+    if err:
+        flash(err, 'error')
         return redirect(url_for('admin.categories_list'))
-    if not slug:
-        slug = name.lower().replace(' ', '-')
-    existing = Category.query.filter(Category.slug == slug, Category.id != id).first()
-    if existing:
-        flash('Outra categoria já usa este slug.', 'error')
-        return redirect(url_for('admin.categories_list'))
+    slug, name, icon = data
     cat.name = name
     cat.slug = slug
     cat.icon = icon
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash('Não foi possível salvar: já existe uma categoria com esse nome ou slug.', 'error')
+        return redirect(url_for('admin.categories_list'))
     flash(f'Categoria "{name}" atualizada!', 'success')
     return redirect(url_for('admin.categories_list'))
 

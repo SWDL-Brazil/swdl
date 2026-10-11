@@ -71,7 +71,7 @@
 </div>
 
 <!-- Modal criar -->
-<div class="modal-overlay" id="createModal" style="display:none">
+<div class="modal-overlay" id="createModal">
   <div class="modal" style="max-width:400px">
     <div class="modal-header">
       <span class="modal-title">Nova Categoria</span>
@@ -105,11 +105,20 @@
     document.getElementById('editForm' + id).classList.toggle('open');
   }
   function openCreate() {
-    document.getElementById('createModal').style.display = 'flex';
+    const m = document.getElementById('createModal');
+    m.classList.add('open');
+    setTimeout(() => document.getElementById('newCatName')?.focus(), 120);
   }
   function closeCreate() {
-    document.getElementById('createModal').style.display = 'none';
+    document.getElementById('createModal').classList.remove('open');
   }
+  // fecha clicando fora do modal ou com Esc
+  document.getElementById('createModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeCreate();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeCreate();
+  });
   document.getElementById('newCatName')?.addEventListener('input', function() {
     const slug = document.getElementById('newCatSlug');
     if (!slug.dataset.touched) {
