@@ -20,7 +20,9 @@ class News(db.Model):
     id          = db.Column(db.Integer, primary_key=True)
     title       = db.Column(db.String(240), nullable=False)
     slug        = db.Column(db.String(100), unique=True)
-    excerpt     = db.Column(db.String(300))          # resumo para o card
+    excerpt     = db.Column(db.Text)                 # resumo para o card (sem limite:
+                                                     # VARCHAR(300) estourava no Postgres
+                                                     # e dava 500 ao salvar)
     body        = db.Column(db.Text, nullable=False)  # HTML rico (Quill)
     cover_image = db.Column(db.String(300))           # URL da imagem de capa
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)

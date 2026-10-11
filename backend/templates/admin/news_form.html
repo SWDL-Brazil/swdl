@@ -1,10 +1,10 @@
 {% extends "admin/base.html" %}
-{% block title %}{{ 'Editar' if news else 'Nova' }} Notícia{% endblock %}
-{% block page_title %}{{ 'Editar' if news else 'Nova' }} Notícia{% endblock %}
+{% block title %}{{ 'Editar' if news and news.id else 'Nova' }} Notícia{% endblock %}
+{% block page_title %}{{ 'Editar' if news and news.id else 'Nova' }} Notícia{% endblock %}
 
 {% block topbar_actions %}
   <a href="{{ url_for('admin.news_list') }}" class="btn btn-ghost">← Notícias</a>
-  {% if news and news.published %}
+  {% if news and news.id and news.published and news.slug %}
     <a href="{{ url_for('api.public_news_page', slug=news.slug) }}"
        target="_blank" class="btn btn-ghost">🔗 Ver Publicada</a>
   {% endif %}
@@ -24,7 +24,7 @@
   @media(max-width:900px){.news-editor-grid{grid-template-columns:1fr}}
 </style>
 
-<form method="POST" action="{{ url_for('admin.news_edit', id=news.id) if news else url_for('admin.news_create') }}" enctype="multipart/form-data" id="newsForm">
+<form method="POST" action="{{ url_for('admin.news_edit', id=news.id) if news and news.id else url_for('admin.news_create') }}" enctype="multipart/form-data" id="newsForm">
   <input type="hidden" name="body" id="bodyInput">
 
   <div class="news-editor-grid">
@@ -72,7 +72,7 @@
               💾 Rascunho
             </button>
           </div>
-          {% if news %}
+          {% if news and news.id %}
           <div style="font-size:12px;color:var(--muted)">
             Status: <strong>{{ 'Publicada ✅' if news.published else 'Rascunho 📝' }}</strong>
           </div>
