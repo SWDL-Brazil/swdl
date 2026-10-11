@@ -75,11 +75,11 @@ export function NewsGrid() {
               viewport={{ once: true, margin: '-50px' }}
               transition={{ duration: 0.6, delay: i * 0.1 }}
             >
-              <Card className="h-full flex flex-col overflow-hidden">
+              <Card padded={false} className="h-full flex flex-col overflow-hidden">
                 <CardImage
                   src={resolveAssetUrl(item.image_url)}
                   alt={item.title}
-                  className="w-full h-48 -m-6 mb-0 rounded-t-lg"
+                  className="w-full aspect-[19/10]"
                   fallback={<span className="text-5xl">📰</span>}
                 />
                 <div className="flex-1 flex flex-col p-6">
