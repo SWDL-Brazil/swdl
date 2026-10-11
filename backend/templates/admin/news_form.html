@@ -106,23 +106,12 @@
         <div class="card-header"><span class="card-title">✍️ Escritor</span></div>
         <div class="card-body">
           <div class="form-group" style="margin-bottom:0">
-            <label>Quem escreveu</label>
-            <select name="author_select" id="authorSelect" onchange="toggleAuthorInput()">
-              <option value="" {{ 'selected' if (author_select_value | default('')) == '' }}>
-                Padrão — SWDL (quem criou)
-              </option>
-              {% for u in authors | default([]) %}
-              <option value="{{ u.id }}" {{ 'selected' if (author_select_value | default('')) == (u.id | string) }}>
-                {{ u.name }}
-              </option>
-              {% endfor %}
-              <option value="outro" {{ 'selected' if (author_select_value | default('')) == 'outro' }}>
-                Outro… (digitar nome)
-              </option>
-            </select>
+            <label>Nome do escritor</label>
             <input type="text" name="author_name" id="authorName" maxlength="120"
-                   placeholder="Nome do escritor" value="{{ author_text | default('') }}"
-                   style="margin-top:8px;display:{{ 'block' if (author_select_value | default('')) == 'outro' else 'none' }}">
+                   placeholder="Ex.: Ana Silva" value="{{ author_text | default('') }}">
+            <small style="display:block;margin-top:6px;opacity:.7">
+              Vazio = autor padrão “SWDL”. É o nome que aparece no portal.
+            </small>
           </div>
         </div>
       </div>
@@ -194,12 +183,5 @@
       reader.readAsDataURL(input.files[0]);
     }
   }
-
-  function toggleAuthorInput() {
-    const sel = document.getElementById('authorSelect');
-    const inp = document.getElementById('authorName');
-    if (sel && inp) inp.style.display = sel.value === 'outro' ? 'block' : 'none';
-  }
-  toggleAuthorInput();
 </script>
 {% endblock %}
