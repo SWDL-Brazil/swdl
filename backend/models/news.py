@@ -25,6 +25,8 @@ class News(db.Model):
                                                      # e dava 500 ao salvar)
     body        = db.Column(db.Text, nullable=False)  # HTML rico (Quill)
     cover_image = db.Column(db.String(300))           # URL da imagem de capa
+    author_name = db.Column(db.String(120))           # escritor informado no form
+                                                      # (author_id continua = quem criou)
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
     committee   = db.Column(db.String(300), default='geral')
     tags        = db.Column(db.Text, default='')       # "diplomacia,cs,resolucao"
@@ -66,6 +68,11 @@ class News(db.Model):
     def tags_list(self):
         return [t.strip() for t in (self.tags or '').split(',') if t.strip()]
 
+    @property
+    def author_display(self):
+        """Nome do escritor: informado no form > quem criou > SWDL."""
+        return self.author_name or (self.author.name if self.author else None) or 'SWDL'
+
     def to_dict(self):
         return {
             'id':          self.id,
@@ -82,7 +89,7 @@ class News(db.Model):
             'published':   self.published,
             'time_ago':    self.time_ago(),
             'created_at':  self.created_at.strftime('%d/%m/%Y') if self.created_at else '',
-            'author':      self.author.name if self.author else 'SWDL',
+            'author':      self.author_display,
         }
 
     def __repr__(self):

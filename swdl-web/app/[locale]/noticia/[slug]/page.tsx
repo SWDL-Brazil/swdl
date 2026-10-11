@@ -82,7 +82,7 @@ export default async function NoticiaPage({ params }: Props) {
           </h1>
 
           <div className="flex flex-wrap items-center gap-3 pb-6 border-b border-navy/10">
-            <NewsMeta item={news} showBadge={false} />
+            <NewsMeta item={news} showBadge={false} showAuthor={false} />
             <span className="meta-sep">|</span>
             <span className="news-meta">{news.author || 'SWDL'}</span>
             <span className="meta-sep">|</span>

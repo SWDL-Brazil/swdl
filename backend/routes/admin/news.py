@@ -29,6 +29,44 @@ def _form_values(id=None, cover_image=None, slug=None):
     )
 
 
+def _authors():
+    from models.user import User
+    return User.query.order_by(User.name).all()
+
+
+def _resolve_author_name():
+    """Select do form -> nome gravado em News.author_name.
+
+    ''  -> padrão (author_id continua sendo quem criou)
+    id  -> nome do usuário escolhido (denormalizado: mudar a conta depois
+           não reescreve artigos já publicados)
+    outro -> texto livre digitado
+    """
+    from models.user import User
+    sel = (request.form.get('author_select') or '').strip()
+    if sel == 'outro':
+        return (request.form.get('author_name') or '').strip() or None
+    if sel.isdigit():
+        u = User.query.get(int(sel))
+        return u.name if u else None
+    return None
+
+
+def _author_ctx(news=None, from_form=False):
+    """Valores para pré-preencher o select/texto do escritor no form."""
+    if from_form:
+        sel = (request.form.get('author_select') or '').strip()
+        text = (request.form.get('author_name') or '').strip()
+        return {'author_select_value': sel, 'author_text': text}
+    from models.user import User
+    from sqlalchemy import func
+    name = getattr(news, 'author_name', None) if news else None
+    if not name:
+        return {'author_select_value': '', 'author_text': ''}
+    u = User.query.filter(func.lower(User.name) == name.lower()).first()
+    return {'author_select_value': str(u.id) if u else 'outro', 'author_text': name}
+
+
 @admin_bp.route('/noticias')
 @login_required
 @admin_required
@@ -54,6 +92,7 @@ def news_create():
             is_crisis  = bool(request.form.get('is_crisis')),
             published  = request.form.get('action') == 'publish',
             author_id  = current_user.id,
+            author_name = _resolve_author_name(),
         )
         file = request.files.get('cover_image')
         if file and file.filename:
@@ -74,12 +113,15 @@ def news_create():
             themes = Theme.query.order_by(Theme.name).all()
             return render_template('admin/news_form.html',
                                    news=_form_values(cover_image=cover_url),
-                                   categories=cats, available_themes=themes)
+                                   categories=cats, available_themes=themes,
+                                   authors=_authors(), **_author_ctx(from_form=True))
         flash('Notícia publicada com sucesso!', 'success')
         return redirect(url_for('admin.news_list'))
     cats = Category.query.order_by(Category.sort_order, Category.name).all()
     themes = Theme.query.order_by(Theme.name).all()
-    return render_template('admin/news_form.html', news=None, categories=cats, available_themes=themes)
+    return render_template('admin/news_form.html', news=None, categories=cats,
+                           available_themes=themes, authors=_authors(),
+                           **_author_ctx())
 
 
 @admin_bp.route('/noticias/<int:id>/editar', methods=['GET', 'POST'])
@@ -98,6 +140,7 @@ def news_edit(id):
         news.tags       = request.form.get('tags', '')
         news.is_crisis  = bool(request.form.get('is_crisis'))
         news.published  = request.form.get('action') == 'publish'
+        news.author_name = _resolve_author_name()
         file = request.files.get('cover_image')
         if file and file.filename:
             upload_dir = os.path.join(Config.UPLOAD_FOLDER, 'news')
@@ -117,12 +160,15 @@ def news_edit(id):
             themes = Theme.query.order_by(Theme.name).all()
             return render_template('admin/news_form.html',
                                    news=_form_values(id=nid, cover_image=cover_url, slug=old_slug),
-                                   categories=cats, available_themes=themes)
+                                   categories=cats, available_themes=themes,
+                                   authors=_authors(), **_author_ctx(from_form=True))
         flash('Notícia atualizada.', 'success')
         return redirect(url_for('admin.news_list'))
     cats = Category.query.order_by(Category.sort_order, Category.name).all()
     themes = Theme.query.order_by(Theme.name).all()
-    return render_template('admin/news_form.html', news=news, categories=cats, available_themes=themes)
+    return render_template('admin/news_form.html', news=news, categories=cats,
+                           available_themes=themes, authors=_authors(),
+                           **_author_ctx(news))
 
 
 @admin_bp.route('/noticias/<int:id>/deletar', methods=['POST'])

@@ -93,6 +93,12 @@ export function NewsGrid() {
                     <span className="text-xs text-slate">
                       {formatTimeAgo(item.created_at, locale, item.time_ago)}
                     </span>
+                    {item.author && (
+                      <>
+                        <span className="text-xs text-slate opacity-50">·</span>
+                        <span className="text-xs text-slate">{item.author}</span>
+                      </>
+                    )}
                   </div>
                   <h3 className="font-display text-lg font-bold text-navy mb-2 line-clamp-2">
                     {item.title}

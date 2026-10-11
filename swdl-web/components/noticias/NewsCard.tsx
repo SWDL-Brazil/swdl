@@ -12,6 +12,7 @@ export type NewsLike = {
   category_slug: string;
   committee?: string;
   is_crisis?: boolean;
+  author?: string;
   image_url?: string | null;
   time_ago?: string;
   created_at?: string | null;
@@ -29,10 +30,12 @@ const categoryColors: Record<string, 'crise' | 'oficial' | 'imprensa' | 'votacao
 export function NewsMeta({
   item,
   showBadge = true,
+  showAuthor = true,
   className,
 }: {
   item: NewsLike;
   showBadge?: boolean;
+  showAuthor?: boolean;
   className?: string;
 }) {
   const t = useTranslations('noticias');
@@ -53,6 +56,12 @@ export function NewsMeta({
         <Badge variant={categoryColors[item.category_slug] || 'default'}>
           {catKey ? t(catKey) : item.category}
         </Badge>
+      )}
+      {showAuthor && item.author && (
+        <>
+          <span className="meta-sep">|</span>
+          <span className="news-meta">{item.author}</span>
+        </>
       )}
       {time && <span className="news-meta">{time}</span>}
     </div>

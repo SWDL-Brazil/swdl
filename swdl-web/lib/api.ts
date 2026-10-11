@@ -61,6 +61,7 @@ export interface NewsMini {
   category_icon: string;
   committee: string;
   is_crisis: boolean;
+  author?: string;
   image_url: string;
   time_ago: string;
   created_at: string | null;

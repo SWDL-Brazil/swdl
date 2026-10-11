@@ -83,6 +83,7 @@ def api_news():
         'slug':      n.slug,
         'excerpt':   n.excerpt or '',
         'body':      n.body,
+        'author':    n.author_display,
         'category':  n.category_obj.name if n.category_obj else 'Geral',
         'category_slug': n.category_obj.slug if n.category_obj else 'geral',
         'category_icon': n.category_obj.icon if n.category_obj else '',
@@ -510,6 +511,7 @@ def api_noticia_json(slug):
             'category_icon': n.category_obj.icon if n.category_obj else '',
             'committee':     n.committee,
             'is_crisis':     n.is_crisis,
+            'author':        n.author_display,
             'image_url':     news_image_url(n.cover_image),
             'time_ago':      n.time_ago(),
             'created_at':    n.created_at.isoformat() if n.created_at else None,
@@ -530,7 +532,7 @@ def api_noticia_json(slug):
         'image_url':     news_image_url(news.cover_image),
         'time_ago':      news.time_ago(),
         'created_at':    news.created_at.isoformat() if news.created_at else None,
-        'author':        news.author.name if news.author else 'SWDL',
+        'author':        news.author_display,
         'related':       [mini(r) for r in related],
     })
 

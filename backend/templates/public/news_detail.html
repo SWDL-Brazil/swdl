@@ -139,7 +139,7 @@
       <h1 class="article-title">{{ news.title }}</h1>
       <div class="article-meta">
         <span class="article-meta-item">
-          {{ news.author.name if news.author else 'Equipe SWDL' }}
+          {{ news.author_name or (news.author.name if news.author else 'Equipe SWDL') }}
         </span>
         <span class="article-meta-item">·</span>
         <span class="article-meta-item">
