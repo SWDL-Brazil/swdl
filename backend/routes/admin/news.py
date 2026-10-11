@@ -26,6 +26,7 @@ def news_create():
         cat_id = request.form.get('category_id', type=int)
         news = News(
             title      = request.form['title'],
+            excerpt    = (request.form.get('excerpt') or '').strip() or None,
             body       = request.form['body'],
             category_id = cat_id if cat_id else None,
             committee  = request.form.get('committee', 'geral'),
@@ -60,6 +61,7 @@ def news_edit(id):
     if request.method == 'POST':
         cat_id = request.form.get('category_id', type=int)
         news.title      = request.form['title']
+        news.excerpt    = (request.form.get('excerpt') or '').strip() or None
         news.body       = request.form['body']
         news.category_id = cat_id if cat_id else None
         news.committee  = request.form.get('committee', 'geral')

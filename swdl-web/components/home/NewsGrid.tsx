@@ -97,9 +97,13 @@ export function NewsGrid() {
                   <h3 className="font-display text-lg font-bold text-navy mb-2 line-clamp-2">
                     {item.title}
                   </h3>
-                  {i === 0 && item.body && (
+                  {i === 0 && (item.excerpt || item.body) && (
                     <p className="text-sm text-slate leading-relaxed mb-4 line-clamp-3">
-                      {truncate(item.body, 150)}
+                      {item.excerpt ||
+                        truncate(
+                          item.body!.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(),
+                          150
+                        )}
                     </p>
                   )}
                   <div className="mt-auto">
