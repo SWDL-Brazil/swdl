@@ -246,6 +246,8 @@ def create_app():
 def _to_pg_type(col):
     """Converte tipo SQLAlchemy para string DDL PostgreSQL."""
     t = type(col.type)
+    if t.__name__ in ('LargeBinary', 'BINARY', 'BLOB'):
+        return 'BYTEA' if db.engine.dialect.name == 'postgresql' else 'BLOB'
     if t.__name__ == 'Boolean':
         return 'BOOLEAN DEFAULT FALSE'
     if t.__name__ == 'DateTime':

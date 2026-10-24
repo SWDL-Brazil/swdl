@@ -479,12 +479,6 @@ def api_validate_certificate():
     sig_valid = cert.verify_signature(current_app.config.get('SECRET_KEY', 'swdl-secret')) \
         if cert.digital_signature else None
 
-    # PDF de verdade no disco? (nao basta pdf_path preenchido — o arquivo
-    # pode ter sumido com um deploy sem disco persistente)
-    from cert_storage import cert_path
-    pdf_file = cert_path(cert.pdf_path) if cert.pdf_path else None
-    has_pdf = bool(pdf_file and os.path.isfile(pdf_file))
-
     return jsonify({
         'ok': True,
         'valid': True,
@@ -495,7 +489,7 @@ def api_validate_certificate():
         'title': cert.display_title,
         'edition_year': cert.edition_year,
         'notes': cert.notes,
-        'has_pdf': has_pdf,
+        'has_pdf': cert.has_pdf,
         'pdf_path': f'/certificado/{cert.verification_code}',
         'digital_signature': bool(cert.digital_signature),
         'signature_valid': sig_valid,

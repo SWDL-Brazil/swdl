@@ -3,16 +3,15 @@
 #  Sistema de votação em tempo real via WebSocket
 # =============================================================
 from flask import (Blueprint, render_template, redirect, url_for,
-                   flash, request, jsonify, send_file, current_app)
+                   flash, request, jsonify, current_app)
 from flask_login import login_required, current_user
 from flask_socketio import emit, join_room
 from extensions import db, socketio
 from models.vote       import VoteSession, Vote
 from models.delegation import Delegation
-from models.theme import Theme
+from models.theme      import Theme
 from models.speech_log import SpeechLog
 from datetime import datetime, timezone
-import os
 
 vote_bp = Blueprint('vote', __name__)
 
@@ -305,16 +304,14 @@ def on_debate_timer_reset(data):
 def certificate_view(code):
     """Pagina publica de visualizacao de certificado."""
     from models.certificate import Certificate
-    from cert_storage import cert_path
+    from cert_storage import pdf_response
     cert = Certificate.query.filter_by(verification_code=code).first()
     if not cert or not cert.released:
         return render_template('public/certificate_invalid.html'), 404
-    if cert.pdf_path:
-        filepath = cert_path(cert.pdf_path)
-        if filepath and os.path.isfile(filepath):
-            return send_file(filepath, mimetype='application/pdf')
-    # Sem PDF (ou PDF sumido): pagina HTML — e so afirma "valido" se o HMAC
-    # conferir de verdade (antes qualquer assinatura preenchida passava).
+    if cert.has_pdf:
+        return pdf_response(cert.pdf_data, cert.pdf_path or f'{code}.pdf')
+    # Sem PDF: pagina HTML — e so afirma "valido" se o HMAC conferir de
+    # verdade (antes qualquer assinatura preenchida passava).
     secret = current_app.config.get('SECRET_KEY', 'swdl-secret')
     signature_valid = bool(cert.digital_signature) and cert.verify_signature(secret)
     return render_template('public/certificate_view.html', cert=cert,

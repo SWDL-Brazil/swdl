@@ -1,5 +1,4 @@
 from extensions import db
-from sqlalchemy import event
 from datetime import datetime, timezone
 import hmac, hashlib, secrets, string
 
@@ -42,6 +41,9 @@ class Certificate(db.Model):
                                default='participation')
     title          = db.Column(db.String(120), nullable=True)
     verification_code = db.Column(db.String(12), unique=True, nullable=False, index=True)
+    # PDF no BANCO (bytea/BLOB): o Render free nao tem disco persistente e o
+    # FS some a cada deploy. pdf_path guarda so o nome original do upload.
+    pdf_data       = db.Column(db.LargeBinary, nullable=True)
     pdf_path       = db.Column(db.String(300), nullable=True)
     released       = db.Column(db.Boolean, default=False, index=True)
     digital_signature = db.Column(db.Text, nullable=True)
@@ -63,6 +65,11 @@ class Certificate(db.Model):
     @property
     def display_title(self):
         return self.title or self.type_label
+
+    @property
+    def has_pdf(self):
+        """Tem PDF de verdade? (pdf_path so guarda o nome do arquivo)."""
+        return bool(self.pdf_data)
 
     def _signature_parts(self):
         s = self.student
@@ -90,16 +97,3 @@ class Certificate(db.Model):
 
     def __repr__(self):
         return f'<Certificate {self.verification_code} {self.type} {self.edition_year}>'
-
-
-@event.listens_for(Certificate, 'after_delete')
-def _delete_certificate_pdf(mapper, connection, target):
-    """Apaga o PDF quando a linha some.
-
-    O cascade do Student (``delete-orphan``) apaga as linhas mas nao os
-    arquivos — sem isso, excluir um aluno deixaria o PDF com o nome dele
-    no disco para sempre.
-    """
-    from cert_storage import delete_cert_pdf
-    if target.pdf_path:
-        delete_cert_pdf(target.pdf_path)

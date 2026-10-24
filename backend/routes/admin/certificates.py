@@ -1,14 +1,13 @@
-from flask import render_template, redirect, url_for, flash, request, send_file, current_app, abort
+from flask import render_template, redirect, url_for, flash, request, current_app, abort
 from flask_login import login_required
 from routes.admin._helpers import admin_bp, admin_required, _log_audit
 from models.student import Student
 from models.delegation import Delegation
 from models.certificate import Certificate, CERT_TYPES, generate_verification_code
-from cert_storage import cert_path, is_pdf, save_cert_pdf, delete_cert_pdf
+from cert_storage import validate_pdf, pdf_response
 from extensions import db
 from sqlalchemy import select, func, case
 from sqlalchemy.exc import IntegrityError
-import os
 from datetime import datetime, timezone
 
 
@@ -41,13 +40,15 @@ def _pick_code(used):
 @login_required
 @admin_required
 def serve_certificate(filename):
-    """Serve o arquivo PDF do certificado (rota admin)."""
-    filepath = cert_path(filename)
-    if not filepath:
-        abort(403)
-    if not os.path.isfile(filepath):
+    """Serve o PDF do certificado a partir do banco (rota admin).
+
+    ``filename`` e ``<CODE>.pdf`` — o codigo e a chave, nao um caminho.
+    """
+    code = filename[:-4] if filename.lower().endswith('.pdf') else filename
+    cert = Certificate.query.filter_by(verification_code=code).first()
+    if not cert or not cert.released or not cert.has_pdf:
         abort(404)
-    return send_file(filepath, mimetype='application/pdf')
+    return pdf_response(cert.pdf_data, cert.pdf_path or filename)
 
 
 @admin_bp.route('/certificados')
@@ -102,7 +103,7 @@ def certificates_list():
         'total': len(all_for_year),
         'participation': sum(1 for c in all_for_year if c.type == 'participation'),
         'awards': sum(1 for c in all_for_year if c.type != 'participation'),
-        'with_pdf': sum(1 for c in all_for_year if c.pdf_path),
+        'with_pdf': sum(1 for c in all_for_year if c.has_pdf),
         'released': sum(1 for c in all_for_year if c.released),
         'edition_students': edition_total,
         'missing_participation': missing,
@@ -238,20 +239,15 @@ def certificate_upload(id):
     """Upload do PDF de um certificado — libera e assina (HMAC)."""
     cert = Certificate.query.get_or_404(id)
 
-    if 'cert_file' not in request.files:
-        flash('Nenhum arquivo selecionado.', 'error')
-        return redirect(url_for('admin.certificates_list', year=cert.edition_year))
-    file = request.files['cert_file']
-    if not file or not file.filename:
-        flash('Nenhum arquivo selecionado.', 'error')
-        return redirect(url_for('admin.certificates_list', year=cert.edition_year))
-    if not is_pdf(file):
-        flash('Apenas arquivos PDF sao permitidos.', 'error')
+    file = request.files.get('cert_file')
+    try:
+        data = validate_pdf(file)
+    except ValueError as exc:
+        flash(str(exc), 'error')
         return redirect(url_for('admin.certificates_list', year=cert.edition_year))
 
-    safe_name = save_cert_pdf(cert.verification_code, file)
-
-    cert.pdf_path = safe_name
+    cert.pdf_data = data
+    cert.pdf_path = f'{cert.verification_code}.pdf'
     cert.released = True
     secret = current_app.config.get('SECRET_KEY', 'swdl-secret')
     cert.digital_signature = cert.compute_signature(secret)
@@ -260,7 +256,7 @@ def certificate_upload(id):
 
     student_name = cert.student.name if cert.student else '?'
     _log_audit('upload_certificate', 'certificate', cert.id, student_name,
-               details=f'PDF enviado: {safe_name} ({cert.type_label} {cert.edition_year})')
+               details=f'PDF salvo: {cert.pdf_path} ({cert.type_label} {cert.edition_year})')
     flash(f'PDF de {student_name} ({cert.type_label}) enviado e liberado!', 'success')
     return redirect(url_for('admin.certificates_list', year=cert.edition_year))
 
@@ -269,12 +265,10 @@ def certificate_upload(id):
 @login_required
 @admin_required
 def certificate_remove_pdf(id):
-    """Remove o PDF e revoga a liberacao (o codigo permanece)."""
+    """Apaga o PDF e revoga a liberacao (o codigo permanece)."""
     cert = Certificate.query.get_or_404(id)
 
-    if cert.pdf_path:
-        delete_cert_pdf(cert.pdf_path)
-
+    cert.pdf_data = None
     cert.pdf_path = None
     cert.released = False
     cert.digital_signature = None
@@ -292,7 +286,7 @@ def certificate_remove_pdf(id):
 @login_required
 @admin_required
 def certificate_delete(id):
-    """Exclui um certificado (linha + PDF — o arquivo sai via evento after_delete)."""
+    """Exclui um certificado (linha — o PDF mora na mesma linha)."""
     cert = Certificate.query.get_or_404(id)
 
     student_name = cert.student.name if cert.student else '?'

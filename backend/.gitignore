@@ -14,9 +14,6 @@ venv/
 static/uploads/*
 !static/uploads/news/
 
-# PDFs de certificado (PII de aluno) — fora de static/, nunca versionados
-data/
-
 # IDE
 .vscode/
 .idea/

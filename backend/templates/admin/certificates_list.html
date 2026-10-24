@@ -140,7 +140,7 @@
           <td><span class="type-badge type-{{ c.type }}">{{ c.type_label }}</span></td>
           <td><span class="badge-code">{{ c.verification_code }}</span></td>
           <td>
-            {% if c.pdf_path %}
+            {% if c.has_pdf %}
               <span class="badge badge-approved">PDF</span>
             {% else %}
               <span class="text-muted">---</span>
@@ -157,10 +157,10 @@
             <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
               <form class="upload-form" method="POST" action="{{ url_for('admin.certificate_upload', id=c.id) }}" enctype="multipart/form-data">
                 <input type="file" name="cert_file" accept=".pdf" required>
-                <button class="btn btn-gold btn-sm">{{ 'Trocar' if c.pdf_path else 'Upload' }}</button>
+                <button class="btn btn-gold btn-sm">{{ 'Trocar' if c.has_pdf else 'Upload' }}</button>
               </form>
 
-              {% if c.pdf_path %}
+              {% if c.has_pdf %}
               <form method="POST" action="{{ url_for('admin.certificate_remove_pdf', id=c.id) }}" style="display:inline"
                     onsubmit="return confirm('Remover PDF de {{ s.name if s else '?' }} ({{ c.type_label }})?')">
                 <button class="btn btn-ghost btn-sm">Remover PDF</button>
