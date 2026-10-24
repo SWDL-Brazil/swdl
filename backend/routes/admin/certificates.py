@@ -7,6 +7,7 @@ from models.certificate import Certificate, CERT_TYPES, generate_verification_co
 from cert_storage import validate_pdf, pdf_response
 from extensions import db
 from sqlalchemy import select, func, case
+from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone
 
@@ -68,15 +69,15 @@ def certificates_list():
         cy = _current_year()
         year = cy if cy in years else (years[0] if years else cy)
 
-    query = Certificate.query.options(
-        joinedload(Certificate.student).joinedload(Student.delegation))
+    # Ordena pelo SNAPSHOT (student_name): nenhuma juncao com students —
+    # o nome exibido e o que foi emitido, nao o cadastro de hoje.
+    query = Certificate.query
     if year:
         query = query.filter(Certificate.edition_year == year)
     if cert_type and cert_type in CERT_TYPES:
         query = query.filter(Certificate.type == cert_type)
 
-    certs = query.join(Student, Certificate.student_id == Student.id)\
-                 .order_by(Certificate.type, Student.name).all()
+    certs = query.order_by(Certificate.type, Certificate.student_name).all()
 
     # Stats cobrem a edição inteira (ignoram o filtro de tipo da tabela)
     if cert_type and cert_type in CERT_TYPES:
@@ -138,7 +139,10 @@ def certificates_generate_codes():
     year = request.form.get('year', type=int) or _current_year()
     student_id = request.form.get('student_id', type=int)
 
-    query = Student.query
+    # selectinload: delegacao + tema numa query extra (sem N+1 — no ReG
+    # cada query custa ~180ms e uma edicao tem 100+ alunos).
+    query = Student.query.options(
+        selectinload(Student.delegation).selectinload(Delegation.theme))
     if student_id:
         query = query.filter(Student.id == student_id)
     students = query.all()
@@ -152,9 +156,10 @@ def certificates_generate_codes():
     for s in students:
         if s.id in existing:
             continue
-        cert = Certificate(student_id=s.id, edition_year=year,
+        cert = Certificate(student=s, edition_year=year,
                            type='participation',
                            verification_code=_pick_code(used))
+        cert.fill_snapshot()
         db.session.add(cert)
         count += 1
     try:
@@ -189,13 +194,20 @@ def certificate_award():
 
     targets = []
     if cert_type == 'best_delegation' and delegation_id:
-        deleg = Delegation.query.get_or_404(delegation_id)
+        # traz alunos + delegacao + tema de uma vez (evita N+1 no lote)
+        deleg = Delegation.query.options(
+            selectinload(Delegation.students)
+            .selectinload(Student.delegation)
+            .selectinload(Delegation.theme)
+        ).get_or_404(delegation_id)
         targets = list(deleg.students)
         if not targets:
             flash('Delegacao sem alunos vinculados.', 'error')
             return redirect(url_for('admin.certificates_list', year=year))
     elif student_id:
-        targets = [Student.query.get_or_404(student_id)]
+        targets = [Student.query.options(
+            selectinload(Student.delegation).selectinload(Delegation.theme)
+        ).get_or_404(student_id)]
     else:
         flash('Selecione um aluno (ou uma delegacao para "Melhor Delegacao").', 'error')
         return redirect(url_for('admin.certificates_list', year=year))
@@ -211,9 +223,10 @@ def certificate_award():
         if s.id in existing:
             skipped += 1
             continue
-        db.session.add(Certificate(
-            student_id=s.id, edition_year=year, type=cert_type,
-            verification_code=_pick_code(used), notes=notes))
+        cert = Certificate(student=s, edition_year=year, type=cert_type,
+                           verification_code=_pick_code(used), notes=notes)
+        cert.fill_snapshot()
+        db.session.add(cert)
         existing.add(s.id)
         count += 1
     try:
@@ -249,12 +262,16 @@ def certificate_upload(id):
     cert.pdf_data = data
     cert.pdf_path = f'{cert.verification_code}.pdf'
     cert.released = True
+    # Snapshot de novo no momento da liberacao: e o nome/pais/comitie que
+    # entram na assinatura, e tem que casar com o PDF que o admin acabou de
+    # subir (pode ter havido correcao de cadastro desde a geracao do codigo).
+    cert.fill_snapshot()
     secret = current_app.config.get('SECRET_KEY', 'swdl-secret')
     cert.digital_signature = cert.compute_signature(secret)
     cert.signed_at = datetime.now(timezone.utc)
     db.session.commit()
 
-    student_name = cert.student.name if cert.student else '?'
+    student_name = cert.display_name
     _log_audit('upload_certificate', 'certificate', cert.id, student_name,
                details=f'PDF salvo: {cert.pdf_path} ({cert.type_label} {cert.edition_year})')
     flash(f'PDF de {student_name} ({cert.type_label}) enviado e liberado!', 'success')
@@ -275,7 +292,7 @@ def certificate_remove_pdf(id):
     cert.signed_at = None
     db.session.commit()
 
-    student_name = cert.student.name if cert.student else '?'
+    student_name = cert.display_name
     _log_audit('remove_certificate_pdf', 'certificate', cert.id, student_name,
                details=f'{cert.type_label} {cert.edition_year}')
     flash(f'PDF de {student_name} ({cert.type_label}) removido.', 'info')
@@ -289,7 +306,7 @@ def certificate_delete(id):
     """Exclui um certificado (linha — o PDF mora na mesma linha)."""
     cert = Certificate.query.get_or_404(id)
 
-    student_name = cert.student.name if cert.student else '?'
+    student_name = cert.display_name
     details = f'{cert.type_label} {cert.edition_year} [{cert.verification_code}]'
     db.session.delete(cert)
     db.session.commit()

@@ -22,6 +22,8 @@ Build a complete student panel + admin backend for the SWDL Model UN platform wi
 - **Certificates (fluxo atual — o sistema de templates PDF foi REMOVIDO no commit `b7ec9fc`; liberação/assinatura manuais REMOVIDAS da admin)**:
   -- Gerar códigos de verificação (por aluno ou em lote) → upload de PDF por aluno (libera o certificado no painel do delegado; remover PDF revoga a liberação)
   -- `certificate_view` (`/certificado/<code>`) serve o PDF ou a página do certificado
+  -- PDFs no BANCO (`Certificate.pdf_data`, bytea/BLOB) — Render free não tem disco persistente; `cert_storage.py` só valida (`validate_pdf`) e serve da memória (`pdf_response`)
+  -- SNAPSHOT autocontido (`student_name/global_id/country/country_flag/committee/committee_name`): copiado na emissão por `fill_snapshot()` (gerar-códigos, premiar e de novo no upload) — páginas/API/lista leem dele sem JOIN com students e o HMAC (que cobre esses campos) sobrevive a renomear aluno/trocar delegação; `app.backfill_cert_snapshot()` preenche linha antiga no boot (idempotente)
 
 ### Admin — Agenda (correções)
 - `get_resolved_phase()` em `agenda_utils.py`: fase = agenda (ou `'pre'`) + override manual — fonte única para context processor e dashboards (corrige dashboard `/admin/` vazio com fase `None` e switcher 🟢/🔴/🔵 ignorado em `/admin/` e `/admin/diretor`)

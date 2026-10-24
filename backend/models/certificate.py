@@ -53,6 +53,18 @@ class Certificate(db.Model):
     created_at     = db.Column(db.DateTime,
                                default=lambda: datetime.now(timezone.utc))
 
+    # ── SNAPSHOT (autocontido) ──────────────────────────────────────
+    # Copiado do aluno/delegacao na emissao: o certificado nao depende de
+    # JOIN com students/delegations, o que era emitido fica registrado
+    # mesmo se o aluno for renomeado ou trocar de delegacao, e o HMAC
+    # (que cobre esses campos) continua valido depois de editar o cadastro.
+    student_name   = db.Column(db.String(120), nullable=True)
+    global_id      = db.Column(db.String(36), nullable=True)
+    country        = db.Column(db.String(80), nullable=True)
+    country_flag   = db.Column(db.String(10), nullable=True)
+    committee      = db.Column(db.String(30), nullable=True)
+    committee_name = db.Column(db.String(120), nullable=True)
+
     student = db.relationship(
         'Student',
         backref=db.backref('certificates', lazy=True, cascade='all, delete-orphan'),
@@ -71,14 +83,35 @@ class Certificate(db.Model):
         """Tem PDF de verdade? (pdf_path so guarda o nome do arquivo)."""
         return bool(self.pdf_data)
 
-    def _signature_parts(self):
+    @property
+    def display_name(self):
+        """Nome mostrado nas telas — snapshot, com fallback ao cadastro."""
+        return self.student_name or (self.student.name if self.student else '---')
+
+    def fill_snapshot(self):
+        """Copia nome/pais/comitie do aluno atual para dentro do certificado.
+
+        Chamado na geracao do codigo e de novo no upload (momento em que o
+        certificado vira oficial) — assim o snapshot casa com o PDF assinado.
+        """
         s = self.student
         deleg = s.delegation if s else None
+        self.student_name   = s.name if s else None
+        self.global_id      = s.global_id if s else None
+        self.country        = deleg.country if deleg else None
+        self.country_flag   = deleg.country_flag if deleg else None
+        self.committee      = deleg.committee if deleg else None
+        self.committee_name = deleg.theme.name if deleg and deleg.theme else None
+        return self
+
+    def _signature_parts(self):
+        # Pelo snapshot, nao pelo cadastro: editar o aluno depois de emitido
+        # nao pode invalidar a assinatura (nem trocar o que a pagina mostra).
         return [
-            s.global_id if s else '',
-            s.name if s else '',
-            deleg.country if deleg else '',
-            deleg.committee if deleg else '',
+            self.global_id or '',
+            self.student_name or '',
+            self.country or '',
+            self.committee or '',
             self.type,
             str(self.edition_year),
             self.verification_code,

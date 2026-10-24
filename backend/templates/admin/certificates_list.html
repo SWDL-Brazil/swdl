@@ -127,13 +127,11 @@
       </thead>
       <tbody>
         {% for c in certs %}
-        {% set s = c.student %}
-        {% set deleg = s.delegation if s else None %}
         <tr>
-          <td style="font-weight:600">{{ s.name if s else '---' }}</td>
+          <td style="font-weight:600">{{ c.display_name }}</td>
           <td>
-            {% if deleg and deleg.country %}
-              {{ deleg.country_flag }} {{ deleg.country }}
+            {% if c.country %}
+              {{ c.country_flag }} {{ c.country }}
             {% else %}---{% endif %}
           </td>
           <td>{{ c.edition_year }}</td>
@@ -162,7 +160,7 @@
 
               {% if c.has_pdf %}
               <form method="POST" action="{{ url_for('admin.certificate_remove_pdf', id=c.id) }}" style="display:inline"
-                    onsubmit="return confirm('Remover PDF de {{ s.name if s else '?' }} ({{ c.type_label }})?')">
+                    onsubmit="return confirm('Remover PDF de {{ c.display_name }} ({{ c.type_label }})?')">
                 <button class="btn btn-ghost btn-sm">Remover PDF</button>
               </form>
               <a href="{{ url_for('vote.certificate_view', code=c.verification_code) }}"
@@ -170,7 +168,7 @@
               {% endif %}
 
               <form method="POST" action="{{ url_for('admin.certificate_delete', id=c.id) }}" style="display:inline"
-                    onsubmit="return confirm('Excluir definitivamente o certificado {{ c.type_label }} de {{ s.name if s else '?' }}?')">
+                    onsubmit="return confirm('Excluir definitivamente o certificado {{ c.type_label }} de {{ c.display_name }}?')">
                 <button class="btn btn-danger btn-sm">✖</button>
               </form>
             </div>

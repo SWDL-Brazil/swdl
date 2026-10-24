@@ -474,15 +474,15 @@ def api_validate_certificate():
         return jsonify({'ok': False, 'valid': False,
                         'error': 'Certificado nao encontrado ou nao liberado.'}), 404
 
-    student = cert.student
-    deleg = student.delegation if student else None
+    # Tudo pelo SNAPSHOT do certificado: nao depende do cadastro do aluno
+    # (e e o mesmo conjunto de campos que a assinatura HMAC cobre).
     sig_valid = cert.verify_signature(current_app.config.get('SECRET_KEY', 'swdl-secret')) \
         if cert.digital_signature else None
 
     return jsonify({
         'ok': True,
         'valid': True,
-        'name': student.name if student else '',
+        'name': cert.student_name or '',
         'verification_code': cert.verification_code,
         'type': cert.type,
         'type_label': cert.type_label,
@@ -494,11 +494,11 @@ def api_validate_certificate():
         'digital_signature': bool(cert.digital_signature),
         'signature_valid': sig_valid,
         'signed_at': cert.signed_at.isoformat() if cert.signed_at else None,
-        'global_id': student.global_id if student else '',
-        'country': deleg.country if deleg else '',
-        'country_flag': deleg.country_flag if deleg else '',
-        'committee': deleg.committee if deleg else '',
-        'committee_name': (deleg.theme.name if deleg and deleg.theme else '') if deleg else '',
+        'global_id': cert.global_id or '',
+        'country': cert.country or '',
+        'country_flag': cert.country_flag or '',
+        'committee': cert.committee or '',
+        'committee_name': cert.committee_name or '',
     })
 
 

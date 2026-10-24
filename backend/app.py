@@ -264,6 +264,65 @@ def _to_pg_type(col):
     return 'TEXT'
 
 
+def backfill_cert_snapshot():
+    """Preenche o snapshot (nome/pais/comitie) dos certificados antigos.
+
+    Idempotente: so mexe em linhas com ``student_name IS NULL`` — roda no
+    boot depois que as colunas existem, apanhando codigo legado que criava
+    linha sem snapshot. Devolve quantas linhas foram corrigidas.
+    """
+    from sqlalchemy import text
+    pending_sql = text('''
+        UPDATE certificates AS c
+           SET student_name   = s.name,
+               global_id      = s.global_id,
+               country        = d.country,
+               country_flag   = d.country_flag,
+               committee      = d.committee,
+               committee_name = t.name
+          FROM students AS s
+          LEFT JOIN delegations AS d ON d.id = s.delegation_id
+          LEFT JOIN themes AS t      ON t.id = d.theme_id
+         WHERE c.student_id = s.id
+           AND c.student_name IS NULL
+    ''')
+    try:
+        with db.engine.begin() as conn:
+            n = conn.execute(pending_sql).rowcount or 0
+        db.session.remove()  # linhas alteradas por SQL cru estao velhas na sessao
+    except Exception as e:
+        print(f'[MIGRATION] Snapshot via SQL falhou ({e}); tentando via ORM.')
+        return _backfill_cert_snapshot_orm()
+    if n:
+        print(f'[MIGRATION] Snapshot preenchido em {n} certificado(s).')
+    return n
+
+
+def _backfill_cert_snapshot_orm():
+    """Fallback do backfill para dialetos sem ``UPDATE ... FROM``."""
+    from models.certificate import Certificate
+    from models.student import Student
+    from models.delegation import Delegation
+    from sqlalchemy.orm import joinedload
+    try:
+        pending = (Certificate.query
+                   .filter(Certificate.student_name.is_(None))
+                   .options(joinedload(Certificate.student)
+                            .joinedload(Student.delegation)
+                            .joinedload(Delegation.theme))
+                   .all())
+        for c in pending:
+            c.fill_snapshot()
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(f'[MIGRATION] Erro ao preencher snapshot via ORM: {e}')
+        return 0
+    if pending:
+        print(f'[MIGRATION] Snapshot preenchido em {len(pending)} certificado(s) (ORM).')
+    return len(pending)
+
+
 def _run_migrations(app):
     """Adiciona colunas novas em todas as tabelas existentes."""
     with app.app_context():
@@ -418,6 +477,13 @@ def _run_migrations(app):
         except Exception as e:
             db.session.rollback()
             print(f'[MIGRATION] Erro ao migrar certificados legados: {e}')
+
+        # Backfill: snapshot (nome/pais/comitie) dos certificados que existiam
+        # antes das colunas — idempotente, so mexe em linha com snapshot vazio.
+        try:
+            backfill_cert_snapshot()
+        except Exception as e:
+            print(f'[MIGRATION] Erro no snapshot de certificados: {e}')
 
         # ── ÍNDICES DE PERFORMANCE ────────────────────────────
         indexes_to_create = [

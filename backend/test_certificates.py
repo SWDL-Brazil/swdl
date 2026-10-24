@@ -14,6 +14,9 @@ inteiro (admin + delegado + rota publica + API), verificando:
   * indice unico (student, edition, type)
   * cascade: excluir aluno apaga o certificado junto
   * serve_certificate: admin-only + codigo nao vira caminho de arquivo
+  * SNAPSHOT: nome/pais/comitie copiados na emissao (gerar, premiar, upload)
+  * assinatura sobrevive a renomear o aluno / trocar a delegacao
+  * backfill do snapshot para linha antiga (idempotente)
 
 O PDF mora em Certificate.pdf_data (bytea/BLOB) — nada de arquivo em disco,
 porque o Render free nao tem disco persistente.
@@ -81,13 +84,18 @@ def main():
     from models.user import User
     from models.student import Student
     from models.delegation import Delegation
+    from models.theme import Theme
     from models.certificate import Certificate, CERT_TYPES
     from cert_storage import validate_pdf, MAX_PDF_BYTES
 
-    # ── seed: 1 delegacao, 2 alunos (um com User logavel) ──────────────
+    # ── seed: 1 delegacao (com tema), 2 alunos (um com User logavel) ────
     with app.app_context():
+        theme = Theme(name='Estreito de Ormuz')
+        db.session.add(theme)
+        db.session.flush()
         deleg = Delegation(country='Brasil', country_flag='\U0001f1e7\U0001f1f7',
-                           committee='CS', edition_year=2026, accepted=True)
+                           committee='CS', edition_year=2026, accepted=True,
+                           theme_id=theme.id)
         db.session.add(deleg)
         db.session.flush()
 
@@ -103,6 +111,8 @@ def main():
         db.session.add_all([ana, bia])
         db.session.commit()
         ANA_ID, BIA_ID, DELEG_ID, USER_ID = ana.id, bia.id, deleg.id, user.id
+        ANA_GID = ana.global_id
+        THEME_NAME = theme.name
 
     client = app.test_client()
     r = client.post('/admin/login', data={
@@ -126,6 +136,18 @@ def main():
         check('codigos unicos', len({c.verification_code for c in certs}) == 2)
         check('nenhum liberado ainda', not any(c.released for c in certs))
         check('nenhum PDF ainda', not any(c.has_pdf for c in certs))
+        ana_cert = next(c for c in certs if c.student_id == ANA_ID)
+        check('snapshot preenchido na geracao (nome/pais/comitie/tema)',
+              ana_cert.student_name == 'Ana Delegada'
+              and ana_cert.global_id == ANA_GID
+              and ana_cert.country == 'Brasil'
+              and ana_cert.country_flag == '\U0001f1e7\U0001f1f7'
+              and ana_cert.committee == 'CS'
+              and ana_cert.committee_name == THEME_NAME,
+              (ana_cert.student_name, ana_cert.country, ana_cert.committee,
+               ana_cert.committee_name))
+        check('display_name vem do snapshot',
+              ana_cert.display_name == 'Ana Delegada', ana_cert.display_name)
         ANA_CODE = next(c.verification_code for c in certs if c.student_id == ANA_ID)
 
     r = client.post('/admin/certificados/gerar-codigos', data={'year': 2026},
@@ -259,7 +281,14 @@ def main():
           p.get('type_label') == CERT_TYPES['participation'], p.get('type_label'))
     check('sem campo certificate_url mentiroso', 'certificate_url' not in p)
     check('dados da delegacao', p.get('country') == 'Brasil' and
-          p.get('committee') == 'CS')
+          p.get('committee') == 'CS', p.get('country'))
+    check('nome e id global vem do snapshot',
+          p.get('name') == 'Ana Delegada' and p.get('global_id') == ANA_GID,
+          (p.get('name'), p.get('global_id')))
+    check('flag e tema no payload',
+          p.get('country_flag') == '\U0001f1e7\U0001f1f7' and
+          p.get('committee_name') == THEME_NAME,
+          (p.get('country_flag'), p.get('committee_name')))
 
     # devolve o PDF ao banco
     with app.app_context():
@@ -391,6 +420,103 @@ def main():
         db.session.commit()
         check('linha do certificado apagada',
               db.session.get(Certificate, bia_cert_id) is None)
+
+    # ── 13. snapshot: imutavel depois de assinado ──────────────────────
+    section('13. snapshot: upload refresca / renomear nao quebra')
+    with app.app_context():
+        sp = Certificate.query.filter_by(student_id=ANA_ID,
+                                         type='best_speaker').first()
+        sp_id, sp_code = sp.id, sp.verification_code
+        check('premio ja nasce com snapshot', sp.student_name == 'Ana Delegada',
+              sp.student_name)
+
+    # renomeia ANTES do upload: o snapshot e atualizado no ato da liberacao
+    with app.app_context():
+        ana = db.session.get(Student, ANA_ID)
+        ana.name = 'Ana Nome Corrigido'
+        db.session.commit()
+
+    r = client.post(f'/admin/certificados/{sp_id}/upload',
+                    data={'cert_file': (io.BytesIO(PDF_BYTES), 'sp.pdf')},
+                    content_type='multipart/form-data', follow_redirects=False)
+    check('upload do premio 302', r.status_code == 302, r.status_code)
+    with app.app_context():
+        sp = db.session.get(Certificate, sp_id)
+        check('upload refresca o snapshot', sp.student_name == 'Ana Nome Corrigido',
+              sp.student_name)
+        check('assinatura vale com o snapshot do upload',
+              sp.verify_signature(app.config['SECRET_KEY']))
+
+    # renomeia DEPOIS de assinado: nem o que a pagina mostra nem o HMAC mudam
+    with app.app_context():
+        ana = db.session.get(Student, ANA_ID)
+        ana.name = 'Ana Nome Final'
+        deleg = db.session.get(Delegation, DELEG_ID)
+        deleg.country = 'Argentina'
+        deleg.country_flag = '\U0001f1f1\U0001f1f6'
+        deleg.committee = 'DHR'
+        db.session.commit()
+
+    r = client.get(f'/api/certificado/validar?code={sp_code}')
+    p = r.get_json()
+    check('API mostra o nome de quando emitiu', p.get('name') == 'Ana Nome Corrigido',
+          p.get('name'))
+    check('API mostra o pais/comitie de quando emitiu',
+          p.get('country') == 'Brasil' and p.get('committee') == 'CS',
+          (p.get('country'), p.get('committee')))
+    check('signature_valid continua True apos renomear',
+          p.get('signature_valid') is True, p.get('signature_valid'))
+
+    with app.app_context():
+        sp = db.session.get(Certificate, sp_id)
+        check('verify_signature no model continua True',
+              sp.verify_signature(app.config['SECRET_KEY']))
+        # pagina HTML (sem PDF) mostra o snapshot, nao o cadastro de hoje
+        pdf_backup, sp.pdf_data = sp.pdf_data, None
+        db.session.commit()
+
+    r = client.get(f'/certificado/{sp_code}')
+    html = r.get_data(as_text=True)
+    check('pagina HTML 200 sem PDF', r.status_code == 200, r.status_code)
+    check('HTML mostra o nome emitido',
+          'Ana Nome Corrigido' in html, 'nome emitido ausente')
+    check('HTML nao mostra o nome novo do cadastro',
+          'Ana Nome Final' not in html, 'cadastro vazou')
+    with app.app_context():
+        sp = db.session.get(Certificate, sp_id)
+        sp.pdf_data = pdf_backup
+        db.session.commit()
+
+    r = client.get('/admin/certificados')
+    check('lista admin 200', r.status_code == 200, r.status_code)
+    check('lista admin usa o snapshot',
+          'Ana Nome Corrigido' in r.get_data(as_text=True))
+
+    # ── 14. backfill do snapshot ───────────────────────────────────────
+    section('14. backfill de snapshot (linha antiga)')
+    with app.app_context():
+        sp = db.session.get(Certificate, sp_id)
+        sp.student_name = None
+        sp.country = None
+        sp.country_flag = None
+        sp.committee = None
+        sp.committee_name = None
+        sp.global_id = None
+        db.session.commit()
+
+        from app import backfill_cert_snapshot
+        n = backfill_cert_snapshot()
+        check('backfill corrigiu a linha apagada', n == 1, n)
+        sp = db.session.get(Certificate, sp_id)
+        check('snapshot restaurado do cadastro atual',
+              sp.student_name == 'Ana Nome Final'
+              and sp.country == 'Argentina'
+              and sp.committee == 'DHR'
+              and sp.global_id == ANA_GID,
+              (sp.student_name, sp.country, sp.committee, sp.global_id))
+
+        n2 = backfill_cert_snapshot()
+        check('backfill idempotente (0 na 2a vez)', n2 == 0, n2)
 
     # ── resumo ─────────────────────────────────────────────────────────
     print('\n' + '-' * 60)

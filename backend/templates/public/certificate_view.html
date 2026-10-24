@@ -103,7 +103,7 @@
       <div class="cert-title">{{ cert.display_title }}</div>
       <div class="cert-subtitle">SESI World Diplomacy League — SWDL {{ cert.edition_year }}</div>
 
-      <div class="cert-name">{{ student.name if student else '—' }}</div>
+      <div class="cert-name">{{ cert.student_name or '—' }}</div>
       <div class="cert-label">{{ 'Premiado' if cert.type != 'participation' else 'Participante' }}</div>
       <div class="cert-divider"></div>
 
@@ -111,17 +111,17 @@
         <div class="cert-detail">
           <div class="cert-detail-label">País / Delegação</div>
           <div class="cert-detail-value">
-            {{ student.delegation.country_flag if student and student.delegation else '' }}
-            {{ student.delegation.country if student and student.delegation else '—' }}
+            {{ cert.country_flag or '' }}
+            {{ cert.country or '—' }}
           </div>
         </div>
         <div class="cert-detail">
           <div class="cert-detail-label">Comitê / Tema</div>
-          <div class="cert-detail-value">{{ student.delegation.committee.upper() if student and student.delegation and student.delegation.committee else '—' }}</div>
+          <div class="cert-detail-value">{{ cert.committee.upper() if cert.committee else '—' }}</div>
         </div>
         <div class="cert-detail">
           <div class="cert-detail-label">ID Global</div>
-          <div class="cert-detail-value" style="font-family:'DM Mono',monospace;font-size:11px">{{ (student.global_id[:16] ~ '...') if student else '—' }}</div>
+          <div class="cert-detail-value" style="font-family:'DM Mono',monospace;font-size:11px">{{ (cert.global_id[:16] ~ '...') if cert.global_id else '—' }}</div>
         </div>
         <div class="cert-detail">
           <div class="cert-detail-label">Edição</div>

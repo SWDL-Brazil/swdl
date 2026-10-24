@@ -315,7 +315,6 @@ def certificate_view(code):
     secret = current_app.config.get('SECRET_KEY', 'swdl-secret')
     signature_valid = bool(cert.digital_signature) and cert.verify_signature(secret)
     return render_template('public/certificate_view.html', cert=cert,
-                           student=cert.student,
                            signature_valid=signature_valid)
 
 
