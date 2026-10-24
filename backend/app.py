@@ -234,6 +234,7 @@ def create_app():
         from models.speech_log import SpeechLog
         from models.event_period import EventPeriod
         from models.urgent_alert import UrgentAlert
+        from models.certificate import Certificate
 
         db.create_all()
         _run_migrations(app)
@@ -288,6 +289,7 @@ def _run_migrations(app):
         from models.motion import Motion
         from models.resolution import Resolution, Amendment
         from models.speech_log import SpeechLog
+        from models.certificate import Certificate
 
         tables = {
             User.__tablename__: User,
@@ -312,6 +314,7 @@ def _run_migrations(app):
             Resolution.__tablename__: Resolution,
             Amendment.__tablename__: Amendment,
             SpeechLog.__tablename__: SpeechLog,
+            Certificate.__tablename__: Certificate,
         }
 
         for table_name, model in tables.items():
@@ -379,6 +382,40 @@ def _run_migrations(app):
                 print(f'[MIGRATION] Slugs gerados para {len(missing)} notícia(s).')
         except Exception as e:
             print(f'[MIGRATION] Erro ao gerar slugs: {e}')
+
+        # Backfill: copia codigos legados (Student.verification_code) para a
+        # tabela Certificate. Roda 1x — depois que existe Certificate com
+        # codigo, o condicional abaixo vira False e nunca re-executa.
+        from models.certificate import Certificate as _Cert
+        from models.student import Student as _Stu
+        try:
+            if (_Cert.query.count() == 0 and
+                    _Stu.query.filter(_Stu.verification_code.isnot(None)).count() > 0):
+                from urllib.parse import urlparse
+                from datetime import datetime, timezone
+                now_year = datetime.now(timezone.utc).year
+                migrated = 0
+                for s in _Stu.query.filter(_Stu.verification_code.isnot(None)).all():
+                    deleg = s.delegation
+                    year = (getattr(deleg, 'edition_year', None) or now_year)
+                    cert = _Cert(
+                        student_id=s.id,
+                        edition_year=year,
+                        type='participation',
+                        verification_code=s.verification_code,
+                        released=bool(s.certificate_released),
+                        digital_signature=s.digital_signature,
+                        signed_at=s.signed_at,
+                    )
+                    if s.certificate_url:
+                        cert.pdf_path = urlparse(s.certificate_url).path.rstrip('/').split('/')[-1] or None
+                    db.session.add(cert)
+                    migrated += 1
+                db.session.commit()
+                print(f'[MIGRATION] {migrated} certificado(s) legado(s) migrado(s) para a tabela certificates.')
+        except Exception as e:
+            db.session.rollback()
+            print(f'[MIGRATION] Erro ao migrar certificados legados: {e}')
 
         # ── ÍNDICES DE PERFORMANCE ────────────────────────────
         indexes_to_create = [

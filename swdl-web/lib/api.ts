@@ -131,6 +131,12 @@ export interface CertificateResult {
   valid: boolean;
   name: string;
   verification_code: string | null;
+  type?: string;
+  type_label?: string;
+  title?: string;
+  edition_year?: number;
+  notes?: string | null;
+  has_pdf?: boolean;
   pdf_path: string | null;
   digital_signature: boolean;
   signature_valid: boolean | null;

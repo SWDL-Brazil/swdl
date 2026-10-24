@@ -78,6 +78,10 @@
       font-family:'DM Mono',monospace; font-size: 10px; font-weight: 700;
       letter-spacing: .1em; text-transform: uppercase; color: #2ECC71;
     }
+    .cert-valid--warn {
+      background: rgba(241,196,15,.12); border-color: rgba(241,196,15,.3);
+      color: #F1C40F;
+    }
     .cert-footer {
       margin-top: 24px; font-size: 11px; color: rgba(255,255,255,.25);
     }
@@ -92,59 +96,67 @@
   <div class="cert-wrap">
     <div class="cert-card">
       <div class="cert-badge">
-        <span style="width:6px;height:6px;border-radius:50%;background:#2ECC71;display:inline-block;animation:pulse 1.5s infinite"></span>
-        Certificado Verificado
+        <span style="width:6px;height:6px;border-radius:50%;display:inline-block;animation:pulse 1.5s infinite;background:{{ '#2ECC71' if signature_valid else '#F1C40F' }}"></span>
+        {{ 'Certificado Verificado' if signature_valid else 'Certificado Emitido' }}
       </div>
-      <div class="cert-icon">🎓</div>
-      <div class="cert-title">Certificado de Participação</div>
-      <div class="cert-subtitle">SESI World Diplomacy League — SWDL 2026</div>
+      <div class="cert-icon">{{ '🏆' if cert.type != 'participation' else '🎓' }}</div>
+      <div class="cert-title">{{ cert.display_title }}</div>
+      <div class="cert-subtitle">SESI World Diplomacy League — SWDL {{ cert.edition_year }}</div>
 
-      <div class="cert-name">{{ student.name }}</div>
-      <div class="cert-label">Participante</div>
+      <div class="cert-name">{{ student.name if student else '—' }}</div>
+      <div class="cert-label">{{ 'Premiado' if cert.type != 'participation' else 'Participante' }}</div>
       <div class="cert-divider"></div>
 
       <div class="cert-details">
         <div class="cert-detail">
           <div class="cert-detail-label">País / Delegação</div>
           <div class="cert-detail-value">
-            {{ student.delegation.country_flag if student.delegation else '' }}
-            {{ student.delegation.country if student.delegation else '—' }}
+            {{ student.delegation.country_flag if student and student.delegation else '' }}
+            {{ student.delegation.country if student and student.delegation else '—' }}
           </div>
         </div>
         <div class="cert-detail">
           <div class="cert-detail-label">Comitê / Tema</div>
-          <div class="cert-detail-value">{{ student.delegation.committee.upper() if student.delegation and student.delegation.committee else '—' }}</div>
+          <div class="cert-detail-value">{{ student.delegation.committee.upper() if student and student.delegation and student.delegation.committee else '—' }}</div>
         </div>
         <div class="cert-detail">
           <div class="cert-detail-label">ID Global</div>
-          <div class="cert-detail-value" style="font-family:'DM Mono',monospace;font-size:11px">{{ student.global_id[:16] }}...</div>
+          <div class="cert-detail-value" style="font-family:'DM Mono',monospace;font-size:11px">{{ (student.global_id[:16] ~ '...') if student else '—' }}</div>
         </div>
         <div class="cert-detail">
           <div class="cert-detail-label">Edição</div>
-          <div class="cert-detail-value">SWDL 2026</div>
+          <div class="cert-detail-value">SWDL {{ cert.edition_year }}</div>
         </div>
       </div>
 
-      <div class="cert-hash">Codigo: {{ student.verification_code or student.certificate_hash }}</div>
+      {% if cert.notes %}
+      <div class="cert-hash" style="color:rgba(255,255,255,.5)">{{ cert.notes }}</div>
+      {% endif %}
 
-      {% if student.digital_signature %}
+      <div class="cert-hash">Codigo: {{ cert.verification_code }}</div>
+
+      {% if cert.digital_signature %}
       <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:6px;background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);padding:8px 18px;border-radius:20px">
+        <div style="display:flex;align-items:center;gap:6px;background:{{ 'rgba(46,204,113,.08)' if signature_valid else 'rgba(241,196,15,.10)' }};border:1px solid {{ 'rgba(46,204,113,.2)' if signature_valid else 'rgba(241,196,15,.3)' }};padding:8px 18px;border-radius:20px">
           <span style="font-size:16px">🖊️</span>
-          <span style="font-family:'DM Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2ECC71">Assinado Digitalmente</span>
+          <span style="font-family:'DM Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:{{ '#2ECC71' if signature_valid else '#F1C40F' }}">{{ 'Assinado Digitalmente' if signature_valid else 'Assinatura não confere' }}</span>
         </div>
-        {% if student.signed_at %}
+        {% if cert.signed_at %}
         <span style="font-size:10px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace">
-          {{ student.signed_at.strftime('%d/%m/%Y %H:%M') }}
+          {{ cert.signed_at.strftime('%d/%m/%Y %H:%M') }}
         </span>
         {% endif %}
       </div>
       <div class="cert-hash" style="margin-bottom:12px;font-size:9px">
-        Assinatura: {{ student.digital_signature[:48] ~ '...' if student.digital_signature and student.digital_signature|length > 48 else student.digital_signature }}
+        Assinatura: {{ cert.digital_signature[:48] ~ '...' if cert.digital_signature and cert.digital_signature|length > 48 else cert.digital_signature }}
       </div>
       {% endif %}
 
+      {% if signature_valid %}
       <div class="cert-valid">✅ Válido e Autenticado</div>
+      {% else %}
+      <div class="cert-valid cert-valid--warn">⚠️ Assinatura inválida — procure a organização</div>
+      {% endif %}
       <div class="cert-footer">
         Este certificado é digitalmente verificável através do hash único e assinatura HMAC-SHA256.<br>
         SWDL — Sesi World Diplomacy League

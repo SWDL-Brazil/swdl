@@ -8,55 +8,78 @@
   <div>
     <div class="section-label">Recursos</div>
     <h1 class="page-title">{{ icon('award') }} Certificados</h1>
-    <p class="page-sub">Visualize e valide seu certificado de participação.</p>
+    <p class="page-sub">Visualize e valide seus certificados de participação e premiações.</p>
   </div>
 </div>
 
-{% if student and student.certificate_released and student.verification_code %}
-<div class="card">
-  <div class="card-body cert-center">
-    <div class="cert-icon">{{ icon('award') }}</div>
-    <div class="cert-title">Certificado Disponível</div>
-    <p class="cert-subtitle">
-      Seu certificado de participação foi liberado pela organização.
-    </p>
+{% if certs %}
+  {% for year, group in certs|groupby('edition_year')|reverse %}
+  <div class="cert-edition-head">
+    <span class="cert-edition-year">Edição {{ year }}</span>
+    <span class="cert-edition-rule"></span>
+  </div>
 
-    <div class="cert-code-box">
-      <div class="cert-code-label">Seu Código de Verificação</div>
-      <div class="cert-code-value">{{ student.verification_code }}</div>
-    </div>
-
-    <div class="cert-actions">
-      {% if student.certificate_url %}
-      <a href="{{ student.certificate_url }}" target="_blank" class="btn btn-gold">
-        Baixar Certificado (PDF)
-      </a>
-      {% endif %}
-    </div>
-
-    <div class="cert-info-box">
-      <div class="cert-info-label">Validação Pública</div>
-      <div class="cert-info-text">
-        Qualquer pessoa pode validar seu certificado usando seu código:
-      </div>
-      <code class="cert-code-block">
-        {{ request.host_url }}api/certificado/validar?code={{ student.verification_code }}
-      </code>
-
-      {% if student.digital_signature %}
-      <div style="margin-top:12px;display:flex;align-items:center;gap:8px">
+  {% for cert in group %}
+  <div class="card">
+    <div class="card-body cert-center">
+      <div class="cert-item-head" style="justify-content:center">
+        <span class="cert-type-badge cert-type-{{ cert.type }}">{{ icon('award') }} {{ cert.type_label }}</span>
+        {% if cert.digital_signature %}
         <span class="cert-signed-badge">Assinado Digitalmente</span>
-        {% if student.signed_at %}
-        <span class="text-muted">
-          {{ student.signed_at.strftime('%d/%m/%Y %H:%M') }}
-        </span>
         {% endif %}
       </div>
+
+      <div class="cert-title">{{ cert.display_title }}</div>
+      {% if cert.type != 'participation' %}
+      <p class="cert-subtitle">Premiacao conquistada na Edicao {{ cert.edition_year }}.</p>
+      {% else %}
+      <p class="cert-subtitle">
+        Seu certificado de participacao foi liberado pela organizacao.
+      </p>
       {% endif %}
+
+      {% if cert.notes %}
+      <p class="cert-item-notes">{{ cert.notes }}</p>
+      {% endif %}
+
+      <div class="cert-code-box">
+        <div class="cert-code-label">Codigo de Verificacao</div>
+        <div class="cert-code-value">{{ cert.verification_code }}</div>
+      </div>
+
+      <div class="cert-actions">
+        <a href="{{ url_for('vote.certificate_view', code=cert.verification_code) }}"
+           target="_blank" class="btn btn-gold">
+          Baixar Certificado (PDF)
+        </a>
+      </div>
+
+      <div class="cert-info-box">
+        <div class="cert-info-label">Validacao Publica</div>
+        <div class="cert-info-text">
+          Qualquer pessoa pode validar este certificado usando o codigo:
+        </div>
+        <code class="cert-code-block">
+          {{ request.host_url }}api/certificado/validar?code={{ cert.verification_code }}
+        </code>
+
+        {% if cert.signed_at %}
+        <div style="margin-top:12px;display:flex;align-items:center;gap:8px">
+          {% if cert.digital_signature %}
+          <span class="cert-signed-badge">Assinado Digitalmente</span>
+          {% endif %}
+          <span class="text-muted">
+            {{ cert.signed_at.strftime('%d/%m/%Y %H:%M') }}
+          </span>
+        </div>
+        {% endif %}
+      </div>
     </div>
   </div>
-</div>
-{% elif student and not student.certificate_released %}
+  {% endfor %}
+  {% endfor %}
+
+{% elif student %}
 {{ empty_state(icon('lock'), 'Certificado não liberado', 'Seu certificado será disponibilizado assim que a organização liberar. Fique atento aos comunicados oficiais.') }}
 {% else %}
 {{ empty_state(icon('award'), 'Certificados', 'Complete sua participação para receber seu certificado.') }}

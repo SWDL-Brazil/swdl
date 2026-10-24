@@ -1,13 +1,6 @@
 from extensions import db
 from datetime import datetime, timezone
-import uuid, hmac, hashlib, secrets, string
-
-
-def generate_verification_code():
-    """Gera codigo curto no formato SWDL-XXXXXX (6 chars alfanumericos)."""
-    alphabet = string.ascii_uppercase + string.digits
-    code = ''.join(secrets.choice(alphabet) for _ in range(6))
-    return f'SWDL-{code}'
+import uuid
 
 
 class Student(db.Model):
@@ -21,11 +14,11 @@ class Student(db.Model):
 
     delegation_id  = db.Column(db.Integer, db.ForeignKey('delegations.id'), nullable=True, index=True)
 
+    # ── LEGADO (pré-Certificate) — mantidos como backup; não escrever mais ──
     verification_code   = db.Column(db.String(12), unique=True, nullable=True, index=True)
     certificate_url     = db.Column(db.String(500))
     certificate_released = db.Column(db.Boolean, default=False, index=True)
     certificate_hash    = db.Column(db.String(128), unique=True)
-
     digital_signature = db.Column(db.Text, nullable=True)
     signed_at         = db.Column(db.DateTime, nullable=True)
 
@@ -43,41 +36,27 @@ class Student(db.Model):
                                      cascade='all, delete-orphan',
                                      order_by='ParticipationHistory.year.desc()')
 
-    def _signature_parts(self):
-        deleg = self.delegation
-        return [
-            self.global_id,
-            self.name,
-            deleg.country if deleg else '',
-            deleg.committee if deleg else '',
-            self.verification_code or self.certificate_hash or '',
-        ]
-
-    def compute_signature(self, secret):
-        raw = '::'.join(self._signature_parts())
-        return hmac.new(
-            secret.encode('utf-8'),
-            raw.encode('utf-8'),
-            hashlib.sha256,
-        ).hexdigest()
-
-    def verify_signature(self, secret):
-        if not self.digital_signature:
-            return False
-        expected = self.compute_signature(secret)
-        return hmac.compare_digest(self.digital_signature, expected)
+    def latest_released_certificate(self):
+        """Certificado liberado mais recente (edicao desc, criado desc)."""
+        released = [c for c in self.certificates if c.released]
+        if not released:
+            return None
+        return max(released,
+                   key=lambda c: (c.edition_year,
+                                  c.created_at.timestamp() if c.created_at else 0))
 
     def to_dict(self):
+        cert = self.latest_released_certificate()
         return {
             'id': self.id,
             'global_id': self.global_id,
             'name': self.name,
             'email': self.email,
             'has_delegation': self.delegation_id is not None,
-            'verification_code': self.verification_code,
-            'certificate_released': self.certificate_released,
-            'digital_signature': bool(self.digital_signature),
-            'signed_at': self.signed_at.isoformat() if self.signed_at else None,
+            'verification_code': cert.verification_code if cert else None,
+            'certificate_released': bool(cert),
+            'digital_signature': bool(cert and cert.digital_signature),
+            'signed_at': cert.signed_at.isoformat() if cert and cert.signed_at else None,
             'read_only': self.read_only,
             'adapted_device': self.adapted_device,
         }

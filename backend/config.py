@@ -22,6 +22,12 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'}
 
+    # PDFs de certificado — FORA de static/ (nao sao servidos anonimamente)
+    # e apontaveis para um disco persistente via env CERTIFICATES_DIR
+    # (Render: /var/data/certificates).
+    CERTIFICATES_DIR = os.environ.get('CERTIFICATES_DIR') or os.path.join(
+        BASE_DIR, 'data', 'certificates')
+
     # Ambiente
     ENV = os.environ.get('FLASK_ENV', 'development')
     DEBUG = ENV == 'development'

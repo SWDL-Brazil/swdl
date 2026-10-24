@@ -144,7 +144,7 @@
     <a href="{{ url_for('student.certificados') }}" class="st-quick-card">
       <span class="st-quick-icon">{{ icon('award') }}</span>
       <span class="st-quick-label">Certificados</span>
-      <span class="st-quick-count">{{ 'Liberado' if student and student.certificate_released else 'Pendente' }}</span>
+      <span class="st-quick-count">{{ 'Liberado' if cert_released else 'Pendente' }}</span>
     </a>
     <a href="{{ url_for('student.history') }}" class="st-quick-card">
       <span class="st-quick-icon">{{ icon('clock') }}</span>
@@ -254,7 +254,7 @@
   <div class="st-card-body cert-center" style="padding:30px 24px">
     <div class="cert-icon">{{ icon('award') }}</div>
     <div class="st-card-title">Seu Certificado</div>
-    {% if student and student.certificate_released %}
+    {% if cert_released %}
     <div class="text-muted" style="font-size:13px;margin:6px 0 14px">{{ icon('check') }} Disponível para download</div>
     <a href="{{ url_for('student.certificados') }}" class="st-btn st-btn-gold">Ver Certificado</a>
     {% else %}

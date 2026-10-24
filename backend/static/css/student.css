@@ -900,6 +900,41 @@ a.st-journey-step--link:focus-visible { outline:2px solid var(--gold); outline-o
   font-family:'DM Mono',monospace; font-size:9px;
   font-weight:700; letter-spacing:.08em; text-transform:uppercase;
 }
+.cert-edition-head {
+  display:flex; align-items:center; gap:10px; margin:28px 0 14px;
+}
+.cert-edition-head:first-child { margin-top:0; }
+.cert-edition-year {
+  font-family:'DM Mono',monospace; font-size:12px; font-weight:700;
+  letter-spacing:.1em; color:var(--gold-dark);
+  border:1px solid var(--gold); border-radius:4px; padding:3px 10px;
+  background:rgba(201,168,76,.10);
+}
+.cert-edition-rule {
+  flex:1; height:1px; background:var(--border);
+}
+.cert-item {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:8px; padding:20px; margin-bottom:12px;
+  box-shadow:var(--shadow-card, 0 1px 3px rgba(13,27,42,.06));
+}
+.cert-item-head {
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:14px;
+}
+.cert-type-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  font-family:'DM Mono',monospace; font-size:10px; font-weight:700;
+  letter-spacing:.07em; text-transform:uppercase;
+  padding:4px 10px; border-radius:4px;
+}
+.cert-type-participation { background:rgba(6,95,70,.10); color:#065F46; }
+.cert-type-best_delegation { background:rgba(30,64,175,.10); color:#1E40AF; }
+.cert-type-best_speaker { background:rgba(122,95,31,.12); color:var(--gold-dark); }
+.cert-type-best_dress { background:rgba(155,28,90,.10); color:#9B1C5A; }
+.cert-item-notes {
+  font-size:12px; color:var(--muted); margin:-6px 0 12px;
+}
+.cert-item-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
 
 /* Stats */
 .stat-card { text-align:center; padding:20px; }
@@ -1134,6 +1169,8 @@ body.login-body {
   .cert-title { font-size:21px; }
   .cert-code-box { min-width:0; width:100%; padding:18px 14px; }
   .cert-code-value { font-size:20px; overflow-wrap:anywhere; }
+  .cert-item { padding:16px; }
+  .cert-edition-head { margin:20px 0 12px; }
 
   /* Listas: quebrar linha quando apertado */
   .log-row { flex-wrap:wrap; row-gap:3px; }

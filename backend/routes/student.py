@@ -129,8 +129,8 @@ def dashboard():
     read_only = check_read_only(student_profile)
 
     _phase, event_started, event_ended = event_flags()
-    journey = build_journey(delegation, event_started, event_ended,
-                            bool(student_profile and student_profile.certificate_released))
+    cert_released = bool(student_profile and student_profile.latest_released_certificate())
+    journey = build_journey(delegation, event_started, event_ended, cert_released)
 
     return render_template('student/dashboard.html',
                            student=student_profile,
@@ -140,6 +140,7 @@ def dashboard():
                            next_item=next_item,
                            documentos=docs,
                            journey=journey,
+                           cert_released=cert_released,
                            read_only=read_only)
 
 
@@ -308,9 +309,16 @@ def comunicados():
 @login_required
 @student_required
 def certificados():
+    from models.certificate import Certificate
     student_profile = get_student()
+    certs = []
+    if student_profile:
+        certs = Certificate.query.filter_by(student_id=student_profile.id, released=True)\
+                                 .order_by(Certificate.edition_year.desc(),
+                                           Certificate.type).all()
     return render_template('student/certificados.html',
-                           student=student_profile)
+                           student=student_profile,
+                           certs=certs)
 
 
 # ── PERFIL ─────────────────────────────────────────────────────
@@ -456,32 +464,43 @@ def api_attendance():
 # ── API: verificar certificado (endpoint público) ──────────────
 @student_bp.route('/api/certificado/validar')
 def api_validate_certificate():
+    from models.certificate import Certificate
     code = request.args.get('code', '') or request.args.get('hash', '')
     if not code:
         return jsonify({'ok': False, 'error': 'Codigo e obrigatorio.'}), 400
 
-    student = Student.query.filter(
-        (Student.verification_code == code) | (Student.certificate_hash == code)
-    ).first()
-    if not student or not student.certificate_released:
+    cert = Certificate.query.filter_by(verification_code=code).first()
+    if not cert or not cert.released:
         return jsonify({'ok': False, 'valid': False,
                         'error': 'Certificado nao encontrado ou nao liberado.'}), 404
 
-    sig_valid = student.verify_signature(current_app.config.get('SECRET_KEY', 'swdl-secret')) if student.digital_signature else None
+    student = cert.student
+    deleg = student.delegation if student else None
+    sig_valid = cert.verify_signature(current_app.config.get('SECRET_KEY', 'swdl-secret')) \
+        if cert.digital_signature else None
 
-    deleg = student.delegation
-    pdf_code = student.verification_code or student.certificate_hash
+    # PDF de verdade no disco? (nao basta pdf_path preenchido — o arquivo
+    # pode ter sumido com um deploy sem disco persistente)
+    from cert_storage import cert_path
+    pdf_file = cert_path(cert.pdf_path) if cert.pdf_path else None
+    has_pdf = bool(pdf_file and os.path.isfile(pdf_file))
+
     return jsonify({
         'ok': True,
         'valid': True,
-        'name': student.name,
-        'verification_code': student.verification_code,
-        'certificate_url': student.certificate_url,
-        'pdf_path': f'/certificado/{pdf_code}' if pdf_code else None,
-        'digital_signature': bool(student.digital_signature),
+        'name': student.name if student else '',
+        'verification_code': cert.verification_code,
+        'type': cert.type,
+        'type_label': cert.type_label,
+        'title': cert.display_title,
+        'edition_year': cert.edition_year,
+        'notes': cert.notes,
+        'has_pdf': has_pdf,
+        'pdf_path': f'/certificado/{cert.verification_code}',
+        'digital_signature': bool(cert.digital_signature),
         'signature_valid': sig_valid,
-        'signed_at': student.signed_at.isoformat() if student.signed_at else None,
-        'global_id': student.global_id,
+        'signed_at': cert.signed_at.isoformat() if cert.signed_at else None,
+        'global_id': student.global_id if student else '',
         'country': deleg.country if deleg else '',
         'country_flag': deleg.country_flag if deleg else '',
         'committee': deleg.committee if deleg else '',

@@ -10,6 +10,7 @@ from models.student import Student
 from models.document import Document
 from models.urgent_alert import UrgentAlert
 from models.news import News
+from models.certificate import Certificate
 from routes.agenda_utils import get_resolved_phase, get_current_next
 from sqlalchemy import func, select
 from sqlalchemy.orm import joinedload
@@ -22,6 +23,19 @@ def _cnt(model, *conds):
     s = select(func.count()).select_from(model)
     for c in conds:
         s = s.where(c)
+    return s.scalar_subquery()
+
+
+def _cnt_cert_students():
+    """Alunos DISTINTOS com certificado de participacao liberado.
+
+    Distinto + filtrado por tipo: premios e multiplas edicoes nao inflam o
+    numerador do checklist "Liberar certificados (X/Y)".
+    """
+    s = select(func.count(func.distinct(Certificate.student_id))).where(
+        Certificate.released.is_(True),
+        Certificate.type == 'participation',
+    )
     return s.scalar_subquery()
 
 
@@ -45,7 +59,7 @@ def dashboard():
             _cnt(Student).label('students'),
             _cnt(Delegation).label('delegations'),
             _cnt(AgendaItem).label('agenda'),
-            _cnt(Student, Student.certificate_released == True).label('certificates'),
+            _cnt_cert_students().label('certificates'),
             _cnt(Theme).label('themes'),
             _cnt(VoteSession, VoteSession.status == 'open').label('open_votes'),
             _cnt(Delegation, Delegation.presence_status.in_(['presente', 'votante'])).label('presentes'),
@@ -123,7 +137,7 @@ def director_dashboard():
             _cnt(Student, Student.convened == True).label('convened'),
             _cnt(Student, Student.delegation_id.is_(None)).label('no_deleg'),
             _cnt(Student).label('total_students'),
-            _cnt(Student, Student.certificate_released == True).label('certificates'),
+            _cnt_cert_students().label('certificates'),
             _cnt(AgendaItem).label('agenda_count'),
         )
     ).one()

@@ -208,6 +208,7 @@
         </a></li>
       </ul>
 
+      {% if is_admin %}
       <div class="sidebar-section">🎓 Pré-Simulação</div>
       <ul class="sidebar-nav">
         <li><a href="{{ url_for('admin.convocar_page') }}"
@@ -219,6 +220,7 @@
           <span class="nav-icon">🎓</span> Certificados
         </a></li>
       </ul>
+      {% endif %}
 
       <div class="sidebar-section">📄 Relatórios</div>
       <ul class="sidebar-nav">

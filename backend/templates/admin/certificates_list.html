@@ -3,9 +3,11 @@
 {% block page_title %}Gestao de Certificados{% endblock %}
 
 {% block topbar_actions %}
+  <button class="btn btn-gold btn-sm" onclick="document.getElementById('awardModal').style.display='flex'">🏆 Premiar</button>
   <form method="POST" action="{{ url_for('admin.certificates_generate_codes') }}" style="display:inline"
-        onsubmit="return confirm('Gerar codigos para todos os elegiveis sem codigo?')">
-    <button class="btn btn-navy btn-sm">Gerar Codigos</button>
+        onsubmit="return confirm('Gerar certificados de participacao para todos os alunos sem um em {{ current_year }}?')">
+    <input type="hidden" name="year" value="{{ current_year }}">
+    <button class="btn btn-navy btn-sm">Gerar Codigos (Participacao)</button>
   </form>
 {% endblock %}
 
@@ -13,21 +15,34 @@
 
 <style>
   .cert-summary {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 20px;
   }
   .cert-stat {
     background: var(--white); border: 1px solid var(--border);
-    border-radius: 5px; padding: 16px; text-align: center;
+    border-radius: 5px; padding: 14px; text-align: center;
   }
   .cert-stat-num {
     font-family: 'DM Mono', monospace;
-    font-size: 22px; font-weight: 700; color: var(--navy); display: block;
+    font-size: 20px; font-weight: 700; color: var(--navy); display: block;
   }
   .cert-stat-label {
     font-size: 9px; font-weight: 600; text-transform: uppercase;
     letter-spacing: .08em; color: var(--muted); margin-top: 4px;
   }
   .cert-stat.highlight { border-left: 3px solid var(--gold); }
+  .cert-filter-bar {
+    display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .cert-filter-bar select {
+    padding: 8px 12px; border: 1px solid rgba(16,30,76,.18); border-radius: 3px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text);
+    background: var(--white); outline: none;
+  }
+  .cert-filter-bar select:focus { border-color: var(--gold); }
+  .cert-filter-label {
+    font-size: 9px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+    color: var(--navy);
+  }
   .badge-code {
     background: rgba(16,30,76,.06); color: var(--navy);
     border: 1px solid var(--border);
@@ -37,24 +52,61 @@
   }
   .upload-form { display: inline-flex; gap: 4px; align-items: center; }
   .upload-form input[type=file] { font-size: 11px; max-width: 140px; }
+  .type-badge {
+    display:inline-block; padding: 2px 9px; border-radius: 10px;
+    font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  }
+  .type-participation { background: rgba(6,95,70,.10); color: #065F46; }
+  .type-best_delegation { background: rgba(30,64,175,.10); color: #1E40AF; }
+  .type-best_speaker { background: rgba(183,148,65,.14); color: #8a6d1d; }
+  .type-best_dress { background: rgba(155,28,90,.10); color: #9B1C5A; }
+  .modal-overlay { display:none; position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.5); align-items:center; justify-content:center }
+  .modal-overlay .modal { background:var(--white); border-radius:8px; padding:28px; width:520px; max-width:92vw; max-height:90vh; overflow:auto }
 </style>
+
+<div class="cert-filter-bar">
+  <span class="cert-filter-label">Filtros</span>
+  <form method="GET" action="{{ url_for('admin.certificates_list') }}" id="filterForm" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <select name="year" onchange="this.form.submit()">
+      {% for y in years %}
+      <option value="{{ y }}" {{ 'selected' if y == current_year }}>{{ y }}</option>
+      {% else %}
+      <option value="{{ current_year }}" selected>{{ current_year }}</option>
+      {% endfor %}
+    </select>
+    <select name="type" onchange="this.form.submit()">
+      <option value="">Todos os tipos</option>
+      {% for key, label in cert_types.items() %}
+      <option value="{{ key }}" {{ 'selected' if key == current_type }}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
 
 <div class="cert-summary">
   <div class="cert-stat highlight">
-    <span class="cert-stat-num">{{ total }}</span>
-    <span class="cert-stat-label">Total Alunos</span>
+    <span class="cert-stat-num">{{ stats.total }}</span>
+    <span class="cert-stat-label">Total ({{ current_year }})</span>
   </div>
   <div class="cert-stat highlight">
-    <span class="cert-stat-num">{{ eligible }}</span>
-    <span class="cert-stat-label">Elegiveis</span>
+    <span class="cert-stat-num">{{ stats.participation }}</span>
+    <span class="cert-stat-label">Participacao</span>
   </div>
   <div class="cert-stat highlight">
-    <span class="cert-stat-num">{{ has_code }}</span>
-    <span class="cert-stat-label">Com Codigo</span>
+    <span class="cert-stat-num">{{ stats.awards }}</span>
+    <span class="cert-stat-label">Premios</span>
   </div>
   <div class="cert-stat highlight">
-    <span class="cert-stat-num">{{ with_pdf }}</span>
+    <span class="cert-stat-num">{{ stats.with_pdf }}</span>
     <span class="cert-stat-label">Com PDF</span>
+  </div>
+  <div class="cert-stat highlight">
+    <span class="cert-stat-num">{{ stats.released }}</span>
+    <span class="cert-stat-label">Liberados</span>
+  </div>
+  <div class="cert-stat highlight">
+    <span class="cert-stat-num">{{ stats.missing_participation }}</span>
+    <span class="cert-stat-label">Sem Participacao</span>
   </div>
 </div>
 
@@ -63,80 +115,74 @@
     <table class="admin-table">
       <thead>
         <tr>
-          <th>#</th>
-          <th>Nome</th>
+          <th>Aluno</th>
           <th>Pais / Tema</th>
-          <th>Presenca</th>
+          <th>Edicao</th>
+          <th>Tipo</th>
           <th>Codigo</th>
           <th>PDF</th>
+          <th>Liberado</th>
           <th>Acoes</th>
         </tr>
       </thead>
       <tbody>
-        {% for s in students %}
-        {% set deleg = s.delegation %}
+        {% for c in certs %}
+        {% set s = c.student %}
+        {% set deleg = s.delegation if s else None %}
         <tr>
-          <td class="text-muted">{{ s.id }}</td>
-          <td style="font-weight:600">{{ s.name }}</td>
+          <td style="font-weight:600">{{ s.name if s else '---' }}</td>
           <td>
             {% if deleg and deleg.country %}
               {{ deleg.country_flag }} {{ deleg.country }}
             {% else %}---{% endif %}
           </td>
+          <td>{{ c.edition_year }}</td>
+          <td><span class="type-badge type-{{ c.type }}">{{ c.type_label }}</span></td>
+          <td><span class="badge-code">{{ c.verification_code }}</span></td>
           <td>
-            {% if deleg and deleg.presence_status in ('presente', 'votante') %}
-              <span class="badge badge-approved">Presente</span>
-            {% elif deleg %}
-              <span class="badge badge-pending">Ausente</span>
-            {% else %}
-              <span class="text-muted">---</span>
-            {% endif %}
-          </td>
-          <td>
-            {% if s.verification_code %}
-              <span class="badge-code">{{ s.verification_code }}</span>
-            {% else %}
-              <span class="text-muted">---</span>
-            {% endif %}
-          </td>
-          <td>
-            {% if s.certificate_url %}
+            {% if c.pdf_path %}
               <span class="badge badge-approved">PDF</span>
             {% else %}
               <span class="text-muted">---</span>
             {% endif %}
           </td>
           <td>
+            {% if c.released %}
+              <span class="badge badge-approved">Sim</span>
+            {% else %}
+              <span class="badge badge-pending">Nao</span>
+            {% endif %}
+          </td>
+          <td>
             <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
-              {% if not s.verification_code and s._eligible %}
-              <form method="POST" action="{{ url_for('admin.certificates_generate_codes') }}" style="display:inline">
-                <input type="hidden" name="student_id" value="{{ s.id }}">
-                <button class="btn btn-navy btn-sm">Gerar</button>
-              </form>
-              {% endif %}
-
-              {% if s.verification_code %}
-              <form class="upload-form" method="POST" action="{{ url_for('admin.certificate_upload', id=s.id) }}" enctype="multipart/form-data">
+              <form class="upload-form" method="POST" action="{{ url_for('admin.certificate_upload', id=c.id) }}" enctype="multipart/form-data">
                 <input type="file" name="cert_file" accept=".pdf" required>
-                <button class="btn btn-gold btn-sm">Upload</button>
+                <button class="btn btn-gold btn-sm">{{ 'Trocar' if c.pdf_path else 'Upload' }}</button>
               </form>
-              {% endif %}
 
-              {% if s.certificate_url %}
-              <form method="POST" action="{{ url_for('admin.certificate_remove_pdf', id=s.id) }}" style="display:inline"
-                    onsubmit="return confirm('Remover PDF de {{ s.name }}?')">
+              {% if c.pdf_path %}
+              <form method="POST" action="{{ url_for('admin.certificate_remove_pdf', id=c.id) }}" style="display:inline"
+                    onsubmit="return confirm('Remover PDF de {{ s.name if s else '?' }} ({{ c.type_label }})?')">
                 <button class="btn btn-ghost btn-sm">Remover PDF</button>
               </form>
-              <a href="{{ url_for('vote.certificate_view', code=s.verification_code) }}"
+              <a href="{{ url_for('vote.certificate_view', code=c.verification_code) }}"
                  target="_blank" class="btn btn-ghost btn-sm">Ver</a>
               {% endif %}
+
+              <form method="POST" action="{{ url_for('admin.certificate_delete', id=c.id) }}" style="display:inline"
+                    onsubmit="return confirm('Excluir definitivamente o certificado {{ c.type_label }} de {{ s.name if s else '?' }}?')">
+                <button class="btn btn-danger btn-sm">✖</button>
+              </form>
             </div>
           </td>
         </tr>
         {% else %}
         <tr>
-          <td colspan="7" style="text-align:center;color:var(--muted);padding:32px">
-            Nenhum aluno cadastrado ainda.
+          <td colspan="8" style="text-align:center;color:var(--muted);padding:32px">
+            Nenhum certificado para este filtro.
+            {% if stats.missing_participation %}
+            <br><br>Clique em "Gerar Codigos (Participacao)" para criar os certificados de participacao de {{ current_year }}.
+            {% endif %}
           </td>
         </tr>
         {% endfor %}
@@ -144,6 +190,63 @@
     </table>
   </div>
 </div>
+
+<!-- Modal Premiar -->
+<div id="awardModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal">
+    <h3 style="font-family:'Playfair Display',serif;font-size:20px;color:var(--navy);margin-bottom:18px">🏆 Premiar</h3>
+    <form method="POST" action="{{ url_for('admin.certificate_award') }}">
+      <input type="hidden" name="year" value="{{ current_year }}">
+      <div class="form-group">
+        <label>Tipo de Premiacao</label>
+        <select name="type" id="awardType" required onchange="toggleAwardTarget(this.value)">
+          {% for key, label in cert_types.items() if key != 'participation' %}
+          <option value="{{ key }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" id="awardStudentRow">
+        <label>Aluno</label>
+        <select name="student_id">
+          <option value="">Selecione...</option>
+          {% for st in students %}
+          <option value="{{ st.id }}">
+            {{ st.name }}{% if st.delegation and st.delegation.country %} — {{ st.delegation.country_flag }} {{ st.delegation.country }}{% endif %}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" id="awardDelegRow" style="display:none">
+        <label>Delegacao (premia todos os alunos da delegacao)</label>
+        <select name="delegation_id">
+          <option value="">Selecione...</option>
+          {% for d in delegations %}
+          <option value="{{ d.id }}">{{ d.country_flag }} {{ d.country }} — {{ d.students | map(attribute='name') | join(', ') }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Observacao (opcional)</label>
+        <input type="text" name="notes" placeholder="Ex: Votacao do plenario, 2o dia...">
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin:8px 0 0">
+        O codigo e gerado automaticamente. Depois de criar, faca o upload do PDF para liberar o certificado.
+      </p>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('awardModal').style.display='none'">Cancelar</button>
+        <button type="submit" class="btn btn-gold">Criar Certificado</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function toggleAwardTarget(type) {
+  const isDeleg = type === 'best_delegation';
+  document.getElementById('awardDelegRow').style.display = isDeleg ? '' : 'none';
+  document.getElementById('awardStudentRow').style.display = isDeleg ? 'none' : '';
+}
+</script>
 
 <div class="card" style="margin-top:24px">
   <div class="card-header">
@@ -167,7 +270,7 @@
             {{ log.created_at.strftime('%d/%m %H:%M') }}
           </td>
           <td>
-            <span class="badge {{ 'badge-approved' if 'release' in log.action or 'sign' in log.action else 'badge-pending' }}">
+            <span class="badge {{ 'badge-approved' if 'release' in log.action or 'sign' in log.action or 'upload' in log.action or 'award' in log.action else 'badge-pending' }}">
               {{ log.action.replace('_', ' ')|title }}
             </span>
           </td>

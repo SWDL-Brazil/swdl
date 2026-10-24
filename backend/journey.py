@@ -8,7 +8,7 @@ def build_journey(delegation, event_started, event_ended, cert_released):
     delegation      — objeto Delegation (ou None); usa .country/.dpo_uploaded
     event_started   — fase 'during' ou 'post'
     event_ended     — fase 'post'
-    cert_released   — student.certificate_released
+    cert_released   True se o aluno tem algum Certificate.released
 
     Cada passo: {key, label, state, status, icon, endpoint, line_done}
       state    — 'done' | 'current' | 'warn' | 'locked'

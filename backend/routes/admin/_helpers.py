@@ -221,20 +221,6 @@ def _cleanup_orphan_delegation(deleg_id):
     db.session.delete(d)
 
 
-def _sign_certificate(student):
-    """Gera uma assinatura HMAC-SHA256 para o certificado.
-
-    Nao faz commit — quem chama decide (commit por lote evita N round-trips
-    de ~180ms cada em producao).
-    """
-    if not student.verification_code:
-        return None
-    secret = current_app.config.get('SECRET_KEY', 'swdl-secret')
-    student.digital_signature = student.compute_signature(secret)
-    student.signed_at = datetime.now(timezone.utc)
-    return student.digital_signature
-
-
 def _log_audit(action, target_type, target_id, target_name='', details=''):
     log = AuditLog(
         action=action,

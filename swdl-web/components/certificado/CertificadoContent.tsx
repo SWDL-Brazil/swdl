@@ -8,6 +8,7 @@ import { Container } from '@/components/ui/Container';
 import { api, BACKEND_ORIGIN, type CertificateLookup } from '@/lib/api';
 import {
   ArrowLeft,
+  ExternalLink,
   FileDown,
   Loader2,
   Search,
@@ -176,6 +177,17 @@ export function CertificadoContent() {
                   </div>
 
                   <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {(data.type_label || data.edition_year) && (
+                      <div>
+                        <dt className="font-mono text-[0.66rem] tracking-widest uppercase text-navy/45">
+                          {t('type_label')}
+                        </dt>
+                        <dd className="text-sm text-navy font-medium">
+                          {data.type_label || data.type}
+                          {data.edition_year ? ` — ${t('edition_label')} ${data.edition_year}` : ''}
+                        </dd>
+                      </div>
+                    )}
                     {(data.country || data.country_flag) && (
                       <div>
                         <dt className="font-mono text-[0.66rem] tracking-widest uppercase text-navy/45">
@@ -245,8 +257,8 @@ export function CertificadoContent() {
                     rel="noopener noreferrer"
                     className="mt-5 inline-flex items-center gap-2 btn-primary"
                   >
-                    <FileDown size={16} />
-                    {t('view_pdf')}
+                    {data.has_pdf ? <FileDown size={16} /> : <ExternalLink size={16} />}
+                    {data.has_pdf ? t('view_pdf') : t('view_online')}
                   </a>
                 )}
               </div>

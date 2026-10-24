@@ -3,7 +3,7 @@
 #  Sistema de votação em tempo real via WebSocket
 # =============================================================
 from flask import (Blueprint, render_template, redirect, url_for,
-                   flash, request, jsonify, send_file)
+                   flash, request, jsonify, send_file, current_app)
 from flask_login import login_required, current_user
 from flask_socketio import emit, join_room
 from extensions import db, socketio
@@ -13,7 +13,6 @@ from models.theme import Theme
 from models.speech_log import SpeechLog
 from datetime import datetime, timezone
 import os
-from config import Config
 
 vote_bp = Blueprint('vote', __name__)
 
@@ -305,22 +304,22 @@ def on_debate_timer_reset(data):
 @vote_bp.route('/certificado/<code>')
 def certificate_view(code):
     """Pagina publica de visualizacao de certificado."""
-    from models.student import Student
-    student = Student.query.filter(
-        (Student.verification_code == code) | (Student.certificate_hash == code)
-    ).first()
-    if not student or not student.certificate_released:
+    from models.certificate import Certificate
+    from cert_storage import cert_path
+    cert = Certificate.query.filter_by(verification_code=code).first()
+    if not cert or not cert.released:
         return render_template('public/certificate_invalid.html'), 404
-    if student.certificate_url:
-        from urllib.parse import urlparse
-        parsed = urlparse(student.certificate_url)
-        filename = parsed.path.rstrip('/').split('/')[-1]
-        if filename:
-            cert_dir = os.path.join(Config.UPLOAD_FOLDER, 'certificates')
-            filepath = os.path.join(cert_dir, filename)
-            if os.path.isfile(filepath):
-                return send_file(filepath, mimetype='application/pdf')
-    return render_template('public/certificate_view.html', student=student)
+    if cert.pdf_path:
+        filepath = cert_path(cert.pdf_path)
+        if filepath and os.path.isfile(filepath):
+            return send_file(filepath, mimetype='application/pdf')
+    # Sem PDF (ou PDF sumido): pagina HTML — e so afirma "valido" se o HMAC
+    # conferir de verdade (antes qualquer assinatura preenchida passava).
+    secret = current_app.config.get('SECRET_KEY', 'swdl-secret')
+    signature_valid = bool(cert.digital_signature) and cert.verify_signature(secret)
+    return render_template('public/certificate_view.html', cert=cert,
+                           student=cert.student,
+                           signature_valid=signature_valid)
 
 
 # ── API: checar votações abertas e status de voto ─────────────
