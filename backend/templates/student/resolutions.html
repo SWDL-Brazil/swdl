@@ -190,7 +190,7 @@
         amendment_type: document.getElementById('am-type').value
       })
     }).then(r => r.json()).then(d => {
-      if (d.status === 'amendment') location.reload();
+      if (d.status === 'success') location.reload();
       else showToast('Erro ao enviar emenda', d.message || 'Tente novamente.', {variant:'error'});
     }).catch(() => showToast('Erro de conexão', 'Tente novamente.', {variant:'error'}));
   }

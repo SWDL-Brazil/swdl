@@ -12,7 +12,7 @@ class SpeakerEntry(db.Model):
     id             = db.Column(db.Integer, primary_key=True)
     delegation_id  = db.Column(db.Integer, db.ForeignKey('delegations.id'),
                                nullable=False, index=True)
-    committee      = db.Column(db.String(30), index=True)
+    committee      = db.Column(db.String(300), index=True)
     topic          = db.Column(db.String(300))
     speaking_time  = db.Column(db.Integer, default=60)
     position       = db.Column(db.Integer, default=0)

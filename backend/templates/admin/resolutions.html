@@ -24,19 +24,19 @@
 
 <div class="stats-grid">
   <div class="stat-tile">
-    <span class="stat-tile-num" id="count-draft">0</span>
+    <span class="stat-tile-num" id="count-draft">{{ stats.draft }}</span>
     <span class="stat-tile-label">Rascunhos</span>
   </div>
   <div class="stat-tile">
-    <span class="stat-tile-num" id="count-submitted" style="color:var(--gold);">0</span>
+    <span class="stat-tile-num" id="count-submitted" style="color:var(--gold);">{{ stats.submitted }}</span>
     <span class="stat-tile-label">Submetidas</span>
   </div>
   <div class="stat-tile">
-    <span class="stat-tile-num" id="count-voting" style="color:var(--green);">0</span>
+    <span class="stat-tile-num" id="count-voting" style="color:var(--green);">{{ stats.voting }}</span>
     <span class="stat-tile-label">Em Votação</span>
   </div>
   <div class="stat-tile">
-    <span class="stat-tile-num" id="count-passed" style="color:var(--navy);">0</span>
+    <span class="stat-tile-num" id="count-passed" style="color:var(--navy);">{{ stats.passed }}</span>
     <span class="stat-tile-label">Aprovadas</span>
   </div>
 </div>
@@ -113,7 +113,7 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='vendor/socket.io.min.js') }}"></script>
 <script>
   /* Room 'admin': outro operador alterou as resolucoes -> recarrega. */
   let lastSelfAction = 0;

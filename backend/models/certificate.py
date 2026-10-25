@@ -62,7 +62,7 @@ class Certificate(db.Model):
     global_id      = db.Column(db.String(36), nullable=True)
     country        = db.Column(db.String(80), nullable=True)
     country_flag   = db.Column(db.String(10), nullable=True)
-    committee      = db.Column(db.String(30), nullable=True)
+    committee      = db.Column(db.String(300), nullable=True)
     committee_name = db.Column(db.String(120), nullable=True)
 
     student = db.relationship(

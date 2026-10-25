@@ -1,42 +1,56 @@
 // ── SWDL — Votação do Aluno ────────────────────────────────
+// IDs são por sessão (voteOptions-<id>, submitVote-<id>, ...) porque a
+// página renderiza 1 card por votação aberta — ids únicos globais quebram
+// quando há mais de uma votação em pauta.
 (function() {
   'use strict';
-  let selectedChoice = null;
+  const selections = {};
   const ico = (n, cls) => (window.stIcon ? window.stIcon(n, cls) : '');
+  const $ = (id) => document.getElementById(id);
 
-  window.selectVote = function(choice, el) {
-    selectedChoice = choice;
-    const colors = {favor:'var(--green)', contra:'var(--red)', abstencao:'var(--slate)'};
-    document.querySelectorAll('.v-opt').forEach(function(o) {
-      o.classList.remove('v-opt--selected');
-      o.querySelector('.v-check').innerHTML = '';
-    });
+  window.selectVote = function(sessionId, choice, el) {
+    selections[sessionId] = choice;
+    const group = $('voteOptions-' + sessionId);
+    if (group) {
+      group.querySelectorAll('.v-opt').forEach(function(o) {
+        o.classList.remove('v-opt--selected');
+        const chk = o.querySelector('.v-check');
+        if (chk) chk.innerHTML = '';
+      });
+    }
     el.classList.add('v-opt--selected');
-    el.querySelector('.v-check').innerHTML = ico('check');
-    document.getElementById('submitVote').disabled = false;
+    const check = el.querySelector('.v-check');
+    if (check) check.innerHTML = ico('check');
+    const btn = $('submitVote-' + sessionId);
+    if (btn) btn.disabled = false;
   };
 
   window.submitVote = async function(sessionId) {
-    if (!selectedChoice) return;
-    const btn = document.getElementById('submitVote');
+    const choice = selections[sessionId];
+    if (!choice) return;
+    const btn = $('submitVote-' + sessionId);
+    if (!btn) return;
     btn.disabled = true;
     btn.textContent = 'Registrando...';
     try {
       const res = await fetch('/api/votar', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({session_id: sessionId, choice: selectedChoice})
+        body: JSON.stringify({session_id: sessionId, choice: choice})
       });
       const data = await res.json();
       if (data.ok) {
         const icons = {favor:'check-circle', contra:'x-circle', abstencao:'minus-circle'};
         const labels = {favor:'A Favor registrado!', contra:'Contra registrado!', abstencao:'Abstenção registrada!'};
-        document.getElementById('voteOptions').style.display = 'none';
+        const options = $('voteOptions-' + sessionId);
+        if (options) options.style.display = 'none';
         btn.style.display = 'none';
-        const result = document.getElementById('voteResult');
-        result.style.display = 'block';
-        document.getElementById('voteResultIcon').innerHTML = ico(icons[selectedChoice], 'st-ico-xl');
-        document.getElementById('voteResultTitle').textContent = labels[selectedChoice];
+        const result = $('voteResult-' + sessionId);
+        if (result) result.style.display = 'block';
+        const rIcon = $('voteResultIcon-' + sessionId);
+        if (rIcon) rIcon.innerHTML = ico(icons[choice], 'st-ico-xl');
+        const rTitle = $('voteResultTitle-' + sessionId);
+        if (rTitle) rTitle.textContent = labels[choice];
       } else {
         btn.disabled = false;
         btn.textContent = 'Confirmar Voto';

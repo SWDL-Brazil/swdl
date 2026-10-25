@@ -2,34 +2,27 @@
 {% block title %}Votações{% endblock %}
 
 {% block extra_scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='vendor/socket.io.min.js') }}"></script>
 <script>
   const socket = io();
   socket.emit('join_vote_list', {});
 
-  // Recebe sincronização completa da tabela
-  socket.on('sessions_sync', (sessions) => {
-    updateTable(sessions);
+  // Token CSRF para os forms montados em JS (rowHtml) — o injetor do
+  // base.html só cobre forms que já existem no parse da página
+  const CSRF = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+
+  // Nova votação aberta (room vote_list) → linha nova aparece sem reload manual
+  socket.on('vote_opened', (data) => {
+    updateRow(data);
   });
 
-  // Quando uma votação é aberta ou fechada, atualiza a tabela
-  socket.on('vote_update', (data) => {
+  // Voto de aluno entra (api_submit_vote emite vote_list_update p/ vote_list)
+  socket.on('vote_list_update', (data) => {
     updateRow(data);
   });
   socket.on('vote_closed', (data) => {
     updateRow(data);
   });
-
-  function updateTable(sessions) {
-    const tbody = document.querySelector('#voteTable tbody');
-    if (!tbody) return;
-    tbody.innerHTML = sessions.length ? '' : `
-      <tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px">
-        Nenhuma votação criada ainda.
-        <a href="/admin/votacoes/nova">Criar primeira votação →</a>
-      </td></tr>`;
-    sessions.forEach(s => tbody.insertAdjacentHTML('beforeend', rowHtml(s)));
-  }
 
   function updateRow(data) {
     const row = document.getElementById('row-' + data.id);
@@ -57,6 +50,7 @@
       : '<span class="badge badge-done">🔒 Encerrada</span>';
     const closeBtn = s.status === 'open'
       ? `<form method="POST" action="/admin/votacoes/${s.id}/fechar">
+           <input type="hidden" name="csrf_token" value="${CSRF}">
            <button class="btn btn-navy btn-sm btn-close" type="submit">🔒 Fechar</button>
          </form>`
       : '';
@@ -64,7 +58,7 @@
       <tr id="row-${s.id}">
         <td class="text-muted">${s.id}</td>
         <td style="font-weight:600;max-width:240px">${s.title}</td>
-        <td><span class="badge badge-next">${s.committee.toUpperCase()}</span></td>
+        <td><span class="badge badge-next">${String(s.committee || '').toUpperCase()}</span></td>
         <td class="td-status">${statusBadge}</td>
         <td class="td-favor" style="color:var(--green);font-weight:700">${c.favor}</td>
         <td class="td-contra" style="color:var(--red);font-weight:700">${c.contra}</td>
@@ -76,6 +70,7 @@
             ${closeBtn}
             <form method="POST" action="/admin/votacoes/${s.id}/deletar"
                   onsubmit="return confirm('Deletar esta votação?')">
+              <input type="hidden" name="csrf_token" value="${CSRF}">
               <button class="btn btn-danger btn-sm" type="submit">Del</button>
             </form>
           </div>

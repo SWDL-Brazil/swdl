@@ -186,7 +186,7 @@ with app.app_context():
             db.session.flush()
 
         # Create delegation
-        short_committee = THEME_NAME[:30]
+        committee_value = THEME_NAME
         deleg = Delegation(
             inscription_id=ins.id,
             user_id=primary_user.id if primary_user else None,
@@ -195,7 +195,7 @@ with app.app_context():
             country=country,
             country_flag='',
             flag_url='',
-            committee=short_committee,
+            committee=committee_value,
         )
         db.session.add(deleg)
         db.session.flush()
@@ -216,18 +216,18 @@ with app.app_context():
                     ph = ParticipationHistory(
                         student_id=student.id,
                         year=datetime.now(timezone.utc).year,
-                        committee=THEME_NAME[:30],
+                        committee=THEME_NAME,
                         committee_name=THEME_NAME,
                         country=country,
                         role='delegate',
-                        delegation_name=f"{country} @ {THEME_NAME[:30]}",
+                        delegation_name=f"{country} @ {THEME_NAME}",
                     )
                     db.session.add(ph)
                 else:
-                    ph.committee = THEME_NAME[:30]
+                    ph.committee = THEME_NAME
                     ph.committee_name = THEME_NAME
                     ph.country = country
-                    ph.delegation_name = f"{country} @ {THEME_NAME[:30]}"
+                    ph.delegation_name = f"{country} @ {THEME_NAME}"
             else:
                 print(f'  [ERRO] Aluno {member_name} ({member_email}) nao encontrado')
 

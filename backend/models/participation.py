@@ -8,7 +8,7 @@ class ParticipationHistory(db.Model):
     id                = db.Column(db.Integer, primary_key=True)
     student_id        = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
     year              = db.Column(db.Integer, nullable=False)
-    committee         = db.Column(db.String(30))
+    committee         = db.Column(db.String(300))
     committee_name    = db.Column(db.String(120))
     country           = db.Column(db.String(80))
     country_flag      = db.Column(db.String(10))

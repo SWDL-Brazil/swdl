@@ -267,7 +267,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='vendor/socket.io.min.js') }}"></script>
 <script>
   function copyGlobalId() {
     var id = {{ (student.global_id if student and student.global_id else '')|tojson }};
@@ -290,15 +290,29 @@
     }
   }
 
+  {% set my_committees = [] %}
+  {% if delegation %}
+    {% if delegation.committee %}{% set _ = my_committees.append(delegation.committee) %}{% endif %}
+    {% if delegation.theme and delegation.theme.name %}{% set _ = my_committees.append(delegation.theme.name) %}{% endif %}
+  {% endif %}
+  const MY_COMMITTEES = {{ my_committees|tojson }};
+  // Toast só para votações do próprio comitê ('geral' vale para todos)
+  function voteInScope(d) {
+    const c = d && d.committee;
+    return !c || c === 'geral' || MY_COMMITTEES.indexOf(c) !== -1;
+  }
+
   const sio = io();
   sio.emit('join_students', {});
   sio.on('invoke_session', (data) => { if (data.url) window.location.href = data.url; });
   sio.on('vote_opened', (data) => {
+    if (!voteInScope(data)) return;
     showToast(data.title, 'Nova votação aberta!', {
       icon: 'check-square', href: '{{ url_for("student.voting") }}', timeout: 6000
     });
   });
   sio.on('vote_closed', (data) => {
+    if (!voteInScope(data)) return;
     showToast(data.title || 'Votação', 'Votação encerrada — veja o resultado.', {
       icon: 'check-square', href: '{{ url_for("student.voting") }}', timeout: 6000
     });

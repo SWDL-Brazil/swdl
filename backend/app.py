@@ -485,6 +485,50 @@ def _run_migrations(app):
         except Exception as e:
             print(f'[MIGRATION] Erro no snapshot de certificados: {e}')
 
+        # Backfill: comites truncados a 30 chars pelo VARCHAR antigo — restaura
+        # o nome completo do tema quando o prefixo casa de forma inequívoca.
+        # Certificate fica de fora: committee entra no HMAC da assinatura.
+        try:
+            from models.theme import Theme as _Theme
+            from models.delegation import Delegation as _Del
+            from models.motion import Motion as _Mot
+            from models.resolution import Resolution as _Res
+            from models.speaker import SpeakerEntry as _Spk
+            from models.speech_log import SpeechLog as _Log
+            from models.participation import ParticipationHistory as _Part
+            from models.vote import VoteSession as _VS
+
+            trunc_to_full, ambiguous = {}, set()
+            for th in _Theme.query.all():
+                name = th.name or ''
+                if len(name) <= 30:
+                    continue
+                t = name[:30]
+                if t in trunc_to_full and trunc_to_full[t] != name:
+                    ambiguous.add(t)
+                trunc_to_full[t] = name
+            targets = {t: f for t, f in trunc_to_full.items() if t not in ambiguous}
+
+            restored = 0
+            for model in (_Del, _Mot, _Res, _Spk, _Log, _Part, _VS):
+                cols = model.__table__.columns
+                col = cols['committee'] if 'committee' in cols else None
+                if col is None:
+                    continue
+                for trunc, full in targets.items():
+                    rows = model.query.filter(col == trunc).all()
+                    if not rows:
+                        continue
+                    for row in rows:
+                        row.committee = full
+                    restored += len(rows)
+            if restored:
+                db.session.commit()
+                print(f'[MIGRATION] {restored} comite(s) truncado(s) restaurado(s) ao nome do tema.')
+        except Exception as e:
+            db.session.rollback()
+            print(f'[MIGRATION] Erro ao restaurar comites truncados: {e}')
+
         # ── ÍNDICES DE PERFORMANCE ────────────────────────────
         indexes_to_create = [
             ('ix_votesession_status',      'vote_sessions',    'status'),

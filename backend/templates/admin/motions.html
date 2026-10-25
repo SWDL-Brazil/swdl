@@ -184,7 +184,7 @@
 </div>
 {% endif %}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='vendor/socket.io.min.js') }}"></script>
 <script>
   /* Room 'admin': outro operador mexeu na fila -> recarrega a lista.
      lastSelfAction evita o duplo reload quando a propria pagina agiu. */

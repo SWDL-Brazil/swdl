@@ -197,7 +197,7 @@
 </div>
 {% endif %}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='vendor/socket.io.min.js') }}"></script>
 <script>
   /* Room 'admin': outro operador mexeu na fila -> recarrega. */
   let lastSelfAction = 0;
@@ -225,92 +225,95 @@
     document.getElementById('count-active').textContent = '{{ "1" if active else "0" }}';
   }
 
+  // POST JSON com leitura segura: resposta 4xx/5xx em HTML não pode virar
+  // rejeição muda (antes "Exibir no Telão" falhava sem nenhum aviso)
+  function postJson(url, body) {
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined
+    })
+    .then(r => r.text().then(txt => {
+      let data = null;
+      try { data = JSON.parse(txt); } catch (e) { /* resposta não-JSON */ }
+      if (!data) throw new Error('HTTP ' + r.status);
+      return data;
+    }));
+  }
+
   function addToQueue() {
     const delegationId = document.getElementById('add-delegation').value;
     const time = document.getElementById('add-time').value;
     const topic = document.getElementById('add-topic').value;
     if (!delegationId) { alert('Selecione uma delegação'); return; }
 
-    fetch("{{ url_for('speaker.speaker_queue_add') }}", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ delegation_id: delegationId, speaking_time: parseInt(time), topic: topic })
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.status === 'success') {
-        location.reload();
-      } else {
-        alert(data.message || 'Erro ao adicionar');
-      }
-    })
-    .catch(err => console.error(err));
+    postJson("{{ url_for('speaker.speaker_queue_add') }}",
+             { delegation_id: delegationId, speaking_time: parseInt(time), topic: topic })
+      .then(data => {
+        if (data.status === 'success') location.reload();
+        else alert(data.message || 'Erro ao adicionar');
+      })
+      .catch(err => alert('Falha ao adicionar orador: ' + err.message));
   }
 
   function startSpeaker(id) {
-    fetch("{{ url_for('speaker.speaker_queue_start', id=0) }}".replace('/0/', '/' + id + '/'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.status === 'success') location.reload();
-      else alert(data.message || 'Erro ao iniciar');
-    });
+    postJson("{{ url_for('speaker.speaker_queue_start', id=0) }}".replace('/0/', '/' + id + '/'))
+      .then(data => {
+        if (data.status === 'success') location.reload();
+        else alert(data.message || 'Erro ao iniciar');
+      })
+      .catch(err => alert('Falha ao iniciar o orador: ' + err.message));
   }
 
   function endCurrentSpeaker(id) {
-    fetch("{{ url_for('speaker.speaker_queue_end', id=0) }}".replace('/0/', '/' + id + '/'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    })
-    .then(r => r.json())
-    .then(data => { if (data.status === 'success') location.reload(); });
+    postJson("{{ url_for('speaker.speaker_queue_end', id=0) }}".replace('/0/', '/' + id + '/'))
+      .then(data => {
+        if (data.status === 'success') location.reload();
+        else alert(data.message || 'Erro ao encerrar');
+      })
+      .catch(err => alert('Falha ao encerrar a fala: ' + err.message));
   }
 
   function endAndStartNext(id) {
-    fetch("{{ url_for('speaker.speaker_queue_start_next', id=0) }}".replace('/0/', '/' + id + '/'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    })
-    .then(r => r.json())
-    .then(data => { if (data.status === 'success') location.reload(); });
+    postJson("{{ url_for('speaker.speaker_queue_start_next', id=0) }}".replace('/0/', '/' + id + '/'))
+      .then(data => {
+        if (data.status === 'success') location.reload();
+        else alert(data.message || 'Erro ao passar a vez');
+      })
+      .catch(err => alert('Falha ao passar a vez: ' + err.message));
   }
 
   function skipSpeaker(id) {
     if (!confirm('Pular este orador?')) return;
-    fetch("{{ url_for('speaker.speaker_queue_skip', id=0) }}".replace('/0/', '/' + id + '/'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    })
-    .then(r => r.json())
-    .then(data => { if (data.status === 'success') location.reload(); });
+    postJson("{{ url_for('speaker.speaker_queue_skip', id=0) }}".replace('/0/', '/' + id + '/'))
+      .then(data => {
+        if (data.status === 'success') location.reload();
+        else alert(data.message || 'Erro ao pular');
+      })
+      .catch(err => alert('Falha ao pular o orador: ' + err.message));
   }
 
   function clearQueue() {
     if (!confirm('Limpar toda a fila?')) return;
-    fetch("{{ url_for('speaker.speaker_queue_clear') }}", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ committee: '{{ committee_filter }}' })
-    })
-    .then(r => r.json())
-    .then(data => { if (data.status === 'success') location.reload(); });
+    postJson("{{ url_for('speaker.speaker_queue_clear') }}", { committee: '{{ committee_filter }}' })
+      .then(data => {
+        if (data.status === 'success') location.reload();
+        else alert(data.message || 'Erro ao limpar a fila');
+      })
+      .catch(err => alert('Falha ao limpar a fila: ' + err.message));
   }
 
   function controlScreen(action) {
     const committee = document.getElementById('committee-filter').value;
-    fetch("{{ url_for('speaker.speaker_queue_telao') }}", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: action, committee: committee })
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.status === 'success') {
-        alert(action === 'show' ? '📺 Fila de oradores enviada ao Telão!' : '🔕 Ocultado do Telão.');
-      }
-    });
+    postJson("{{ url_for('speaker.speaker_queue_telao') }}", { action: action, committee: committee })
+      .then(data => {
+        if (data.status === 'success') {
+          alert(action === 'show' ? '📺 Fila de oradores enviada ao Telão!' : '🔕 Ocultado do Telão.');
+        } else {
+          alert(data.message || 'Erro ao controlar o Telão.');
+        }
+      })
+      .catch(err => alert('Falha ao enviar ao Telão: ' + err.message));
   }
 
   document.addEventListener("DOMContentLoaded", updateCounters);

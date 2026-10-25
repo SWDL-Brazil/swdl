@@ -47,11 +47,22 @@ def vote_list():
 def vote_create():
 
     if request.method == 'POST':
+        # Validações defensivas: KeyError/ValueError/virada de VARCHAR em
+        # POST montado à mão viravam 500 aqui ("erro de servidor")
+        title = (request.form.get('title') or '').strip()
+        if not title:
+            flash('Informe o título da votação.', 'error')
+            return redirect(url_for('vote.vote_create'))
+        try:
+            duration = int(request.form.get('duration_sec', 120))
+        except (TypeError, ValueError):
+            duration = 120
+
         session = VoteSession(
-            title        = request.form['title'],
-            description  = request.form.get('description', ''),
-            committee    = request.form.get('committee', 'geral'),
-            duration_sec = int(request.form.get('duration_sec', 120)),
+            title        = title[:240],
+            description  = (request.form.get('description') or '').strip(),
+            committee    = ((request.form.get('committee') or 'geral').strip() or 'geral')[:300],
+            duration_sec = duration,
             status       = 'open',
             created_by   = current_user.id,
         )
@@ -127,33 +138,6 @@ def vote_results(id):
 
 
 # ══════════════════════════════════════════════════════════════
-#  DELEGADO — página dedicada de votação
-# ══════════════════════════════════════════════════════════════
-
-@vote_bp.route('/delegado/votar')
-@login_required
-def delegate_vote_page():
-    if current_user.role not in ('student', 'delegate'):
-        return redirect(url_for('auth.student_login'))
-
-    delegation    = get_current_delegation()
-    open_sessions = VoteSession.query.filter_by(status='open').all()
-
-    # Marca quais a delegação já votou (inclui parceiro)
-    voted_ids = set()
-    if delegation:
-        voted_ids = {
-            v.session_id for v in
-            Vote.query.filter_by(delegation_id=delegation.id).all()
-        }
-
-    return render_template('delegate/vote_page.html',
-                           delegation=delegation,
-                           open_sessions=open_sessions,
-                           voted_ids=voted_ids)
-
-
-# ══════════════════════════════════════════════════════════════
 #  API — submeter voto
 # ══════════════════════════════════════════════════════════════
 
@@ -177,6 +161,11 @@ def api_submit_vote():
     vote_session = VoteSession.query.get(session_id)
     if not vote_session or vote_session.status != 'open':
         return jsonify({'ok': False, 'error': 'Votação encerrada ou não encontrada'}), 400
+
+    # Escopo de comitê: 'geral' ou o comitê/tema da delegação — senão um
+    # delegado votaria em resolução de outro comitê
+    if not vote_session.is_visible_to(delegation):
+        return jsonify({'ok': False, 'error': 'Esta votação não é do seu comitê.'}), 403
 
     # Verifica se a delegação está presente (regra de integridade)
     if delegation.presence_status == 'ausente':
@@ -323,7 +312,8 @@ def certificate_view(code):
 @login_required
 def api_open_sessions():
     delegation    = get_current_delegation()
-    open_sessions = VoteSession.query.filter_by(status='open').all()
+    # Escopo de comitê: 'geral' + o comitê/tema da delegação
+    open_sessions = VoteSession.visible_to(delegation).all()
 
     voted_ids = set()
     if delegation:

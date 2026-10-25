@@ -13,7 +13,7 @@ class SpeechLog(db.Model):
     id             = db.Column(db.Integer, primary_key=True)
     delegation_id  = db.Column(db.Integer, db.ForeignKey('delegations.id'),
                                nullable=False, index=True)
-    committee      = db.Column(db.String(30), index=True)
+    committee      = db.Column(db.String(300), index=True)
     log_type       = db.Column(db.String(30), nullable=False, index=True)
     # speech | motion_proposed | motion_seconded | motion_activated |
     # vote_cast | amendment_proposed | amendment_decided | resolution_created | resolution_voted

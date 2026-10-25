@@ -59,7 +59,11 @@ def speaker_queue_panel():
         committee_filter if committee_filter != 'all' else None
     )
 
-    delegations = Delegation.query.filter_by(presence_status='votante')
+    # presente = votante para fins de participação (auto check-in grava
+    # 'presente') — só 'votante' deixava o dropdown de adicionar vazio
+    delegations = Delegation.query.filter(
+        Delegation.presence_status.in_(['presente', 'votante'])
+    )
     if committee_filter != 'all':
         delegations = delegations.filter_by(committee=committee_filter)
     delegations = delegations.order_by(Delegation.country).all()

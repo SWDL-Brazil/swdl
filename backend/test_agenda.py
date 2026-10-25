@@ -83,7 +83,7 @@ def _run_checks(app, client):
     r = client.post('/admin/agenda/novo', data={
         'title': 'Item criado pelo teste', 'day': '7',
         'event_date': date.today().isoformat(),
-        'start_time': '08:00', 'end_time': '23:59',
+        'start_time': '00:00', 'end_time': '23:59',
         'status': 'auto', 'committee': 'CS', 'period_id': '',
     }, follow_redirects=False)
     check('cria item válido (302)', r.status_code == 302, f'status {r.status_code}')
@@ -112,7 +112,7 @@ def _run_checks(app, client):
     r = client.post(f'/admin/agenda/{item.id}/editar', data={
         'title': 'Item criado pelo teste (editado)', 'day': '7',
         'event_date': date.today().isoformat(),
-        'start_time': '08:00', 'end_time': '23:59',
+        'start_time': '00:00', 'end_time': '23:59',
         'status': 'auto', 'committee': 'DHR', 'period_id': '',
     }, follow_redirects=False)
     _db.session.refresh(item)

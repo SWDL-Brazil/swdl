@@ -9,7 +9,7 @@ from models.news import News
 from models.agenda import AgendaItem
 from models.document import Document
 from models.vote import VoteSession, Vote
-from routes.agenda_utils import get_agenda_status, get_current_next, get_resolved_phase
+from routes.agenda_utils import get_current_next, get_resolved_phase
 from journey import build_journey
 from datetime import datetime, timezone
 import os
@@ -213,7 +213,9 @@ def voting():
 
     delegation = get_delegation(student_profile)
 
-    open_sessions = VoteSession.query.filter_by(status='open').all()
+    # Escopo de comitê: 'geral' + o comitê/tema da delegação (não vaza
+    # votações de outros comitês para esta delegação)
+    open_sessions = VoteSession.visible_to(delegation).all()
 
     voted_ids = set()
     if delegation:
@@ -362,7 +364,9 @@ def dpo_upload():
         flash('Você precisa estar vinculado a uma delegação para enviar DPO.', 'error')
         return redirect(url_for('student.profile'))
 
-    phase, _, _ = get_agenda_status()
+    # Fase resolvida (agenda + override manual) — igual a todo o painel;
+    # get_agenda_status() puro ignorava o switcher do admin.
+    phase = event_flags()[0]
     if phase != 'during':
         flash('O envio de DPO só é permitido durante o evento.', 'error')
         return redirect(url_for('student.profile'))

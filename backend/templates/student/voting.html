@@ -73,8 +73,8 @@
           <div class="text-muted">Você precisa estar presente para votar.</div>
         </div>
       {% elif delegation %}
-        <div class="v-opt-group" id="voteOptions">
-          <div class="v-opt" data-choice="favor" onclick="selectVote('favor',this)">
+        <div class="v-opt-group" id="voteOptions-{{ session.id }}">
+          <div class="v-opt" data-choice="favor" onclick="selectVote({{ session.id }},'favor',this)">
             <span class="v-opt-icon">{{ icon('check-circle') }}</span>
             <div>
               <div class="v-opt-label">A Favor</div>
@@ -82,7 +82,7 @@
             </div>
             <div class="v-check"></div>
           </div>
-          <div class="v-opt" data-choice="contra" onclick="selectVote('contra',this)">
+          <div class="v-opt" data-choice="contra" onclick="selectVote({{ session.id }},'contra',this)">
             <span class="v-opt-icon">{{ icon('x-circle') }}</span>
             <div>
               <div class="v-opt-label">Contra</div>
@@ -90,7 +90,7 @@
             </div>
             <div class="v-check"></div>
           </div>
-          <div class="v-opt" data-choice="abstencao" onclick="selectVote('abstencao',this)">
+          <div class="v-opt" data-choice="abstencao" onclick="selectVote({{ session.id }},'abstencao',this)">
             <span class="v-opt-icon">{{ icon('minus-circle') }}</span>
             <div>
               <div class="v-opt-label">Abstenção</div>
@@ -102,13 +102,13 @@
         <div class="text-muted" style="margin-bottom:14px;text-align:center;font-size:12.5px">
           {{ icon('alert-triangle') }} Strict Single Vote: apenas <strong>um voto por delegação</strong>, independentemente do número de alunos.
         </div>
-        <button id="submitVote" disabled onclick="submitVote({{ session.id }})"
+        <button id="submitVote-{{ session.id }}" disabled onclick="submitVote({{ session.id }})"
                 class="btn btn-gold btn-block">
           Confirmar Voto
         </button>
-        <div id="voteResult" style="display:none;text-align:center;padding:20px 0">
-          <div id="voteResultIcon" style="font-size:44px;margin-bottom:10px"></div>
-          <div id="voteResultTitle" class="cert-title"></div>
+        <div id="voteResult-{{ session.id }}" style="display:none;text-align:center;padding:20px 0">
+          <div id="voteResultIcon-{{ session.id }}" style="font-size:44px;margin-bottom:10px"></div>
+          <div id="voteResultTitle-{{ session.id }}" class="cert-title"></div>
         </div>
       {% else %}
         <div class="empty-state">
@@ -133,11 +133,22 @@
 
 {% block extra_scripts %}
 <script src="{{ url_for('static', filename='js/student-voting.js') }}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='vendor/socket.io.min.js') }}"></script>
 <script>
+  {% set my_committees = [] %}
+  {% if delegation %}
+    {% if delegation.committee %}{% set _ = my_committees.append(delegation.committee) %}{% endif %}
+    {% if delegation.theme and delegation.theme.name %}{% set _ = my_committees.append(delegation.theme.name) %}{% endif %}
+  {% endif %}
+  const MY_COMMITTEES = {{ my_committees|tojson }};
+  // Reload só quando a votação é do próprio comitê ('geral' vale para todos)
+  function voteInScope(d) {
+    const c = d && d.committee;
+    return !c || c === 'geral' || MY_COMMITTEES.indexOf(c) !== -1;
+  }
   const sio = io();
   sio.emit('join_students', {});
-  sio.on('vote_opened', (data) => { window.location.reload(); });
-  sio.on('vote_closed', (data) => { window.location.reload(); });
+  sio.on('vote_opened', (data) => { if (voteInScope(data)) window.location.reload(); });
+  sio.on('vote_closed', (data) => { if (voteInScope(data)) window.location.reload(); });
 </script>
 {% endblock %}

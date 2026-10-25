@@ -11,7 +11,7 @@ class Resolution(db.Model):
 
     id              = db.Column(db.Integer, primary_key=True)
     title           = db.Column(db.String(200), nullable=False)
-    committee       = db.Column(db.String(30), nullable=False, index=True)
+    committee       = db.Column(db.String(300), nullable=False, index=True)
     preambulatory   = db.Column(db.Text, default='')
     operative       = db.Column(db.Text, default='')
     proposer_id     = db.Column(db.Integer, db.ForeignKey('delegations.id'),

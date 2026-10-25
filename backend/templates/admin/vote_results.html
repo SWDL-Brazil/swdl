@@ -198,7 +198,7 @@
      data-status="{{ session.status }}"
      style="display:none"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='vendor/socket.io.min.js') }}"></script>
 <script>
   const cfg       = document.getElementById('voteConfig').dataset;
   const sessionId = parseInt(cfg.sessionId);

@@ -23,7 +23,7 @@ class Motion(db.Model):
     id              = db.Column(db.Integer, primary_key=True)
     proposer_id     = db.Column(db.Integer, db.ForeignKey('delegations.id'),
                                 nullable=False, index=True)
-    committee       = db.Column(db.String(30), nullable=False, index=True)
+    committee       = db.Column(db.String(300), nullable=False, index=True)
     motion_type     = db.Column(db.String(30), nullable=False, default='moderated_caucus')
     topic           = db.Column(db.String(300), nullable=False)
     total_time      = db.Column(db.Integer, default=900)

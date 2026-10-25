@@ -106,7 +106,11 @@ def motion_create():
     ).distinct().all()
     available_committees = sorted([c[0] for c in committees_query])
 
-    delegations = Delegation.query.filter_by(presence_status='votante')
+    # presente = votante para fins de participação: o auto check-in do aluno
+    # grava 'presente', então filtrar só 'votante' deixava o dropdown vazio
+    delegations = Delegation.query.filter(
+        Delegation.presence_status.in_(['presente', 'votante'])
+    )
     if committee_filter != 'all':
         delegations = delegations.filter_by(committee=committee_filter)
     delegations = delegations.order_by(Delegation.country).all()

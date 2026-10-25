@@ -15,7 +15,7 @@ class Delegation(db.Model):
     country         = db.Column(db.String(80))
     country_flag    = db.Column(db.String(10))
     flag_url        = db.Column(db.String(300))
-    committee       = db.Column(db.String(30), index=True)
+    committee       = db.Column(db.String(300), index=True)
     pair_name       = db.Column(db.String(120))
     members         = db.Column(db.Text)
 

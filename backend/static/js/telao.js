@@ -22,6 +22,15 @@
     'speechScreen','speakerQueueScreen','motionScreen',
     'resolutionScreen'
   ];
+  // Tela visivel agora (show() e o unico ponto que troca) + telas de lista
+  // que precisam de repintura via polling quando o WebSocket nao entrega
+  let currentScreen = null;
+  let lastListKey = null;
+  const LIST_SCREENS = {
+    chamada: 'chamadaScreen',
+    speaker_queue: 'speakerQueueScreen',
+    motion: 'motionScreen'
+  };
 
   /* ---- Clock ---- */
   setInterval(() => {
@@ -33,6 +42,7 @@
   let resultTimeout = null;
 
   function show(id) {
+    currentScreen = id;
     SCREENS.forEach((s) => {
       const el = $id(s);
       if (el) el.style.display = (s === id) ? 'flex' : 'none';
@@ -809,6 +819,9 @@
     socket.on('resolution_completed', (data) => { showResolutionCompleted(data); });
     socket.on('resolution_hide', () => { show('idleScreen'); });
   } catch (e) { socket = null; }
+  // Ponto vermelho no canto até o WebSocket conectar (fica verde no 'connect'):
+  // sem isso o projetor ficava "mudo" sem nenhum indício de WS não conectado
+  updateConnectionDot(false);
 
   /* ---- Restauracao de tela (apos F5/reboot do projetor) ---- */
   let lastDisplayTs = null;
@@ -836,10 +849,21 @@
       clearTimeout(timeoutId);
       const data = await res.json();
       /* primeiro: restaura a tela pedida pelo admin (o voto, se aberto,
-         ganha na sequencia — a ordem abaixo mantém voto acima de tudo) */
+         ganha na sequencia — a ordem abaixo mantem voto acima de tudo) */
+      const feat = data.display && data.display.feature;
       if (data.display && data.display.ts !== lastDisplayTs) {
         lastDisplayTs = data.display.ts;
+        lastListKey = feat + JSON.stringify(data.display.payload || {});
         applyDisplay(data.display);
+      } else if (feat && LIST_SCREENS[feat] === currentScreen) {
+        /* Fallback sem WebSocket: telas de lista são repintadas a cada poll
+           com payload reconstruído fresco do banco — mas só quando algo
+           mudou (evita flicker/repintar a cada tick) */
+        const key = feat + JSON.stringify(data.display.payload || {});
+        if (key !== lastListKey) {
+          lastListKey = key;
+          applyDisplay(data.display);
+        }
       }
       if (data.session) {
         if (!currentSession || currentSession.id !== data.session.id) {

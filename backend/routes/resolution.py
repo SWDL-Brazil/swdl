@@ -56,12 +56,19 @@ def resolutions_panel():
     available_committees = sorted([c[0] for c in committees_query])
 
     if committee_filter != 'all':
-        resolutions = Resolution.for_committee(committee_filter)
+        resolutions = list(Resolution.for_committee(committee_filter))
     else:
         resolutions = Resolution.query.order_by(Resolution.created_at.desc()).all()
 
+    # Contadores dos stat-tiles (antes estavam fixos em 0 no template)
+    stats = {'draft': 0, 'submitted': 0, 'voting': 0, 'passed': 0}
+    for r in resolutions:
+        if r.status in stats:
+            stats[r.status] += 1
+
     return render_template('admin/resolutions.html',
                            resolutions=resolutions,
+                           stats=stats,
                            committee_filter=committee_filter,
                            available_committees=available_committees)
 

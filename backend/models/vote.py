@@ -5,13 +5,31 @@ from extensions import db
 from datetime import datetime, timezone
 
 
+def _scope_committees(delegation):
+    """Strings de comitê que a delegação acompanha (comitê próprio + nome do tema).
+
+    VoteSession.committee guarda o nome do tema (ou 'geral') escolhido no
+    form admin; Delegation.committee pode ter sido gravado como nome do tema
+    ou como sigla manual — aceitamos as duas comparações.
+    """
+    if not delegation:
+        return set()
+    out = set()
+    if delegation.committee:
+        out.add(delegation.committee)
+    theme = getattr(delegation, 'theme', None)
+    if theme is not None and getattr(theme, 'name', None):
+        out.add(theme.name)
+    return out
+
+
 class VoteSession(db.Model):
     __tablename__ = 'vote_sessions'
 
     id           = db.Column(db.Integer, primary_key=True)
     title        = db.Column(db.String(240), nullable=False)
     description  = db.Column(db.Text)
-    committee    = db.Column(db.String(30), default='geral')
+    committee    = db.Column(db.String(300), default='geral')
     status       = db.Column(db.String(20), default='open')  # open | closed
     duration_sec = db.Column(db.Integer, default=120)        # cronômetro em segundos
     created_at   = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
@@ -20,6 +38,27 @@ class VoteSession(db.Model):
 
     votes = db.relationship('Vote', backref='session', lazy=True,
                             cascade='all, delete-orphan')
+
+    @staticmethod
+    def visible_to(delegation):
+        """Query das sessões abertas que a delegação pode ver/votar.
+
+        'geral' (e linhas legadas sem comitê) sempre entram; as demais só
+        quando o comitê/tema da sessão casa com o da delegação.
+        """
+        allowed = {'geral'} | _scope_committees(delegation)
+        return VoteSession.query.filter(
+            VoteSession.status == 'open',
+            db.or_(VoteSession.committee.is_(None),
+                   VoteSession.committee.in_(sorted(allowed)))
+        )
+
+    def is_visible_to(self, delegation):
+        """Esta sessão pertence ao escopo da delegação?"""
+        if self.committee in (None, '', 'geral'):
+            return True
+        return self.committee in _scope_committees(delegation)
+
 
     def count(self):
         votes = self.votes
