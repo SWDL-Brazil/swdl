@@ -3,15 +3,21 @@
 {% block page_title %}Gestao de Certificados{% endblock %}
 
 {% block topbar_actions %}
-  <button class="btn btn-gold btn-sm" onclick="document.getElementById('awardModal').style.display='flex'">🏆 Premiar</button>
-  <button class="btn btn-navy btn-sm" onclick="document.getElementById('externalModal').style.display='flex'">🌐 Externo (Portas Abertas)</button>
-  <button class="btn btn-navy btn-sm" onclick="document.getElementById('organizerModal').style.display='flex'">👥 Organizador</button>
+  <details class="topbar-menu">
+    <summary class="btn btn-gold btn-sm">➕ Emitir</summary>
+    <div class="topbar-menu-list">
+      <button type="button" onclick="openCertModal('awardModal')">🏆 Premiar aluno ou delegação</button>
+      <button type="button" onclick="openCertModal('externalModal')">🌐 Externo (Portas Abertas)</button>
+      <button type="button" onclick="openCertModal('organizerModal')">👥 Organizador</button>
+    </div>
+  </details>
+  <a href="{{ url_for('admin.certificate_people_list') }}" class="btn btn-navy btn-sm">👥 Pessoas</a>
   <a href="{{ url_for('admin.certificates_codes_pdf', year=current_year, type=current_type, committee_name=current_committee) }}"
-     class="btn btn-navy btn-sm">📄 Baixar PDF dos Códigos</a>
+     class="btn btn-navy btn-sm">📄 PDF dos códigos</a>
   <form method="POST" action="{{ url_for('admin.certificates_generate_codes') }}" style="display:inline"
         onsubmit="return confirm('Gerar certificados de participacao para todos os alunos sem um em {{ current_year }}?')">
     <input type="hidden" name="year" value="{{ current_year }}">
-    <button class="btn btn-navy btn-sm">Gerar Codigos (Participacao)</button>
+    <button class="btn btn-navy btn-sm">🔑 Gerar códigos</button>
   </form>
 {% endblock %}
 
@@ -253,6 +259,11 @@
 </div>
 
 <script>
+function openCertModal(id) {
+  const modal = document.getElementById(id);
+  if (modal) modal.style.display = 'flex';
+}
+
 function toggleAwardTarget(type) {
   const isDeleg = type === 'best_delegation';
   document.getElementById('awardDelegRow').style.display = isDeleg ? '' : 'none';
@@ -309,6 +320,17 @@ function toggleAwardTarget(type) {
     <form method="POST" action="{{ url_for('admin.certificate_generate_external') }}">
       <input type="hidden" name="year" value="{{ current_year }}">
       <div class="form-group">
+        <label>Pessoa cadastrada (opcional — evita digitar o nome)</label>
+        <select name="person_id" onchange="fillFromPerson(this, 'externalModal')">
+          <option value="">— digitar manualmente —</option>
+          {% for p in people %}
+          <option value="{{ p.id }}" data-person='{{ {"name": p.name, "email": p.email or "", "committee": p.committee or "", "committee_name": p.committee_name or "", "country": p.country or "", "country_flag": p.country_flag or "", "notes": p.notes or ""}|tojson }}'>
+            {{ p.name }} — {{ p.kind_label }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
         <label>Tipo</label>
         <select name="type" required>
           {% for key, label in cert_types.items() if key in ('external', 'organizer') %}
@@ -318,7 +340,7 @@ function toggleAwardTarget(type) {
       </div>
       <div class="form-group">
         <label>Nome da pessoa *</label>
-        <input type="text" name="name" required placeholder="Ex: Visitante da escola parceira">
+        <input type="text" name="name" required list="peopleNames" placeholder="Ex: Visitante da escola parceira">
       </div>
       <div class="form-group">
         <label>E-mail (opcional)</label>
@@ -344,6 +366,10 @@ function toggleAwardTarget(type) {
         <label>Observacao (opcional)</label>
         <input type="text" name="notes" placeholder="Convidado via SWDL com Portas Abertas">
       </div>
+      <div class="form-group" style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" name="save_person" id="savePersonExternal" value="1" style="width:auto">
+        <label for="savePersonExternal" style="margin:0">Salvar em Pessoas (reaproveitar depois)</label>
+      </div>
       <p style="font-size:12px;color:var(--muted);margin:8px 0 0">
         O codigo e gerado automaticamente. Depois de criar, faca o upload do PDF para liberar o certificado.
       </p>
@@ -362,6 +388,17 @@ function toggleAwardTarget(type) {
     <form method="POST" action="{{ url_for('admin.certificate_generate_organizer') }}">
       <input type="hidden" name="year" value="{{ current_year }}">
       <div class="form-group">
+        <label>Pessoa cadastrada (opcional — evita digitar o nome)</label>
+        <select name="person_id" onchange="fillFromPerson(this, 'organizerModal')">
+          <option value="">— digitar manualmente —</option>
+          {% for p in people %}
+          <option value="{{ p.id }}" data-person='{{ {"name": p.name, "email": p.email or "", "committee": p.committee or "", "committee_name": p.committee_name or "", "country": p.country or "", "country_flag": p.country_flag or "", "notes": p.notes or ""}|tojson }}'>
+            {{ p.name }} — {{ p.kind_label }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
         <label>Usuario do sistema (opcional, preenche nome/email automaticamente)</label>
         <select name="user_id">
           <option value="">Nenhum — preencher manualmente</option>
@@ -372,7 +409,7 @@ function toggleAwardTarget(type) {
       </div>
       <div class="form-group">
         <label>Nome do organizador *</label>
-        <input type="text" name="name" required placeholder="Ex: Coordenador da mesa">
+        <input type="text" name="name" required list="peopleNames" placeholder="Ex: Coordenador da mesa">
       </div>
       <div class="form-group">
         <label>E-mail (opcional)</label>
@@ -398,6 +435,10 @@ function toggleAwardTarget(type) {
         <label>Observacao (opcional)</label>
         <input type="text" name="notes" placeholder="Equipe de organizacao">
       </div>
+      <div class="form-group" style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" name="save_person" id="savePersonOrganizer" value="1" style="width:auto">
+        <label for="savePersonOrganizer" style="margin:0">Salvar em Pessoas (reaproveitar depois)</label>
+      </div>
       <p style="font-size:12px;color:var(--muted);margin:8px 0 0">
         O codigo e gerado automaticamente. Depois de criar, faca o upload do PDF para liberar o certificado.
       </p>
@@ -410,6 +451,26 @@ function toggleAwardTarget(type) {
 </div>
 
 <script>
+function fillFromPerson(select, modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  const opt = select.options[select.selectedIndex];
+  if (!opt || !opt.dataset.person) return;
+  let p;
+  try { p = JSON.parse(opt.dataset.person); } catch (e) { return; }
+  const set = function (name, value) {
+    const el = modal.querySelector('[name="' + name + '"]');
+    if (el && value) el.value = value;
+  };
+  set('name', p.name);
+  set('email', p.email);
+  set('committee', p.committee);
+  set('committee_name', p.committee_name);
+  set('country', p.country);
+  set('country_flag', p.country_flag);
+  set('notes', p.notes);
+}
+
 const userSelect = document.querySelector('#organizerModal select[name=user_id]');
 if (userSelect) {
   userSelect.addEventListener('change', function() {
@@ -427,5 +488,11 @@ if (userSelect) {
   });
 }
 </script>
+
+<datalist id="peopleNames">
+  {% for p in people %}
+  <option value="{{ p.name }}"></option>
+  {% endfor %}
+</datalist>
 
 {% endblock %}

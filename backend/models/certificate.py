@@ -62,6 +62,10 @@ class Certificate(db.Model):
     # Campos livres para certificados SEM aluno vinculado (externos / orgs).
     name           = db.Column(db.String(120), nullable=True)
     email          = db.Column(db.String(120), nullable=True)
+    # Pessoa cadastrada (Portas Abertas / Organizador), quando houver.
+    person_id      = db.Column(db.Integer,
+                               db.ForeignKey('certificate_people.id'),
+                               nullable=True, index=True)
 
     # ── SNAPSHOT (autocontido) ──────────────────────────────────────
     # Copiado do aluno/delegacao na emissao: o certificado nao depende de

@@ -131,26 +131,154 @@
   /* ---- Speech Timer ---- */
   let speechTotal = 90, speechRem = 0, speechRunning = false, speechInterval = null;
 
-  function playSirene() {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const g = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.connect(g);
-      g.connect(ctx.destination);
-      g.gain.setValueAtTime(0.3, ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2);
-      osc.frequency.setValueAtTime(440, ctx.currentTime);
-      osc.frequency.linearRampToValueAtTime(880, ctx.currentTime + 0.3);
-      osc.frequency.linearRampToValueAtTime(440, ctx.currentTime + 0.6);
-      osc.frequency.linearRampToValueAtTime(880, ctx.currentTime + 0.9);
-      osc.frequency.linearRampToValueAtTime(440, ctx.currentTime + 1.2);
-      osc.frequency.linearRampToValueAtTime(880, ctx.currentTime + 1.5);
-      osc.start();
-      osc.stop(ctx.currentTime + 2);
-    } catch (e) { /* silent */ }
+  /* ---- Alarme do cronometro (Web Audio, sem arquivo externo) ---- */
+  let audioCtx = null;
+  let alarmNodes = [];
+  let soundEnabled = (localStorage.getItem('telao_sound') !== 'off');
+
+  function soundToggleEl() { return $id('soundToggle'); }
+  function soundHintEl() { return $id('soundHint'); }
+
+  function renderSoundToggle() {
+    const btn = soundToggleEl();
+    if (!btn) return;
+    btn.textContent = soundEnabled ? '🔔' : '🔇';
+    btn.classList.toggle('is-off', !soundEnabled);
+    btn.title = soundEnabled
+      ? 'Alarme ligado — clique para silenciar'
+      : 'Alarme silenciado — clique para ligar';
+    btn.setAttribute('aria-pressed', soundEnabled ? 'true' : 'false');
   }
+
+  function showSoundHint(show) {
+    const el = soundHintEl();
+    if (el) el.style.display = show ? 'inline-flex' : 'none';
+  }
+
+  function ensureAudio() {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    if (!audioCtx) {
+      try { audioCtx = new AC(); } catch (e) { return null; }
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+    return audioCtx;
+  }
+
+  function unlockAudio() {
+    if (!soundEnabled) return;
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    if (ctx.state === 'running') { showSoundHint(false); return; }
+    ctx.resume().then(function () {
+      if (audioCtx && audioCtx.state === 'running') showSoundHint(false);
+    }).catch(function () { /* mantem a dica */ });
+  }
+
+  function stopAlarm() {
+    alarmNodes.forEach(function (node) {
+      try {
+        node.gain.gain.cancelScheduledValues(0);
+        node.gain.gain.value = 0;
+        node.osc.stop();
+      } catch (e) { /* noop */ }
+    });
+    alarmNodes = [];
+  }
+
+  function playSirene() {
+    if (!soundEnabled) return;
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    if (ctx.state !== 'running') {
+      // Navegador bloqueou o audio (falta de interacao): pede um clique.
+      showSoundHint(true);
+      return;
+    }
+    showSoundHint(false);
+    stopAlarm();
+
+    const bursts = 3;
+    const burstLen = 1.15;
+    const gap = 0.25;
+    const t0 = ctx.currentTime + 0.05;
+
+    for (let i = 0; i < bursts; i++) {
+      const start = t0 + i * (burstLen + gap);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      filter.type = 'lowpass';
+      filter.frequency.value = 1900;
+      filter.Q.value = 0.7;
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(720, start);
+      for (let k = 0; k < 4; k++) {
+        osc.frequency.linearRampToValueAtTime(1040, start + 0.15 + k * 0.28);
+        osc.frequency.linearRampToValueAtTime(720, start + 0.29 + k * 0.28);
+      }
+
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.32, start + 0.04);
+      gain.gain.setValueAtTime(0.32, start + burstLen - 0.14);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + burstLen);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(start);
+      osc.stop(start + burstLen + 0.02);
+      alarmNodes.push({ osc: osc, gain: gain });
+    }
+
+    setTimeout(function () { alarmNodes = []; },
+               (bursts * (burstLen + gap) + 0.6) * 1000);
+  }
+
+  // Primeiro gesto do usuario libera o audio (politica de autoplay)
+  ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) {
+    window.addEventListener(ev, unlockAudio, { passive: true });
+  });
+
+  (function initSoundControls() {
+    renderSoundToggle();
+    const btn = soundToggleEl();
+    if (btn) {
+      btn.addEventListener('click', function () {
+        soundEnabled = !soundEnabled;
+        localStorage.setItem('telao_sound', soundEnabled ? 'on' : 'off');
+        if (!soundEnabled) {
+          stopAlarm();
+          showSoundHint(false);
+        } else {
+          unlockAudio();
+        }
+        renderSoundToggle();
+      });
+    }
+    const hint = soundHintEl();
+    if (hint) {
+      hint.addEventListener('click', function () {
+        if (!soundEnabled) {
+          soundEnabled = true;
+          localStorage.setItem('telao_sound', 'on');
+          renderSoundToggle();
+        }
+        unlockAudio();
+      });
+    }
+    // Se o navegador ainda nao liberou o audio, mostra a dica na tela
+    setTimeout(function () {
+      if (!soundEnabled) return;
+      const ctx = ensureAudio();
+      if (ctx && ctx.state !== 'running') showSoundHint(true);
+    }, 1500);
+  })();
 
   function renderSpeech() {
     const el = $id('speechTimeCenter');
@@ -177,14 +305,19 @@
 
   function startSpeech(secs) {
     clearInterval(speechInterval);
+    stopAlarm();
     speechTotal = secs || 90;
     speechRem = speechTotal;
     speechRunning = true;
+    // Baseado em timestamp: nao perde tempo se a aba do telao for throttled
+    const endsAt = Date.now() + speechTotal * 1000;
     renderSpeech();
     show('speechScreen');
-    speechInterval = setInterval(() => {
+    speechInterval = setInterval(function () {
       if (!speechRunning) return;
-      speechRem--;
+      const left = Math.max(0, Math.round((endsAt - Date.now()) / 1000));
+      if (left === speechRem && left > 0) return;
+      speechRem = left;
       renderSpeech();
       if (speechRem <= 0) {
         clearInterval(speechInterval);
@@ -192,11 +325,12 @@
         playSirene();
         flashScreen();
       }
-    }, 1000);
+    }, 250);
   }
 
   function resetSpeech() {
     clearInterval(speechInterval);
+    stopAlarm();
     speechRunning = false;
     speechRem = 0;
     const el = $id('speechTimeCenter');
@@ -207,7 +341,7 @@
   }
 
   window.startSpeechTimer = function (duration) { startSpeech(duration || 90); };
-  window.stopSpeechTimer = function () { clearInterval(speechInterval); speechRunning = false; };
+  window.stopSpeechTimer = function () { clearInterval(speechInterval); speechRunning = false; stopAlarm(); };
   window.resetSpeechTimer = function () { resetSpeech(); };
 
   /* ---- Vote Timer ---- */

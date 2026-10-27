@@ -288,11 +288,16 @@
 
   <!-- ── MAIN ─────────────────────────────────────────────── -->
   <main class="admin-main">
-    <div class="admin-topbar">
+    <div class="admin-topbar" id="adminTopbar">
       <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
-      <div class="admin-topbar-title">{% block page_title %}{% endblock %}</div>
+      <div class="admin-topbar-heading">
+        <div class="admin-topbar-titles">
+          <div class="admin-topbar-eyebrow">SWDL &middot; Painel de Controle</div>
+          <div class="admin-topbar-title">{% block page_title %}{% endblock %}</div>
+        </div>
+      </div>
       <div class="topbar-actions">{% block topbar_actions %}{% endblock %}</div>
     </div>
 
@@ -348,6 +353,47 @@ function toggleSidebar() {
       }
     });
   }
+})();
+
+// Topbar: sombra sutil ao rolar a pagina
+(function() {
+  var bar = document.getElementById('adminTopbar');
+  if (!bar) return;
+  var onScroll = function() {
+    bar.classList.toggle('is-scrolled', (window.scrollY || document.documentElement.scrollTop || 0) > 4);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+
+// Menus suspensos do topbar (<details>)
+(function () {
+  var menus = document.querySelectorAll('.topbar-menu');
+  menus.forEach(function (menu) {
+    var list = menu.querySelector('.topbar-menu-list');
+    if (!list) return;
+    menu.addEventListener('toggle', function () {
+      if (!menu.open) return;
+      // Posiciona como popover fixo: nao e cortado pelo overflow do topbar
+      var rect = menu.querySelector('summary').getBoundingClientRect();
+      list.style.position = 'fixed';
+      list.style.top = (rect.bottom + 8) + 'px';
+      list.style.right = Math.max(8, window.innerWidth - rect.right) + 'px';
+      list.style.left = 'auto';
+    });
+    list.addEventListener('click', function () { menu.open = false; });
+  });
+  document.addEventListener('click', function (e) {
+    document.querySelectorAll('.topbar-menu[open]').forEach(function (menu) {
+      if (!menu.contains(e.target)) menu.open = false;
+    });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    document.querySelectorAll('.topbar-menu[open]').forEach(function (menu) {
+      menu.open = false;
+    });
+  });
 })();
 
 // CSRF token para fetch calls e forms

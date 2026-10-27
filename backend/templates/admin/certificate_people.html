@@ -1,0 +1,240 @@
+{% extends "admin/base.html" %}
+{% block title %}Pessoas dos Certificados{% endblock %}
+{% block page_title %}Pessoas dos Certificados{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.certificates_list') }}" class="btn btn-ghost btn-sm">← Certificados</a>
+  <button class="btn btn-gold btn-sm" onclick="openPersonModal()">+ Nova Pessoa</button>
+{% endblock %}
+
+{% block content %}
+
+<style>
+  .ppl-summary {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;
+  }
+  .ppl-stat {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 5px; padding: 14px; text-align: center;
+  }
+  .ppl-stat-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px; font-weight: 700; color: var(--navy); display: block;
+  }
+  .ppl-stat-label {
+    font-size: 9px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--muted); margin-top: 4px;
+  }
+  .ppl-stat.highlight { border-left: 3px solid var(--gold); }
+  .ppl-filter-bar {
+    display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .ppl-filter-bar select {
+    padding: 8px 12px; border: 1px solid rgba(16,30,76,.18); border-radius: 3px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text);
+    background: var(--white); outline: none;
+  }
+  .ppl-filter-bar select:focus { border-color: var(--gold); }
+  .ppl-filter-label {
+    font-size: 9px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+    color: var(--navy);
+  }
+  .type-badge {
+    display:inline-block; padding: 2px 9px; border-radius: 10px;
+    font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  }
+  .type-organizer { background: rgba(13,27,42,.10); color: var(--navy); }
+  .type-external { background: rgba(201,168,76,.14); color: #8a6d1d; }
+  .count-badge {
+    display:inline-block; min-width: 22px; text-align:center;
+    background: rgba(201,168,76,.16); color: #8a6d1d;
+    border-radius: 10px; padding: 2px 8px;
+    font-family:'DM Mono',monospace; font-size: 10px; font-weight: 700;
+  }
+  .modal-overlay { display:none; position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.5); align-items:center; justify-content:center }
+  .modal-overlay .modal { background:var(--white); border-radius:8px; padding:28px; width:520px; max-width:92vw; max-height:90vh; overflow:auto }
+  .gen-form { display:flex; gap:4px; align-items:center }
+  .gen-form select { padding: 4px 6px; font-size: 11px; border:1px solid var(--border); border-radius:3px; }
+</style>
+
+<div class="ppl-filter-bar">
+  <span class="ppl-filter-label">Filtros</span>
+  <form method="GET" action="{{ url_for('admin.certificate_people_list') }}" style="display:flex;gap:10px;align-items:center">
+    <select name="kind" onchange="this.form.submit()">
+      <option value="">Todos os tipos</option>
+      {% for key, label in person_kinds.items() %}
+      <option value="{{ key }}" {{ 'selected' if key == current_kind }}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
+
+{% set total = people|length %}
+{% set ext = people|selectattr('kind', 'equalto', 'external')|list|length %}
+{% set org = people|selectattr('kind', 'equalto', 'organizer')|list|length %}
+<div class="ppl-summary">
+  <div class="ppl-stat highlight">
+    <span class="ppl-stat-num">{{ total }}</span>
+    <span class="ppl-stat-label">Pessoas cadastradas</span>
+  </div>
+  <div class="ppl-stat highlight">
+    <span class="ppl-stat-num">{{ ext }}</span>
+    <span class="ppl-stat-label">Portas Abertas</span>
+  </div>
+  <div class="ppl-stat highlight">
+    <span class="ppl-stat-num">{{ org }}</span>
+    <span class="ppl-stat-label">Organizadores</span>
+  </div>
+  <div class="ppl-stat highlight">
+    <span class="ppl-stat-num">{{ counts.values()|sum }}</span>
+    <span class="ppl-stat-label">Certificados vinculados</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body" style="padding:0">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Tipo</th>
+          <th>E-mail</th>
+          <th>Tema / Comite</th>
+          <th>Pais</th>
+          <th>Certificados</th>
+          <th>Acoes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in people %}
+        <tr>
+          <td style="font-weight:600">{{ p.name }}</td>
+          <td><span class="type-badge type-{{ p.kind }}">{{ p.kind_label }}</span></td>
+          <td style="font-size:12px">{{ p.email or '---' }}</td>
+          <td style="font-size:12px">{{ p.theme_label }}</td>
+          <td style="font-size:12px">
+            {% if p.country %}{{ p.country_flag or '' }} {{ p.country }}{% else %}---{% endif %}
+          </td>
+          <td><span class="count-badge">{{ counts.get(p.id, 0) }}</span></td>
+          <td>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+              <form class="gen-form" method="POST" action="{{ url_for('admin.certificate_person_generate', id=p.id) }}">
+                <input type="hidden" name="year" value="{{ current_year }}">
+                <select name="type">
+                  {% for key, label in cert_types.items() if key != 'participation' %}
+                  <option value="{{ key }}" {{ 'selected' if (p.kind == 'organizer' and key == 'organizer') or (p.kind != 'organizer' and key == 'external') }}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+                <button class="btn btn-gold btn-sm">Gerar</button>
+              </form>
+
+              <button class="btn btn-ghost btn-sm"
+                      data-person='{{ {"id": p.id, "name": p.name, "email": p.email or "", "kind": p.kind, "committee": p.committee or "", "committee_name": p.committee_name or "", "country": p.country or "", "country_flag": p.country_flag or "", "notes": p.notes or ""}|tojson }}'
+                      onclick="openPersonModal(this)">Editar</button>
+
+              <form method="POST" action="{{ url_for('admin.certificate_person_delete', id=p.id) }}" style="display:inline"
+                    onsubmit="return confirm('Remover {{ p.name }} do cadastro? Os certificados ja emitidos sao mantidos.')">
+                <button class="btn btn-danger btn-sm">✖</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" style="text-align:center;color:var(--muted);padding:32px">
+            Nenhuma pessoa cadastrada.
+            <br><br>Cadastre uma vez e depois gere os certificados sem digitar o nome de novo.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Pessoa (novo / editar) -->
+<div id="personModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal">
+    <h3 id="personModalTitle" style="font-family:'Playfair Display',serif;font-size:20px;color:var(--navy);margin-bottom:18px">Nova Pessoa</h3>
+    <form method="POST" id="personForm" action="{{ url_for('admin.certificate_person_create') }}">
+      <div class="form-group">
+        <label>Tipo *</label>
+        <select name="kind" id="pKind" required>
+          {% for key, label in person_kinds.items() %}
+          <option value="{{ key }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nome *</label>
+        <input type="text" name="name" id="pName" required placeholder="Ex: Maria Silva">
+      </div>
+      <div class="form-group">
+        <label>E-mail (opcional)</label>
+        <input type="email" name="email" id="pEmail" placeholder="exemplo@email.com">
+      </div>
+      <div class="form-group">
+        <label>Comite / Tema (sigla, ex: CS)</label>
+        <input type="text" name="committee" id="pCommittee" placeholder="CS">
+      </div>
+      <div class="form-group">
+        <label>Nome do Comite / Tema</label>
+        <input type="text" name="committee_name" id="pCommitteeName" placeholder="Comite de Seguranca">
+      </div>
+      <div class="form-group">
+        <label>Pais (opcional)</label>
+        <input type="text" name="country" id="pCountry" placeholder="Brasil">
+      </div>
+      <div class="form-group">
+        <label>Bandeira (emoji, opcional)</label>
+        <input type="text" name="country_flag" id="pCountryFlag" placeholder="🇧🇷" maxlength="2">
+      </div>
+      <div class="form-group">
+        <label>Observacao (opcional)</label>
+        <input type="text" name="notes" id="pNotes" placeholder="Ex: convidado da escola parceira">
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('personModal').style.display='none'">Cancelar</button>
+        <button type="submit" class="btn btn-gold" id="personSubmit">Salvar Pessoa</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const PERSON_CREATE_URL = "{{ url_for('admin.certificate_person_create') }}";
+const PERSON_EDIT_URL = "{{ url_for('admin.certificate_person_edit', id=0) }}".replace('0/editar', '');
+const FIELDS = ['name', 'email', 'committee', 'committee_name', 'country', 'country_flag', 'notes'];
+
+function openPersonModal(btn) {
+  const form = document.getElementById('personForm');
+  const title = document.getElementById('personModalTitle');
+  const submit = document.getElementById('personSubmit');
+
+  if (btn && btn.dataset.person) {
+    const p = JSON.parse(btn.dataset.person);
+    form.action = PERSON_EDIT_URL + p.id + '/editar';
+    title.textContent = 'Editar Pessoa';
+    submit.textContent = 'Salvar Alteracoes';
+    document.getElementById('pKind').value = p.kind || 'external';
+    FIELDS.forEach(function (f) {
+      const el = document.getElementById('p' + f.charAt(0).toUpperCase() + f.slice(1));
+      if (el) el.value = p[f] || '';
+    });
+  } else {
+    form.action = PERSON_CREATE_URL;
+    form.reset();
+    title.textContent = 'Nova Pessoa';
+    submit.textContent = 'Salvar Pessoa';
+  }
+  document.getElementById('personModal').style.display = 'flex';
+}
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    document.getElementById('personModal').style.display = 'none';
+  }
+});
+</script>
+
+{% endblock %}

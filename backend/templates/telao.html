@@ -21,9 +21,15 @@
     <div class="t-committee-pill" id="committeeTag">GERAL</div>
   </div>
   <div style="display:flex;align-items:center;gap:16px">
+    <button class="t-sound-toggle" id="soundToggle" type="button"
+            title="Som do alarme" aria-label="Som do alarme" aria-pressed="true">🔔</button>
     <div class="t-clock" id="clock">--:--:--</div>
   </div>
 </header>
+
+<button class="t-sound-hint" id="soundHint" type="button" style="display:none">
+  🔊 O navegador bloqueou o som — clique para ativar o alarme
+</button>
 
 <div class="t-crisis" id="crisisBanner" style="display:none" role="alert">
   <span class="t-crisis-icon">🚨</span>

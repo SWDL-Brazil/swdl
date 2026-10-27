@@ -235,6 +235,7 @@ def create_app():
         from models.event_period import EventPeriod
         from models.urgent_alert import UrgentAlert
         from models.certificate import Certificate
+        from models.certificate_person import CertificatePerson
 
         db.create_all()
         _run_migrations(app)
@@ -351,6 +352,7 @@ def _run_migrations(app):
         from models.resolution import Resolution, Amendment
         from models.speech_log import SpeechLog
         from models.certificate import Certificate
+        from models.certificate_person import CertificatePerson
 
         tables = {
             User.__tablename__: User,
@@ -376,6 +378,7 @@ def _run_migrations(app):
             Amendment.__tablename__: Amendment,
             SpeechLog.__tablename__: SpeechLog,
             Certificate.__tablename__: Certificate,
+            CertificatePerson.__tablename__: CertificatePerson,
         }
 
         for table_name, model in tables.items():
