@@ -4,6 +4,11 @@
 {% block page_title %}Certificados{% endblock %}
 
 {% block content %}
+<style>
+  .cert-meta { font-size: 12px; color: var(--muted, #6b7280); }
+  .cert-meta-label { font-weight: 700; color: var(--navy, #0D1B2A); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+  .cert-meta-value { font-weight: 600; color: var(--text, #111); }
+</style>
 <div class="page-header">
   <div>
     <div class="section-label">Recursos</div>
@@ -36,6 +41,16 @@
       <p class="cert-subtitle">
         Seu certificado de participacao foi liberado pela organizacao.
       </p>
+      {% endif %}
+
+      {% if cert.committee_name or cert.committee %}
+      <div class="cert-meta" style="display:flex;align-items:center;gap:8px;margin-top:8px">
+        <span class="cert-meta-label">Tema / Comite:</span>
+        <span class="cert-meta-value">
+          {{ cert.committee_name or cert.committee }}
+          {% if cert.committee and cert.committee_name %} ({{ cert.committee }}){% endif %}
+        </span>
+      </div>
       {% endif %}
 
       {% if cert.notes %}

@@ -1,15 +1,18 @@
-from flask import render_template, redirect, url_for, flash, request, current_app, abort
+from flask import render_template, redirect, url_for, flash, request, current_app, abort, make_response
 from flask_login import login_required
 from routes.admin._helpers import admin_bp, admin_required, _log_audit
 from models.student import Student
 from models.delegation import Delegation
+from models.theme import Theme
+from models.user import User
 from models.certificate import Certificate, CERT_TYPES, generate_verification_code
 from cert_storage import validate_pdf, pdf_response
 from extensions import db
-from sqlalchemy import select, func, case
-from sqlalchemy.orm import selectinload
+from sqlalchemy import select, func, case, or_
+from sqlalchemy.orm import selectinload, joinedload
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone
+import io
 
 
 def _current_year():
@@ -37,6 +40,15 @@ def _pick_code(used):
     raise RuntimeError('nao foi possivel gerar codigo de verificacao unico')
 
 
+def _themes_for_year(year):
+    """Temas que possuem delegacoes nesta edicao (para o filtro de tema)."""
+    rows = db.session.query(Delegation.committee_name).distinct()\
+        .filter(Delegation.edition_year == year,
+                Delegation.committee_name.isnot(None))\
+        .order_by(Delegation.committee_name).all()
+    return [r[0] for r in rows if r[0]]
+
+
 @admin_bp.route('/certificados/arquivo/<filename>')
 @login_required
 @admin_required
@@ -62,6 +74,7 @@ def certificates_list():
 
     year = request.args.get('year', type=int)
     cert_type = request.args.get('type', '')
+    committee_name = request.args.get('committee_name', '')
 
     years = [r[0] for r in db.session.query(Certificate.edition_year)
              .distinct().order_by(Certificate.edition_year.desc())]
@@ -76,8 +89,12 @@ def certificates_list():
         query = query.filter(Certificate.edition_year == year)
     if cert_type and cert_type in CERT_TYPES:
         query = query.filter(Certificate.type == cert_type)
+    if committee_name:
+        query = query.filter(Certificate.committee_name == committee_name)
 
-    certs = query.order_by(Certificate.type, Certificate.student_name).all()
+    certs = query.order_by(Certificate.type,
+                           func.coalesce(Certificate.student_name,
+                                         Certificate.name, '').asc()).all()
 
     # Stats cobrem a edição inteira (ignoram o filtro de tipo da tabela)
     if cert_type and cert_type in CERT_TYPES:
@@ -115,16 +132,21 @@ def certificates_list():
     delegations = Delegation.query.options(joinedload(Delegation.students))\
                                    .order_by(Delegation.country).all()
     audit_logs = AuditLog.query.order_by(AuditLog.created_at.desc()).limit(50).all()
+    themes = _themes_for_year(year)
+    users = User.query.order_by(User.name).all()
 
     return render_template('admin/certificates_list.html',
                            certs=certs,
                            years=years,
                            current_year=year,
                            current_type=cert_type,
+                           current_committee=committee_name,
                            cert_types=CERT_TYPES,
+                           themes=themes,
                            stats=stats,
                            students=students,
                            delegations=delegations,
+                           users=users,
                            audit_logs=audit_logs)
 
 
@@ -314,3 +336,395 @@ def certificate_delete(id):
     _log_audit('delete_certificate', 'certificate', id, student_name, details=details)
     flash(f'Certificado de {student_name} ({details}) excluido.', 'info')
     return redirect(url_for('admin.certificates_list'))
+
+
+# ════════════════════════════════════════════════════════════════════
+#  CERTIFICADOS — pessoas externas / organizadores (sem aluno vinculado)
+# ════════════════════════════════════════════════════════════════════
+
+@admin_bp.route('/certificados/gerar-externo', methods=['POST'])
+@login_required
+@admin_required
+def certificate_generate_external():
+    """Gera certificado para pessoa externa (sem cadastro de aluno).
+
+    Usado para o iniciativa "SWDL com Portas Abertas" — convidados de fora
+    da simulacao que recebem um certificado com nome livre, tema/comite e
+    tipo selecionado pelo admin.
+    """
+    year = request.form.get('year', type=int) or _current_year()
+    name = (request.form.get('name') or '').strip()
+    email = (request.form.get('email') or '').strip() or None
+    committee = (request.form.get('committee') or '').strip() or None
+    committee_name = (request.form.get('committee_name') or '').strip() or None
+    country = (request.form.get('country') or '').strip() or None
+    country_flag = (request.form.get('country_flag') or '').strip() or None
+    cert_type = request.form.get('type', '')
+    notes = (request.form.get('notes') or '').strip() or None
+
+    if cert_type not in CERT_TYPES or cert_type == 'participation':
+        flash('Tipo de certificado invalido para emissao externa.', 'error')
+        return redirect(url_for('admin.certificates_list', year=year))
+    if not name:
+        flash('Informe o nome da pessoa.', 'error')
+        return redirect(url_for('admin.certificates_list', year=year))
+
+    used = _used_codes()
+    cert = Certificate(
+        student_id=None,
+        edition_year=year,
+        type=cert_type,
+        name=name,
+        email=email,
+        verification_code=_pick_code(used),
+        notes=notes,
+    )
+    cert.fill_snapshot(
+        name=name, country=country, country_flag=country_flag,
+        committee=committee, committee_name=committee_name,
+    )
+    db.session.add(cert)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash('Conflito: codigo duplicado. Tente novamente.', 'error')
+        return redirect(url_for('admin.certificates_list', year=year))
+
+    _log_audit('generate_external_certificate', 'certificate', cert.id, name,
+               details=f'{cert_type} ({year})')
+    flash(f'Certificado externo criado para {name}! '
+          f'Faca o upload do PDF para liberar.', 'success')
+    return redirect(url_for('admin.certificates_list',
+                            year=year, type=cert_type))
+
+
+@admin_bp.route('/certificados/gerar-organizador', methods=['POST'])
+@login_required
+@admin_required
+def certificate_generate_organizer():
+    """Gera certificado de Organizador.
+
+    Pode ser para um usuario do sistema (admin/diretor/moderador) vinculado
+    a um comite, ou para um nome livre com comite informado.
+    """
+    year = request.form.get('year', type=int) or _current_year()
+    user_id = request.form.get('user_id', type=int)
+    name = (request.form.get('name') or '').strip()
+    email = (request.form.get('email') or '').strip() or None
+    committee = (request.form.get('committee') or '').strip() or None
+    committee_name = (request.form.get('committee_name') or '').strip() or None
+    country = (request.form.get('country') or '').strip() or None
+    country_flag = (request.form.get('country_flag') or '').strip() or None
+    notes = (request.form.get('notes') or '').strip() or None
+
+    cert_type = 'organizer'
+
+    # Resolve nome/email a partir do usuario, se informado.
+    user = None
+    if user_id:
+        user = db.session.get(User, user_id)
+        if not user:
+            flash('Usuario selecionado nao encontrado.', 'error')
+            return redirect(url_for('admin.certificates_list', year=year))
+        name = name or user.name
+        email = email or user.email
+
+    if not name:
+        flash('Informe o nome do organizador.', 'error')
+        return redirect(url_for('admin.certificates_list', year=year))
+
+    used = _used_codes()
+    cert = Certificate(
+        student_id=None,
+        edition_year=year,
+        type=cert_type,
+        name=name,
+        email=email,
+        awarded_by=current_user.id if current_user.is_authenticated else None,
+        verification_code=_pick_code(used),
+        notes=notes,
+    )
+    cert.fill_snapshot(
+        name=name, country=country, country_flag=country_flag,
+        committee=committee, committee_name=committee_name,
+    )
+    db.session.add(cert)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash('Conflito: codigo duplicado. Tente novamente.', 'error')
+        return redirect(url_for('admin.certificates_list', year=year))
+
+    _log_audit('generate_organizer_certificate', 'certificate', cert.id, name,
+               details=f'organizador ({year})')
+    flash(f'Certificado de Organizador criado para {name}! '
+          f'Faca o upload do PDF para liberar.', 'success')
+    return redirect(url_for('admin.certificates_list',
+                            year=year, type='organizer'))
+
+
+# ════════════════════════════════════════════════════════════════════
+#  CERTIFICADOS — PDF personalizado com os codigos de verificacao
+# ════════════════════════════════════════════════════════════════════
+
+def _pdf_escape(text):
+    """Escapa texto para insercao em string de conteudo PDF."""
+    if text is None:
+        return ''
+    return str(text).replace('\\', '\\\\').replace('(', '\\(').replace(')', '\\)')
+
+
+def _pdf_text(text, x, y, font_size=8, fill='0.05 0.20 0.16'):
+    """Gera operadores PDF para desenhar uma linha de texto."""
+    ops = []
+    ops.append('BT')
+    ops.append(f'/F1 {font_size} Tf')
+    ops.append(f'{fill} rg')
+    ops.append(f'{x} {y} Td')
+    ops.append(f'({_pdf_escape(text)}) Tj')
+    ops.append('ET')
+    return ops
+
+
+def _draw_header(ops, page_num, year, filters_desc):
+    """Desenha cabecalho com logo SWDL em uma pagina."""
+    from datetime import datetime as _dt
+
+    now_str = _dt.now(timezone.utc).strftime('%d/%m/%Y %H:%M UTC')
+
+    # ── Logo SWDL: retangulo navy com texto ouro ────────────────────
+    ops.append('0.05 0.20 0.16 rg')      # cor navy (fill)
+    ops.append('40 750 140 24 re f')     # retangulo preenchido (logo base)
+    ops.append('0.79 0.66 0.30 rg')      # cor ouro (fill)
+    ops.append('BT')
+    ops.append('/F1 17 Tf')
+    ops.append('50 756 Td')
+    ops.append('(SWDL) Tj')
+    ops.append('ET')
+
+    ops.append('BT')
+    ops.append('/F1 7 Tf')
+    ops.append('50 744 Td')
+    ops.append('(SESI WORLD DIPLOMACY LEAGUE) Tj')
+    ops.append('ET')
+
+    # Linha separadora ouro abaixo do logo
+    ops.append('0.79 0.66 0.30 RG')
+    ops.append('1.5 w')
+    ops.append('40 728 m')
+    ops.append('572 728 l')
+    ops.append('S')
+
+    # Subtitulo da pagina
+    ops.extend(_pdf_text(f'Codigos de Verificacao de Certificados — Edicao {year}', 40, 708, 12))
+
+    y = 694
+    if filters_desc:
+        ops.extend(_pdf_text(f'Filtros: {filters_desc}', 40, y, 8, '0.4 0.4 0.4'))
+        y -= 14
+
+    # ── Cabecalho da tabela ─────────────────────────────────────────
+    y -= 8
+    ops.extend(_pdf_text(
+        'Codigo       Nome                                              Tipo                      Edicao  Tema / Comite                   Status',
+        40, y, 8
+    ))
+    y -= 10
+    # linha sob o cabecalho da tabela
+    ops.append('0.79 0.66 0.30 RG')
+    ops.append('0.5 w')
+    ops.append(f'40 {y} m')
+    ops.append(f'572 {y} l')
+    ops.append('S')
+    y -= 14
+
+    return y, now_str
+
+
+def _draw_footer(ops, page_num, total_pages, now_str):
+    """Desenha rodape com linha, numero da pagina e validacao."""
+    # Linha separadora
+    ops.append('0.79 0.66 0.30 RG')
+    ops.append('0.5 w')
+    ops.append('40 46 m')
+    ops.append('572 46 l')
+    ops.append('S')
+
+    ops.extend(_pdf_text(f'Pagina {page_num} de {total_pages}', 40, 34, 7, '0.4 0.4 0.4'))
+    ops.extend(_pdf_text(now_str, 400, 34, 7, '0.4 0.4 0.4'))
+    ops.extend(_pdf_text(
+        'Validacao publica: /certificado/<codigo>  |  /api/certificado/validar?code=<codigo>',
+        40, 24, 7, '0.4 0.4 0.4'
+    ))
+
+
+def _build_codes_pdf(certs, year, filters_desc):
+    """Gera um PDF valido (apenas stdlib) com cabecario, rodape e logo SWDL.
+
+    Estrutura minima PDF-1.4: catalog -> pages -> page(s) -> font -> content(s).
+    Cada pagina tem cabecalho com logo SWDL e rodape com numeracao.
+    """
+    from datetime import datetime as _dt
+
+    PAGE_WIDTH = 612
+    PAGE_HEIGHT = 792
+    MARGIN = 40
+    ROW_HEIGHT = 13
+    HEADER_SPACE = 130
+    FOOTER_SPACE = 50
+    rows_per_page = max(1, (PAGE_HEIGHT - HEADER_SPACE - FOOTER_SPACE - MARGIN) // ROW_HEIGHT)
+
+    # Agrupa certificados por pagina
+    pages = []
+    for i in range(0, len(certs), rows_per_page):
+        pages.append(certs[i:i + rows_per_page])
+    if not pages:
+        pages = [[]]
+
+    total_pages = len(pages)
+    now_str = _dt.now(timezone.utc).strftime('%d/%m/%Y %H:%M UTC')
+
+    # Content stream por pagina
+    page_streams = []
+    for page_idx, page_certs in enumerate(pages, start=1):
+        ops = []
+        y, _ = _draw_header(ops, page_idx, year, filters_desc)
+
+        # Linhas de dados
+        ops.append('BT')
+        ops.append('/F1 8 Tf')
+        ops.append('0.05 0.20 0.16 rg')
+        for c in page_certs:
+            if y < 70:
+                break
+            status = 'Liberado' if c.released else 'Pendente'
+            nome = c.display_name or ''
+            tema = c.committee_name or c.committee or ''
+            linha = (
+                f'{c.verification_code:<12} {nome:<46} {c.type_label:<24} '
+                f'{c.edition_year:<8} {tema:<26} {status}'
+            )
+            ops.append(f'40 {y} Td')
+            ops.append(f'({_pdf_escape(linha)}) Tj')
+            ops.append('ET')
+            y -= ROW_HEIGHT
+            if y > 70:
+                ops.append('BT')
+                ops.append('/F1 8 Tf')
+                ops.append('0.05 0.20 0.16 rg')
+
+        # Total no final da ultima pagina
+        if page_idx == total_pages:
+            ops.append('BT')
+            ops.append('/F1 9 Tf')
+            ops.append('0.05 0.20 0.16 rg')
+            ops.append(f'40 {max(y - 6, 70)} Td')
+            ops.append(f'({_pdf_escape(f"Total de certificados listados: {len(certs)}")}) Tj')
+            ops.append('ET')
+
+        _draw_footer(ops, page_idx, total_pages, now_str)
+
+        page_streams.append('\n'.join(ops).encode('latin-1', 'replace'))
+
+    # Monta objetos PDF
+    objs = []
+
+    def obj(content):
+        objs.append(content)
+        return len(objs)  # numero do objeto (1-based)
+
+    # Conteudos das paginas
+    contents_objs = []
+    for stream in page_streams:
+        contents_objs.append(
+            obj(f'<< /Length {len(stream)} >>\nstream\n{stream.decode("latin-1", "replace")}\nendstream\nendobj')
+        )
+
+    # Fonte compartilhada
+    font_obj = obj('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>')
+
+    # Paginas (referenciam o pages via placeholder, corrigido depois)
+    page_objs = []
+    for c in contents_objs:
+        page_objs.append(
+            obj(f'<< /Type /Page /Parent 0 0 R /Resources << /Font << /F1 {font_obj} 0 R >> >> '
+                f'/MediaBox [0 0 {PAGE_WIDTH} {PAGE_HEIGHT}] /Contents {c} 0 R >>')
+        )
+
+    # Pages com kids corretos
+    pages_obj = obj(
+        f'<< /Type /Pages /Kids [{" ".join(str(n) + " 0 R" for n in page_objs)}] /Count {len(page_objs)} >>'
+    )
+
+    # Corrige /Parent nas paginas para apontar ao pages_obj correto
+    for i, p in enumerate(page_objs):
+        for j, content in enumerate(objs):
+            if j + 1 == p:
+                objs[j] = content.replace('/Parent 0 0 R', f'/Parent {pages_obj} 0 R')
+                break
+
+    catalog_obj = obj(f'<< /Type /Catalog /Pages {pages_obj} 0 R >>')
+
+    # Escreve PDF
+    buf = io.BytesIO()
+    buf.write(b'%PDF-1.4\n')
+    xref_positions = []
+    for i, content in enumerate(objs, start=1):
+        xref_positions.append(buf.tell())
+        buf.write(f'{i} 0 obj\n{content}\nendobj\n'.encode('latin-1'))
+    xref_start = buf.tell()
+    xref_count = len(objs) + 1
+    buf.write(b'xref\n')
+    buf.write(f'0 {xref_count}\n'.encode('ascii'))
+    buf.write(b'0000000000 65535 f \n')
+    for pos in xref_positions:
+        buf.write(f'{pos:010d} 00000 n \n'.encode('ascii'))
+    buf.write(b'trailer\n')
+    buf.write(f'<< /Size {xref_count} /Root {catalog_obj} 0 R >>\n'.encode('ascii'))
+    buf.write(b'startxref\n')
+    buf.write(f'{xref_start}\n'.encode('ascii'))
+    buf.write(b'%%EOF\n')
+    return buf.getvalue()
+
+
+@admin_bp.route('/certificados/codigos-pdf')
+@login_required
+@admin_required
+def certificates_codes_pdf():
+    """Gera um PDF personalizado com a lista de codigos de verificacao.
+
+    Query params: year, type, committee_name (mesmos da listagem).
+    """
+    year = request.args.get('year', type=int) or _current_year()
+    cert_type = request.args.get('type', '')
+    committee_name = request.args.get('committee_name', '')
+
+    query = Certificate.query.filter(Certificate.edition_year == year)
+    if cert_type and cert_type in CERT_TYPES:
+        query = query.filter(Certificate.type == cert_type)
+    if committee_name:
+        query = query.filter(Certificate.committee_name == committee_name)
+
+    certs = query.order_by(
+        Certificate.type,
+        func.coalesce(Certificate.student_name, Certificate.name, '').asc()
+    ).all()
+
+    filters_parts = []
+    if cert_type:
+        filters_parts.append(f'tipo={CERT_TYPES[cert_type]}')
+    if committee_name:
+        filters_parts.append(f'tema={committee_name}')
+    filters_desc = ' | '.join(filters_parts) if filters_parts else 'todos'
+
+    pdf_bytes = _build_codes_pdf(certs, year, filters_desc)
+
+    _log_audit('download_codes_pdf', 'system', 0,
+               details=f'{len(certs)} codigos — edicao {year} {filters_desc}')
+
+    response = make_response(pdf_bytes)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename="codigos_certificados_swdl_{year}.pdf"'
+    return response

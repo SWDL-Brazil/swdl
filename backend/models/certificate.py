@@ -8,6 +8,8 @@ CERT_TYPES = {
     'best_delegation': 'Melhor Delegação',
     'best_speaker':    'Melhor Orador(a)',
     'best_dress':      'Melhor Vestimenta',
+    'organizer':       'Organizador',
+    'external':        'SWDL com Portas Abertas',
 }
 
 
@@ -23,18 +25,22 @@ class Certificate(db.Model):
 
     Um aluno pode ter N certificados (um por edicao/tipo). O codigo de
     verificacao e unico globalmente (SWDL-XXXXXX).
+
+    Para certificados externos (Sem aluno vinculado), ``student_id`` e NULL e
+    os dados ficam nos campos livres ``name``/``email`` do próprio registro.
     """
     __tablename__ = 'certificates'
     __table_args__ = (
-        # Um certificado por aluno/edicao/tipo — dedupe no proprio banco,
-        # nao so em Python (dois admins simultaneos criariam duplicata).
+        # Um certificado por aluno/edicao/tipo — dedupe no proprio banco.
+        # student_id NULL (externos) permite multiplas linhas (NULLs sao
+        # considerados distintos pelo SQL), entao nao bloqueia externos.
         db.Index('uq_cert_student_year_type', 'student_id', 'edition_year',
                  'type', unique=True),
     )
 
     id             = db.Column(db.Integer, primary_key=True)
     student_id     = db.Column(db.Integer, db.ForeignKey('students.id'),
-                               nullable=False, index=True)
+                               nullable=True, index=True)
     edition_year   = db.Column(db.Integer, nullable=False, index=True,
                                default=lambda: datetime.now(timezone.utc).year)
     type           = db.Column(db.String(30), nullable=False, index=True,
@@ -52,6 +58,10 @@ class Certificate(db.Model):
     notes          = db.Column(db.Text, nullable=True)
     created_at     = db.Column(db.DateTime,
                                default=lambda: datetime.now(timezone.utc))
+
+    # Campos livres para certificados SEM aluno vinculado (externos / orgs).
+    name           = db.Column(db.String(120), nullable=True)
+    email          = db.Column(db.String(120), nullable=True)
 
     # ── SNAPSHOT (autocontido) ──────────────────────────────────────
     # Copiado do aluno/delegacao na emissao: o certificado nao depende de
@@ -86,22 +96,35 @@ class Certificate(db.Model):
     @property
     def display_name(self):
         """Nome mostrado nas telas — snapshot, com fallback ao cadastro."""
-        return self.student_name or (self.student.name if self.student else '---')
+        if self.student_name:
+            return self.student_name
+        if self.name:
+            return self.name
+        if self.student:
+            return self.student.name
+        return '---'
 
-    def fill_snapshot(self):
-        """Copia nome/pais/comitie do aluno atual para dentro do certificado.
+    def fill_snapshot(self, student=None, delegation=None, theme=None,
+                      name=None, country=None, country_flag=None,
+                      committee=None, committee_name=None):
+        """Copia nome/pais/comitie para dentro do certificado.
 
-        Chamado na geracao do codigo e de novo no upload (momento em que o
-        certificado vira oficial) — assim o snapshot casa com o PDF assinado.
+        Aceita objetos (student/delegation/theme) OU valores diretos, para
+        suportar certificados externos sem aluno vinculado. Chamado na
+        geracao do codigo e de novo no upload (momento em que o certificado
+        vira oficial) — assim o snapshot casa com o PDF assinado.
         """
-        s = self.student
-        deleg = s.delegation if s else None
-        self.student_name   = s.name if s else None
+        s = student or self.student
+        deleg = delegation or (s.delegation if s else None)
+        th = theme or (deleg.theme if deleg else None)
+
+        self.student_name   = name or (s.name if s else None)
         self.global_id      = s.global_id if s else None
-        self.country        = deleg.country if deleg else None
-        self.country_flag   = deleg.country_flag if deleg else None
-        self.committee      = deleg.committee if deleg else None
-        self.committee_name = deleg.theme.name if deleg and deleg.theme else None
+        self.email          = s.email if s else (self.email or None)
+        self.country        = country or (deleg.country if deleg else None)
+        self.country_flag   = country_flag or (deleg.country_flag if deleg else None)
+        self.committee      = committee or (deleg.committee if deleg else None)
+        self.committee_name = committee_name or (th.name if th else None)
         return self
 
     def _signature_parts(self):
@@ -110,8 +133,11 @@ class Certificate(db.Model):
         return [
             self.global_id or '',
             self.student_name or '',
+            self.name or '',
+            self.email or '',
             self.country or '',
             self.committee or '',
+            self.committee_name or '',
             self.type,
             str(self.edition_year),
             self.verification_code,

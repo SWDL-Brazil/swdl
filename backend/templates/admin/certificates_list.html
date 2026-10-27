@@ -4,6 +4,10 @@
 
 {% block topbar_actions %}
   <button class="btn btn-gold btn-sm" onclick="document.getElementById('awardModal').style.display='flex'">🏆 Premiar</button>
+  <button class="btn btn-navy btn-sm" onclick="document.getElementById('externalModal').style.display='flex'">🌐 Externo (Portas Abertas)</button>
+  <button class="btn btn-navy btn-sm" onclick="document.getElementById('organizerModal').style.display='flex'">👥 Organizador</button>
+  <a href="{{ url_for('admin.certificates_codes_pdf', year=current_year, type=current_type, committee_name=current_committee) }}"
+     class="btn btn-navy btn-sm">📄 Baixar PDF dos Códigos</a>
   <form method="POST" action="{{ url_for('admin.certificates_generate_codes') }}" style="display:inline"
         onsubmit="return confirm('Gerar certificados de participacao para todos os alunos sem um em {{ current_year }}?')">
     <input type="hidden" name="year" value="{{ current_year }}">
@@ -60,6 +64,8 @@
   .type-best_delegation { background: rgba(30,64,175,.10); color: #1E40AF; }
   .type-best_speaker { background: rgba(183,148,65,.14); color: #8a6d1d; }
   .type-best_dress { background: rgba(155,28,90,.10); color: #9B1C5A; }
+  .type-organizer { background: rgba(13,27,42,.10); color: var(--navy); }
+  .type-external { background: rgba(201,168,76,.14); color: #8a6d1d; }
   .modal-overlay { display:none; position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.5); align-items:center; justify-content:center }
   .modal-overlay .modal { background:var(--white); border-radius:8px; padding:28px; width:520px; max-width:92vw; max-height:90vh; overflow:auto }
 </style>
@@ -78,6 +84,12 @@
       <option value="">Todos os tipos</option>
       {% for key, label in cert_types.items() %}
       <option value="{{ key }}" {{ 'selected' if key == current_type }}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select name="committee_name" onchange="this.form.submit()">
+      <option value="">Todos os temas</option>
+      {% for t in themes %}
+      <option value="{{ t }}" {{ 'selected' if t == current_committee }}>{{ t }}</option>
       {% endfor %}
     </select>
   </form>
@@ -132,6 +144,8 @@
           <td>
             {% if c.country %}
               {{ c.country_flag }} {{ c.country }}
+            {% elif c.committee_name %}
+              {{ c.committee_name }}
             {% else %}---{% endif %}
           </td>
           <td>{{ c.edition_year }}</td>
@@ -287,5 +301,131 @@ function toggleAwardTarget(type) {
     </table>
   </div>
 </div>
+
+<!-- Modal Externo (SWDL com Portas Abertas) -->
+<div id="externalModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal">
+    <h3 style="font-family:'Playfair Display',serif;font-size:20px;color:var(--navy);margin-bottom:18px">🌐 Certificado Externo — Portas Abertas</h3>
+    <form method="POST" action="{{ url_for('admin.certificate_generate_external') }}">
+      <input type="hidden" name="year" value="{{ current_year }}">
+      <div class="form-group">
+        <label>Tipo</label>
+        <select name="type" required>
+          {% for key, label in cert_types.items() if key in ('external', 'organizer') %}
+          <option value="{{ key }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nome da pessoa *</label>
+        <input type="text" name="name" required placeholder="Ex: Visitante da escola parceira">
+      </div>
+      <div class="form-group">
+        <label>E-mail (opcional)</label>
+        <input type="email" name="email" placeholder="exemplo@email.com">
+      </div>
+      <div class="form-group">
+        <label>Comite / Tema (sigla, ex: CS)</label>
+        <input type="text" name="committee" placeholder="CS">
+      </div>
+      <div class="form-group">
+        <label>Nome do Comite / Tema</label>
+        <input type="text" name="committee_name" placeholder="Comite de Seguranca">
+      </div>
+      <div class="form-group">
+        <label>Pais (opcional)</label>
+        <input type="text" name="country" placeholder="Brasil">
+      </div>
+      <div class="form-group">
+        <label>Bandeira (emoji, opcional)</label>
+        <input type="text" name="country_flag" placeholder="🇧🇷" maxlength="2">
+      </div>
+      <div class="form-group">
+        <label>Observacao (opcional)</label>
+        <input type="text" name="notes" placeholder="Convidado via SWDL com Portas Abertas">
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin:8px 0 0">
+        O codigo e gerado automaticamente. Depois de criar, faca o upload do PDF para liberar o certificado.
+      </p>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('externalModal').style.display='none'">Cancelar</button>
+        <button type="submit" class="btn btn-gold">Criar Certificado Externo</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Organizador -->
+<div id="organizerModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal">
+    <h3 style="font-family:'Playfair Display',serif;font-size:20px;color:var(--navy);margin-bottom:18px">👥 Certificado de Organizador</h3>
+    <form method="POST" action="{{ url_for('admin.certificate_generate_organizer') }}">
+      <input type="hidden" name="year" value="{{ current_year }}">
+      <div class="form-group">
+        <label>Usuario do sistema (opcional, preenche nome/email automaticamente)</label>
+        <select name="user_id">
+          <option value="">Nenhum — preencher manualmente</option>
+          {% for u in users %}
+          <option value="{{ u.id }}">{{ u.name }} — {{ u.email }} ({{ u.role }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nome do organizador *</label>
+        <input type="text" name="name" required placeholder="Ex: Coordenador da mesa">
+      </div>
+      <div class="form-group">
+        <label>E-mail (opcional)</label>
+        <input type="email" name="email" placeholder="organizador@swdl.com">
+      </div>
+      <div class="form-group">
+        <label>Comite / Tema (sigla, ex: CS)</label>
+        <input type="text" name="committee" placeholder="CS">
+      </div>
+      <div class="form-group">
+        <label>Nome do Comite / Tema</label>
+        <input type="text" name="committee_name" placeholder="Comite de Seguranca">
+      </div>
+      <div class="form-group">
+        <label>Pais (opcional)</label>
+        <input type="text" name="country" placeholder="Brasil">
+      </div>
+      <div class="form-group">
+        <label>Bandeira (emoji, opcional)</label>
+        <input type="text" name="country_flag" placeholder="🇧🇷" maxlength="2">
+      </div>
+      <div class="form-group">
+        <label>Observacao (opcional)</label>
+        <input type="text" name="notes" placeholder="Equipe de organizacao">
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin:8px 0 0">
+        O codigo e gerado automaticamente. Depois de criar, faca o upload do PDF para liberar o certificado.
+      </p>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('organizerModal').style.display='none'">Cancelar</button>
+        <button type="submit" class="btn btn-gold">Criar Certificado de Organizador</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const userSelect = document.querySelector('#organizerModal select[name=user_id]');
+if (userSelect) {
+  userSelect.addEventListener('change', function() {
+    const opt = this.options[this.selectedIndex];
+    if (!opt.value) return;
+    const modal = document.getElementById('organizerModal');
+    const nameInput = modal.querySelector('input[name=name]');
+    const emailInput = modal.querySelector('input[name=email]');
+    const parts = opt.text.split(' — ');
+    if (parts.length >= 2) {
+      if (!nameInput.value) nameInput.value = parts[0];
+      const emailPart = parts[1].replace(/ \(.*\)$/, '');
+      if (!emailInput.value) emailInput.value = emailPart;
+    }
+  });
+}
+</script>
 
 {% endblock %}
