@@ -424,6 +424,18 @@ def _run_migrations(app):
                         except Exception as e:
                             print(f'[MIGRATION] Erro ao redimensionar {table_name}.{col_name}: {e}')
 
+        # certificates.student_id passou a aceitar NULL (certificados
+        # externos/organizadores, sem aluno vinculado). ADD COLUMN nao relaxa
+        # NOT NULL, entao ajusta explicitamente no PostgreSQL (idempotente).
+        if is_pg:
+            try:
+                with db.engine.begin() as conn:
+                    conn.execute(sa.text(
+                        'ALTER TABLE certificates ALTER COLUMN student_id DROP NOT NULL'))
+                print('[MIGRATION] certificates.student_id agora aceita NULL.')
+            except Exception as e:
+                print(f'[MIGRATION] Aviso ao relaxar certificates.student_id: {e}')
+
         # Backfill: gera slugs únicos para notícias antigas que ficaram sem slug
         from models.news import News
         try:
