@@ -1,5 +1,5 @@
 from flask import render_template, redirect, url_for, flash, request, current_app, abort, make_response
-from flask_login import login_required
+from flask_login import login_required, current_user
 from routes.admin._helpers import admin_bp, admin_required, _log_audit
 from models.student import Student
 from models.delegation import Delegation
@@ -42,10 +42,11 @@ def _pick_code(used):
 
 def _themes_for_year(year):
     """Temas que possuem delegacoes nesta edicao (para o filtro de tema)."""
-    rows = db.session.query(Delegation.committee_name).distinct()\
-        .filter(Delegation.edition_year == year,
-                Delegation.committee_name.isnot(None))\
-        .order_by(Delegation.committee_name).all()
+    rows = db.session.query(Theme.name).join(
+        Delegation, Delegation.theme_id == Theme.id
+    ).filter(
+        Delegation.edition_year == year
+    ).distinct().order_by(Theme.name).all()
     return [r[0] for r in rows if r[0]]
 
 

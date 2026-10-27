@@ -118,13 +118,16 @@ class Certificate(db.Model):
         deleg = delegation or (s.delegation if s else None)
         th = theme or (deleg.theme if deleg else None)
 
-        self.student_name   = name or (s.name if s else None)
-        self.global_id      = s.global_id if s else None
-        self.email          = s.email if s else (self.email or None)
-        self.country        = country or (deleg.country if deleg else None)
-        self.country_flag   = country_flag or (deleg.country_flag if deleg else None)
-        self.committee      = committee or (deleg.committee if deleg else None)
-        self.committee_name = committee_name or (th.name if th else None)
+        # Para certificados SEM aluno (externos/organizadores), preserva os
+        # campos livres ja preenchidos quando fill_snapshot() e chamado sem
+        # argumentos (ex.: no upload, que so re-assina o que ja existe).
+        self.student_name   = name or (s.name if s else self.student_name) or self.name
+        self.global_id      = s.global_id if s else self.global_id
+        self.email          = (s.email if s else None) or self.email or None
+        self.country        = country or (deleg.country if deleg else None) or self.country
+        self.country_flag   = country_flag or (deleg.country_flag if deleg else None) or self.country_flag
+        self.committee      = committee or (deleg.committee if deleg else None) or self.committee
+        self.committee_name = committee_name or (th.name if th else None) or self.committee_name
         return self
 
     def _signature_parts(self):
