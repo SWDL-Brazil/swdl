@@ -213,6 +213,26 @@ with app.app_context():
     check('organizador limpa instituicao', p.institution is None, p.institution)
     check('organizador limpa edicao', p.edition_year is None, p.edition_year)
 
+# RH faz parte das ocupacoes do organizador
+with app.app_context():
+    from models.certificate_person import PERSON_OCCUPATIONS
+    check('RH na lista de ocupacoes', 'RH' in PERSON_OCCUPATIONS)
+r = client.get('/admin/certificados/pessoas')
+check('modal de pessoa oferece RH', 'value="RH"' in r.get_data(as_text=True))
+r = client.get('/admin/certificados?year=2026')
+check('modal do certificado oferece RH', 'value="RH"' in r.get_data(as_text=True))
+r = client.post('/admin/certificados/pessoas/nova', data={
+    'kind': 'organizer', 'name': 'Organizador RH', 'occupation': 'RH',
+}, follow_redirects=False)
+check('criar organizador RH 302', r.status_code == 302, r.status_code)
+with app.app_context():
+    p_rh = CertificatePerson.query.filter_by(name='Organizador RH').first()
+    check('organizador RH guarda ocupacao', bool(p_rh) and p_rh.occupation == 'RH',
+          p_rh.occupation if p_rh else None)
+    if p_rh:
+        db.session.delete(p_rh)
+        db.session.commit()
+
 # ocupacao fora da lista fixa e ignorada
 r = client.post('/admin/certificados/pessoas/nova', data={
     'kind': 'organizer', 'name': 'Organizador Invalido',
