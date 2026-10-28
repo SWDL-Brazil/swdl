@@ -213,25 +213,40 @@ with app.app_context():
     check('organizador limpa instituicao', p.institution is None, p.institution)
     check('organizador limpa edicao', p.edition_year is None, p.edition_year)
 
-# RH faz parte das ocupacoes do organizador
+# RH e Midias fazem parte das ocupacoes do organizador
 with app.app_context():
     from models.certificate_person import PERSON_OCCUPATIONS
     check('RH na lista de ocupacoes', 'RH' in PERSON_OCCUPATIONS)
+    check('Midias na lista de ocupacoes', 'Mídias' in PERSON_OCCUPATIONS)
+    check('Imprensa continua na lista', 'Imprensa' in PERSON_OCCUPATIONS)
 r = client.get('/admin/certificados/pessoas')
-check('modal de pessoa oferece RH', 'value="RH"' in r.get_data(as_text=True))
+html = r.get_data(as_text=True)
+check('modal de pessoa oferece RH', 'value="RH"' in html)
+check('modal de pessoa oferece Midias', 'value="Mídias"' in html)
 r = client.get('/admin/certificados?year=2026')
-check('modal do certificado oferece RH', 'value="RH"' in r.get_data(as_text=True))
+html = r.get_data(as_text=True)
+check('modal do certificado oferece RH', 'value="RH"' in html)
+check('modal do certificado oferece Midias', 'value="Mídias"' in html)
 r = client.post('/admin/certificados/pessoas/nova', data={
     'kind': 'organizer', 'name': 'Organizador RH', 'occupation': 'RH',
 }, follow_redirects=False)
 check('criar organizador RH 302', r.status_code == 302, r.status_code)
+r = client.post('/admin/certificados/pessoas/nova', data={
+    'kind': 'organizer', 'name': 'Organizador Midias', 'occupation': 'Mídias',
+}, follow_redirects=False)
+check('criar organizador Midias 302', r.status_code == 302, r.status_code)
 with app.app_context():
     p_rh = CertificatePerson.query.filter_by(name='Organizador RH').first()
     check('organizador RH guarda ocupacao', bool(p_rh) and p_rh.occupation == 'RH',
           p_rh.occupation if p_rh else None)
-    if p_rh:
-        db.session.delete(p_rh)
-        db.session.commit()
+    p_mid = CertificatePerson.query.filter_by(name='Organizador Midias').first()
+    check('organizador Midias guarda ocupacao',
+          bool(p_mid) and p_mid.occupation == 'Mídias',
+          p_mid.occupation if p_mid else None)
+    for p in (p_rh, p_mid):
+        if p:
+            db.session.delete(p)
+    db.session.commit()
 
 # ocupacao fora da lista fixa e ignorada
 r = client.post('/admin/certificados/pessoas/nova', data={

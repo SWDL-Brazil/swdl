@@ -15,6 +15,7 @@ PERSON_OCCUPATIONS = [
     'Assessoria',
     'Secretariado',
     'RH',
+    'Mídias',
     'Imprensa',
     'Outro',
 ]
