@@ -729,12 +729,89 @@ def _summary_lines(certs):
     return [line1, line2]
 
 
-def _draw_page_header(ops, year, filters_desc, summary, first_page):
-    """Logo SWDL + titulo + filtros/resumo (so na 1a pagina)."""
-    _op_rect(ops, 40, 744, 150, 32, NAVY)
-    _op_text(ops, 'SWDL', 52, 756, 17, GOLD, 'F2')
-    _op_text(ops, 'SESI WORLD DIPLOMACY LEAGUE', 52, 746, 6.5, GOLD, 'F1')
-    _op_line(ops, 40, 736, 572, 736, GOLD, 1.5)
+LOGO_FILE = 'logo_pdf.jpg'
+_LOGO_CACHE = None
+
+
+def _jpeg_size(data):
+    """Le largura/altura de um JPEG pelos marcadores SOF (sem dependencias)."""
+    i = 2
+    n = len(data)
+    while i < n - 9:
+        if data[i] != 0xFF:
+            i += 1
+            continue
+        marker = data[i + 1]
+        if marker in (0xD8, 0xD9):          # SOI / EOI
+            i += 2
+            continue
+        if 0xC0 <= marker <= 0xCF and marker not in (0xC4, 0xC8, 0xCC):
+            height = (data[i + 5] << 8) | data[i + 6]
+            width = (data[i + 7] << 8) | data[i + 8]
+            if width and height:
+                return width, height
+            return None
+        seg_len = (data[i + 2] << 8) | data[i + 3]
+        i += 2 + seg_len
+    return None
+
+
+def _logo_asset():
+    """Bytes + dimensoes da logo (JPEG) em static/. None se nao existir."""
+    import os
+    global _LOGO_CACHE
+    if _LOGO_CACHE is not None:
+        return _LOGO_CACHE or None
+
+    candidates = []
+    try:
+        from flask import has_app_context
+        if has_app_context() and current_app.static_folder:
+            candidates.append(os.path.join(current_app.static_folder, LOGO_FILE))
+    except Exception:
+        pass
+    here = os.path.dirname(os.path.abspath(__file__))          # routes/admin
+    candidates.append(os.path.join(os.path.dirname(os.path.dirname(here)),
+                                   'static', LOGO_FILE))
+
+    data = None
+    for path in candidates:
+        try:
+            with open(path, 'rb') as fh:
+                data = fh.read()
+            break
+        except OSError:
+            continue
+
+    size = _jpeg_size(data) if data else None
+    if not data or not size:
+        _LOGO_CACHE = {}          # negativo: nao tenta reler a cada PDF
+        return None
+    _LOGO_CACHE = {'data': data, 'w': size[0], 'h': size[1]}
+    return _LOGO_CACHE
+
+
+def _draw_page_header(ops, year, filters_desc, summary, first_page,
+                      logo_asp=None):
+    """Logo real + wordmark + titulo + filtros/resumo (so na 1a pagina)."""
+    if logo_asp:
+        logo_h = 36.0
+        logo_w = logo_h * logo_asp
+        ops.append('q')
+        ops.append(f'{logo_w:.2f} 0 0 {logo_h:.2f} 40 740 cm')
+        ops.append('/Logo Do')
+        ops.append('Q')
+        tx = 40 + logo_w + 14
+        _op_text(ops, 'SWDL', tx, 760, 17, NAVY, 'F2')
+        _op_text(ops, 'SESI WORLD DIPLOMACY LEAGUE', tx, 750, 6.6, MUTED)
+        _op_text(ops, 'CERTIFICADOS', tx, 742, 6.0, GOLD, 'F2')
+    else:
+        # Fallback (logo ausente no deploy): bloco textual
+        _op_rect(ops, 40, 744, 150, 32, NAVY)
+        _op_text(ops, 'SWDL', 52, 756, 17, GOLD, 'F2')
+        _op_text(ops, 'SESI WORLD DIPLOMACY LEAGUE', 52, 746, 6.5, GOLD, 'F1')
+
+    _op_line(ops, 40, 734, 572, 734, GOLD, 1.5)
     _op_text(ops, f'Códigos de Verificação de Certificados · Edição {year}',
              40, 721, 12, NAVY, 'F2')
 
@@ -765,7 +842,7 @@ def _draw_row(ops, cert, y, zebra):
     values = [
         cert.verification_code,
         cert.display_name or '',
-        PDF_TYPE_LABELS.get(cert.type, cert.type_label),
+        PDF_TYPE_LABELS.get(cert.type) or cert.type_label,
         str(cert.edition_year),
         theme,
         'Liberado' if cert.released else 'Pendente',
@@ -801,12 +878,14 @@ def _build_codes_pdf(certs, year, filters_desc):
     PAGE_W, PAGE_H = 612, 792
     now_str = _dt.now(timezone.utc).strftime('%d/%m/%Y %H:%M UTC')
     summary = _summary_lines(certs)
+    logo = _logo_asset()
+    logo_asp = (logo['w'] / float(logo['h'])) if logo else None
 
     # ── Paginacao dinamica ──────────────────────────────────────────
     pages_ops = []
     if not certs:
         ops = []
-        y = _draw_page_header(ops, year, filters_desc, summary, True)
+        y = _draw_page_header(ops, year, filters_desc, summary, True, logo_asp)
         y = _draw_table_header(ops, y)
         _op_text(ops, 'Nenhum certificado encontrado para este filtro.',
                  40, y - 6, 9, MUTED)
@@ -816,7 +895,8 @@ def _build_codes_pdf(certs, year, filters_desc):
         page_num = 1
         while idx < len(certs):
             ops = []
-            y = _draw_page_header(ops, year, filters_desc, summary, page_num == 1)
+            y = _draw_page_header(ops, year, filters_desc, summary,
+                                  page_num == 1, logo_asp)
             y = _draw_table_header(ops, y)
             row_i = 0
             while idx < len(certs) and y >= 64:
@@ -850,11 +930,23 @@ def _build_codes_pdf(certs, year, filters_desc):
     font2 = obj('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold '
                 '/Encoding /WinAnsiEncoding >>')
 
+    # Logo como XObject de imagem (JPEG/DCTDecode — nenhuma lib externa)
+    logo_obj = None
+    if logo:
+        raw = logo['data'].decode('latin-1')
+        logo_obj = obj(
+            f'<< /Type /XObject /Subtype /Image /Width {logo["w"]} '
+            f'/Height {logo["h"]} /ColorSpace /DeviceRGB /BitsPerComponent 8 '
+            f'/Filter /DCTDecode /Length {len(logo["data"])} >>\n'
+            f'stream\n{raw}\nendstream\nendobj'
+        )
+    xobject_res = f'/XObject << /Logo {logo_obj} 0 R >> ' if logo_obj else ''
+
     page_objs = []
     for c in contents:
         page_objs.append(obj(
             f'<< /Type /Page /Parent 0 0 R /Resources << /Font << /F1 {font1} 0 R '
-            f'/F2 {font2} 0 R >> >> /MediaBox [0 0 {PAGE_W} {PAGE_H}] '
+            f'/F2 {font2} 0 R >> {xobject_res}>> /MediaBox [0 0 {PAGE_W} {PAGE_H}] '
             f'/Contents {c} 0 R >>'
         ))
 

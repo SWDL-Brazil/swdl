@@ -72,8 +72,7 @@
   .type-best_dress { background: rgba(155,28,90,.10); color: #9B1C5A; }
   .type-organizer { background: rgba(13,27,42,.10); color: var(--navy); }
   .type-external { background: rgba(201,168,76,.14); color: #8a6d1d; }
-  .modal-overlay { display:none; position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.5); align-items:center; justify-content:center }
-  .modal-overlay .modal { background:var(--white); border-radius:8px; padding:28px; width:520px; max-width:92vw; max-height:90vh; overflow:auto }
+  .modal-overlay .modal { padding:28px; width:520px; max-width:92vw; max-height:calc(100vh - 48px); overflow:auto }
 </style>
 
 <div class="cert-filter-bar">
@@ -210,7 +209,7 @@
 </div>
 
 <!-- Modal Premiar -->
-<div id="awardModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'">
+<div id="awardModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal">
     <h3 style="font-family:'Playfair Display',serif;font-size:20px;color:var(--navy);margin-bottom:18px">🏆 Premiar</h3>
     <form method="POST" action="{{ url_for('admin.certificate_award') }}">
@@ -251,7 +250,7 @@
         O codigo e gerado automaticamente. Depois de criar, faca o upload do PDF para liberar o certificado.
       </p>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
-        <button type="button" class="btn btn-ghost" onclick="document.getElementById('awardModal').style.display='none'">Cancelar</button>
+        <button type="button" class="btn btn-ghost" onclick="this.closest('.modal-overlay').classList.remove('open')">Cancelar</button>
         <button type="submit" class="btn btn-gold">Criar Certificado</button>
       </div>
     </form>
@@ -261,8 +260,19 @@
 <script>
 function openCertModal(id) {
   const modal = document.getElementById(id);
-  if (modal) modal.style.display = 'flex';
+  if (!modal) return;
+  // .modal-overlay usa opacity/visibility via classe .open (display nao basta)
+  modal.classList.add('open');
+  const first = modal.querySelector('input:not([type=hidden]), select, textarea');
+  if (first) setTimeout(function () { first.focus(); }, 60);
 }
+
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape') return;
+  document.querySelectorAll('.modal-overlay.open').forEach(function (m) {
+    m.classList.remove('open');
+  });
+});
 
 function toggleAwardTarget(type) {
   const isDeleg = type === 'best_delegation';
@@ -314,7 +324,7 @@ function toggleAwardTarget(type) {
 </div>
 
 <!-- Modal Externo (SWDL com Portas Abertas) -->
-<div id="externalModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'">
+<div id="externalModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal">
     <h3 style="font-family:'Playfair Display',serif;font-size:20px;color:var(--navy);margin-bottom:18px">🌐 Certificado Externo — Portas Abertas</h3>
     <form method="POST" action="{{ url_for('admin.certificate_generate_external') }}">
@@ -334,7 +344,7 @@ function toggleAwardTarget(type) {
         <label>Tipo</label>
         <select name="type" required>
           {% for key, label in cert_types.items() if key in ('external', 'organizer') %}
-          <option value="{{ key }}">{{ label }}</option>
+          <option value="{{ key }}" {{ 'selected' if key == 'external' }}>{{ label }}</option>
           {% endfor %}
         </select>
       </div>
@@ -374,7 +384,7 @@ function toggleAwardTarget(type) {
         O codigo e gerado automaticamente. Depois de criar, faca o upload do PDF para liberar o certificado.
       </p>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
-        <button type="button" class="btn btn-ghost" onclick="document.getElementById('externalModal').style.display='none'">Cancelar</button>
+        <button type="button" class="btn btn-ghost" onclick="this.closest('.modal-overlay').classList.remove('open')">Cancelar</button>
         <button type="submit" class="btn btn-gold">Criar Certificado Externo</button>
       </div>
     </form>
@@ -382,7 +392,7 @@ function toggleAwardTarget(type) {
 </div>
 
 <!-- Modal Organizador -->
-<div id="organizerModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'">
+<div id="organizerModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal">
     <h3 style="font-family:'Playfair Display',serif;font-size:20px;color:var(--navy);margin-bottom:18px">👥 Certificado de Organizador</h3>
     <form method="POST" action="{{ url_for('admin.certificate_generate_organizer') }}">
@@ -443,7 +453,7 @@ function toggleAwardTarget(type) {
         O codigo e gerado automaticamente. Depois de criar, faca o upload do PDF para liberar o certificado.
       </p>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
-        <button type="button" class="btn btn-ghost" onclick="document.getElementById('organizerModal').style.display='none'">Cancelar</button>
+        <button type="button" class="btn btn-ghost" onclick="this.closest('.modal-overlay').classList.remove('open')">Cancelar</button>
         <button type="submit" class="btn btn-gold">Criar Certificado de Organizador</button>
       </div>
     </form>

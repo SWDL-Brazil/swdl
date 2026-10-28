@@ -91,7 +91,9 @@ check('codigos-pdf 200', r.status_code == 200, r.status_code)
 check('codigos-pdf mimetype', r.mimetype == 'application/pdf', r.mimetype)
 check('codigos-pdf header', r.data.startswith(b'%PDF-1.4'), r.data[:8])
 check('codigos-pdf contem logo', b'SWDL' in r.data)
-check('codigos-pdf contem rodape', 'Página'.encode('latin-1') in r.data)
+check('codigos-pdf logo embutida (JPEG)', b'/DCTDecode' in r.data)
+check('codigos-pdf XObject /Logo', b'/Logo' in r.data)
+check('codigos-pdf rodape', 'Página'.encode('latin-1') in r.data)
 
 # listagem filtra por tema
 r = client.get('/admin/certificados?year=2026&committee_name=Comite de Seguranca')

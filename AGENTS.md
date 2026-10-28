@@ -24,6 +24,9 @@ Build a complete student panel + admin backend for the SWDL Model UN platform wi
   -- `certificate_view` (`/certificado/<code>`) serve o PDF ou a página do certificado
   -- PDFs no BANCO (`Certificate.pdf_data`, bytea/BLOB) — Render free não tem disco persistente; `cert_storage.py` só valida (`validate_pdf`) e serve da memória (`pdf_response`)
   -- SNAPSHOT autocontido (`student_name/global_id/country/country_flag/committee/committee_name`): copiado na emissão por `fill_snapshot()` (gerar-códigos, premiar e de novo no upload) — páginas/API/lista leem dele sem JOIN com students e o HMAC (que cobre esses campos) sobrevive a renomear aluno/trocar delegação; `app.backfill_cert_snapshot()` preenche linha antiga no boot (idempotente)
+  -- Externos ("SWDL com Portas Abertas") e Organizadores: `student_id` NULL + `name`/`email` livres e registro `CertificatePerson` (`/admin/certificados/pessoas`) para não redigitar nomes; dedupe por pessoa/ano/tipo
+  -- `GET /admin/certificados/codigos-pdf` monta o PDF só com stdlib: logo real em JPEG embutido (`static/logo_pdf.jpg`, XObject `/DCTDecode`, `_logo_asset()` com fallback textual), cabeçalho de tabela repetido, zebra, resumo por tipo/tema e rodapé com páginas/hora
+  -- Modais do admin usam a classe `.open` (`.modal-overlay` é `opacity:0; visibility:hidden` no `admin.css`; `style.display='flex'` NÃO abre — era o bug de "não consigo criar pessoa")
 
 ### Admin — Agenda (correções)
 - `get_resolved_phase()` em `agenda_utils.py`: fase = agenda (ou `'pre'`) + override manual — fonte única para context processor e dashboards (corrige dashboard `/admin/` vazio com fase `None` e switcher 🟢/🔴/🔵 ignorado em `/admin/` e `/admin/diretor`)

@@ -51,8 +51,7 @@
     border-radius: 10px; padding: 2px 8px;
     font-family:'DM Mono',monospace; font-size: 10px; font-weight: 700;
   }
-  .modal-overlay { display:none; position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.5); align-items:center; justify-content:center }
-  .modal-overlay .modal { background:var(--white); border-radius:8px; padding:28px; width:520px; max-width:92vw; max-height:90vh; overflow:auto }
+  .modal-overlay .modal { padding:28px; width:520px; max-width:92vw; max-height:calc(100vh - 48px); overflow:auto }
   .gen-form { display:flex; gap:4px; align-items:center }
   .gen-form select { padding: 4px 6px; font-size: 11px; border:1px solid var(--border); border-radius:3px; }
 </style>
@@ -153,7 +152,7 @@
 </div>
 
 <!-- Modal Pessoa (novo / editar) -->
-<div id="personModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'">
+<div id="personModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal">
     <h3 id="personModalTitle" style="font-family:'Playfair Display',serif;font-size:20px;color:var(--navy);margin-bottom:18px">Nova Pessoa</h3>
     <form method="POST" id="personForm" action="{{ url_for('admin.certificate_person_create') }}">
@@ -194,7 +193,7 @@
         <input type="text" name="notes" id="pNotes" placeholder="Ex: convidado da escola parceira">
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
-        <button type="button" class="btn btn-ghost" onclick="document.getElementById('personModal').style.display='none'">Cancelar</button>
+        <button type="button" class="btn btn-ghost" onclick="this.closest('.modal-overlay').classList.remove('open')">Cancelar</button>
         <button type="submit" class="btn btn-gold" id="personSubmit">Salvar Pessoa</button>
       </div>
     </form>
@@ -204,7 +203,11 @@
 <script>
 const PERSON_CREATE_URL = "{{ url_for('admin.certificate_person_create') }}";
 const PERSON_EDIT_URL = "{{ url_for('admin.certificate_person_edit', id=0) }}".replace('0/editar', '');
-const FIELDS = ['name', 'email', 'committee', 'committee_name', 'country', 'country_flag', 'notes'];
+const FIELDS = {
+  name: 'pName', email: 'pEmail', committee: 'pCommittee',
+  committee_name: 'pCommitteeName', country: 'pCountry',
+  country_flag: 'pCountryFlag', notes: 'pNotes'
+};
 
 function openPersonModal(btn) {
   const form = document.getElementById('personForm');
@@ -217,8 +220,8 @@ function openPersonModal(btn) {
     title.textContent = 'Editar Pessoa';
     submit.textContent = 'Salvar Alteracoes';
     document.getElementById('pKind').value = p.kind || 'external';
-    FIELDS.forEach(function (f) {
-      const el = document.getElementById('p' + f.charAt(0).toUpperCase() + f.slice(1));
+    Object.keys(FIELDS).forEach(function (f) {
+      const el = document.getElementById(FIELDS[f]);
       if (el) el.value = p[f] || '';
     });
   } else {
@@ -227,12 +230,16 @@ function openPersonModal(btn) {
     title.textContent = 'Nova Pessoa';
     submit.textContent = 'Salvar Pessoa';
   }
-  document.getElementById('personModal').style.display = 'flex';
+  const modal = document.getElementById('personModal');
+  modal.classList.add('open');
+  setTimeout(function () { document.getElementById('pName').focus(); }, 60);
 }
 
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') {
-    document.getElementById('personModal').style.display = 'none';
+    document.querySelectorAll('.modal-overlay.open').forEach(function (m) {
+      m.classList.remove('open');
+    });
   }
 });
 </script>
