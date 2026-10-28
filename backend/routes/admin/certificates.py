@@ -394,6 +394,13 @@ def _apply_person_to_form_data(data, person):
     return data
 
 
+def _clip(value, size):
+    """Corta para o tamanho da coluna (Postgres rejeita string maior)."""
+    if not value:
+        return value
+    return value[:size]
+
+
 def _save_person_from_form(data, kind, person_id=None):
     """Cria/atualiza uma CertificatePerson. Devolve a pessoa ou None."""
     kind = kind if kind in PERSON_KINDS else 'external'
@@ -404,17 +411,17 @@ def _save_person_from_form(data, kind, person_id=None):
         person = CertificatePerson(kind=kind)
         db.session.add(person)
     person.kind = kind
-    person.name = data['name']
-    person.email = data.get('email')
-    person.committee_name = data.get('committee_name')
+    person.name = _clip(data['name'], 120)
+    person.email = _clip(data.get('email'), 120)
+    person.committee_name = _clip(data.get('committee_name'), 120)
     if kind == 'organizer':
-        person.committee = data.get('committee')
-        person.occupation = data.get('occupation')
+        person.committee = _clip(data.get('committee'), 300)
+        person.occupation = _clip(data.get('occupation'), 60)
         # Campos exclusivos de Portas Abertas.
         person.institution = None
         person.edition_year = None
     else:
-        person.institution = data.get('institution')
+        person.institution = _clip(data.get('institution'), 120)
         person.edition_year = data.get('edition_year')
         person.occupation = None
         person.committee = None

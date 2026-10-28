@@ -53,6 +53,12 @@
     font-family:'DM Mono',monospace; font-size: 10px; font-weight: 700;
   }
   .modal-overlay .modal { padding:28px; width:520px; max-width:92vw; max-height:calc(100vh - 48px); overflow:auto }
+  .person-actions {
+    position: sticky; bottom: -28px; z-index: 2;
+    display: flex; gap: 8px; justify-content: flex-end;
+    margin: 20px -28px -28px; padding: 14px 28px;
+    background: var(--white); border-top: 1px solid var(--border);
+  }
   .gen-form { display:flex; gap:4px; align-items:center }
   .gen-form select { padding: 4px 6px; font-size: 11px; border:1px solid var(--border); border-radius:3px; }
 </style>
@@ -160,7 +166,7 @@
 <div id="personModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal">
     <h3 id="personModalTitle" style="font-family:'Playfair Display',serif;font-size:20px;color:var(--navy);margin-bottom:18px">Nova Pessoa</h3>
-    <form method="POST" id="personForm" action="{{ url_for('admin.certificate_person_create') }}">
+    <form method="POST" id="personForm" action="{{ url_for('admin.certificate_person_create') }}" novalidate>
       <div class="form-group">
         <label>Tipo *</label>
         <select name="kind" id="pKind" required>
@@ -205,9 +211,9 @@
                min="2000" max="2100" placeholder="{{ current_year }}">
       </div>
 
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <div class="person-actions">
         <button type="button" class="btn btn-ghost" onclick="this.closest('.modal-overlay').classList.remove('open')">Cancelar</button>
-        <button type="submit" class="btn btn-gold" id="personSubmit">Salvar Pessoa</button>
+        <button type="submit" class="btn btn-gold" id="personSubmit" form="personForm">Salvar Pessoa</button>
       </div>
     </form>
   </div>
@@ -272,6 +278,39 @@ function openPersonModal(btn) {
 }
 
 document.getElementById('pKind').addEventListener('change', syncPersonKind);
+
+// ── Envio do formulario ──────────────────────────────────────────────
+// O form usa `novalidate`: a validacao nativa nao pode "engolir" o clique
+// (campo invalido escondido fazia o botao parecer morto). Validamos aqui e
+// mostramos o motivo antes de enviar.
+function personFieldLabel(el) {
+  const group = el.closest('.form-group');
+  const label = group ? group.querySelector('label') : null;
+  return label ? label.textContent.trim().replace(/\s*\*$/, '') : (el.name || 'campo');
+}
+
+document.getElementById('personForm').addEventListener('submit', function (e) {
+  const form = this;
+  const bad = Array.prototype.slice.call(form.elements).filter(function (el) {
+    return el.willValidate && !el.checkValidity();
+  });
+  if (bad.length) {
+    e.preventDefault();
+    const el = bad[0];
+    const section = el.closest('.kind-organizer, .kind-external');
+    if (section) {
+      document.getElementById('pKind').value =
+        section.classList.contains('kind-organizer') ? 'organizer' : 'external';
+      syncPersonKind();
+    }
+    el.focus();
+    alert('Confira o campo "' + personFieldLabel(el) + '": ' + el.validationMessage);
+    return;
+  }
+  const btn = document.getElementById('personSubmit');
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+});
 
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') {
