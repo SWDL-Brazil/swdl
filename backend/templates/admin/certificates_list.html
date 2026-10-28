@@ -330,13 +330,12 @@ function toggleAwardTarget(type) {
   <div class="modal">
     <h3 style="font-family:'Playfair Display',serif;font-size:20px;color:var(--navy);margin-bottom:18px">🌐 Certificado Externo — Portas Abertas</h3>
     <form method="POST" action="{{ url_for('admin.certificate_generate_external') }}">
-      <input type="hidden" name="year" value="{{ current_year }}">
       <div class="form-group">
         <label>Pessoa cadastrada (opcional — evita digitar o nome)</label>
         <select name="person_id" onchange="fillFromPerson(this, 'externalModal')">
           <option value="">— digitar manualmente —</option>
           {% for p in people %}
-          <option value="{{ p.id }}" data-person='{{ {"name": p.name, "email": p.email or "", "committee": p.committee or "", "committee_name": p.committee_name or "", "country": p.country or "", "country_flag": p.country_flag or "", "notes": p.notes or ""}|tojson }}'>
+          <option value="{{ p.id }}" data-person='{{ {"name": p.name, "email": p.email or "", "committee_name": p.committee_name or "", "institution": p.institution or "", "edition_year": p.edition_year or ""}|tojson }}'>
             {{ p.name }} — {{ p.kind_label }}
           </option>
           {% endfor %}
@@ -355,28 +354,20 @@ function toggleAwardTarget(type) {
         <input type="text" name="name" required list="peopleNames" placeholder="Ex: Visitante da escola parceira">
       </div>
       <div class="form-group">
-        <label>E-mail (opcional)</label>
+        <label>E-mail</label>
         <input type="email" name="email" placeholder="exemplo@email.com">
       </div>
       <div class="form-group">
-        <label>Comite / Tema (sigla, ex: CS)</label>
-        <input type="text" name="committee" placeholder="CS">
+        <label>Instituicao</label>
+        <input type="text" name="institution" placeholder="Escola / universidade / organizacao">
       </div>
       <div class="form-group">
-        <label>Nome do Comite / Tema</label>
-        <input type="text" name="committee_name" placeholder="Comite de Seguranca">
+        <label>Edicao</label>
+        <input type="number" name="year" min="2000" max="2100" value="{{ current_year }}">
       </div>
       <div class="form-group">
-        <label>Pais (opcional)</label>
-        <input type="text" name="country" placeholder="Brasil">
-      </div>
-      <div class="form-group">
-        <label>Bandeira (emoji, opcional)</label>
-        <input type="text" name="country_flag" placeholder="🇧🇷" maxlength="2">
-      </div>
-      <div class="form-group">
-        <label>Observacao (opcional)</label>
-        <input type="text" name="notes" placeholder="Convidado via SWDL com Portas Abertas">
+        <label>Tema assistido (publico / plateia)</label>
+        <input type="text" name="committee_name" placeholder="Tema que acompanhou na plateia">
       </div>
       <div class="form-group" style="display:flex;align-items:center;gap:8px">
         <input type="checkbox" name="save_person" id="savePersonExternal" value="1" style="width:auto">
@@ -404,7 +395,7 @@ function toggleAwardTarget(type) {
         <select name="person_id" onchange="fillFromPerson(this, 'organizerModal')">
           <option value="">— digitar manualmente —</option>
           {% for p in people %}
-          <option value="{{ p.id }}" data-person='{{ {"name": p.name, "email": p.email or "", "committee": p.committee or "", "committee_name": p.committee_name or "", "country": p.country or "", "country_flag": p.country_flag or "", "notes": p.notes or ""}|tojson }}'>
+          <option value="{{ p.id }}" data-person='{{ {"name": p.name, "email": p.email or "", "committee_name": p.committee_name or "", "occupation": p.occupation or ""}|tojson }}'>
             {{ p.name }} — {{ p.kind_label }}
           </option>
           {% endfor %}
@@ -424,28 +415,21 @@ function toggleAwardTarget(type) {
         <input type="text" name="name" required list="peopleNames" placeholder="Ex: Coordenador da mesa">
       </div>
       <div class="form-group">
-        <label>E-mail (opcional)</label>
+        <label>E-mail</label>
         <input type="email" name="email" placeholder="organizador@swdl.com">
       </div>
       <div class="form-group">
-        <label>Comite / Tema (sigla, ex: CS)</label>
-        <input type="text" name="committee" placeholder="CS">
-      </div>
-      <div class="form-group">
-        <label>Nome do Comite / Tema</label>
+        <label>Tema / Comite</label>
         <input type="text" name="committee_name" placeholder="Comite de Seguranca">
       </div>
       <div class="form-group">
-        <label>Pais (opcional)</label>
-        <input type="text" name="country" placeholder="Brasil">
-      </div>
-      <div class="form-group">
-        <label>Bandeira (emoji, opcional)</label>
-        <input type="text" name="country_flag" placeholder="🇧🇷" maxlength="2">
-      </div>
-      <div class="form-group">
-        <label>Observacao (opcional)</label>
-        <input type="text" name="notes" placeholder="Equipe de organizacao">
+        <label>Ocupacao</label>
+        <select name="occupation">
+          <option value="">—</option>
+          {% for occ in occupations %}
+          <option value="{{ occ }}">{{ occ }}</option>
+          {% endfor %}
+        </select>
       </div>
       <div class="form-group" style="display:flex;align-items:center;gap:8px">
         <input type="checkbox" name="save_person" id="savePersonOrganizer" value="1" style="width:auto">
@@ -476,11 +460,10 @@ function fillFromPerson(select, modalId) {
   };
   set('name', p.name);
   set('email', p.email);
-  set('committee', p.committee);
   set('committee_name', p.committee_name);
-  set('country', p.country);
-  set('country_flag', p.country_flag);
-  set('notes', p.notes);
+  set('occupation', p.occupation);
+  set('institution', p.institution);
+  set('year', p.edition_year);
 }
 
 const userSelect = document.querySelector('#organizerModal select[name=user_id]');

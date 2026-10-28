@@ -127,6 +127,7 @@
       </select>
     </div>
     {% endif %}
+    {% if not is_people %}
     <div>
       <label for="fCountry">País</label>
       <select name="country" id="fCountry">
@@ -136,7 +137,6 @@
         {% endfor %}
       </select>
     </div>
-    {% if not is_people %}
     <div>
       <label for="fPresence">Presença</label>
       <select name="presence" id="fPresence">
@@ -177,8 +177,13 @@
           </th>
           <th>{{ 'Pessoa' if is_people else 'Aluno' }}</th>
           <th>Tema / Comitê</th>
+          {% if is_people %}
+          <th>Ocupação / Instituição</th>
+          <th>Edição</th>
+          {% else %}
           <th>País</th>
-          {% if not is_people %}<th>Presença</th>{% endif %}
+          <th>Presença</th>
+          {% endif %}
           <th>Certificado</th>
         </tr>
       </thead>
@@ -203,10 +208,17 @@
             <div style="font-size:12px">{{ row.theme or '&mdash;'|safe }}</div>
             {% if row.committee %}<div class="bulk-row-sub">{{ row.committee }}</div>{% endif %}
           </td>
+          {% if is_people %}
+          <td style="font-size:12px">
+            {% if row.detail and row.detail != '---' %}{{ row.detail }}{% else %}<span class="bulk-muted">&mdash;</span>{% endif %}
+          </td>
+          <td style="font-size:12px;font-family:'DM Mono',monospace">
+            {{ row.edition or '&mdash;'|safe }}
+          </td>
+          {% else %}
           <td style="font-size:12px">
             {% if row.country %}{{ row.flag }} {{ row.country }}{% else %}<span class="bulk-muted">&mdash;</span>{% endif %}
           </td>
-          {% if not is_people %}
           <td style="font-size:12px">
             <span class="presence-dot {{ 'on' if row.presence == 'presente' else 'off' }}"></span>
             {{ 'Presente' if row.presence == 'presente' else 'Ausente' }}
@@ -227,7 +239,7 @@
         </tr>
         {% else %}
         <tr>
-          <td colspan="{{ 5 if is_people else 6 }}" style="text-align:center;color:var(--muted);padding:34px">
+          <td colspan="6" style="text-align:center;color:var(--muted);padding:34px">
             Nenhum resultado com essas condições.
             <br><br>
             <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.certificate_bulk_page', year=year, type=cert_type, status='all') }}">Mostrar todos</a>

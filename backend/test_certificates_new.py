@@ -146,7 +146,8 @@ check('pessoas pagina 200', r.status_code == 200, r.status_code)
 
 r = client.post('/admin/certificados/pessoas/nova', data={
     'kind': 'external', 'name': 'Pessoa Cadastrada', 'email': 'pessoa@exemplo.com',
-    'committee': 'DHR', 'committee_name': 'Direitos Humanos', 'country': 'Brasil',
+    'institution': 'Escola Modelo', 'edition_year': '2026',
+    'committee_name': 'Direitos Humanos',
 }, follow_redirects=False)
 check('criar pessoa 302', r.status_code == 302, r.status_code)
 
@@ -155,10 +156,17 @@ with app.app_context():
     person = CertificatePerson.query.filter_by(name='Pessoa Cadastrada').first()
     check('pessoa criada', person is not None)
     check('pessoa tipo', person.kind == 'external', person.kind if person else None)
+    check('pessoa externa guarda instituicao', person.institution == 'Escola Modelo',
+          person.institution)
+    check('pessoa externa guarda edicao', person.edition_year == 2026,
+          person.edition_year)
+    check('pessoa externa nao tem ocupacao', person.occupation is None,
+          person.occupation)
     person_id = person.id
 
+# sem ano no form -> usa a edicao assistida da pessoa
 r = client.post(f'/admin/certificados/pessoas/{person_id}/gerar',
-                data={'year': 2026, 'type': 'external'}, follow_redirects=False)
+                data={'type': 'external'}, follow_redirects=False)
 check('gerar a partir da pessoa 302', r.status_code == 302, r.status_code)
 with app.app_context():
     c = Certificate.query.filter_by(person_id=person_id).first()
@@ -167,6 +175,8 @@ with app.app_context():
           c.student_name if c else None)
     check('certificado herdou tema', c.committee_name == 'Direitos Humanos',
           c.committee_name if c else None)
+    check('certificado usou a edicao da pessoa', c.edition_year == 2026,
+          c.edition_year if c else None)
 
 # dedupe: mesmo tipo/edicao nao duplica
 r = client.post(f'/admin/certificados/pessoas/{person_id}/gerar',
@@ -189,14 +199,34 @@ with app.app_context():
     check('certificado vinculado a pessoa', bool(c and c.person_id == (p.id if p else None)),
           (c.person_id if c else None, p.id if p else None))
 
-# editar e excluir pessoa
+# editar (externo -> organizador) e excluir pessoa
 r = client.post(f'/admin/certificados/pessoas/{person_id}/editar', data={
-    'kind': 'organizer', 'name': 'Pessoa Cadastrada Editada', 'email': 'editada@exemplo.com',
+    'kind': 'organizer', 'name': 'Pessoa Cadastrada Editada',
+    'email': 'editada@exemplo.com', 'committee_name': 'Comite de Seguranca',
+    'occupation': 'Mesa diretora',
 }, follow_redirects=False)
 check('editar pessoa 302', r.status_code == 302, r.status_code)
 with app.app_context():
     p = db.session.get(CertificatePerson, person_id)
     check('pessoa editada', p.name == 'Pessoa Cadastrada Editada', p.name)
+    check('organizador guarda ocupacao', p.occupation == 'Mesa diretora', p.occupation)
+    check('organizador limpa instituicao', p.institution is None, p.institution)
+    check('organizador limpa edicao', p.edition_year is None, p.edition_year)
+
+# ocupacao fora da lista fixa e ignorada
+r = client.post('/admin/certificados/pessoas/nova', data={
+    'kind': 'organizer', 'name': 'Organizador Invalido',
+    'occupation': 'Cargo Inventado',
+}, follow_redirects=False)
+check('criar organizador 302', r.status_code == 302, r.status_code)
+with app.app_context():
+    p_inv = CertificatePerson.query.filter_by(name='Organizador Invalido').first()
+    check('ocupacao fora da lista e descartada',
+          bool(p_inv) and p_inv.occupation is None,
+          p_inv.occupation if p_inv else None)
+    if p_inv:
+        db.session.delete(p_inv)
+        db.session.commit()
 
 r = client.post(f'/admin/certificados/pessoas/{person_id}/excluir', follow_redirects=False)
 check('excluir pessoa 302', r.status_code == 302, r.status_code)
@@ -294,13 +324,25 @@ with app.app_context():
                            committee_name='Comite de Seguranca')
     p2 = CertificatePerson(name='Externo Lote B', kind='external',
                            committee_name='Direitos Humanos')
-    db.session.add_all([p1, p2])
+    p3 = CertificatePerson(name='Externo Plateia 2026', kind='external',
+                           committee_name='Comite de Seguranca',
+                           institution='Escola Modelo', edition_year=2026)
+    db.session.add_all([p1, p2, p3])
     db.session.commit()
     pid1, pid2 = p1.id, p2.id
 
 r = client.get('/admin/certificados/lote?year=2026&type=external&status=all')
 check('lote de pessoas 200', r.status_code == 200, r.status_code)
 check('lote de pessoas lista externos', b'Externo Lote A' in r.data)
+check('lote de pessoas mostra ocupacao/instituicao', b'Ocupa' in r.data)
+check('lote de pessoas mostra instituicao', b'Escola Modelo' in r.data)
+check('lote de pessoas mostra edicao assistida', b'Externo Plateia 2026' in r.data)
+
+# Portas Abertas com edicao assistida nao aparece em outra edicao
+r = client.get('/admin/certificados/lote?year=2027&type=external&status=all')
+check('lote de pessoas respeita a edicao assistida',
+      b'Externo Plateia 2026' not in r.data)
+check('lote de pessoas sem edicao aparece em qualquer ano', b'Externo Lote A' in r.data)
 
 r = client.post('/admin/certificados/lote/emitir', data={
     'year': 2026, 'type': 'external', 'person_ids': [str(pid1), str(pid2)],

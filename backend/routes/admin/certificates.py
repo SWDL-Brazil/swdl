@@ -6,7 +6,8 @@ from models.delegation import Delegation
 from models.theme import Theme
 from models.user import User
 from models.certificate import Certificate, CERT_TYPES, generate_verification_code
-from models.certificate_person import CertificatePerson, PERSON_KINDS
+from models.certificate_person import (CertificatePerson, PERSON_KINDS,
+                                       PERSON_OCCUPATIONS)
 from cert_storage import validate_pdf, pdf_response
 from extensions import db
 from sqlalchemy import select, func, case, or_
@@ -148,6 +149,7 @@ def certificates_list():
                            themes=themes,
                            people=people,
                            person_kinds=PERSON_KINDS,
+                           occupations=PERSON_OCCUPATIONS,
                            stats=stats,
                            students=students,
                            delegations=delegations,
@@ -347,17 +349,30 @@ def certificate_delete(id):
 #  CERTIFICADOS — pessoas externas / organizadores (sem aluno vinculado)
 # ════════════════════════════════════════════════════════════════════
 
-def _form_person_data():
-    """Le os campos de pessoa do form e devolve um dict normalizado."""
-    return {
+def _form_person_data(kind='external'):
+    """Le os campos de pessoa do form e devolve um dict normalizado.
+
+    O formulario muda conforme o tipo:
+      * organizador -> nome, e-mail, tema/comite e ocupacao (lista fixa)
+      * externo     -> nome, e-mail, instituicao, edicao e tema assistido
+    """
+    kind = kind if kind in PERSON_KINDS else 'external'
+    theme = (request.form.get('committee_name')
+             or request.form.get('theme') or '').strip() or None
+    data = {
         'name': (request.form.get('name') or '').strip(),
         'email': (request.form.get('email') or '').strip() or None,
-        'committee': (request.form.get('committee') or '').strip() or None,
-        'committee_name': (request.form.get('committee_name') or '').strip() or None,
-        'country': (request.form.get('country') or '').strip() or None,
-        'country_flag': (request.form.get('country_flag') or '').strip() or None,
-        'notes': (request.form.get('notes') or '').strip() or None,
+        'committee_name': theme,
     }
+    if kind == 'organizer':
+        occupation = (request.form.get('occupation') or '').strip() or None
+        data['occupation'] = occupation if occupation in PERSON_OCCUPATIONS else None
+        # Sigla opcional do comite (legado) — nao aparece no form novo.
+        data['committee'] = (request.form.get('committee') or '').strip() or None
+    else:
+        data['institution'] = (request.form.get('institution') or '').strip() or None
+        data['edition_year'] = request.form.get('edition_year', type=int)
+    return data
 
 
 def _apply_person_to_form_data(data, person):
@@ -366,10 +381,14 @@ def _apply_person_to_form_data(data, person):
         return data
     data['name'] = person.name
     data['email'] = person.email
-    data['committee'] = person.committee
     data['committee_name'] = person.committee_name
-    data['country'] = person.country
-    data['country_flag'] = person.country_flag
+    if person.kind == 'organizer':
+        data['occupation'] = person.occupation
+        data['committee'] = person.committee
+    else:
+        data['institution'] = person.institution
+        if person.edition_year:
+            data['edition_year'] = person.edition_year
     if person.notes and not data.get('notes'):
         data['notes'] = person.notes
     return data
@@ -377,20 +396,29 @@ def _apply_person_to_form_data(data, person):
 
 def _save_person_from_form(data, kind, person_id=None):
     """Cria/atualiza uma CertificatePerson. Devolve a pessoa ou None."""
+    kind = kind if kind in PERSON_KINDS else 'external'
     person = db.session.get(CertificatePerson, person_id) if person_id else None
     if person is None and not data.get('name'):
         return None
     if person is None:
         person = CertificatePerson(kind=kind)
         db.session.add(person)
-    person.kind = kind if kind in PERSON_KINDS else 'external'
+    person.kind = kind
     person.name = data['name']
-    person.email = data['email']
-    person.committee = data['committee']
-    person.committee_name = data['committee_name']
-    person.country = data['country']
-    person.country_flag = data['country_flag']
-    person.notes = data['notes']
+    person.email = data.get('email')
+    person.committee_name = data.get('committee_name')
+    if kind == 'organizer':
+        person.committee = data.get('committee')
+        person.occupation = data.get('occupation')
+        # Campos exclusivos de Portas Abertas.
+        person.institution = None
+        person.edition_year = None
+    else:
+        person.institution = data.get('institution')
+        person.edition_year = data.get('edition_year')
+        person.occupation = None
+        person.committee = None
+    person.notes = data.get('notes')
     # Garante o id antes do certificado referenciar a pessoa (person_id).
     db.session.flush()
     return person
@@ -406,15 +434,15 @@ def _create_external_certificate(data, cert_type, year, person=None, notes=None,
         edition_year=year,
         type=cert_type,
         name=data['name'],
-        email=data['email'],
+        email=data.get('email'),
         awarded_by=current_user.id if current_user.is_authenticated else None,
         verification_code=_pick_code(used),
         notes=notes or data.get('notes'),
     )
     cert.fill_snapshot(
-        name=data['name'], country=data['country'],
-        country_flag=data['country_flag'], committee=data['committee'],
-        committee_name=data['committee_name'],
+        name=data['name'], country=data.get('country'),
+        country_flag=data.get('country_flag'), committee=data.get('committee'),
+        committee_name=data.get('committee_name'),
     )
     db.session.add(cert)
     return cert
@@ -425,23 +453,26 @@ def _create_external_certificate(data, cert_type, year, person=None, notes=None,
 @admin_required
 def certificate_generate_external():
     """Gera certificado para pessoa externa (sem cadastro de aluno)."""
-    year = request.form.get('year', type=int) or _current_year()
-    cert_type = request.form.get('type', 'external')
     person_id = request.form.get('person_id', type=int)
+    person = db.session.get(CertificatePerson, person_id) if person_id else None
+    # Sem ano no form, vale a edicao assistida pela pessoa.
+    year = (request.form.get('year', type=int)
+            or (person.edition_year if person else None) or _current_year())
+    cert_type = request.form.get('type', 'external')
 
     if cert_type not in CERT_TYPES or cert_type == 'participation':
         flash('Tipo de certificado invalido para emissao externa.', 'error')
         return redirect(url_for('admin.certificates_list', year=year))
 
-    person = db.session.get(CertificatePerson, person_id) if person_id else None
-    data = _apply_person_to_form_data(_form_person_data(), person)
+    data = _apply_person_to_form_data(_form_person_data('external'), person)
     if not data['name']:
         flash('Informe o nome da pessoa (ou cadastre em Pessoas).', 'error')
         return redirect(url_for('admin.certificates_list', year=year))
 
     # "Salvar em Pessoas": reaproveita a ficha no proximo certificado.
     if request.form.get('save_person') and not person:
-        person = _save_person_from_form(data, cert_type)
+        data['edition_year'] = year
+        person = _save_person_from_form(data, 'external')
 
     cert = _create_external_certificate(data, cert_type, year, person=person)
     try:
@@ -468,7 +499,7 @@ def certificate_generate_organizer():
     user_id = request.form.get('user_id', type=int)
 
     person = db.session.get(CertificatePerson, person_id) if person_id else None
-    data = _apply_person_to_form_data(_form_person_data(), person)
+    data = _apply_person_to_form_data(_form_person_data('organizer'), person)
 
     # Usuario do sistema: usa nome/email quando os campos estao vazios.
     if not person and user_id:
@@ -526,6 +557,7 @@ def certificate_people_list():
                            people=people,
                            current_kind=kind,
                            person_kinds=PERSON_KINDS,
+                           occupations=PERSON_OCCUPATIONS,
                            cert_types=CERT_TYPES,
                            counts=counts,
                            current_year=_current_year())
@@ -535,11 +567,11 @@ def certificate_people_list():
 @login_required
 @admin_required
 def certificate_person_create():
-    data = _form_person_data()
     kind = request.form.get('kind', 'external')
     if kind not in PERSON_KINDS:
         flash('Tipo de pessoa invalido.', 'error')
         return redirect(url_for('admin.certificate_people_list'))
+    data = _form_person_data(kind)
     if not data['name']:
         flash('Informe o nome da pessoa.', 'error')
         return redirect(url_for('admin.certificate_people_list'))
@@ -556,10 +588,10 @@ def certificate_person_create():
 @admin_required
 def certificate_person_edit(id):
     person = CertificatePerson.query.get_or_404(id)
-    data = _form_person_data()
     kind = request.form.get('kind', person.kind)
     if kind not in PERSON_KINDS:
         kind = person.kind
+    data = _form_person_data(kind)
     if not data['name']:
         flash('Informe o nome da pessoa.', 'error')
         return redirect(url_for('admin.certificate_people_list'))
@@ -592,7 +624,9 @@ def certificate_person_delete(id):
 def certificate_person_generate(id):
     """Gera certificado a partir de uma pessoa cadastrada."""
     person = CertificatePerson.query.get_or_404(id)
-    year = request.form.get('year', type=int) or _current_year()
+    # Edicao assistida (Portas Abertas) serve de padrao; o form pode trocar.
+    year = (request.form.get('year', type=int)
+            or person.edition_year or _current_year())
     cert_type = request.form.get('type') or (
         'organizer' if person.kind == 'organizer' else 'external')
     if cert_type not in CERT_TYPES or cert_type == 'participation':
@@ -609,7 +643,6 @@ def certificate_person_generate(id):
     data = {
         'name': person.name, 'email': person.email,
         'committee': person.committee, 'committee_name': person.committee_name,
-        'country': person.country, 'country_flag': person.country_flag,
         'notes': person.notes,
     }
     cert = _create_external_certificate(data, cert_type, year, person=person)
@@ -685,7 +718,11 @@ def _bulk_status_match(cert, status):
 
 
 def _bulk_people_rows(year, cert_type, theme, country, q, status):
-    """Pessoas cadastradas (externos/organizadores) filtradas por condicoes."""
+    """Pessoas cadastradas (externos/organizadores) filtradas por condicoes.
+
+    Portas Abertas guarda a edicao assistida: pessoa sem edicao cadastrada
+    aparece em qualquer ano; com edicao, so naquele ano.
+    """
     rows = []
     cert_map = {c.person_id: c for c in Certificate.query.filter(
         Certificate.edition_year == year,
@@ -694,13 +731,16 @@ def _bulk_people_rows(year, cert_type, theme, country, q, status):
     for p in CertificatePerson.query.order_by(CertificatePerson.name).all():
         if p.kind != cert_type:
             continue
+        if p.edition_year and p.edition_year != year:
+            continue
         if theme and (p.committee_name or '') != theme:
             continue
         if country and (p.country or '') != country:
             continue
         if q:
             hay = ' '.join(filter(None, [p.name, p.email, p.committee,
-                                         p.committee_name, p.country])).lower()
+                                         p.committee_name, p.institution,
+                                         p.occupation, p.country])).lower()
             if q not in hay:
                 continue
         cert = cert_map.get(p.id)
@@ -711,6 +751,8 @@ def _bulk_people_rows(year, cert_type, theme, country, q, status):
             'committee': p.committee or '', 'theme': p.committee_name or '',
             'country': p.country or '', 'flag': p.country_flag or '',
             'presence': None, 'cert': cert, 'kind_label': p.kind_label,
+            'detail': p.detail_label, 'occupation': p.occupation or '',
+            'institution': p.institution or '', 'edition': p.edition_year,
         })
     return rows
 
