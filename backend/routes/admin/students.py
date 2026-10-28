@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from routes.admin._helpers import (admin_bp, admin_required,
                                    _ensure_participation_history,
                                    _cleanup_orphan_delegation,
-                                   _country_taken)
+                                   _country_taken, _log_audit)
 from models.user import User
 from models.student import Student
 from models.delegation import Delegation
@@ -586,3 +586,266 @@ def students_unlock_all():
     db.session.commit()
     flash(f'🔓 {count} alunos destravados.', 'success')
     return redirect(url_for('admin.dashboard'))
+
+
+# ── Recuperar alunos órfãos ────────────────────────────────────────────────
+# A aba Alunos lista Student.query.all(), sem filtro: nome que não aparece ali
+# não tem linha em `students`. Quando inscrição / login / delegação continuam
+# no banco (exclusão parcial, importação interrompida), dá para recriar só o
+# aluno — sem redigitar nada e sem perder país, comitê e tema.
+
+def _emit_participation_code(student, deleg):
+    """Cria o certificado de participação (com código) da edição da delegação."""
+    from models.certificate import Certificate
+    from routes.admin.certificates import _pick_code, _used_codes
+
+    year = getattr(deleg, 'edition_year', None) or datetime.now(timezone.utc).year
+    exists = Certificate.query.filter_by(
+        student_id=student.id, edition_year=year, type='participation').first()
+    if exists:
+        return exists
+    cert = Certificate(student=student, edition_year=year,
+                       type='participation',
+                       verification_code=_pick_code(
+                           _used_codes(extra_check_student=True)))
+    cert.fill_snapshot(student=student)
+    db.session.add(cert)
+    return cert
+
+
+def _restore_student_by_email(email, deleg_choice='auto', emit_code=True, commit=True):
+    """Recria o Student a partir da inscrição/login existentes.
+
+    ``deleg_choice``: 'auto' tenta descobrir (inscrição → login), um id/objeto
+    de Delegation usa a escolhida pelo admin, e None deixa o aluno pendente.
+
+    Devolve o Student criado ou None (já existia / sem dados de origem).
+    """
+    from sqlalchemy import func
+
+    email = (email or '').strip().lower()
+    if not email:
+        return None
+    if Student.query.filter(func.lower(Student.email) == email).first():
+        return None
+
+    rows = (Inscription.query
+            .filter(func.lower(Inscription.email) == email)
+            .order_by(Inscription.id.desc()).all())
+    ins = next((r for r in rows if r.status == 'approved'),
+               rows[0] if rows else None)
+    user = User.query.filter(func.lower(User.email) == email).first()
+    if not ins and not user:
+        return None
+
+    name = (ins.name if ins else '') or (user.name if user else '') or email
+
+    if not user:
+        first = _norm_first_name(name)
+        password = f'{first}@2026' if first else 'Delegado@2026'
+        user = User(name=name, email=email, role='student')
+        user.set_password(password)
+        db.session.add(user)
+        db.session.flush()
+
+    if deleg_choice == 'auto':
+        deleg = None
+        if ins:
+            deleg = Delegation.query.filter_by(inscription_id=ins.id).first()
+        if not deleg:
+            deleg = Delegation.query.filter_by(user_id=user.id).first()
+        if not deleg:
+            deleg = _guess_delegation(name)
+    else:
+        deleg = deleg_choice
+
+    student = Student(user_id=user.id, name=name, email=email,
+                      delegation_id=deleg.id if deleg else None)
+    db.session.add(student)
+    db.session.flush()
+
+    if deleg:
+        if not deleg.user_id:
+            deleg.user_id = user.id
+        _ensure_participation_history(student)
+        if emit_code:
+            _emit_participation_code(student, deleg)
+
+    if commit:
+        db.session.commit()
+    return student
+
+
+def _norm_first_name(name):
+    import unicodedata
+    first = (name or '').strip().split()[0] if (name or '').strip() else ''
+    first = unicodedata.normalize('NFKD', first).encode('ascii', 'ignore').decode('ascii')
+    return first.capitalize()
+
+
+def _guess_delegation(name):
+    """Palpite de delegação pelo campo texto `members` (dupla/trio).
+
+    Em grupos, a delegação fica ligada à inscrição/login do líder; o membro
+    removido não tem mais vínculo nenhum. `members` guarda "Fulano, Beltrano",
+    então é a última pista disponível antes de pedir a escolha ao admin.
+    """
+    from sqlalchemy import func
+
+    parts = (name or '').strip().split()
+    if not parts:
+        return None
+    probes = [' '.join(parts)]
+    if len(parts) >= 2:
+        probes.append(f'{parts[0]} {parts[-1]}')
+    for probe in probes:
+        found = (Delegation.query
+                 .filter(func.lower(Delegation.members).like(f'%{probe.lower()}%'))
+                 .first())
+        if found:
+            return found
+    return None
+
+
+def _delegation_choices():
+    """Delegações para o seletor da tela (com país, sigla, edição e nº de alunos)."""
+    from sqlalchemy import func
+    from sqlalchemy.orm import joinedload
+
+    counts = dict(db.session.query(Student.delegation_id, func.count(Student.id))
+                  .group_by(Student.delegation_id).all())
+    choices = []
+    for d in (Delegation.query.options(joinedload(Delegation.theme))
+              .order_by(Delegation.country).all()):
+        label = f'{d.country_flag or ""} {d.country or "?"}'.strip()
+        extra = ' · '.join(str(x) for x in (d.committee, d.edition_year) if x)
+        if extra:
+            label += f' — {extra}'
+        n = counts.get(d.id, 0)
+        if n:
+            label += f' ({n} aluno{"s" if n > 1 else ""})'
+        choices.append({'id': d.id, 'label': label,
+                        'country': d.country, 'year': d.edition_year})
+    return choices
+
+
+def _orphan_candidates():
+    """Inscrições aprovadas e logins de aluno que não têm linha em `students`."""
+    from sqlalchemy import func, or_
+
+    taken_emails = {(e or '').strip().lower()
+                    for (e,) in db.session.query(Student.email).all()}
+    taken_user_ids = {u for (u,) in db.session.query(Student.user_id).all() if u}
+
+    inscriptions = (Inscription.query
+                    .filter(Inscription.status == 'approved')
+                    .order_by(Inscription.id.desc()).all())
+    ins_emails = {(i.email or '').strip().lower() for i in inscriptions}
+    users = (User.query.filter(func.lower(User.email).in_(ins_emails)).all()
+             if ins_emails else [])
+    users_by_email = {(u.email or '').strip().lower(): u for u in users}
+
+    # Delegações: por inscrição e por login (2 índices em memória, 1 query).
+    deleg_by_ins, deleg_by_user = {}, {}
+    conds = []
+    if inscriptions:
+        conds.append(Delegation.inscription_id.in_([i.id for i in inscriptions]))
+    if users:
+        conds.append(Delegation.user_id.in_([u.id for u in users]))
+    if conds:
+        for d in Delegation.query.filter(or_(*conds)).all():
+            if d.inscription_id:
+                deleg_by_ins[d.inscription_id] = d
+            if d.user_id:
+                deleg_by_user[d.user_id] = d
+
+    candidates, seen = [], set()
+
+    def add(email, name, source, ins=None, user=None, deleg=None):
+        if not email or email in taken_emails or email in seen:
+            return
+        seen.add(email)
+        candidates.append(dict(email=email, name=name or email, source=source,
+                               inscription=ins, user=user, delegation=deleg))
+
+    for ins in inscriptions:
+        email = (ins.email or '').strip().lower()
+        user = users_by_email.get(email)
+        deleg = (deleg_by_ins.get(ins.id)
+                 or (deleg_by_user.get(user.id) if user else None)
+                 or _guess_delegation(ins.name))
+        add(email, ins.name or (user.name if user else ''), 'inscricao', ins, user, deleg)
+
+    # Logins de aluno que perderam a linha de Student (inscrição já apagada).
+    extra_users = (User.query
+                   .filter(User.role == 'student', ~User.id.in_(taken_user_ids))
+                   .order_by(User.id.desc()).all()) if taken_user_ids else \
+                  User.query.filter(User.role == 'student').order_by(User.id.desc()).all()
+    for user in extra_users:
+        add((user.email or '').strip().lower(), user.name, 'login',
+            user=user,
+            deleg=deleg_by_user.get(user.id) or _guess_delegation(user.name))
+
+    return candidates
+
+
+@admin_bp.route('/alunos/recuperar')
+@login_required
+@admin_required
+def students_restore():
+    """Lista alunos que existem em inscrição/login mas não em `students`."""
+    candidates = _orphan_candidates()
+    return render_template('admin/students_restore.html',
+                           candidates=candidates,
+                           delegations=_delegation_choices(),
+                           total_students=Student.query.count())
+
+
+@admin_bp.route('/alunos/recuperar', methods=['POST'])
+@login_required
+@admin_required
+def students_restore_apply():
+    """Recria os alunos marcados (Student + histórico + código do certificado)."""
+    indexes = request.form.getlist('rows')
+    if not indexes:
+        flash('Marque pelo menos um aluno para recriar.', 'warning')
+        return redirect(url_for('admin.students_restore'))
+
+    emit_code = request.form.get('emit_code') == '1'
+    restored, skipped = [], []
+    try:
+        for idx in indexes:
+            email = (request.form.get(f'email_{idx}') or '').strip()
+            if not email:
+                continue
+            # Delegação escolhida na linha ('' = deixar pendente). Sem o campo,
+            # tenta descobrir sozinho (inscrição → login → texto de membros).
+            if f'deleg_{idx}' in request.form:
+                raw = (request.form.get(f'deleg_{idx}') or '').strip()
+                choice = db.session.get(Delegation, int(raw)) if raw.isdigit() else None
+            else:
+                choice = 'auto'
+            student = _restore_student_by_email(email, deleg_choice=choice,
+                                               emit_code=emit_code, commit=False)
+            if student is None:
+                skipped.append(email)
+            else:
+                restored.append(student.name)
+        db.session.commit()
+    except Exception as exc:
+        db.session.rollback()
+        flash(f'Erro ao recriar alunos: {exc}', 'error')
+        return redirect(url_for('admin.students_restore'))
+
+    if restored:
+        _log_audit('restore_student', 'student', 0,
+                   target_name=', '.join(restored)[:250],
+                   details=f'{len(restored)} aluno(s) recriado(s)'
+                           + (f'; sem dados: {len(skipped)}' if skipped else ''))
+        flash(f'♻️ {len(restored)} aluno(s) recriado(s): {", ".join(restored)}'
+              + (' — certificado de participação gerado.' if emit_code else '.'),
+              'success')
+    if skipped:
+        flash(f'{len(skipped)} e-mail(s) já tinham aluno ou não tinham dados de '
+              f'origem: {", ".join(skipped)}', 'warning')
+    return redirect(url_for('admin.students_restore'))
