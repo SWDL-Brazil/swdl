@@ -159,7 +159,7 @@ def _ensure_models(app):
     return models
 
 
-def restore_student(app, models, name, matches, dry_run=False):
+def restore_student(app, models, name, matches, dry_run=False, emit_codes=False):
     """Cria o Student que falta usando User/Inscription ja existentes."""
     from extensions import db
     from datetime import datetime, timezone
@@ -244,7 +244,36 @@ def restore_student(app, models, name, matches, dry_run=False):
     db.session.commit()
     print(f'    OK: Student id={student.id} criado'
           + (f' na delegacao {deleg.id}' if deleg else ' (sem delegacao)'))
+
+    if emit_codes:
+        emit_participation_code(app, student, deleg, dry_run=dry_run)
     return True
+
+
+def emit_participation_code(app, student, deleg, dry_run=False):
+    """Gera o codigo de verificacao do certificado de participacao do aluno."""
+    from extensions import db
+    from models.certificate import Certificate
+    from routes.admin.certificates import _pick_code, _used_codes
+
+    year = (getattr(deleg, 'edition_year', None)
+            or datetime.now(timezone.utc).year)
+    existing = Certificate.query.filter_by(
+        student_id=student.id, edition_year=year, type='participation'
+    ).first()
+    if existing:
+        print(f'    = certificado {year} ja existe: {existing.verification_code}')
+        return
+    if dry_run:
+        print(f'    (dry-run) geraria certificado de participacao {year}')
+        return
+    cert = Certificate(student_id=student.id, edition_year=year,
+                       type='participation',
+                       verification_code=_pick_code(_used_codes(extra_check_student=True)))
+    cert.fill_snapshot()
+    db.session.add(cert)
+    db.session.commit()
+    print(f'    + Certificado {year}: {cert.verification_code}')
 
 
 def main():
@@ -253,6 +282,8 @@ def main():
                         help='nomes separados por |')
     parser.add_argument('--apply', action='store_true', help='recria o que faltar')
     parser.add_argument('--dry-run', action='store_true', help='nao grava nada')
+    parser.add_argument('--emit-codes', action='store_true',
+                        help='gera o codigo do certificado de participacao')
     args = parser.parse_args()
 
     backend_dir = os.path.dirname(os.path.abspath(__file__))
@@ -308,7 +339,8 @@ def main():
 
             if args.apply:
                 ok = restore_student(app, models, name, matches,
-                                     dry_run=args.dry_run)
+                                     dry_run=args.dry_run,
+                                     emit_codes=args.emit_codes)
                 if not ok:
                     missing.append(name)
             else:
