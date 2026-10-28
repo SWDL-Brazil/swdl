@@ -4,6 +4,7 @@
 
 {% block topbar_actions %}
   <a href="{{ url_for('admin.certificates_list') }}" class="btn btn-ghost btn-sm">← Certificados</a>
+  <a href="{{ url_for('admin.certificate_bulk_page', year=current_year, type='external') }}" class="btn btn-navy btn-sm">🎯 Emitir em lote</a>
   <button class="btn btn-gold btn-sm" onclick="openPersonModal()">+ Nova Pessoa</button>
 {% endblock %}
 

@@ -6,6 +6,8 @@
   <details class="topbar-menu">
     <summary class="btn btn-gold btn-sm">➕ Emitir</summary>
     <div class="topbar-menu-list">
+      <a href="{{ url_for('admin.certificate_bulk_page', year=current_year, type=current_type or 'participation') }}">🎯 Emitir por seleção (condições)</a>
+      <div class="topbar-menu-sep"></div>
       <button type="button" onclick="openCertModal('awardModal')">🏆 Premiar aluno ou delegação</button>
       <button type="button" onclick="openCertModal('externalModal')">🌐 Externo (Portas Abertas)</button>
       <button type="button" onclick="openCertModal('organizerModal')">👥 Organizador</button>

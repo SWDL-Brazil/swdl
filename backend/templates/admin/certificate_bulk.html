@@ -1,0 +1,317 @@
+{% extends "admin/base.html" %}
+{% block title %}Emitir por seleção{% endblock %}
+{% block page_title %}Emitir códigos por seleção{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.certificates_list', year=year, type=cert_type) }}" class="btn btn-ghost btn-sm">← Certificados</a>
+  <a href="{{ url_for('admin.certificates_codes_pdf', year=year, type=cert_type) }}" class="btn btn-navy btn-sm">📄 PDF dos códigos</a>
+{% endblock %}
+
+{% block content %}
+
+<style>
+  .bulk-filters { padding: 16px 18px; margin-bottom: 16px; }
+  .bulk-filters .bulk-grid {
+    display: grid; gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+    align-items: end;
+  }
+  .bulk-filters label {
+    display: block; font-size: 9px; font-weight: 700; letter-spacing: .09em;
+    text-transform: uppercase; color: var(--navy); margin-bottom: 5px;
+  }
+  .bulk-filters select,
+  .bulk-filters input[type="search"] {
+    width: 100%; padding: 8px 10px; border: 1px solid rgba(16,30,76,.18);
+    border-radius: 3px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    color: var(--text); background: var(--white); outline: none;
+  }
+  .bulk-filters select:focus,
+  .bulk-filters input[type="search"]:focus { border-color: var(--gold); }
+  .bulk-filter-actions { display: flex; gap: 8px; align-items: end; }
+
+  .bulk-summary {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bulk-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 13px; border-radius: 999px;
+    background: var(--white); border: 1px solid var(--border);
+    font-size: 11px; color: var(--muted); letter-spacing: .02em;
+  }
+  .bulk-chip strong {
+    font-family: 'DM Mono', monospace; font-size: 13px; color: var(--navy);
+  }
+  .bulk-chip.is-gold { border-color: rgba(201,168,76,.55); background: rgba(201,168,76,.09); }
+
+  .bulk-table th.bulk-check, .bulk-table td.bulk-check { width: 34px; text-align: center; }
+  .bulk-table td { vertical-align: middle; }
+  .bulk-row-name { font-weight: 600; color: var(--navy); }
+  .bulk-row-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .bulk-code {
+    font-family: 'DM Mono', monospace; font-size: 11.5px; font-weight: 700;
+    color: var(--navy); letter-spacing: .04em;
+  }
+  .bulk-muted { font-size: 12px; color: var(--muted); }
+  .presence-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    margin-right: 5px; vertical-align: middle;
+  }
+  .presence-dot.on { background: var(--green); }
+  .presence-dot.off { background: #C9CCD4; }
+  .bulk-table tr.is-selected td { background: rgba(201,168,76,.09); }
+
+  .bulk-actions {
+    position: sticky; bottom: 0; z-index: 20;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-top: 14px; padding: 12px 16px;
+    background: rgba(255,255,255,.95);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    border: 1px solid var(--border); border-radius: 6px;
+    box-shadow: 0 -6px 24px rgba(13,27,42,.07);
+  }
+  .bulk-actions .bulk-sel {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--navy); font-weight: 600;
+  }
+  .bulk-actions .bulk-count {
+    margin-left: auto; font-family: 'DM Mono', monospace;
+    font-size: 12px; color: var(--muted);
+  }
+</style>
+
+<form method="GET" action="{{ url_for('admin.certificate_bulk_page') }}" class="card bulk-filters">
+  <div class="bulk-grid">
+    <div>
+      <label for="fYear">Edição</label>
+      <select name="year" id="fYear">
+        {% for y in years %}
+        <option value="{{ y }}" {{ 'selected' if y == year }}>{{ y }}</option>
+        {% endfor %}
+        {% if year not in years %}<option value="{{ year }}" selected>{{ year }}</option>{% endif %}
+      </select>
+    </div>
+    <div>
+      <label for="fType">Certificado</label>
+      <select name="type" id="fType">
+        {% for key, label in cert_types.items() %}
+        <option value="{{ key }}" {{ 'selected' if key == cert_type }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="fStatus">Situação</label>
+      <select name="status" id="fStatus">
+        {% for key, label in statuses.items() %}
+        <option value="{{ key }}" {{ 'selected' if key == f_status }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="fTheme">Tema / Comitê</label>
+      <select name="theme" id="fTheme">
+        <option value="">Todos</option>
+        {% for t in themes %}
+        <option value="{{ t }}" {{ 'selected' if t == f_theme }}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% if not is_people %}
+    <div>
+      <label for="fCommittee">Sigla</label>
+      <select name="committee" id="fCommittee">
+        <option value="">Todas</option>
+        {% for c in committees %}
+        <option value="{{ c }}" {{ 'selected' if c == f_committee }}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    <div>
+      <label for="fCountry">País</label>
+      <select name="country" id="fCountry">
+        <option value="">Todos</option>
+        {% for c in countries %}
+        <option value="{{ c }}" {{ 'selected' if c == f_country }}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% if not is_people %}
+    <div>
+      <label for="fPresence">Presença</label>
+      <select name="presence" id="fPresence">
+        <option value="">Todos</option>
+        <option value="presente" {{ 'selected' if f_presence == 'presente' }}>Presente</option>
+        <option value="ausente" {{ 'selected' if f_presence == 'ausente' }}>Ausente</option>
+      </select>
+    </div>
+    {% endif %}
+    <div>
+      <label for="fQ">Buscar</label>
+      <input type="search" name="q" id="fQ" value="{{ f_q }}" placeholder="nome, e-mail, ID, país">
+    </div>
+    <div class="bulk-filter-actions">
+      <button class="btn btn-primary btn-sm" type="submit">Filtrar</button>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.certificate_bulk_page') }}">Limpar</a>
+    </div>
+  </div>
+</form>
+
+<div class="bulk-summary">
+  <span class="bulk-chip">👥 <strong>{{ total }}</strong> {{ 'pessoa(s)' if is_people else 'aluno(s)' }} no filtro</span>
+  <span class="bulk-chip is-gold">🕓 <strong>{{ missing }}</strong> sem este certificado</span>
+  <span class="bulk-chip">🏅 <strong>{{ total - missing }}</strong> já têm</span>
+  <span class="bulk-chip">📄 Tipo: <strong>{{ cert_types[cert_type] }}</strong> · {{ year }}</span>
+</div>
+
+<form method="POST" action="{{ url_for('admin.certificate_bulk_generate') }}" id="bulkForm">
+  <input type="hidden" name="year" value="{{ year }}">
+  <input type="hidden" name="type" value="{{ cert_type }}">
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="admin-table bulk-table">
+      <thead>
+        <tr>
+          <th class="bulk-check">
+            <input type="checkbox" id="checkAll" title="Selecionar todos" aria-label="Selecionar todos">
+          </th>
+          <th>{{ 'Pessoa' if is_people else 'Aluno' }}</th>
+          <th>Tema / Comitê</th>
+          <th>País</th>
+          {% if not is_people %}<th>Presença</th>{% endif %}
+          <th>Certificado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td class="bulk-check">
+            <input type="checkbox" class="row-check"
+                   name="{{ 'person_ids' if is_people else 'student_ids' }}"
+                   value="{{ row.id }}"
+                   data-has-cert="{{ 1 if row.cert else 0 }}"
+                   aria-label="Selecionar {{ row.name }}">
+          </td>
+          <td>
+            <div class="bulk-row-name">{{ row.name }}</div>
+            <div class="bulk-row-sub">
+              {{ row.email or 'sem e-mail' }}{% if row.global_id %} · {{ row.global_id }}{% endif %}
+              {% if row.kind_label %} · {{ row.kind_label }}{% endif %}
+            </div>
+          </td>
+          <td>
+            <div style="font-size:12px">{{ row.theme or '&mdash;'|safe }}</div>
+            {% if row.committee %}<div class="bulk-row-sub">{{ row.committee }}</div>{% endif %}
+          </td>
+          <td style="font-size:12px">
+            {% if row.country %}{{ row.flag }} {{ row.country }}{% else %}<span class="bulk-muted">&mdash;</span>{% endif %}
+          </td>
+          {% if not is_people %}
+          <td style="font-size:12px">
+            <span class="presence-dot {{ 'on' if row.presence == 'presente' else 'off' }}"></span>
+            {{ 'Presente' if row.presence == 'presente' else 'Ausente' }}
+          </td>
+          {% endif %}
+          <td>
+            {% if row.cert %}
+              <span class="bulk-code">{{ row.cert.verification_code }}</span>
+              {% if row.cert.released %}
+              <span class="badge badge-approved">liberado</span>
+              {% else %}
+              <span class="badge badge-pending">pendente</span>
+              {% endif %}
+            {% else %}
+              <span class="bulk-muted">sem código</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="{{ 5 if is_people else 6 }}" style="text-align:center;color:var(--muted);padding:34px">
+            Nenhum resultado com essas condições.
+            <br><br>
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.certificate_bulk_page', year=year, type=cert_type, status='all') }}">Mostrar todos</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="bulk-actions">
+    <label class="bulk-sel">
+      <input type="checkbox" id="checkAllBottom"> Selecionar todos
+    </label>
+    <button type="button" class="btn btn-ghost btn-sm" id="btnMissing">Só os que faltam</button>
+    <button type="button" class="btn btn-ghost btn-sm" id="btnClear">Limpar seleção</button>
+    <span class="bulk-count" id="selCount">0 selecionados</span>
+    <button type="submit" class="btn btn-gold" id="btnEmit" disabled>Emitir códigos</button>
+  </div>
+</form>
+
+<script>
+(function () {
+  var boxes = function () {
+    return Array.prototype.slice.call(document.querySelectorAll('.row-check'));
+  };
+  var btnEmit = document.getElementById('btnEmit');
+  var selCount = document.getElementById('selCount');
+  var checkAll = document.getElementById('checkAll');
+  var checkAllBottom = document.getElementById('checkAllBottom');
+
+  function refresh() {
+    var all = boxes();
+    var sel = all.filter(function (b) { return b.checked; });
+    var n = sel.length;
+
+    selCount.textContent = n + ' selecionado' + (n === 1 ? '' : 's');
+    btnEmit.disabled = n === 0;
+    btnEmit.textContent = n ? 'Emitir ' + n + ' código' + (n === 1 ? '' : 's')
+                            : 'Emitir códigos';
+
+    if (checkAll) {
+      checkAll.checked = n > 0 && n === all.length;
+      checkAll.indeterminate = n > 0 && n < all.length;
+    }
+    if (checkAllBottom) {
+      checkAllBottom.checked = n > 0 && n === all.length;
+      checkAllBottom.indeterminate = n > 0 && n < all.length;
+    }
+    all.forEach(function (b) {
+      var tr = b.closest('tr');
+      if (tr) tr.classList.toggle('is-selected', b.checked);
+    });
+  }
+
+  [checkAll, checkAllBottom].forEach(function (el) {
+    if (!el) return;
+    el.addEventListener('change', function () {
+      boxes().forEach(function (b) { b.checked = el.checked; });
+      refresh();
+    });
+  });
+
+  document.getElementById('btnMissing').addEventListener('click', function () {
+    boxes().forEach(function (b) { b.checked = b.dataset.hasCert === '0'; });
+    refresh();
+  });
+
+  document.getElementById('btnClear').addEventListener('click', function () {
+    boxes().forEach(function (b) { b.checked = false; });
+    refresh();
+  });
+
+  boxes().forEach(function (b) { b.addEventListener('change', refresh); });
+
+  document.getElementById('bulkForm').addEventListener('submit', function (e) {
+    if (boxes().every(function (b) { return !b.checked; })) {
+      e.preventDefault();
+      alert('Selecione ao menos uma pessoa para emitir os códigos.');
+    }
+  });
+
+  refresh();
+})();
+</script>
+
+{% endblock %}

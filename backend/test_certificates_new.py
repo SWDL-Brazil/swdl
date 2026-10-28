@@ -210,6 +210,112 @@ with app.app_context():
 r = client.get('/admin/certificados?year=2026&type=external')
 check('lista externos 200', r.status_code == 200, r.status_code)
 
+# ── emissao em lote (selecao por condicoes) ──────────────────────────
+from models.theme import Theme
+from models.delegation import Delegation
+from models.student import Student
+
+with app.app_context():
+    t_cs = Theme.query.filter_by(name='Comite de Seguranca').first()
+    if not t_cs:
+        t_cs = Theme(name='Comite de Seguranca')
+        db.session.add(t_cs)
+        db.session.flush()
+    t_dhr = Theme.query.filter_by(name='Direitos Humanos').first()
+    if not t_dhr:
+        t_dhr = Theme(name='Direitos Humanos')
+        db.session.add(t_dhr)
+        db.session.flush()
+
+    d1 = Delegation(country='Brasil', country_flag='BR', committee='CS',
+                    theme_id=t_cs.id, edition_year=2026, presence_status='presente')
+    d2 = Delegation(country='Canada', country_flag='CA', committee='DHR',
+                    theme_id=t_dhr.id, edition_year=2026, presence_status='ausente')
+    db.session.add_all([d1, d2])
+    db.session.flush()
+    s1 = Student(name='Aluno Lote Um', email='lote1@exemplo.com',
+                 global_id='LOTE0001', delegation_id=d1.id)
+    s2 = Student(name='Aluno Lote Dois', email='lote2@exemplo.com',
+                 global_id='LOTE0002', delegation_id=d2.id)
+    db.session.add_all([s1, s2])
+    db.session.commit()
+    sid1, sid2 = s1.id, s2.id
+
+r = client.get('/admin/certificados/lote?year=2026&type=participation&status=all')
+check('lote 200', r.status_code == 200, r.status_code)
+check('lote lista os alunos da edicao', b'Aluno Lote Um' in r.data and b'Aluno Lote Dois' in r.data)
+check('lote mostra coluna de presenca', b'Presen' in r.data)
+
+# filtro por tema
+r = client.get('/admin/certificados/lote?year=2026&type=participation&status=all'
+               '&theme=Comite+de+Seguranca')
+check('lote filtra por tema', b'Aluno Lote Um' in r.data and b'Aluno Lote Dois' not in r.data)
+
+# filtro por presenca
+r = client.get('/admin/certificados/lote?year=2026&type=participation&status=all'
+               '&presence=ausente')
+check('lote filtra por presenca', b'Aluno Lote Dois' in r.data and b'Aluno Lote Um' not in r.data)
+
+# so um aluno selecionado -> 1 codigo
+r = client.post('/admin/certificados/lote/emitir', data={
+    'year': 2026, 'type': 'participation', 'student_ids': [str(sid1)],
+}, follow_redirects=False)
+check('lote emitir 302', r.status_code == 302, r.status_code)
+with app.app_context():
+    check('lote criou so o selecionado',
+          Certificate.query.filter_by(student_id=sid1, type='participation',
+                                      edition_year=2026).count() == 1)
+    check('lote nao criou para o nao selecionado',
+          Certificate.query.filter_by(student_id=sid2, type='participation',
+                                      edition_year=2026).count() == 0)
+    c1 = Certificate.query.filter_by(student_id=sid1, type='participation').first()
+    check('lote herdou tema no snapshot', c1.committee_name == 'Comite de Seguranca',
+          c1.committee_name)
+
+# repetir nao duplica
+r = client.post('/admin/certificados/lote/emitir', data={
+    'year': 2026, 'type': 'participation', 'student_ids': [str(sid1), str(sid2)],
+}, follow_redirects=True)
+with app.app_context():
+    check('lote nao duplica o que ja existe',
+          Certificate.query.filter_by(student_id=sid1, type='participation').count() == 1)
+    check('lote emite o que faltava',
+          Certificate.query.filter_by(student_id=sid2, type='participation').count() == 1)
+check('lote avisa quantos ja existiam', b'ja existia' in r.data)
+
+# sem selecao -> recusa
+r = client.post('/admin/certificados/lote/emitir', data={'year': 2026, 'type': 'participation'},
+                follow_redirects=False)
+check('lote sem selecao 302', r.status_code == 302)
+
+# lote de pessoas (externos)
+with app.app_context():
+    p1 = CertificatePerson(name='Externo Lote A', kind='external',
+                           committee_name='Comite de Seguranca')
+    p2 = CertificatePerson(name='Externo Lote B', kind='external',
+                           committee_name='Direitos Humanos')
+    db.session.add_all([p1, p2])
+    db.session.commit()
+    pid1, pid2 = p1.id, p2.id
+
+r = client.get('/admin/certificados/lote?year=2026&type=external&status=all')
+check('lote de pessoas 200', r.status_code == 200, r.status_code)
+check('lote de pessoas lista externos', b'Externo Lote A' in r.data)
+
+r = client.post('/admin/certificados/lote/emitir', data={
+    'year': 2026, 'type': 'external', 'person_ids': [str(pid1), str(pid2)],
+}, follow_redirects=False)
+check('lote de pessoas 302', r.status_code == 302, r.status_code)
+with app.app_context():
+    check('lote criou certificados das pessoas',
+          Certificate.query.filter(Certificate.person_id.in_([pid1, pid2])).count() == 2)
+r = client.post('/admin/certificados/lote/emitir', data={
+    'year': 2026, 'type': 'external', 'person_ids': [str(pid1)],
+}, follow_redirects=False)
+with app.app_context():
+    check('lote de pessoas nao duplica',
+          Certificate.query.filter_by(person_id=pid1, type='external').count() == 1)
+
 print('\n' + '-' * 50)
 if fails:
     print(f'FALHAS ({len(fails)}): {fails}')

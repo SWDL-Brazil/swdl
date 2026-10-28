@@ -396,9 +396,10 @@ def _save_person_from_form(data, kind, person_id=None):
     return person
 
 
-def _create_external_certificate(data, cert_type, year, person=None, notes=None):
+def _create_external_certificate(data, cert_type, year, person=None, notes=None,
+                                used=None):
     """Cria o Certificate (ainda NAO liberado) para externo/organizador."""
-    used = _used_codes()
+    used = used if used is not None else _used_codes()
     cert = Certificate(
         student_id=None,
         person_id=person.id if person else None,
@@ -623,6 +624,281 @@ def certificate_person_generate(id):
                details=f'{cert_type} ({year})')
     flash(f'Certificado de "{CERT_TYPES[cert_type]}" criado para {person.name}! '
           f'Faca o upload do PDF.', 'success')
+    return redirect(url_for('admin.certificates_list', year=year, type=cert_type))
+
+
+# ════════════════════════════════════════════════════════════════════
+#  EMISSAO EM LOTE — escolher quem recebe o codigo por condicoes
+# ════════════════════════════════════════════════════════════════════
+
+PEOPLE_CERT_TYPES = ('external', 'organizer')
+BULK_STATUSES = {
+    'missing':  'Sem certificado',
+    'pending':  'Com certificado pendente',
+    'released': 'Com certificado liberado',
+    'all':      'Todos',
+}
+
+
+def _bulk_years():
+    """Anos que existem em delegacoes ou certificados (mais novo primeiro)."""
+    years = {r[0] for r in db.session.query(Delegation.edition_year).distinct()}
+    years |= {r[0] for r in db.session.query(Certificate.edition_year).distinct()}
+    return sorted([y for y in years if y], reverse=True)
+
+
+def _bulk_distinct(column, year):
+    rows = (db.session.query(column)
+            .filter(Delegation.edition_year == year)
+            .distinct().order_by(column).all())
+    return [r[0] for r in rows if r[0]]
+
+
+def _bulk_themes(year):
+    rows = (db.session.query(Theme.name)
+            .join(Delegation, Delegation.theme_id == Theme.id)
+            .filter(Delegation.edition_year == year)
+            .distinct().order_by(Theme.name).all())
+    return [r[0] for r in rows if r[0]]
+
+
+def _bulk_people_themes():
+    rows = (db.session.query(CertificatePerson.committee_name)
+            .distinct().order_by(CertificatePerson.committee_name).all())
+    return [r[0] for r in rows if r[0]]
+
+
+def _bulk_people_countries():
+    rows = (db.session.query(CertificatePerson.country)
+            .distinct().order_by(CertificatePerson.country).all())
+    return [r[0] for r in rows if r[0]]
+
+
+def _bulk_status_match(cert, status):
+    if status == 'missing':
+        return cert is None
+    if status == 'pending':
+        return cert is not None and not cert.released
+    if status == 'released':
+        return cert is not None and cert.released
+    return True
+
+
+def _bulk_people_rows(year, cert_type, theme, country, q, status):
+    """Pessoas cadastradas (externos/organizadores) filtradas por condicoes."""
+    rows = []
+    cert_map = {c.person_id: c for c in Certificate.query.filter(
+        Certificate.edition_year == year,
+        Certificate.type == cert_type,
+        Certificate.person_id.isnot(None)).all()}
+    for p in CertificatePerson.query.order_by(CertificatePerson.name).all():
+        if p.kind != cert_type:
+            continue
+        if theme and (p.committee_name or '') != theme:
+            continue
+        if country and (p.country or '') != country:
+            continue
+        if q:
+            hay = ' '.join(filter(None, [p.name, p.email, p.committee,
+                                         p.committee_name, p.country])).lower()
+            if q not in hay:
+                continue
+        cert = cert_map.get(p.id)
+        if not _bulk_status_match(cert, status):
+            continue
+        rows.append({
+            'id': p.id, 'name': p.name, 'email': p.email, 'global_id': None,
+            'committee': p.committee or '', 'theme': p.committee_name or '',
+            'country': p.country or '', 'flag': p.country_flag or '',
+            'presence': None, 'cert': cert, 'kind_label': p.kind_label,
+        })
+    return rows
+
+
+def _bulk_student_rows(year, cert_type, theme, committee, country, presence,
+                       q, status):
+    """Alunos da edicao filtrados por condicoes, com o certificado do tipo."""
+    students = (Student.query
+                .join(Delegation, Student.delegation_id == Delegation.id)
+                .options(selectinload(Student.delegation)
+                         .selectinload(Delegation.theme))
+                .filter(Delegation.edition_year == year)
+                .order_by(Student.name).all())
+    ids = [s.id for s in students]
+    cert_map = {}
+    if ids:
+        for c in Certificate.query.filter(Certificate.edition_year == year,
+                                          Certificate.type == cert_type,
+                                          Certificate.student_id.in_(ids)):
+            cert_map[c.student_id] = c
+
+    rows = []
+    for s in students:
+        d = s.delegation
+        th = d.theme if d else None
+        if committee and ((d.committee if d else '') or '') != committee:
+            continue
+        if theme and ((th.name if th else '') or '') != theme:
+            continue
+        if country and ((d.country if d else '') or '') != country:
+            continue
+        if presence and ((d.presence_status if d else '') or '') != presence:
+            continue
+        if q:
+            hay = ' '.join(filter(None, [s.name, s.email, s.global_id,
+                                         d.country if d else '',
+                                         d.committee if d else '',
+                                         th.name if th else ''])).lower()
+            if q not in hay:
+                continue
+        cert = cert_map.get(s.id)
+        if not _bulk_status_match(cert, status):
+            continue
+        rows.append({
+            'id': s.id, 'name': s.name, 'email': s.email,
+            'global_id': s.global_id,
+            'committee': (d.committee if d else '') or '',
+            'theme': (th.name if th else '') or '',
+            'country': (d.country if d else '') or '',
+            'flag': (d.country_flag if d else '') or '',
+            'presence': (d.presence_status if d else '') or 'ausente',
+            'cert': cert, 'kind_label': '',
+        })
+    return rows
+
+
+@admin_bp.route('/certificados/lote')
+@login_required
+@admin_required
+def certificate_bulk_page():
+    """Emissao em lote: escolhe quem recebe codigo por condicoes."""
+    year = request.args.get('year', type=int) or _current_year()
+    cert_type = request.args.get('type') or 'participation'
+    if cert_type not in CERT_TYPES:
+        cert_type = 'participation'
+    theme = (request.args.get('theme') or '').strip()
+    committee = (request.args.get('committee') or '').strip()
+    country = (request.args.get('country') or '').strip()
+    presence = (request.args.get('presence') or '').strip()
+    status = (request.args.get('status') or 'missing').strip()
+    if status not in BULK_STATUSES:
+        status = 'missing'
+    q = (request.args.get('q') or '').strip()
+
+    is_people = cert_type in PEOPLE_CERT_TYPES
+    if is_people:
+        rows = _bulk_people_rows(year, cert_type, theme, country, q.lower(), status)
+        themes = _bulk_people_themes()
+        countries = _bulk_people_countries()
+        committees = []
+    else:
+        rows = _bulk_student_rows(year, cert_type, theme, committee, country,
+                                  presence, q.lower(), status)
+        themes = _bulk_themes(year)
+        countries = _bulk_distinct(Delegation.country, year)
+        committees = _bulk_distinct(Delegation.committee, year)
+
+    missing = sum(1 for r in rows if r['cert'] is None)
+
+    return render_template('admin/certificate_bulk.html',
+                           rows=rows,
+                           total=len(rows),
+                           missing=missing,
+                           years=_bulk_years(),
+                           year=year,
+                           cert_type=cert_type,
+                           cert_types=CERT_TYPES,
+                           is_people=is_people,
+                           themes=themes,
+                           committees=committees,
+                           countries=countries,
+                           statuses=BULK_STATUSES,
+                           f_theme=theme,
+                           f_committee=committee,
+                           f_country=country,
+                           f_presence=presence,
+                           f_status=status,
+                           f_q=q)
+
+
+@admin_bp.route('/certificados/lote/emitir', methods=['POST'])
+@login_required
+@admin_required
+def certificate_bulk_generate():
+    """Gera os codigos apenas para quem foi marcado na tela de lote."""
+    year = request.form.get('year', type=int) or _current_year()
+    cert_type = request.form.get('type') or 'participation'
+    if cert_type not in CERT_TYPES:
+        flash('Tipo de certificado invalido.', 'error')
+        return redirect(url_for('admin.certificates_list', year=year))
+
+    student_ids = sorted({int(v) for v in request.form.getlist('student_ids')
+                          if v.isdigit()})
+    person_ids = sorted({int(v) for v in request.form.getlist('person_ids')
+                         if v.isdigit()})
+    if not student_ids and not person_ids:
+        flash('Selecione ao menos uma pessoa para emitir os codigos.', 'error')
+        return redirect(url_for('admin.certificate_bulk_page',
+                                year=year, type=cert_type))
+
+    created = skipped = 0
+    used = _used_codes(extra_check_student=True)
+
+    if student_ids:
+        students = (Student.query
+                    .options(selectinload(Student.delegation)
+                             .selectinload(Delegation.theme))
+                    .filter(Student.id.in_(student_ids)).all())
+        existing = {c for (c,) in db.session.query(Certificate.student_id).filter(
+            Certificate.edition_year == year,
+            Certificate.type == cert_type,
+            Certificate.student_id.in_(student_ids)).all()}
+        for s in students:
+            if s.id in existing:
+                skipped += 1
+                continue
+            cert = Certificate(student=s, edition_year=year, type=cert_type,
+                               awarded_by=(current_user.id
+                                           if current_user.is_authenticated else None),
+                               verification_code=_pick_code(used))
+            cert.fill_snapshot()
+            db.session.add(cert)
+            created += 1
+
+    if person_ids:
+        people = CertificatePerson.query.filter(
+            CertificatePerson.id.in_(person_ids)).all()
+        existing = {c for (c,) in db.session.query(Certificate.person_id).filter(
+            Certificate.edition_year == year,
+            Certificate.type == cert_type,
+            Certificate.person_id.in_(person_ids)).all()}
+        for p in people:
+            if p.id in existing:
+                skipped += 1
+                continue
+            data = {'name': p.name, 'email': p.email, 'committee': p.committee,
+                    'committee_name': p.committee_name, 'country': p.country,
+                    'country_flag': p.country_flag, 'notes': p.notes}
+            _create_external_certificate(data, cert_type, year, person=p, used=used)
+            created += 1
+
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash('Conflito: codigo duplicado. Tente novamente.', 'error')
+        return redirect(url_for('admin.certificate_bulk_page',
+                                year=year, type=cert_type))
+
+    _log_audit('generate_codes_bulk', 'system', 0,
+               details=f'{created} criado(s), {skipped} ja existia(m) '
+                       f'({cert_type} {year})')
+
+    msg = f'{created} certificado(s) de "{CERT_TYPES[cert_type]}" criado(s)'
+    if skipped:
+        msg += f' · {skipped} ja existia(m) e nao foi(ram) alterado(s)'
+    flash(msg + f' ({year}). Faca o upload dos PDFs para liberar.',
+          'success' if created else 'info')
     return redirect(url_for('admin.certificates_list', year=year, type=cert_type))
 
 
